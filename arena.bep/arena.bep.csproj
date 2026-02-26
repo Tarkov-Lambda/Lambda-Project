@@ -34,7 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
+    <ProjectReference Include="..\arena.shared\arena.shared.csproj">
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
