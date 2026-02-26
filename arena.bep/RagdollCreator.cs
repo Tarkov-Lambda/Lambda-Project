@@ -4,6 +4,7 @@ using EFT.AssetsManager;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using ifp.arena.bep.GameTypes;
 using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,18 @@ using CorpseRagdoll = RagdollClass;
 
 namespace ifp.arena.bep
 {
-    public static class RagdollCreator
+    public class RagdollCreator : IDisposable
     {
+        public RagdollCreator()
+        {
+            BaseGameMode.OnPlayerKilled += CreateRagdollFromPlayer;
+        }
+
+        public void Dispose()
+        {
+            BaseGameMode.OnPlayerKilled -= CreateRagdollFromPlayer;
+        }
+
         public static void CreateRagdollFromPlayer(Player player)
         {
             //new CorpseRagdoll();

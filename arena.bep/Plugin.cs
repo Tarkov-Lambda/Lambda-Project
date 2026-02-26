@@ -22,12 +22,15 @@ namespace ifp.arena.bep
         internal static ConfigEntry<GameModes> GameMode;
         internal static ConfigEntry<Faction> PrefferedFaction;
 
-        public static BaseGameMode gameSession = new BaseGameMode();
+        public static BaseGameMode gameSession;
+
 
         //Patch_Fika_OnCommonPlayerPacketReceived packetPatch;
         //Patch_FikaClient_OnCommonPlayerPacketReceived packetPatch2;
         pActiveHealthController_Kill patchKill;
         ModulePatch jopa;
+
+        RagdollCreator ragdollCreator;
 
         void Start()
         {
@@ -39,6 +42,10 @@ namespace ifp.arena.bep
 
             patchKill = new pActiveHealthController_Kill();
             patchKill.Enable();
+
+            gameSession = new BaseGameMode();
+
+            ragdollCreator = new RagdollCreator();
 
             InitConfiguration();
         }
@@ -59,6 +66,9 @@ namespace ifp.arena.bep
 
             gameSession.Dispose();
             gameSession = null;
+
+            ragdollCreator.Dispose();
+            ragdollCreator = null;
 
         }
     }

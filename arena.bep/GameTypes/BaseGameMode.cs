@@ -38,18 +38,14 @@ namespace ifp.arena.bep.GameTypes
         public float RoundTime;
         public SessionInfo sessionInfo;
 
-        public Action<EFT.Player> OnPlayerKilled;
+        public static event Action<EFT.Player> OnPlayerKilled;
 
 
         // Shit starts happening
         public void startSession(GameWorld gameWorld)
         {
             Plugin.Logger.LogInfo("startSession");
-
-            if (Singleton<GameWorld>.Instance == null)
-            {
-                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
-            }
+            Singleton<IFikaNetworkManager>.Instance.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
 
             sessionInfo = new SessionInfo();
             foreach (var p in gameWorld.AllAlivePlayersList.ToArray())

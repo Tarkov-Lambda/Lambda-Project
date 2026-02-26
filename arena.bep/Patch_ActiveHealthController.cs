@@ -35,9 +35,6 @@ namespace ifp.arena.bep
 
             try
             {
-                if (__instance.Player != Singleton<GameWorld>.Instance.MainPlayer)
-                    RagdollCreator.CreateRagdollFromPlayer(__instance.Player);
-
                 Teleporter.Teleport(__instance.Player);
                 Plugin.gameSession.reportLocalDeath(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
             }
