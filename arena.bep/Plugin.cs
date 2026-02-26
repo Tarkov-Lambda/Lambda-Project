@@ -3,9 +3,10 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using Dissonance;
 using HarmonyLib;
+using ifp.arena.shared;
 using SPT.Reflection;
 
-namespace ifp.arena.respawn
+namespace ifp.arena.bep
 {
     [BepInPlugin("com.ifp.respawn", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
@@ -13,7 +14,7 @@ namespace ifp.arena.respawn
         public static new ManualLogSource Logger;
 
         internal static ConfigEntry<bool> Active;
-        internal static ConfigEntry<Gamemodes> Gamemodes;
+        internal static ConfigEntry<GameModes> GameMode;
 
         Patch_Fika_OnCommonPlayerPacketReceived packetPatch;
         Patch_FikaClient_OnCommonPlayerPacketReceived packetPatch2;
@@ -40,7 +41,7 @@ namespace ifp.arena.respawn
         private void InitConfiguration()
         {
             Active = Config.Bind("", "Active", true, "Works only on Server");
-            Gamemodes = Config.Bind("", "Gamemodes", respawn.Gamemodes.FFA, "Works only on Server");
+            GameMode = Config.Bind("", "Gamemodes", GameModes.FFA, "Works only on Server");
         }
 
         void OnDestroy()

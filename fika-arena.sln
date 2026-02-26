@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11520.95 d18.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.bep", "arena.bep\arena.bep.csproj", "{93996562-A998-6A39-0E12-23195C90578C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.shared", "arena.shared\arena.shared.csproj", "{792DACF7-6D31-10A2-431B-1A79BA852FA2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93996562-A998-6A39-0E12-23195C90578C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93996562-A998-6A39-0E12-23195C90578C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93996562-A998-6A39-0E12-23195C90578C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93996562-A998-6A39-0E12-23195C90578C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4ECB0728-9099-4517-81C7-F41014F54A41}
+	EndGlobalSection
+EndGlobal

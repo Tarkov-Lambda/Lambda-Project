@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <Version>1.0.0</Version>
     <LangVersion>latest</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);SPT_4_0</DefineConstants>
@@ -32,6 +31,10 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
       <Private>False</Private>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

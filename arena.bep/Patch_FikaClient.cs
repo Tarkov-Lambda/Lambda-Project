@@ -6,7 +6,7 @@ using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace ifp.arena.respawn
+namespace ifp.arena.bep
 {
     internal class Patch_FikaClient_OnCommonPlayerPacketReceived : ModulePatch
     {

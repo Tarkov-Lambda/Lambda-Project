@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ifp.arena.respawn
+namespace ifp.arena.bep
 {
     public class Teleporter
     {

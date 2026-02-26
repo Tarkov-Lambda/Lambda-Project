@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ifp.arena.respawn
+namespace ifp.arena.bep
 {
     internal class pActiveHealthController_Kill : ModulePatch
     {
