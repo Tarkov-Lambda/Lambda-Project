@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace ifp.arena.shared
 {
-    public class SpawnPoints : MonoBehaviour
+    public class BombPlantZone : MonoBehaviour
     {
-        public Faction faction;
+
     }
 }

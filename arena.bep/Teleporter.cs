@@ -1,6 +1,8 @@
 ﻿using EFT;
+using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ifp.arena.bep
@@ -11,16 +13,23 @@ namespace ifp.arena.bep
 
         static public void Teleport(Player player)
         {
-            var spawnPoints = GameObject.FindGameObjectWithTag("Respawn");
-            
-            if(spawnPoints == null)
-            {
-                Plugin.Logger.LogInfo("ne mogu naiti blya");
-                Plugin.Logger.LogInfo(spawnPoints);
-            }
-            //newPos = spawnPoints.GetPositions()[1];
-
+            newPos = GetNewPosition(Plugin.PrefferedFaction.Value);
+            Plugin.Logger.LogInfo(newPos.ToString());
             player.Teleport(newPos);
+        }
+
+        public static Vector3 GetNewPosition(Faction faction)
+        {
+            SpawnPoints[] allSpawnPoints = GameObject.FindObjectsByType<SpawnPoints>(FindObjectsSortMode.None);
+            var currentSpawnPoints = allSpawnPoints.First(spawnPoint => spawnPoint.faction == faction);
+
+            var list = new List<Vector3>();
+            foreach (Transform transform in currentSpawnPoints.transform)
+            {
+                list.Add(transform.position);
+            }
+
+            return list.ToArray().RandomElement();
         }
 
     }

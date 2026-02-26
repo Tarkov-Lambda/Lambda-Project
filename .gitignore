@@ -4,3 +4,8 @@ bin/
 obj/
 .vs/
 .vsconfig
+
+# syncthing stuff
+.sync-conflict*
+.stignore
+.stfolder
