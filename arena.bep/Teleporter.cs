@@ -14,7 +14,6 @@ namespace ifp.arena.bep
         static public void Teleport(Player player)
         {
             newPos = GetNewPosition(Plugin.PrefferedFaction.Value);
-            Plugin.Logger.LogInfo(newPos.ToString());
             player.Teleport(newPos);
         }
 

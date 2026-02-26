@@ -1,6 +1,6 @@
 ﻿using Comfort.Common;
+using EFT;
 using Fika.Core.Main.Utils;
-using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
@@ -9,12 +9,9 @@ using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ifp.arena.bep.GameTypes
 {
-
     public struct PlayerKilledPacket : INetSerializable
     {
         public int KillerId;
@@ -36,17 +33,31 @@ namespace ifp.arena.bep.GameTypes
         }
     }
 
-    public class BaseGameMode
+    public class BaseGameMode : IDisposable
     {
         public float RoundTime;
         public SessionInfo sessionInfo;
 
-        public Action<int> OnPlayerKilled;
+        public Action<EFT.Player> OnPlayerKilled;
 
 
         // Shit starts happening
-        public void startSession()
+        public void startSession(GameWorld gameWorld)
         {
+            Plugin.Logger.LogInfo("startSession");
+
+            if (Singleton<GameWorld>.Instance == null)
+            {
+                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
+            }
+
+            sessionInfo = new SessionInfo();
+            foreach (var p in gameWorld.AllAlivePlayersList.ToArray())
+            {
+                Plugin.Logger.LogInfo(p.Id);
+                PlayerScore newPlayer = new PlayerScore(p);
+                sessionInfo.scoreboard.Add(newPlayer);
+            }
         }
 
         // Shit stops happening
@@ -57,32 +68,42 @@ namespace ifp.arena.bep.GameTypes
 
         public BaseGameMode()
         {
-            FikaEventDispatcher.SubscribeEvent<FikaNetworkManagerCreatedEvent>(OnNetworkManagerCreated);
+            if (Singleton<GameWorld>.Instance != null)
+            {
+                startSession(Singleton<GameWorld>.Instance);
+            }
+            Patch_Gameworld_OnGameStarted.OnGameStarted += startSession;
+
+            //FikaEventDispatcher.SubscribeEvent<FikaNetworkManagerCreatedEvent>(OnNetworkManagerCreated);
+
         }
 
-        private void OnNetworkManagerCreated(FikaNetworkManagerCreatedEvent evt)
+        public void Dispose()
         {
-            sessionInfo = new SessionInfo();
-            EFT.Player[] players = UnityEngine.GameObject.FindObjectsByType<EFT.Player>(UnityEngine.FindObjectsSortMode.None);
-
-            foreach (var p in players)
+            if (Singleton<IFikaNetworkManager>.Instance != null)
             {
-                PlayerScore newPlayer = new PlayerScore(p);
-                Plugin.Logger.LogInfo(p.Id);
-                sessionInfo.scoreboard.Add(newPlayer);
+                //Singleton<IFikaNetworkManager>.Instance.UnregisterPacket<PlayerKilledPacket>();
             }
+            Patch_Gameworld_OnGameStarted.OnGameStarted -= startSession;
+        }
 
-            evt.Manager.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
+        private void OnNetworkManagerCreated(FikaNetworkManagerCreatedEvent evt = null)
+        {
+            Singleton<IFikaNetworkManager>.Instance.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
         }
 
         public void reportLocalDeath(int killerId, int victimId, int assistId = 1337)
         {
+            Plugin.Logger.LogInfo("reportLocalDeath");
+
             var packet = new PlayerKilledPacket
             {
                 KillerId = killerId,
                 VictimId = victimId,
                 AssistId = assistId
             };
+            Plugin.Logger.LogInfo("packet made");
+            Plugin.Logger.LogInfo(packet.VictimId);
 
             Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, DeliveryMethod.ReliableOrdered, FikaBackendUtils.IsServer);
 
@@ -94,9 +115,9 @@ namespace ifp.arena.bep.GameTypes
 
         private void OnPlayerKilledPacketReceived(PlayerKilledPacket packet)
         {
-            registerKill(packet.KillerId, packet.VictimId, packet.AssistId);
-            Plugin.Logger.LogInfo(packet.KillerId);
+            Plugin.Logger.LogInfo("OnPlayerKilledPacketReceived");
             Plugin.Logger.LogInfo(packet.VictimId);
+            registerKill(packet.KillerId, packet.VictimId, packet.AssistId);
 
             if (FikaBackendUtils.IsServer)
             {
@@ -104,11 +125,16 @@ namespace ifp.arena.bep.GameTypes
                 manager.SendData(ref packet, DeliveryMethod.ReliableOrdered, true);
             }
 
-            OnPlayerKilled?.Invoke(packet.VictimId);
+            EFT.Player victimPlayer = sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.VictimId).p;
+            Plugin.Logger.LogInfo($"Victim Name: {victimPlayer.name}");
+
+            OnPlayerKilled?.Invoke(victimPlayer);
         }
 
         public void registerKill(int killerId, int victimId, int assistId = 1337)
         {
+            Plugin.Logger.LogInfo("registerKill");
+            Plugin.Logger.LogInfo(victimId);
             var killer = sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == killerId);
             if (killer != null) killer.kills++;
 

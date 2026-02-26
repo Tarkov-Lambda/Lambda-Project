@@ -35,16 +35,17 @@ namespace ifp.arena.bep
 
             try
             {
-                //RagdollCreator.CreateRagdollFromPlayer(__instance.Player);
+                if (__instance.Player != Singleton<GameWorld>.Instance.MainPlayer)
+                    RagdollCreator.CreateRagdollFromPlayer(__instance.Player);
 
                 Teleporter.Teleport(__instance.Player);
+                Plugin.gameSession.reportLocalDeath(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
             }
             catch (Exception ex)
             {
                Plugin.Logger.LogError(ex);
             }
 
-            Plugin.gameSession.reportLocalDeath(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
 
             return false;
         }
