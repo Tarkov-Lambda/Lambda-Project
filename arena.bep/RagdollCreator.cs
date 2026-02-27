@@ -68,7 +68,7 @@ namespace ifp.arena.bep
             }
 
             List<PlayerRigidbodySleepHierarchy> rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(rigidbodySpawners);
-            Vector3 velocity = Vector3.zero;
+            Vector3 velocity = player.Velocity;
             float maxDepenetrationVelocity = EFTHardSettings.Instance.CorpseMaxDepenetrationVelocity;
             CollisionDetectionMode collisionDetectionMode = CollisionDetectionMode.Discrete;
             MonoBehaviour owner = fakeCorpse;
