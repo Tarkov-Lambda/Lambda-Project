@@ -5,6 +5,7 @@ using Dissonance;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches;
 using ifp.arena.shared;
 using SPT.Reflection;
@@ -25,6 +26,7 @@ namespace ifp.arena.bep
 
         public static BaseGameMode gameSession;
 
+        public static PlayerKilledPacketHandler playerKilledPacketHandler;
 
         //Patch_Fika_OnCommonPlayerPacketReceived packetPatch;
         //Patch_FikaClient_OnCommonPlayerPacketReceived packetPatch2;
@@ -43,6 +45,9 @@ namespace ifp.arena.bep
 
             patchKill = new pActiveHealthController_Kill();
             patchKill.Enable();
+
+            // Packet Handlers
+            playerKilledPacketHandler = new PlayerKilledPacketHandler();
 
             gameSession = new BaseGameMode();
 
@@ -71,6 +76,9 @@ namespace ifp.arena.bep
             ragdollCreator.Dispose();
             ragdollCreator = null;
 
+            // Packet Handlers
+            playerKilledPacketHandler.Dispose();
+            playerKilledPacketHandler = null;
         }
     }
 }
