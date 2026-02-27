@@ -69,6 +69,8 @@ namespace ifp.arena.bep
         {
             Plugin.Logger.LogInfo("Unload");
 
+            Logger = null;
+
             patchKill.Disable();
             jopa.Disable();
 
