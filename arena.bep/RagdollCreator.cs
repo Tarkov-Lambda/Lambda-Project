@@ -5,6 +5,7 @@ using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Networking;
 using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
@@ -19,12 +20,12 @@ namespace ifp.arena.bep
     {
         public RagdollCreator()
         {
-            BaseGameMode.OnPlayerKilled += CreateRagdollFromPlayer;
+            PlayerKilledPacketHandler.OnPlayerKilled += CreateRagdollFromPlayer;
         }
 
         public void Dispose()
         {
-            BaseGameMode.OnPlayerKilled -= CreateRagdollFromPlayer;
+            PlayerKilledPacketHandler.OnPlayerKilled -= CreateRagdollFromPlayer;
         }
 
         public static void CreateRagdollFromPlayer(Player player)

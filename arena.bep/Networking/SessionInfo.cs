@@ -57,6 +57,7 @@ namespace ifp.arena.bep.Networking
             }
         }
     }
+
     public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
     {
         public void Send()
@@ -67,13 +68,14 @@ namespace ifp.arena.bep.Networking
             var packet = new SessionInfoPacket
             {
                 gameMode = session.currentGameMode,
-                scores = session.scoreboard.Select(s => new PlayerScoreSyncData
+                // Loop through KeyValuePairs instead of objects
+                scores = session.scoreboard.Select(kvp => new PlayerScoreSyncData
                 {
-                    playerId = s.p.Id,
-                    faction = (int)s.faction,
-                    kills = s.kills,
-                    assists = s.assists,
-                    deaths = s.deaths
+                    playerId = kvp.Key,
+                    faction = (int)kvp.Value.faction,
+                    kills = kvp.Value.kills,
+                    assists = kvp.Value.assists,
+                    deaths = kvp.Value.deaths
                 }).ToArray()
             };
 
@@ -89,14 +91,24 @@ namespace ifp.arena.bep.Networking
 
             foreach (var syncScore in packet.scores)
             {
-                var playerScore = session.scoreboard.FirstOrDefault(p => p.p.Id == syncScore.playerId);
-
-                if (playerScore != null)
+                // TryGetValue operates at an O(1) complexity unlike the O(N) LINQ FirstOrDefault
+                if (session.scoreboard.TryGetValue(syncScore.playerId, out var playerScore))
                 {
                     playerScore.faction = (Faction)syncScore.faction;
                     playerScore.kills = syncScore.kills;
                     playerScore.assists = syncScore.assists;
                     playerScore.deaths = syncScore.deaths;
+                }
+                else
+                {
+                    // Failsafe: if the client receives a score for a player not in their dictionary, add them.
+                    session.scoreboard[syncScore.playerId] = new PlayerScore
+                    {
+                        faction = (Faction)syncScore.faction,
+                        kills = syncScore.kills,
+                        assists = syncScore.assists,
+                        deaths = syncScore.deaths
+                    };
                 }
             }
         }
