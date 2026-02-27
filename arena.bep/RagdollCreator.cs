@@ -19,13 +19,13 @@ namespace ifp.arena.bep
     public class RagdollCreator : IDisposable
     {
         public RagdollCreator()
-        {
-            PlayerKilledPacketHandler.OnPlayerKilled += CreateRagdollFromPlayer;
+        { 
+            Singleton<PlayerKilledPacketHandler>.Instance.OnPlayerKilled += CreateRagdollFromPlayer;
         }
 
         public void Dispose()
         {
-            PlayerKilledPacketHandler.OnPlayerKilled -= CreateRagdollFromPlayer;
+            Singleton<PlayerKilledPacketHandler>.Instance.OnPlayerKilled -= CreateRagdollFromPlayer;
         }
 
         public static void CreateRagdollFromPlayer(Player player)

@@ -26,11 +26,16 @@ namespace ifp.arena.bep.Networking
             victimId = reader.GetInt();
             assistId = reader.GetInt();
         }
+
+        public override string ToString()
+        {
+            return $"{killerId} ubil {victimId}";
+        }
     }
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
-        public static event Action<EFT.Player> OnPlayerKilled;
+        public event Action<EFT.Player> OnPlayerKilled;
 
         public void Send(int killerId, int victimId, int assistId)
         {
@@ -41,29 +46,31 @@ namespace ifp.arena.bep.Networking
                 assistId = assistId
             };
 
-            OnSend(packet);
+            RequestSend(packet);
         }
 
         public override void OnReceive(PlayerKilledPacket packet)
         {
+            Plugin.Logger.LogInfo(packet);
+
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-            if (GameMode?.sessionInfo == null) return;
+            if (GameMode?.sessionInfo == null)
+            {
+                Plugin.Logger.LogInfo("SessionInfo does not exist type beat");
+                return;
+            }
 
             var scoreboard = GameMode.sessionInfo.scoreboard;
 
-            scoreboard[packet.killerId].kills++;
             scoreboard[packet.victimId].deaths++;
-
-            if (packet.assistId != 1337)
-            {
-                scoreboard[packet.assistId].assists++;
-            }
 
             EFT.Player victimPlayer = Singleton<GameWorld>.Instance.AllAlivePlayersList.FirstOrDefault(p => p.Id == packet.victimId);
             if (victimPlayer != null)
             {
                 OnPlayerKilled?.Invoke(victimPlayer);
             }
+
+            Plugin.Logger.LogInfo($"victim player is {victimPlayer?.name}");
         }
     }
 }

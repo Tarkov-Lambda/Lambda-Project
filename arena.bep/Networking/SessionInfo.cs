@@ -79,7 +79,7 @@ namespace ifp.arena.bep.Networking
                 }).ToArray()
             };
 
-            OnSend(packet);
+            RequestSend(packet);
         }
 
         public override void OnReceive(SessionInfoPacket packet)

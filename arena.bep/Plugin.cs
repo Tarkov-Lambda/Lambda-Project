@@ -1,6 +1,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using Comfort.Common;
 using Dissonance;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
@@ -24,13 +25,6 @@ namespace ifp.arena.bep
         internal static ConfigEntry<GameModes> GameMode;
         internal static ConfigEntry<Faction> PrefferedFaction;
 
-        public static BaseGameMode gameSession;
-
-        public static PlayerKilledPacketHandler playerKilledPacketHandler;
-        public static SessionInfoPacketHandler sessionInfoPacketHandler;
-
-        //Patch_Fika_OnCommonPlayerPacketReceived packetPatch;
-        //Patch_FikaClient_OnCommonPlayerPacketReceived packetPatch2;
         pActiveHealthController_Kill patchKill;
         ModulePatch jopa;
 
@@ -48,10 +42,10 @@ namespace ifp.arena.bep
             patchKill.Enable();
 
             // Packet Handlers
-            playerKilledPacketHandler = new PlayerKilledPacketHandler();
-            sessionInfoPacketHandler = new SessionInfoPacketHandler();
+            Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
+            Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
 
-            gameSession = new BaseGameMode();
+            Singleton<BaseGameMode>.Create(new BaseGameMode());
 
             ragdollCreator = new RagdollCreator();
 
@@ -74,17 +68,13 @@ namespace ifp.arena.bep
             patchKill.Disable();
             jopa.Disable();
 
-            gameSession.Dispose();
-            gameSession = null;
-
             ragdollCreator.Dispose();
             ragdollCreator = null;
 
             // Packet Handlers
-            playerKilledPacketHandler.Dispose();
-            playerKilledPacketHandler = null;
-            sessionInfoPacketHandler.Dispose();
-            sessionInfoPacketHandler = null;
+            Singleton<PlayerKilledPacketHandler>.Instance.Dispose();
+            Singleton<SessionInfoPacketHandler>.Instance.Dispose();
+            Singleton<BaseGameMode>.Instance.Dispose();
         }
     }
 }

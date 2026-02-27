@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace ifp.arena.bep.GameTypes
 {
-    public class BaseGameMode : IDisposable
+    public class BaseGameMode : Singleton<BaseGameMode>, IDisposable
     {
         public float RoundTime;
         public SessionInfo sessionInfo;
@@ -37,6 +37,8 @@ namespace ifp.arena.bep.GameTypes
         public void Dispose()
         {
             Patch_Gameworld_OnGameStarted.OnGameStarted -= startSession;
+
+            Release(this);
         }
 
         public void OnRoundStart()

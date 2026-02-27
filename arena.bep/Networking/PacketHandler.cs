@@ -14,7 +14,7 @@ using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
 namespace ifp.arena.bep.Networking
 {
-    public abstract class PacketHandler<T> : IDisposable where T : INetSerializable, new()
+    public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
     {
         DeliveryMethod deliveryMethod;
 
@@ -37,6 +37,8 @@ namespace ifp.arena.bep.Networking
 
         public void Dispose()
         {
+            Release(this);
+
             if (Singleton<IFikaNetworkManager>.Instance != null)
             {
                 NetPacketProcessor netPacketProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
@@ -45,18 +47,19 @@ namespace ifp.arena.bep.Networking
         }
 
         // This has to be invoked manually in each Packet Handler inheritor
-        protected void OnSend(T packet)
+        protected void RequestSend(T packet)
         {
             Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
 
             if (FikaBackendUtils.IsServer)
             {
-                BroadcastAndReceive(packet);
+                OnReceive(packet);
             }
         }
 
         private void BroadcastAndReceive(T packet)
         {
+            Plugin.Logger.LogInfo("BroadcastAndReceive");
             if (FikaBackendUtils.IsServer)
             {
                 Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);

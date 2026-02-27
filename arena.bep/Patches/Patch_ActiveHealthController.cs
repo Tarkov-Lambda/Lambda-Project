@@ -37,7 +37,7 @@ namespace ifp.arena.bep.Patches
             try
             {
                 Teleporter.Teleport(__instance.Player);
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(0, __instance.Player.Id, 3);
             }
             catch (Exception ex)
             {
