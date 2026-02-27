@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,32 @@ namespace ifp.arena.bep
 {
     public class FakeCorpse : MonoBehaviour
     {
+        Collider[] cols;
+
+        void Start()
+        {
+            cols = GetComponentsInChildren<Collider>();
+
+            // disable collisions
+            foreach (var col in cols)
+            {
+                col.isTrigger = true;
+            }
+
+            StartCoroutine(Delay());
+        }
+
+        // wait one frame (avoid colliding with real body until its teleportation is synced up with physics)
+        IEnumerator Delay()
+        {
+            yield return new WaitForEndOfFrame();
+
+            foreach (var col in cols)
+            {
+                col.isTrigger = false;
+            }
+        }
+
         public void OnRigidbodyStopped()
         {
 

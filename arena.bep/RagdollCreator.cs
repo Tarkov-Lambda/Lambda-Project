@@ -45,12 +45,15 @@ namespace ifp.arena.bep
                 );
 
             playerClone.name = player.name + " (fake corpse)";
-            FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
             foreach (var col in playerClone.GetComponentsInChildren<Collider>())
             {
                 col.gameObject.layer = 23;
             }
 
+            Component.DestroyImmediate(playerClone.GetComponent<Rigidbody>());
+            Component.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
+
+            FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
 
             RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();
             foreach (var rbs in rigidbodySpawners)
