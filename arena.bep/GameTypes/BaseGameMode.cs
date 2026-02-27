@@ -78,7 +78,8 @@ namespace ifp.arena.bep.GameTypes
         {
             if (Singleton<IFikaNetworkManager>.Instance != null)
             {
-                //Singleton<IFikaNetworkManager>.Instance.UnregisterPacket<PlayerKilledPacket>();
+                NetPacketProcessor netPacketProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
+                netPacketProcessor.RemoveSubscription<PlayerKilledPacket>();
             }
             Patch_Gameworld_OnGameStarted.OnGameStarted -= startSession;
         }
