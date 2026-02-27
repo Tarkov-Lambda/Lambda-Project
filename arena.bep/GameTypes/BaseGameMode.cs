@@ -17,11 +17,6 @@ namespace ifp.arena.bep.GameTypes
         public void startSession(GameWorld gameWorld)
         {
             sessionInfo = new SessionInfo();
-            foreach (var p in gameWorld.AllAlivePlayersList.ToArray())
-            {
-                PlayerScore newPlayer = new PlayerScore(p);
-                sessionInfo.scoreboard.Add(newPlayer);
-            }
         }
 
         public void endSession()
@@ -44,22 +39,41 @@ namespace ifp.arena.bep.GameTypes
             Patch_Gameworld_OnGameStarted.OnGameStarted -= startSession;
         }
 
+        public void OnRoundStart()
+        {
+
+        }
+
+        public void OnRoundEnd()
+        {
+            Singleton<SessionInfoPacketHandler>.Instance.Send();
+        }
     }
 
-    public class SessionInfo(GameModes gameMode = GameModes.SND)
+    public class SessionInfo
     {
-        public List<PlayerScore> scoreboard = new List<PlayerScore>();
-        public GameModes currentGameMode = gameMode;
+        public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
+        public GameModes currentGameMode = GameModes.SND;
+
+        public SessionInfo()
+        {
+            InitializeScoreBoard();
+        }
+
+        public void InitializeScoreBoard()
+        {
+            foreach (var p in Singleton<GameWorld>.Instance.AllAlivePlayersList.ToArray())
+            {
+                if (!scoreboard.ContainsKey(p.Id))
+                {
+                    scoreboard[p.Id] = new PlayerScore();
+                }
+            }
+        }
     }
 
     public class PlayerScore
     {
-        public PlayerScore(EFT.Player player)
-        {
-            p = player;
-        }
-
-        public EFT.Player p;
         public Faction faction = Faction.None;
         public int kills = 0;
         public int assists = 0;

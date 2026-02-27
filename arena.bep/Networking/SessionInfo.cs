@@ -59,8 +59,11 @@ namespace ifp.arena.bep.Networking
     }
     public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
     {
-        public void Send(SessionInfo session)
+        public void Send()
         {
+            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
+            if (session == null) return;
+
             var packet = new SessionInfoPacket
             {
                 gameMode = session.currentGameMode,

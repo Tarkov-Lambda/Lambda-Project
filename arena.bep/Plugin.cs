@@ -27,6 +27,7 @@ namespace ifp.arena.bep
         public static BaseGameMode gameSession;
 
         public static PlayerKilledPacketHandler playerKilledPacketHandler;
+        public static SessionInfoPacketHandler sessionInfoPacketHandler;
 
         //Patch_Fika_OnCommonPlayerPacketReceived packetPatch;
         //Patch_FikaClient_OnCommonPlayerPacketReceived packetPatch2;
@@ -48,6 +49,7 @@ namespace ifp.arena.bep
 
             // Packet Handlers
             playerKilledPacketHandler = new PlayerKilledPacketHandler();
+            sessionInfoPacketHandler = new SessionInfoPacketHandler();
 
             gameSession = new BaseGameMode();
 
@@ -79,6 +81,8 @@ namespace ifp.arena.bep
             // Packet Handlers
             playerKilledPacketHandler.Dispose();
             playerKilledPacketHandler = null;
+            sessionInfoPacketHandler.Dispose();
+            sessionInfoPacketHandler = null;
         }
     }
 }
