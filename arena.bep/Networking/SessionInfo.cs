@@ -60,6 +60,8 @@ namespace ifp.arena.bep.Networking
 
     public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
     {
+        public SessionInfoPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+
         public void Send()
         {
             var session = Singleton<BaseGameMode>.Instance?.sessionInfo;

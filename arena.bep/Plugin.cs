@@ -44,6 +44,7 @@ namespace ifp.arena.bep
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
             Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
+            Singleton<BombStatePacketHandler>.Create(new BombStatePacketHandler());
 
             Singleton<BaseGameMode>.Create(new BaseGameMode());
 
@@ -74,6 +75,8 @@ namespace ifp.arena.bep
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Instance.Dispose();
             Singleton<SessionInfoPacketHandler>.Instance.Dispose();
+            Singleton<BombStatePacketHandler>.Instance.Dispose();
+
             Singleton<BaseGameMode>.Instance.Dispose();
         }
     }

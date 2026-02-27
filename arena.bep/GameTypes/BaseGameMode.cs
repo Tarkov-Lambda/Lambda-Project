@@ -81,4 +81,14 @@ namespace ifp.arena.bep.GameTypes
         public int assists = 0;
         public int deaths = 0;
     }
+
+    public enum BombState
+    {
+        None,
+        Planting,
+        Planted,
+        Defusing,
+        Defused,
+        Exploded
+    }
 }
