@@ -6,13 +6,13 @@ using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace ifp.arena.bep
+namespace ifp.arena.bep.Patches
 {
     internal class Patch_FikaClient_OnCommonPlayerPacketReceived : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(Fika.Core.Networking.FikaClient), "OnCommonPlayerPacketReceived");
+            return AccessTools.Method(typeof(FikaClient), "OnCommonPlayerPacketReceived");
         }
 
         

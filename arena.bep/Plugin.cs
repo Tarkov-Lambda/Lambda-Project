@@ -5,6 +5,7 @@ using Dissonance;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Patches;
 using ifp.arena.shared;
 using SPT.Reflection;
 using SPT.Reflection.Patching;

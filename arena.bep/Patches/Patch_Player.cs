@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ifp.arena.bep
+namespace ifp.arena.bep.Patches
 {
     //internal class pPlayer_Corpse : ModulePatch
     //{

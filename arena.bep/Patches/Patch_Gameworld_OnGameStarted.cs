@@ -4,7 +4,7 @@ using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
 
-namespace ifp.arena.bep
+namespace ifp.arena.bep.Patches
 {
     internal class Patch_Gameworld_OnGameStarted : ModulePatch
     {

@@ -1,57 +1,25 @@
 ﻿using Comfort.Common;
 using EFT;
-using Fika.Core.Main.Utils;
-using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using HarmonyLib;
+using ifp.arena.bep.Networking;
+using ifp.arena.bep.Patches;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ifp.arena.bep.GameTypes
 {
-    public struct PlayerKilledPacket : INetSerializable
-    {
-        public int KillerId;
-        public int VictimId;
-        public int AssistId;
-
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(KillerId);
-            writer.Put(VictimId);
-            writer.Put(AssistId);
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            KillerId = reader.GetInt();
-            VictimId = reader.GetInt();
-            AssistId = reader.GetInt();
-        }
-    }
-
     public class BaseGameMode : IDisposable
     {
         public float RoundTime;
         public SessionInfo sessionInfo;
 
-        public static event Action<EFT.Player> OnPlayerKilled;
-
-
         // Shit starts happening
         public void startSession(GameWorld gameWorld)
         {
-            Plugin.Logger.LogInfo("startSession");
-            Singleton<IFikaNetworkManager>.Instance.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
-
             sessionInfo = new SessionInfo();
             foreach (var p in gameWorld.AllAlivePlayersList.ToArray())
             {
-                Plugin.Logger.LogInfo(p.Id);
                 PlayerScore newPlayer = new PlayerScore(p);
                 sessionInfo.scoreboard.Add(newPlayer);
             }
@@ -65,96 +33,34 @@ namespace ifp.arena.bep.GameTypes
 
         public BaseGameMode()
         {
+            // if statement for hot reloading
             if (Singleton<GameWorld>.Instance != null)
             {
                 startSession(Singleton<GameWorld>.Instance);
             }
             Patch_Gameworld_OnGameStarted.OnGameStarted += startSession;
-
-            //FikaEventDispatcher.SubscribeEvent<FikaNetworkManagerCreatedEvent>(OnNetworkManagerCreated);
-
         }
 
         public void Dispose()
         {
+            // if statement for hot reloading
             if (Singleton<IFikaNetworkManager>.Instance != null)
             {
-                NetPacketProcessor netPacketProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
-                netPacketProcessor.RemoveSubscription<PlayerKilledPacket>();
+
             }
             Patch_Gameworld_OnGameStarted.OnGameStarted -= startSession;
         }
 
-        private void OnNetworkManagerCreated(FikaNetworkManagerCreatedEvent evt = null)
+        public void ReportLocalDeath(int killerId, int victimId, int assistId = 1337)
         {
-            Singleton<IFikaNetworkManager>.Instance.RegisterPacket<PlayerKilledPacket>(OnPlayerKilledPacketReceived);
-        }
-
-        public void reportLocalDeath(int killerId, int victimId, int assistId = 1337)
-        {
-            Plugin.Logger.LogInfo("reportLocalDeath");
-
             var packet = new PlayerKilledPacket
             {
                 KillerId = killerId,
                 VictimId = victimId,
                 AssistId = assistId
             };
-            Plugin.Logger.LogInfo("packet made");
-            Plugin.Logger.LogInfo(packet.VictimId);
 
-            Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, DeliveryMethod.ReliableOrdered, FikaBackendUtils.IsServer);
-
-            if (FikaBackendUtils.IsServer)
-            {
-                OnPlayerKilledPacketReceived(packet);
-            }
-        }
-
-        private void OnPlayerKilledPacketReceived(PlayerKilledPacket packet)
-        {
-            Plugin.Logger.LogInfo("OnPlayerKilledPacketReceived");
-            Plugin.Logger.LogInfo(packet.VictimId);
-            registerKill(packet.KillerId, packet.VictimId, packet.AssistId);
-
-            if (FikaBackendUtils.IsServer)
-            {
-                var manager = Singleton<IFikaNetworkManager>.Instance;
-                manager.SendData(ref packet, DeliveryMethod.ReliableOrdered, true);
-            }
-
-            EFT.Player victimPlayer = sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.VictimId).p;
-            Plugin.Logger.LogInfo($"Victim Name: {victimPlayer.name}");
-
-            OnPlayerKilled?.Invoke(victimPlayer);
-        }
-
-        public void registerKill(int killerId, int victimId, int assistId = 1337)
-        {
-            Plugin.Logger.LogInfo("registerKill");
-            Plugin.Logger.LogInfo(victimId);
-            var killer = sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == killerId);
-            if (killer != null) killer.kills++;
-
-            var victim = sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == victimId);
-            if (victim != null) victim.deaths++;
-
-            if (assistId != 1337)
-            {
-                var assist = sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == assistId);
-                if (assist != null) assist.assists++;
-            }
-        }
-
-        // Server decision
-        public virtual void roundEnd(Faction faction = Faction.None)
-        {
-
-        }
-
-        public virtual void shouldSessionEnd()
-        {
-
+            Singleton<PlayerKilledPacketHandler>.Instance.Send(packet);
         }
     }
 
