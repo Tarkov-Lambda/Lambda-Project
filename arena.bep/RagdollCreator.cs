@@ -29,15 +29,67 @@ namespace ifp.arena.bep
 
         public static void CreateRagdollFromPlayer(Player player)
         {
-            //new CorpseRagdoll();
-
-            CloneWithSpecificComponents(player.gameObject,
-                typeof(RigidbodySpawner),
+            GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
                 typeof(PlayerBody),
-                typeof(Collider),
+                typeof(PlayerBones),
+                typeof(BodyPartCollider),
+
+                typeof(RigidbodySpawner),
                 typeof(CharacterJointSpawner),
 
+                typeof(Rigidbody),
+                typeof(Collider),
+                typeof(Joint),
+
                 typeof(Renderer)
+                );
+
+            playerClone.name = player.name + " (fake corpse)";
+            FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
+            foreach (var col in playerClone.GetComponentsInChildren<Collider>())
+            {
+                col.gameObject.layer = 23;
+            }
+
+
+            RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();
+            foreach (var rbs in rigidbodySpawners)
+            {
+                AccessTools.Field(typeof(RigidbodySpawner), "rigidbody_0").SetValue(rbs, rbs.GetComponent<Rigidbody>());
+            }
+
+            CharacterJointSpawner[] jointSpawners = playerClone.GetComponentsInChildren<CharacterJointSpawner>();
+            foreach (var js in jointSpawners)
+            {
+                AccessTools.Field(typeof(CharacterJointSpawner), "_joint").SetValue(js, js.GetComponent<Joint>());
+            }
+
+            List<PlayerRigidbodySleepHierarchy> rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(rigidbodySpawners);
+            Vector3 velocity = Vector3.zero;
+            float maxDepenetrationVelocity = EFTHardSettings.Instance.CorpseMaxDepenetrationVelocity;
+            CollisionDetectionMode collisionDetectionMode = CollisionDetectionMode.Discrete;
+            MonoBehaviour owner = fakeCorpse;
+            Func<bool, float, bool> checkCorpseIsStill = (bool sleeping, float timePass) => { return sleeping || timePass >= 15f; };
+            PlayerBody playerBody = playerClone.GetComponentInChildren<PlayerBody>();
+            Func<bool> isVisibleTest = () => true;
+            Action onRigidbodyStopped = fakeCorpse.OnRigidbodyStopped;
+            bool keepRigidbody = false;
+            bool putToSleep = false;
+
+            new CorpseRagdoll(
+                rigidbodySpawners,
+                jointSpawners,
+                rigidbodySleepHierarchy,
+                velocity,
+                maxDepenetrationVelocity,
+                collisionDetectionMode,
+                owner,
+                checkCorpseIsStill,
+                playerBody,
+                isVisibleTest,
+                onRigidbodyStopped,
+                keepRigidbody,
+                putToSleep
                 );
         }
 
