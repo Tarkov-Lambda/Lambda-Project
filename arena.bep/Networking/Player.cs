@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using EFT;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
 using System;
@@ -46,20 +47,23 @@ namespace ifp.arena.bep.Networking
         public override void OnReceive(PlayerKilledPacket packet)
         {
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-            var killer = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.killerId);
-            if (killer != null) killer.kills++;
+            if (GameMode?.sessionInfo == null) return;
 
-            var victim = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.victimId);
-            if (victim != null) victim.deaths++;
+            var scoreboard = GameMode.sessionInfo.scoreboard;
+
+            scoreboard[packet.killerId].kills++;
+            scoreboard[packet.victimId].deaths++;
 
             if (packet.assistId != 1337)
             {
-                var assist = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.assistId);
-                if (assist != null) assist.assists++;
+                scoreboard[packet.assistId].assists++;
             }
 
-            EFT.Player victimPlayer = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.victimId).p;
-            OnPlayerKilled?.Invoke(victimPlayer);
+            EFT.Player victimPlayer = Singleton<GameWorld>.Instance.AllAlivePlayersList.FirstOrDefault(p => p.Id == packet.victimId);
+            if (victimPlayer != null)
+            {
+                OnPlayerKilled?.Invoke(victimPlayer);
+            }
         }
     }
 }
