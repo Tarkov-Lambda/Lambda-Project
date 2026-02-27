@@ -4,7 +4,6 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
-using System;
 using System.Linq;
 
 namespace ifp.arena.bep.Networking
@@ -52,16 +51,25 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override BombStatePacket ServerValidation(BombStatePacket packet)
+        // Lag Compensation and Authority check
+        // If a person on server runs BombStatePacketHandler, there is no ping or authority issue, meaning this doesn't have to be run
+        public override bool ServerValidation(ref BombStatePacket packet)
         {
+            // Certain states are only dictated by the server
+            if (packet.state == BombState.Planted || packet.state == BombState.Defused || packet.state == BombState.Exploded)
+            {
+                return false;
+            }
+
             float serverNow = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
 
             float latencySeconds = 0f;
 
             if (Singleton<FikaServer>.Instance != null)
             {
-                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == packet.playerId);
-                
+                // Hardcoded to the second player at the moment (need NetPeer here)
+                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == 2);
+
                 if (client != null)
                 {
                     latencySeconds = (client.Ping / 1000f) / 2f;
@@ -74,7 +82,7 @@ namespace ifp.arena.bep.Networking
 
             Plugin.Logger.LogInfo($"Server: Player {packet.playerId} action {packet.state} validated at {packet.timestamp} (Lag Comp: {latencySeconds:F4}s)");
 
-            return base.ServerValidation(packet);
+            return base.ServerValidation(ref packet);
         }
 
         public override void OnReceive(BombStatePacket packet)

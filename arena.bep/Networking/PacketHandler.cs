@@ -78,16 +78,21 @@ namespace ifp.arena.bep.Networking
                     return;
                 }
 
-                packet = ServerValidation(packet);
+                // Does two things at once and I'm not sure if I like the way it works
+                // It validates and optionally modifies the packet, and then returns a bool to decide whether the packet is valid
+                // note that this function only runs when the server has received a packet from a client
+                bool validPacket = ServerValidation(ref packet);
+                if (!validPacket) return;
+
                 Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
             }
 
             OnReceive(packet);
         }
 
-        public virtual T ServerValidation(T packet)
+        public virtual bool ServerValidation(ref T packet)
         {
-            return packet;
+            return true;
         }
 
         public abstract void OnReceive(T packet);
