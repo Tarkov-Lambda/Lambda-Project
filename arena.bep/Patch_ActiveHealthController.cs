@@ -35,8 +35,8 @@ namespace ifp.arena.bep
 
             try
             {
+                Plugin.gameSession.reportLocalDeath(0, __instance.Player.Id, 3);
                 Teleporter.Teleport(__instance.Player);
-                Plugin.gameSession.reportLocalDeath(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
             }
             catch (Exception ex)
             {
