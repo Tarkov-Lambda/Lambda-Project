@@ -6,6 +6,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
+using ifp.arena.bep.Networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace ifp.arena.bep.Patches
             try
             {
                 Teleporter.Teleport(__instance.Player);
-                Plugin.gameSession.ReportLocalDeath(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(0, Singleton<GameWorld>.Instance.MainPlayer.Id, 3);
             }
             catch (Exception ex)
             {

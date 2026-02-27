@@ -8,22 +8,22 @@ namespace ifp.arena.bep.Networking
 {
     public struct PlayerKilledPacket : INetSerializable
     {
-        public int KillerId;
-        public int VictimId;
-        public int AssistId;
+        public int killerId;
+        public int victimId;
+        public int assistId;
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(KillerId);
-            writer.Put(VictimId);
-            writer.Put(AssistId);
+            writer.Put(killerId);
+            writer.Put(victimId);
+            writer.Put(assistId);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            KillerId = reader.GetInt();
-            VictimId = reader.GetInt();
-            AssistId = reader.GetInt();
+            killerId = reader.GetInt();
+            victimId = reader.GetInt();
+            assistId = reader.GetInt();
         }
     }
 
@@ -31,22 +31,34 @@ namespace ifp.arena.bep.Networking
     {
         public static event Action<EFT.Player> OnPlayerKilled;
 
+        public void Send(int killerId, int victimId, int assistId)
+        {
+            var packet = new PlayerKilledPacket
+            {
+                killerId = killerId,
+                victimId = victimId,
+                assistId = assistId
+            };
+
+            OnSend(packet);
+        }
+
         public override void OnReceive(PlayerKilledPacket packet)
         {
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-            var killer = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.KillerId);
+            var killer = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.killerId);
             if (killer != null) killer.kills++;
 
-            var victim = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.VictimId);
+            var victim = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.victimId);
             if (victim != null) victim.deaths++;
 
-            if (packet.AssistId != 1337)
+            if (packet.assistId != 1337)
             {
-                var assist = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.AssistId);
+                var assist = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.assistId);
                 if (assist != null) assist.assists++;
             }
 
-            EFT.Player victimPlayer = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.VictimId).p;
+            EFT.Player victimPlayer = GameMode.sessionInfo.scoreboard.FirstOrDefault(p => p.p.Id == packet.victimId).p;
             OnPlayerKilled?.Invoke(victimPlayer);
         }
     }

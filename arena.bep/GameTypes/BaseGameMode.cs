@@ -14,7 +14,6 @@ namespace ifp.arena.bep.GameTypes
         public float RoundTime;
         public SessionInfo sessionInfo;
 
-        // Shit starts happening
         public void startSession(GameWorld gameWorld)
         {
             sessionInfo = new SessionInfo();
@@ -25,7 +24,6 @@ namespace ifp.arena.bep.GameTypes
             }
         }
 
-        // Shit stops happening
         public void endSession()
         {
 
@@ -43,25 +41,9 @@ namespace ifp.arena.bep.GameTypes
 
         public void Dispose()
         {
-            // if statement for hot reloading
-            if (Singleton<IFikaNetworkManager>.Instance != null)
-            {
-
-            }
             Patch_Gameworld_OnGameStarted.OnGameStarted -= startSession;
         }
 
-        public void ReportLocalDeath(int killerId, int victimId, int assistId = 1337)
-        {
-            var packet = new PlayerKilledPacket
-            {
-                KillerId = killerId,
-                VictimId = victimId,
-                AssistId = assistId
-            };
-
-            Singleton<PlayerKilledPacketHandler>.Instance.Send(packet);
-        }
     }
 
     public class SessionInfo(GameModes gameMode = GameModes.SND)

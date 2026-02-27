@@ -4,22 +4,26 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using FlyingWormConsole3.LiteNetLib;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches;
 using System;
-using System.Linq;
 using System.Net.Sockets;
+using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
 namespace ifp.arena.bep.Networking
 {
     public abstract class PacketHandler<T> : IDisposable where T : INetSerializable, new()
     {
-        public PacketHandler()
+        DeliveryMethod deliveryMethod;
+
+        public PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
         {
+            this.deliveryMethod = deliveryMethod;
+
             Patch_Gameworld_OnGameStarted.OnGameStarted += RegisterPacket;
 
-            // Hot-Reload
             if (Singleton<GameWorld>.Instance != null)
             {
                 RegisterPacket(Singleton<GameWorld>.Instance);
@@ -31,7 +35,8 @@ namespace ifp.arena.bep.Networking
             Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T>(BroadcastAndReceive);
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             if (Singleton<IFikaNetworkManager>.Instance != null)
             {
                 NetPacketProcessor netPacketProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
@@ -39,9 +44,10 @@ namespace ifp.arena.bep.Networking
             }
         }
 
-        public void Send(T packet)
+        // This has to be invoked manually in each Packet Handler inheritor
+        protected void OnSend(T packet)
         {
-            Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, DeliveryMethod.ReliableOrdered, FikaBackendUtils.IsServer);
+            Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
 
             if (FikaBackendUtils.IsServer)
             {
@@ -53,7 +59,7 @@ namespace ifp.arena.bep.Networking
         {
             if (FikaBackendUtils.IsServer)
             {
-                Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, DeliveryMethod.ReliableOrdered, true);
+                Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
             }
 
             OnReceive(packet);
