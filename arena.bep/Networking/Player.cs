@@ -104,6 +104,7 @@ namespace ifp.arena.bep.Networking
     {
         public void Send(bool isLoaded, string msg)
         {
+            Plugin.Logger.LogInfo($"Sending AssetLoadStatus");
             var packet = new AssetLoadStatePacket
             {
                 id = Singleton<GameWorld>.Instance.MainPlayer.Id,
@@ -116,12 +117,14 @@ namespace ifp.arena.bep.Networking
 
         public override bool ServerValidation(ref AssetLoadStatePacket packet, NetPeer netPeer)
         {
-            packet.id = netPeer.Id;
+            //packet.id = netPeer.Id;
             return base.ServerValidation(ref packet, netPeer);
         }
 
         public override void OnReceive(AssetLoadStatePacket packet)
         {
+            Plugin.Logger.LogInfo($"NetPeer {packet.id} is sending {nameof(AssetLoadStatePacket)}");
+
             Singleton<BaseGameMode>.Instance.session.scoreboard[packet.id].isReady = packet.isReady;
         }
     }

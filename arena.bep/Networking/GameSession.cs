@@ -42,7 +42,7 @@ namespace ifp.arena.bep.Networking
 
         public override void OnReceive(RoundTimePacket packet)
         {
-            Plugin.Logger.LogInfo(packet);
+            Plugin.Logger.LogInfo($"Packet Type {nameof(RoundTimePacket)} is sending {packet.ToString()}");
 
         }
     }

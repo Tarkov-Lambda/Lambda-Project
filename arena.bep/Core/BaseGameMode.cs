@@ -151,12 +151,7 @@ namespace ifp.arena.bep.GameTypes
 
         public void OnUpdate(BaseGameMode game)
         {
-            if (Singleton<BaseGameMode>.Instance.session.scoreboard.Values.Where(p => p.isReady == false).Count() == 0)
-            {
-                game.ChangeState(new StateWarmupEnd());
-            }
-
-            if (game.StateTimer <= 0)
+            if (Singleton<BaseGameMode>.Instance.session.scoreboard.Values.All(p => p.isReady) || game.StateTimer <= 0)
             {
                 game.ChangeState(new StateWarmupEnd());
             }
@@ -192,13 +187,6 @@ namespace ifp.arena.bep.GameTypes
         public void OnEnter(BaseGameMode game)
         {
             game.StateTimer = 5f; // Freeze time
-
-            // NOTE: Teleport the HOST local player on the server
-            // Clients must teleport themselves in RoundStatePacketHandler.OnReceive()
-            if (Singleton<GameWorld>.Instance?.MainPlayer != null)
-            {
-                Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
-            }
         }
 
         public void OnUpdate(BaseGameMode game)
@@ -218,18 +206,61 @@ namespace ifp.arena.bep.GameTypes
 
         public void OnEnter(BaseGameMode game)
         {
-            game.StateTimer = 10f; // Live round timer (10s for testing, change to 120s usually)
+            game.StateTimer = 30f; // Live round timer (10s for testing, change to 120s usually)
         }
 
         public void OnUpdate(BaseGameMode game)
         {
-            // Check for Win Conditions here (e.g. Everyone dead, Bomb Planted)
+            Faction? winningFaction = CheckFactionElimination(game);
 
-            // Check for Time running out
+            if (winningFaction.HasValue)
+            {
+                AwardRound(game, winningFaction.Value);
+                game.ChangeState(new StateEnd());
+                return;
+            }
+
             if (game.StateTimer <= 0)
             {
                 game.ChangeState(new StateEnd());
             }
+        }
+
+        private Faction? CheckFactionElimination(BaseGameMode game)
+        {
+            var aliveByFaction = game.session.scoreboard.Values
+                .Where(p => p.isAlive)
+                .GroupBy(p => p.faction)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // Get all factions currently in match
+            var allFactions = game.session.scoreboard.Values
+                .Select(p => p.faction)
+                .Distinct()
+                .Where(f => f != Faction.None)
+                .ToList();
+
+            foreach (var faction in allFactions)
+            {
+                if (!aliveByFaction.ContainsKey(faction) || aliveByFaction[faction] == 0)
+                {
+                    // This faction is wiped → other faction wins
+                    return allFactions.FirstOrDefault(f => f != faction);
+                }
+            }
+
+            return null;
+        }
+
+        private void AwardRound(BaseGameMode game, Faction winner)
+        {
+            if (!game.session.factionWins.ContainsKey(winner))
+                game.session.factionWins[winner] = 0;
+
+            game.session.factionWins[winner]++;
+
+            // Optional: log
+            // Plugin.Logger.LogInfo($"Faction {winner} wins the round!");
         }
 
         public void OnExit(BaseGameMode game) { }

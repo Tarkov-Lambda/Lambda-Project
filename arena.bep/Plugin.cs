@@ -56,19 +56,19 @@ namespace ifp.arena.bep
             Logger = base.Logger;
             Plugin.Logger.LogInfo("Load");
 
-            patches.AddItem(new Patch_Gameworld_OnGameStarted());
+            patches.Push(new Patch_Gameworld_OnGameStarted());
             patches.Peek().Enable();
 
-            patches.AddItem(new pActiveHealthController_Kill());
+            patches.Push(new pActiveHealthController_Kill());
             patches.Peek().Enable();
 
-            patches.AddItem(new Patch_CanWalk());
+            patches.Push(new Patch_CanWalk());
             patches.Peek().Enable();
 
-            patches.AddItem(new Patch_CanJump());
+            patches.Push(new Patch_CanJump());
             patches.Peek().Enable();
 
-            patches.AddItem(new Patch_CanPressTrigger());
+            patches.Push(new Patch_CanPressTrigger());
             patches.Peek().Enable();
 
             Singleton<AssetBundleHandler>.Create(new AssetBundleHandler());

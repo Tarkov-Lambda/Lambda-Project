@@ -6,13 +6,18 @@ using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Networking;
 using SPT.Reflection.Patching;
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
-    internal class pActiveHealthController_Kill : ModulePatch
+    public class pActiveHealthController_Kill : ModulePatch
     {
+        private static long _lastKillTime;
+        private const int CooldownMs = 500;
+
         protected override MethodBase GetTargetMethod()
         {
             return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
@@ -24,6 +29,14 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             if (!Plugin.Active.Value) return true;
             if (__instance.Player.IsAI) return true;
+
+            long now = Stopwatch.GetTimestamp();
+            long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;
+
+            if (elapsedMs < CooldownMs)
+                return false;
+
+            _lastKillTime = now;
 
             // Delayed double healing to make sure every negative effect is fixed
             FixMe(__instance);
@@ -44,7 +57,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             return false;
         }
 
-        static async void FixMe(ActiveHealthController __instance)
+        public static async void FixMe(ActiveHealthController __instance)
         {
             __instance.RestoreFullHealth();
             await Task.Delay(500);
