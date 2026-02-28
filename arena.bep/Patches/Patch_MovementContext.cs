@@ -28,7 +28,7 @@ namespace ifp.arena.bep.Patches
         [PatchPostfix]
         static void Postfix(ref bool __result)
         {
-            if (Singleton<BaseGameMode>.Instance.sessionInfo.roundState == RoundState.Warmup)
+            if (Singleton<BaseGameMode>.Instance.session.roundState == RoundState.Prepare)
             {
                 __result = false;
             }

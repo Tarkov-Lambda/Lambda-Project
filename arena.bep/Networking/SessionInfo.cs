@@ -6,6 +6,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
 using System.Linq;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace ifp.arena.bep.Networking
 {
@@ -104,7 +105,7 @@ namespace ifp.arena.bep.Networking
 
         public void Send()
         {
-            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
+            var session = Singleton<BaseGameMode>.Instance?.session;
             if (session == null) return;
 
             var packet = new SessionInfoPacket
@@ -127,7 +128,7 @@ namespace ifp.arena.bep.Networking
 
         public override void OnReceive(SessionInfoPacket packet)
         {
-            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
+            var session = Singleton<BaseGameMode>.Instance?.session;
             if (session == null) return;
 
             session.roundState = packet.roundState;
@@ -190,7 +191,7 @@ namespace ifp.arena.bep.Networking
 
         public void Send(RoundState roundState)
         {
-            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
+            var session = Singleton<BaseGameMode>.Instance?.session;
             if (session == null) return;
 
             var packet = new RoundStatePacket
@@ -202,27 +203,13 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(RoundStatePacket packet)
+        public override async void OnReceive(RoundStatePacket packet)
         {
-            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
+            var session = Singleton<BaseGameMode>.Instance?.session;
             if (session == null) return;
 
             session.roundState = packet.roundState;
-            Plugin.Logger.LogInfo("RoundStatePacketHandler");
-
-            switch (packet.roundState)
-            {
-                case RoundState.None:
-                    break;
-                case RoundState.Prepare:
-                    Player mainPlayer = Singleton<GameWorld>.Instance.MainPlayer;
-                    Teleporter.Teleport(mainPlayer);
-                    
-                    break;
-                case RoundState.Action:
-                    Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
-                    break;
-            }
+            Plugin.Logger.LogInfo(Singleton<BaseGameMode>.Instance.session.roundState);
 
         }
     }

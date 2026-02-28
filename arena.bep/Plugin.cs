@@ -12,6 +12,7 @@ using ifp.arena.shared;
 using SPT.Reflection;
 using SPT.Reflection.Patching;
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ifp.arena.bep
@@ -36,6 +37,11 @@ namespace ifp.arena.bep
         ModulePatch jopa;
 
         RagdollCreator ragdollCreator;
+
+        public static async Task Delay(int ms)
+        {
+            await Task.Delay(ms);
+        }
 
         void Start()
         {
@@ -88,9 +94,9 @@ namespace ifp.arena.bep
             }
             if (RoundStateChangeKey.Value.IsDown())
             {
-                Singleton<BaseGameMode>.Instance.sessionInfo.roundState = (RoundState)(((int)Singleton<BaseGameMode>.Instance.sessionInfo.roundState + 1) % 5); ;
-                Singleton<RoundStatePacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.sessionInfo.roundState);
-                Logger.LogInfo(Singleton<BaseGameMode>.Instance.sessionInfo.roundState == RoundState.Warmup);
+                Singleton<BaseGameMode>.Instance.session.roundState = (RoundState)(((int)Singleton<BaseGameMode>.Instance.session.roundState + 1) % 6); ;
+                Singleton<RoundStatePacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.session.roundState);
+                Logger.LogInfo(Singleton<BaseGameMode>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
             {

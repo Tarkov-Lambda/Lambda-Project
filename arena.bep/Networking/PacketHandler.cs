@@ -10,6 +10,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using static GClass1485;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
@@ -97,7 +98,7 @@ namespace ifp.arena.bep.Networking
             // Does two things at once and I'm not sure if I like the way it works
             // It validates and optionally modifies the packet, and then returns a bool to decide whether the packet is valid
             // note that this function only runs when the server has received a packet from a client
-            bool validPacket = ServerValidation(ref packet);
+            bool validPacket = ServerValidation(ref packet, netPeer);
             if (!validPacket) return;
 
             Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
@@ -105,11 +106,12 @@ namespace ifp.arena.bep.Networking
             OnReceive(packet);
         }
 
-        public virtual bool ServerValidation(ref T packet)
+        public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
         {
             return true;
         }
         
         public abstract void OnReceive(T packet);
+
     }
 }

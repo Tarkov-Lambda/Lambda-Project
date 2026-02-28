@@ -52,13 +52,13 @@ namespace ifp.arena.bep.Networking
         public override void OnReceive(PlayerKilledPacket packet)
         {
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-            if (GameMode?.sessionInfo == null)
+            if (GameMode?.session == null)
             {
                 Plugin.Logger.LogInfo("SessionInfo does not exist type beat");
                 return;
             }
 
-            var scoreboard = GameMode.sessionInfo.scoreboard;
+            var scoreboard = GameMode.session.scoreboard;
 
             scoreboard[packet.victimId].deaths++;
 

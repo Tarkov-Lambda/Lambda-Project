@@ -51,11 +51,8 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        // Lag Compensation and Authority check
-        // If a person on server runs BombStatePacketHandler, there is no ping or authority issue, meaning this doesn't have to be run
-        public override bool ServerValidation(ref BombStatePacket packet)
+        public override bool ServerValidation(ref BombStatePacket packet, NetPeer netPeer)
         {
-            // Certain states are only dictated by the server
             if (packet.state == BombState.Planted || packet.state == BombState.Defused || packet.state == BombState.Exploded)
             {
                 return false;
@@ -67,8 +64,7 @@ namespace ifp.arena.bep.Networking
 
             if (Singleton<FikaServer>.Instance != null)
             {
-                // Hardcoded to the second player at the moment (need NetPeer here)
-                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == 2);
+                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == netPeer.Id);
 
                 if (client != null)
                 {
@@ -76,24 +72,19 @@ namespace ifp.arena.bep.Networking
                 }
             }
 
-            // 3. Apply the timestamp
-            // We backdate the event so it effectively started "latencySeconds" ago
             packet.timestamp = serverNow - latencySeconds;
 
             Plugin.Logger.LogInfo($"Server: Player {packet.playerId} action {packet.state} validated at {packet.timestamp} (Lag Comp: {latencySeconds:F4}s)");
 
-            return base.ServerValidation(ref packet);
+            return base.ServerValidation(ref packet, netPeer);
         }
 
         public override void OnReceive(BombStatePacket packet)
         {
-            // 1. Get Current Game Time
             float now = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
 
-            // 2. Calculate how much time has ALREADY passed for this action
             float timeElapsed = now - packet.timestamp;
 
-            // Ensure we don't get negative time if clocks drift slightly or validation was aggressive
             if (timeElapsed < 0) timeElapsed = 0;
 
             Plugin.Logger.LogInfo($"Received {packet.state}. Action started {timeElapsed:F2} seconds ago.");
