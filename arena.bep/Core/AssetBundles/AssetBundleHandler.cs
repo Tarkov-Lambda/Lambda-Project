@@ -7,7 +7,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace ifp.arena.bep.AssetBundleHandling
+namespace ifp.arena.bep.Core.AssetBundleHandling
 {
     internal class AssetBundleHandler : Singleton<AssetBundleHandler>, IDisposable
     {
