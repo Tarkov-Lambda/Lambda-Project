@@ -18,6 +18,7 @@ namespace ifp.arena.bep.Networking
         public int kills;
         public int assists;
         public int deaths;
+        public bool isAlive;
     }
 
     public struct SessionInfoPacket : INetSerializable
@@ -43,6 +44,8 @@ namespace ifp.arena.bep.Networking
                 writer.Put(scores[i].kills);
                 writer.Put(scores[i].assists);
                 writer.Put(scores[i].deaths);
+                writer.Put(scores[i].isAlive);
+
             }
         }
 
@@ -63,7 +66,8 @@ namespace ifp.arena.bep.Networking
                     faction = reader.GetInt(),
                     kills = reader.GetInt(),
                     assists = reader.GetInt(),
-                    deaths = reader.GetInt()
+                    deaths = reader.GetInt(),
+                    isAlive = reader.GetBool()
                 };
             }
         }

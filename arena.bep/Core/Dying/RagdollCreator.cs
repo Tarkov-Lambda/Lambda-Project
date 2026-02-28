@@ -14,7 +14,7 @@ using UnityEngine.Pool;
 
 using CorpseRagdoll = RagdollClass;
 
-namespace ifp.arena.bep
+namespace ifp.arena.bep.Core.Dying
 {
     public class RagdollCreator : IDisposable
     {
@@ -53,8 +53,8 @@ namespace ifp.arena.bep
                 col.gameObject.layer = 23;
             }
 
-            Component.DestroyImmediate(playerClone.GetComponent<Rigidbody>());
-            Component.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
+            UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<Rigidbody>());
+            UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
 
             FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
 
@@ -75,7 +75,7 @@ namespace ifp.arena.bep
             float maxDepenetrationVelocity = EFTHardSettings.Instance.CorpseMaxDepenetrationVelocity;
             CollisionDetectionMode collisionDetectionMode = CollisionDetectionMode.Discrete;
             MonoBehaviour owner = fakeCorpse;
-            Func<bool, float, bool> checkCorpseIsStill = (bool sleeping, float timePass) => { return sleeping || timePass >= 15f; };
+            Func<bool, float, bool> checkCorpseIsStill = (sleeping, timePass) => { return sleeping || timePass >= 15f; };
             PlayerBody playerBody = playerClone.GetComponentInChildren<PlayerBody>();
             Func<bool> isVisibleTest = () => true;
             Action onRigidbodyStopped = fakeCorpse.OnRigidbodyStopped;

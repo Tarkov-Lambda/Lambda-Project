@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ifp.arena.bep
+namespace ifp.arena.bep.Core.Dying
 {
     public class FakeCorpse : MonoBehaviour
     {

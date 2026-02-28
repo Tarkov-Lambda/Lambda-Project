@@ -7,6 +7,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
+using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Dying;
 using ifp.arena.bep.Networking;
 using SPT.Reflection.Patching;
@@ -16,7 +17,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ifp.arena.bep.Patches
+namespace ifp.arena.bep.Patches.Tarkov
 {
     internal class pActiveHealthController_Kill : ModulePatch
     {

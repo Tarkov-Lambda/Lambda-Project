@@ -62,6 +62,7 @@ namespace ifp.arena.bep.Networking
             var scoreboard = GameMode.session.scoreboard;
 
             scoreboard[packet.victimId].deaths++;
+            scoreboard[packet.victimId].isAlive = false;
 
             EFT.Player victimPlayer = Singleton<GameWorld>.Instance.AllAlivePlayersList.FirstOrDefault(p => p.Id == packet.victimId);
             if (victimPlayer != null)

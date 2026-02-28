@@ -7,7 +7,7 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using FlyingWormConsole3.LiteNetLib;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Patches;
+using ifp.arena.bep.Patches.Tarkov;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

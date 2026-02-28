@@ -15,6 +15,8 @@ using SPT.Reflection.Patching;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Patches.Tarkov;
 
 namespace ifp.arena.bep
 {

@@ -2,9 +2,10 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
+using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Dying;
 using ifp.arena.bep.Networking;
-using ifp.arena.bep.Patches;
+using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
@@ -304,6 +305,7 @@ namespace ifp.arena.bep.GameTypes
         public int kills = 0;
         public int assists = 0;
         public int deaths = 0;
+        public bool isAlive = true;
     }
 
     public enum BombState
