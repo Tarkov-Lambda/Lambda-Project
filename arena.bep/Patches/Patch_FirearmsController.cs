@@ -18,37 +18,23 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches
 {
-    public class Patch_CanWalk : ModulePatch
+    public class Patch_CanPressTrigger : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
+            return AccessTools.Method(typeof(ClientFirearmController), nameof(ClientFirearmController.CanPressTrigger));
         }
 
-        [PatchPostfix]
-        static void Postfix(ref bool __result)
+        [PatchPrefix]
+        static bool Prefix(ref bool __result)
         {
             if (Singleton<BaseGameMode>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;
+                return false;
             }
-        }
-    }
-
-    public class Patch_CanJump : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
-        }
-
-        [PatchPostfix]
-        static void Postfix(ref bool __result)
-        {
-            if (Singleton<BaseGameMode>.Instance.session.IsControllerPartiallyLocked())
-            {
-                __result = false;
-            }
+            
+            return true;
         }
     }
 }

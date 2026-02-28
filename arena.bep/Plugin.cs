@@ -15,7 +15,6 @@ using SPT.Reflection.Patching;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
-using ifp.arena.bep.Dying;
 
 namespace ifp.arena.bep
 {
@@ -61,6 +60,12 @@ namespace ifp.arena.bep
             patches.Peek().Enable();
 
             patches.AddItem(new Patch_CanWalk());
+            patches.Peek().Enable();
+
+            patches.AddItem(new Patch_CanJump());
+            patches.Peek().Enable();
+
+            patches.AddItem(new Patch_CanPressTrigger());
             patches.Peek().Enable();
 
             // Packet Handlers

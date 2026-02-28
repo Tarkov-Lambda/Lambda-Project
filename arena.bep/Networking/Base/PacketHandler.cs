@@ -103,6 +103,5 @@ namespace ifp.arena.bep.Networking.Base
         }
         
         public abstract void OnReceive(T packet);
-
     }
 }

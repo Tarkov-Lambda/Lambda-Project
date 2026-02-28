@@ -205,7 +205,7 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override async void OnReceive(RoundStatePacket packet)
+        public override void OnReceive(RoundStatePacket packet)
         {
             var session = Singleton<BaseGameMode>.Instance?.session;
             if (session == null) return;
