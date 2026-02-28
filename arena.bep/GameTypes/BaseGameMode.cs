@@ -56,6 +56,7 @@ namespace ifp.arena.bep.GameTypes
     {
         public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
         public GameModes currentGameMode = GameModes.SND;
+        public string mapName = "gold_dust2";
 
         public SessionInfo()
         {
