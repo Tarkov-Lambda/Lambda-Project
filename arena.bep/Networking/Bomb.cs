@@ -4,6 +4,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Networking.Base;
 using System.Linq;
 
 namespace ifp.arena.bep.Networking
@@ -57,6 +58,8 @@ namespace ifp.arena.bep.Networking
             {
                 return false;
             }
+
+            packet.playerId = netPeer.Id;
 
             float serverNow = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
 

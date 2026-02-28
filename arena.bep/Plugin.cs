@@ -15,6 +15,7 @@ using SPT.Reflection.Patching;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using ifp.arena.bep.Dying;
 
 namespace ifp.arena.bep
 {

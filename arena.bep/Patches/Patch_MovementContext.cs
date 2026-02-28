@@ -34,4 +34,21 @@ namespace ifp.arena.bep.Patches
             }
         }
     }
+
+    public class Patch_CanJump : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.PropertyGetter(typeof(MovementContext), "CanJump");
+        }
+
+        [PatchPostfix]
+        static void Postfix(ref bool __result)
+        {
+            if (Singleton<BaseGameMode>.Instance.session.roundState == RoundState.Prepare)
+            {
+                __result = false;
+            }
+        }
+    }
 }

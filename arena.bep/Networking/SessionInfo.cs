@@ -3,6 +3,7 @@ using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Networking.Base;
 using ifp.arena.shared;
 using System.Linq;
 using System.Net.Sockets;
@@ -163,6 +164,7 @@ namespace ifp.arena.bep.Networking
     }
 
     // Admin side after match is ended, or admin requests it. scoreboard is fresh.
+    // NOTE: We are sending a SessionInfoPacket that updates info right before this (a little redundant but whatever)
     public class RestartPacketHandler : PacketHandler<RestartPacket>
     {
         public RestartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
@@ -171,16 +173,16 @@ namespace ifp.arena.bep.Networking
         {
             var packet = new RestartPacket
             {
-                mapName = "",
+                mapName = Singleton<BaseGameMode>.Instance?.session.mapName,
             };
+
+            Singleton<SessionInfoPacketHandler>.Instance.Send();
 
             RequestSend(packet);
         }
 
         public override void OnReceive(RestartPacket packet)
         {
-            Plugin.Logger.LogInfo("RestartPacketHandler");
-
             Singleton<RoundStatePacketHandler>.Instance.Send(RoundState.Prepare);
         }
     }

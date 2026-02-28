@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
+using ifp.arena.bep.Dying;
 using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches;
 using ifp.arena.shared;

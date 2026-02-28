@@ -7,6 +7,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
+using ifp.arena.bep.Dying;
 using ifp.arena.bep.Networking;
 using SPT.Reflection.Patching;
 using System;

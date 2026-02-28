@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using static GClass1485;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
-namespace ifp.arena.bep.Networking
+namespace ifp.arena.bep.Networking.Base
 {
     public enum PacketAuthority
     {
@@ -59,16 +59,7 @@ namespace ifp.arena.bep.Networking
             if (Singleton<IFikaNetworkManager>.Instance != null)
             {
                 NetPacketProcessor packetProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
-                if (FikaBackendUtils.IsServer)
-                {
-                    //Dictionary<ulong, SubscribeDelegate> callbacks = AccessTools.Field(typeof(FikaServer), "_callbacks").GetValue(packetProcessor) as Dictionary<ulong, SubscribeDelegate>;
-                    //callbacks.Remove(packetProcessor.GetHashCode<T>());
-                    packetProcessor?.RemoveSubscription<T>();
-                }
-                else
-                {
-                    packetProcessor?.RemoveSubscription<T>();
-                }
+                packetProcessor?.RemoveSubscription<T>();
             }
         }
 

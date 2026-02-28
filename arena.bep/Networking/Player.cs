@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Networking.Base;
 using System;
 using System.Linq;
 

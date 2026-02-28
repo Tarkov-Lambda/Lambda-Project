@@ -1,5 +1,6 @@
 ﻿using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Networking.Base;
 
 namespace ifp.arena.bep.Networking
 {
