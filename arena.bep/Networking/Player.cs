@@ -5,6 +5,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking.Base;
+using ifp.arena.shared;
 using System;
 using System.Linq;
 
@@ -55,11 +56,6 @@ namespace ifp.arena.bep.Networking
         public override void OnReceive(PlayerKilledPacket packet)
         {
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-            if (GameMode?.session == null)
-            {
-                Plugin.Logger.LogInfo("SessionInfo does not exist type beat");
-                return;
-            }
 
             var scoreboard = GameMode.session.scoreboard;
 
@@ -74,6 +70,54 @@ namespace ifp.arena.bep.Networking
         }
     }
 
+    public struct FactionChangePacket : INetSerializable
+    {
+        public int id;
+        public Faction faction;
+
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(id);
+            writer.Put((int)faction);
+
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            id = reader.GetInt();
+            faction = (Faction)reader.GetInt();
+        }
+
+        public override string ToString()
+        {
+            return $"{id} changed faction to {faction}";
+        }
+    }
+
+    public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
+    {
+        public void Send(Faction faction)
+        {
+            var packet = new FactionChangePacket
+            {
+                id = Singleton<GameWorld>.Instance.MainPlayer.Id,
+                faction = faction
+            };
+
+            RequestSend(packet);
+        }
+
+        public override void OnReceive(FactionChangePacket packet)
+        {
+            BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
+
+            var scoreboard = GameMode.session.scoreboard;
+
+            scoreboard[packet.id].faction = packet.faction;
+        }
+    }
+
     public struct AssetLoadStatePacket : INetSerializable
     {
         public int id;
@@ -83,12 +127,14 @@ namespace ifp.arena.bep.Networking
 
         public void Serialize(NetDataWriter writer)
         {
+            writer.Put(id);
             writer.Put(isReady);
             writer.Put(msg);
         }
 
         public void Deserialize(NetDataReader reader)
         {
+            id = reader.GetInt();
             isReady = reader.GetBool();
             msg = reader.GetString();
 
@@ -107,7 +153,7 @@ namespace ifp.arena.bep.Networking
             Plugin.Logger.LogInfo($"Sending AssetLoadStatus");
             var packet = new AssetLoadStatePacket
             {
-                id = Singleton<GameWorld>.Instance.MainPlayer.Id,
+                id = Singleton<GameWorld>.Instance.MainPlayer.Id + 1,
                 isReady = isLoaded,
                 msg = msg
             };
@@ -123,9 +169,17 @@ namespace ifp.arena.bep.Networking
 
         public override void OnReceive(AssetLoadStatePacket packet)
         {
-            Plugin.Logger.LogInfo($"NetPeer {packet.id} is sending {nameof(AssetLoadStatePacket)}");
+            if (Singleton<BaseGameMode>.Instance.session.scoreboard.TryGetValue(packet.id, out var playerScore))
+            {
+                Plugin.Logger.LogInfo(playerScore.faction.ToString());
+                Plugin.Logger.LogInfo(playerScore.isReady);
 
-            Singleton<BaseGameMode>.Instance.session.scoreboard[packet.id].isReady = packet.isReady;
+                playerScore.isReady = packet.isReady;
+            }
+            else
+            {
+                Plugin.Logger.LogError($"Player {packet.id} not found in scoreboard!");
+            }
         }
     }
 }

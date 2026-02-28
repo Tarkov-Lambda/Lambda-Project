@@ -36,10 +36,6 @@ namespace ifp.arena.bep
         private ConfigEntry<KeyboardShortcut> RoundStateChangeKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
 
-        pActiveHealthController_Kill patchKill;
-        Patch_CanWalk canWalk;
-        ModulePatch jopa;
-
         Stack<ModulePatch> patches;
 
         RagdollCreator ragdollCreator;
@@ -75,13 +71,14 @@ namespace ifp.arena.bep
 
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
-            Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
+            Singleton<FactionChangePacketHandler>.Create(new FactionChangePacketHandler());
             Singleton<BombStatePacketHandler>.Create(new BombStatePacketHandler());
+            Singleton<RoundStatePacketHandler>.Create(new RoundStatePacketHandler());
+
+            Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
 
             Singleton<RestartPacketHandler>.Create(new RestartPacketHandler());
-            Singleton<RoundStatePacketHandler>.Create(new RoundStatePacketHandler());
             Singleton<AssetLoadStatePacketHandler>.Create(new AssetLoadStatePacketHandler());
-
 
             Singleton<BaseGameMode>.Create(new BaseGameMode());
 
@@ -125,9 +122,6 @@ namespace ifp.arena.bep
         void OnDestroy()
         {
             Plugin.Logger.LogInfo("Unload");
-
-            Logger = null;
-
             while (patches.Count > 0)
             {
                 patches.Pop().Disable();
@@ -136,10 +130,10 @@ namespace ifp.arena.bep
             ragdollCreator.Dispose();
             ragdollCreator = null;
 
-            Singleton<AssetBundleHandler>.Instance.Dispose();
-
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Instance.Dispose();
+            Singleton<FactionChangePacketHandler>.Instance.Dispose();
+
             Singleton<BombStatePacketHandler>.Instance.Dispose();
 
             Singleton<SessionInfoPacketHandler>.Instance.Dispose();
@@ -148,6 +142,9 @@ namespace ifp.arena.bep
             Singleton<AssetLoadStatePacketHandler>.Instance.Dispose();
 
             Singleton<BaseGameMode>.Instance.Dispose();
+
+            Singleton<AssetBundleHandler>.Instance.Dispose();
+            Logger = null;
         }
     }
 }

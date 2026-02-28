@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -156,7 +157,7 @@ namespace ifp.arena.bep.Networking
                 else
                 {
                     // Failsafe: if the client receives a score for a player not in their dictionary, add them.
-                    session.scoreboard[syncScore.playerId] = new PlayerScore
+                    session.scoreboard[syncScore.playerId] = new PlayerScore(syncScore.playerId)
                     {
                         faction = (Faction)syncScore.faction,
                         kills = syncScore.kills,
@@ -180,7 +181,6 @@ namespace ifp.arena.bep.Networking
 
         public void Send()
         {
-
             // Reset Scoreboard
             Singleton<BaseGameMode>.Instance.session.InitializeScoreBoard();
 
@@ -203,16 +203,22 @@ namespace ifp.arena.bep.Networking
             Plugin.Logger.LogInfo($"Host is sending {nameof(AssetLoadStatePacket)}");
             Plugin.Logger.LogInfo(packet.mapName);
 
-            Singleton<RoundStatePacketHandler>.Instance.Send(RoundState.Warmup);
+            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+
+            // Let the server drive the State Machine appropriately
+            if (FikaBackendUtils.IsServer)
+            {
+                Singleton<BaseGameMode>.Instance.ChangeState(new StateWarmup());
+            }
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
 
+
             EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
 
             Teleporter.Teleport(player);
-
         }
     }
 
@@ -228,7 +234,6 @@ namespace ifp.arena.bep.Networking
             var packet = new RoundStatePacket
             {
                 roundState = roundState,
-
             };
 
             RequestSend(packet);

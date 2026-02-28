@@ -10,6 +10,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using static GClass1485;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
@@ -42,6 +43,7 @@ namespace ifp.arena.bep.Networking.Base
 
         public void RegisterPacket(GameWorld gameWorld)
         {
+            Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
             if(FikaBackendUtils.IsServer)
             {
                 Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
@@ -54,13 +56,33 @@ namespace ifp.arena.bep.Networking.Base
 
         public void Dispose()
         {
-            Release(this);
+            Plugin.Logger.LogInfo($"Disposing {typeof(T).FullName}");
 
-            if (Singleton<IFikaNetworkManager>.Instance != null)
+            Patch_Gameworld_OnGameStarted.OnGameStarted -= RegisterPacket;
+
+            try
             {
-                NetPacketProcessor packetProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
-                packetProcessor?.RemoveSubscription<T>();
+                var manager = Singleton<IFikaNetworkManager>.Instance;
+
+                if (manager == null || manager.Equals(null))
+                    return;
+
+                var field = AccessTools.Field(manager.GetType(), "_packetProcessor");
+                if (field == null)
+                    return;
+
+                var processor = field.GetValue(manager) as NetPacketProcessor;
+                if (processor == null)
+                    return;
+
+                processor.RemoveSubscription<T>();
             }
+            catch (Exception ex)
+            {
+                Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
+            }
+            
+            Release(this);
         }
 
         protected void RequestSend(T packet)
