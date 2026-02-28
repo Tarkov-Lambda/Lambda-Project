@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking.Base;
@@ -10,34 +11,40 @@ namespace ifp.arena.bep.Networking
 {
     public struct TemplatePacket : INetSerializable
     {
-        public int templateInt;
+        public int id;
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(templateInt);
+            writer.Put(id);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            templateInt = reader.GetInt();
+            id = reader.GetInt();
         }
 
         public override string ToString()
         {
-            return $"{templateInt}";
+            return $"{id}";
         }
     }
 
     public class TemplatePacketHandler : PacketHandler<TemplatePacket>
     {
-        public void Send(int templateInt)
+        public void Send(int id)
         {
             var packet = new TemplatePacket
             {
-                templateInt = templateInt,
+                id = id,
             };
 
             RequestSend(packet);
+        }
+
+        public override bool ServerValidation(ref TemplatePacket packet, NetPeer netPeer)
+        {
+            packet.id = netPeer.Id;
+            return base.ServerValidation(ref packet, netPeer);
         }
 
         public override void OnReceive(TemplatePacket packet)

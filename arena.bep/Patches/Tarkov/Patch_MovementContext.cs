@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ifp.arena.bep.Patches
+namespace ifp.arena.bep.Patches.Tarkov
 {
     public class Patch_CanWalk : ModulePatch
     {

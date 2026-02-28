@@ -15,7 +15,7 @@ namespace ifp.arena.bep.AssetBundleHandling
 
         private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
 
-        public async void LoadMap(string mapName)
+        public async UniTask LoadMap(string mapName)
         {
             string fullPath = Path.Combine(pathToBundlesDir, mapName);
 

@@ -80,6 +80,8 @@ namespace ifp.arena.bep
 
             Singleton<RestartPacketHandler>.Create(new RestartPacketHandler());
             Singleton<RoundStatePacketHandler>.Create(new RoundStatePacketHandler());
+            Singleton<AssetLoadStatePacketHandler>.Create(new AssetLoadStatePacketHandler());
+
 
             Singleton<BaseGameMode>.Create(new BaseGameMode());
 
@@ -143,6 +145,7 @@ namespace ifp.arena.bep
             Singleton<SessionInfoPacketHandler>.Instance.Dispose();
             Singleton<RestartPacketHandler>.Instance.Dispose();
             Singleton<RoundStatePacketHandler>.Instance.Dispose();
+            Singleton<AssetLoadStatePacketHandler>.Instance.Dispose();
 
             Singleton<BaseGameMode>.Instance.Dispose();
         }

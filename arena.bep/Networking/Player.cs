@@ -1,5 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
+using Fika.Core.Networking;
+using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking.Base;
@@ -69,6 +71,58 @@ namespace ifp.arena.bep.Networking
             {
                 OnPlayerKilled?.Invoke(victimPlayer);
             }
+        }
+    }
+
+    public struct AssetLoadStatePacket : INetSerializable
+    {
+        public int id;
+        public bool isReady;
+        public string msg;
+
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(isReady);
+            writer.Put(msg);
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            isReady = reader.GetBool();
+            msg = reader.GetString();
+
+        }
+
+        public override string ToString()
+        {
+            return $"{isReady}";
+        }
+    }
+
+    public class AssetLoadStatePacketHandler : PacketHandler<AssetLoadStatePacket>
+    {
+        public void Send(bool isLoaded, string msg)
+        {
+            var packet = new AssetLoadStatePacket
+            {
+                id = Singleton<GameWorld>.Instance.MainPlayer.Id,
+                isReady = isLoaded,
+                msg = msg
+            };
+
+            RequestSend(packet);
+        }
+
+        public override bool ServerValidation(ref AssetLoadStatePacket packet, NetPeer netPeer)
+        {
+            packet.id = netPeer.Id;
+            return base.ServerValidation(ref packet, netPeer);
+        }
+
+        public override void OnReceive(AssetLoadStatePacket packet)
+        {
+            Singleton<BaseGameMode>.Instance.session.scoreboard[packet.id].isReady = packet.isReady;
         }
     }
 }

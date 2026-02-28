@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace ifp.arena.bep
+namespace ifp.arena.bep.Core.Dying
 {
     public class Teleporter
     {
@@ -19,7 +19,7 @@ namespace ifp.arena.bep
 
         public static Vector3 GetNewPosition(Faction faction)
         {
-            SpawnPoints[] allSpawnPoints = GameObject.FindObjectsByType<SpawnPoints>(FindObjectsSortMode.None);
+            SpawnPoints[] allSpawnPoints = UnityEngine.Object.FindObjectsByType<SpawnPoints>(FindObjectsSortMode.None);
             var currentSpawnPoints = allSpawnPoints.First(spawnPoint => spawnPoint.faction == faction);
 
             var list = new List<Vector3>();

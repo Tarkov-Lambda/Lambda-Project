@@ -2,13 +2,14 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
+using ifp.arena.bep.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Dying;
 using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ifp.arena.bep.GameTypes
@@ -71,6 +72,8 @@ namespace ifp.arena.bep.GameTypes
             {
                 ChangeState(new StateWarmup());
             }
+
+            Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
         }
 
         // Called by the GameModeTicker every Unity frame
@@ -143,11 +146,16 @@ namespace ifp.arena.bep.GameTypes
         public void OnEnter(BaseGameMode game)
         {
             // Example: 15 seconds of warmup
-            game.StateTimer = 15f;
+            game.StateTimer = 45f;
         }
 
         public void OnUpdate(BaseGameMode game)
         {
+            if (Singleton<BaseGameMode>.Instance.session.scoreboard.Values.Where(p => p.isReady == false).Count() == 0)
+            {
+                game.ChangeState(new StateWarmupEnd());
+            }
+
             if (game.StateTimer <= 0)
             {
                 game.ChangeState(new StateWarmupEnd());
@@ -306,6 +314,7 @@ namespace ifp.arena.bep.GameTypes
         public int assists = 0;
         public int deaths = 0;
         public bool isAlive = true;
+        public bool isReady = false;
     }
 
     public enum BombState
