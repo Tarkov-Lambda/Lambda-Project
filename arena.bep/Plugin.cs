@@ -8,7 +8,6 @@ using HarmonyLib;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches;
-using ifp.arena.bep.AssetBundleHandling;
 using ifp.arena.shared;
 using System.Collections.Generic;
 using SPT.Reflection;
@@ -18,6 +17,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Patches.Tarkov;
+using ifp.arena.bep.Core.AssetBundleHandling;
 
 namespace ifp.arena.bep
 {

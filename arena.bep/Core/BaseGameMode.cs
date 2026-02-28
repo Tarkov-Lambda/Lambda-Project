@@ -2,7 +2,7 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
-using ifp.arena.bep.AssetBundleHandling;
+using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches.Tarkov;
@@ -73,7 +73,7 @@ namespace ifp.arena.bep.GameTypes
                 ChangeState(new StateWarmup());
             }
 
-            Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
+            //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
         }
 
         // Called by the GameModeTicker every Unity frame

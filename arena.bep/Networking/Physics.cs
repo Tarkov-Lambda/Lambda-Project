@@ -1,4 +1,6 @@
-﻿using Fika.Core.Networking.LiteNetLib;
+﻿using Comfort.Common;
+using Fika.Core.Networking;
+using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Networking.Base;
 using UnityEngine;
@@ -38,18 +40,24 @@ namespace ifp.arena.bep.Networking
 
     public class ObjectTransformPacketHandler : PacketHandler<ObjectTransformPacket>
     {
-        public ObjectTransformPacketHandler() : base(DeliveryMethod.Sequenced, PacketAuthority.Both) { }
+        public ObjectTransformPacketHandler() : base(DeliveryMethod.Sequenced, PacketAuthority.Both)
+        {
+            Instance = this;
+        }
 
-        public void Send(GameObject gameObject)
+        public void Send(GameObject gameObject, int objectId)
         {
             var packet = new ObjectTransformPacket
             {
-                id = 1,
+                objectId = objectId,
+                position = gameObject.transform.position,
+                rotation = gameObject.transform.rotation,
             };
 
             RequestSend(packet);
         }
 
+        // Server validation ensures the packet ID matches the sender (Anti-spoof)
         public override bool ServerValidation(ref ObjectTransformPacket packet, NetPeer netPeer)
         {
             packet.id = netPeer.Id;
@@ -58,7 +66,10 @@ namespace ifp.arena.bep.Networking
 
         public override void OnReceive(ObjectTransformPacket packet)
         {
-            
+            if (NetworkedPhysicsObject.Registry.TryGetValue(packet.objectId, out var netObject) && packet.id != Singleton<IFikaNetworkManager>.Instance.NetId)
+            {
+                netObject.UpdateNetworkState(packet.position, packet.rotation);
+            }
         }
     }
 }
