@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>latest</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
@@ -28,7 +28,13 @@
       <Private>False</Private>
     </Reference>
 
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.Unity.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
       <Private>False</Private>
     </Reference>
   </ItemGroup>

@@ -9,6 +9,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches;
 using ifp.arena.shared;
+using System.Collections.Generic;
 using SPT.Reflection;
 using SPT.Reflection.Patching;
 using System;
@@ -36,6 +37,8 @@ namespace ifp.arena.bep
         Patch_CanWalk canWalk;
         ModulePatch jopa;
 
+        Stack<ModulePatch> patches;
+
         RagdollCreator ragdollCreator;
 
         public static async Task Delay(int ms)
@@ -45,17 +48,19 @@ namespace ifp.arena.bep
 
         void Start()
         {
+            patches = new Stack<ModulePatch>();
+
             Logger = base.Logger;
             Plugin.Logger.LogInfo("Load");
 
-            jopa = new Patch_Gameworld_OnGameStarted();
-            jopa.Enable();
+            patches.AddItem(new Patch_Gameworld_OnGameStarted());
+            patches.Peek().Enable();
 
-            patchKill = new pActiveHealthController_Kill();
-            patchKill.Enable();
+            patches.AddItem(new pActiveHealthController_Kill());
+            patches.Peek().Enable();
 
-            canWalk = new Patch_CanWalk();
-            canWalk.Enable();
+            patches.AddItem(new Patch_CanWalk());
+            patches.Peek().Enable();
 
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
@@ -110,9 +115,10 @@ namespace ifp.arena.bep
 
             Logger = null;
 
-            patchKill.Disable();
-            jopa.Disable();
-            canWalk.Disable();
+            while (patches.Count > 0)
+            {
+                patches.Pop().Disable();
+            }
 
             ragdollCreator.Dispose();
             ragdollCreator = null;
