@@ -37,6 +37,10 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
       <Private>False</Private>
     </Reference>
+    
+    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

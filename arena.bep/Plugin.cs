@@ -8,6 +8,7 @@ using HarmonyLib;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking;
 using ifp.arena.bep.Patches;
+using ifp.arena.bep.AssetBundleHandling;
 using ifp.arena.shared;
 using System.Collections.Generic;
 using SPT.Reflection;
@@ -70,6 +71,8 @@ namespace ifp.arena.bep
             patches.AddItem(new Patch_CanPressTrigger());
             patches.Peek().Enable();
 
+            Singleton<AssetBundleHandler>.Create(new AssetBundleHandler());
+
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
             Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
@@ -131,6 +134,7 @@ namespace ifp.arena.bep
             ragdollCreator.Dispose();
             ragdollCreator = null;
 
+            Singleton<AssetBundleHandler>.Instance.Dispose();
 
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Instance.Dispose();
