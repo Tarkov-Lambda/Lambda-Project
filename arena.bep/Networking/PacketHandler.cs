@@ -9,6 +9,8 @@ using HarmonyLib;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches;
 using System;
+using System.Collections.Generic;
+using static GClass1485;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
 namespace ifp.arena.bep.Networking
@@ -39,7 +41,14 @@ namespace ifp.arena.bep.Networking
 
         public void RegisterPacket(GameWorld gameWorld)
         {
-            Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T>(BroadcastAndReceive);
+            if(FikaBackendUtils.IsServer)
+            {
+                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
+            } else
+            {
+                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T>(OnReceive);
+
+            }
         }
 
         public void Dispose()
@@ -48,8 +57,17 @@ namespace ifp.arena.bep.Networking
 
             if (Singleton<IFikaNetworkManager>.Instance != null)
             {
-                NetPacketProcessor netPacketProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
-                netPacketProcessor?.RemoveSubscription<T>();
+                NetPacketProcessor packetProcessor = AccessTools.Field(typeof(FikaServer), "_packetProcessor").GetValue(Singleton<IFikaNetworkManager>.Instance) as NetPacketProcessor;
+                if (FikaBackendUtils.IsServer)
+                {
+                    //Dictionary<ulong, SubscribeDelegate> callbacks = AccessTools.Field(typeof(FikaServer), "_callbacks").GetValue(packetProcessor) as Dictionary<ulong, SubscribeDelegate>;
+                    //callbacks.Remove(packetProcessor.GetHashCode<T>());
+                    packetProcessor?.RemoveSubscription<T>();
+                }
+                else
+                {
+                    packetProcessor?.RemoveSubscription<T>();
+                }
             }
         }
 
@@ -68,24 +86,21 @@ namespace ifp.arena.bep.Networking
             }
         }
 
-        private void BroadcastAndReceive(T packet)
+        private void BroadcastAndReceive(T packet, NetPeer netPeer)
         {
-            if (FikaBackendUtils.IsServer)
+            if (authority == PacketAuthority.ServerOnly)
             {
-                if (authority == PacketAuthority.ServerOnly)
-                {
-                    Plugin.Logger.LogInfo("Unauthorized Packet");
-                    return;
-                }
-
-                // Does two things at once and I'm not sure if I like the way it works
-                // It validates and optionally modifies the packet, and then returns a bool to decide whether the packet is valid
-                // note that this function only runs when the server has received a packet from a client
-                bool validPacket = ServerValidation(ref packet);
-                if (!validPacket) return;
-
-                Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
+                Plugin.Logger.LogInfo("Unauthorized Packet");
+                return;
             }
+
+            // Does two things at once and I'm not sure if I like the way it works
+            // It validates and optionally modifies the packet, and then returns a bool to decide whether the packet is valid
+            // note that this function only runs when the server has received a packet from a client
+            bool validPacket = ServerValidation(ref packet);
+            if (!validPacket) return;
+
+            Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
 
             OnReceive(packet);
         }
@@ -94,7 +109,7 @@ namespace ifp.arena.bep.Networking
         {
             return true;
         }
-
+        
         public abstract void OnReceive(T packet);
     }
 }

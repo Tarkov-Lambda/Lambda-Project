@@ -51,8 +51,6 @@ namespace ifp.arena.bep.Networking
 
         public override void OnReceive(PlayerKilledPacket packet)
         {
-            Plugin.Logger.LogInfo(packet);
-
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
             if (GameMode?.sessionInfo == null)
             {
@@ -69,8 +67,6 @@ namespace ifp.arena.bep.Networking
             {
                 OnPlayerKilled?.Invoke(victimPlayer);
             }
-
-            Plugin.Logger.LogInfo($"victim player is {victimPlayer?.name}");
         }
     }
 }

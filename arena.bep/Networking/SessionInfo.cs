@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
@@ -19,12 +20,14 @@ namespace ifp.arena.bep.Networking
 
     public struct SessionInfoPacket : INetSerializable
     {
+        public RoundState roundState;
         public GameModes gameMode;
         public PlayerScoreSyncData[] scores;
         public string mapName;
 
         public void Serialize(NetDataWriter writer)
         {
+            writer.Put((int)roundState);
             writer.Put((int)gameMode);
             writer.Put(mapName);
 
@@ -43,6 +46,7 @@ namespace ifp.arena.bep.Networking
 
         public void Deserialize(NetDataReader reader)
         {
+            roundState = (RoundState)reader.GetInt();
             gameMode = (GameModes)reader.GetInt();
             mapName = reader.GetString();
 
@@ -63,7 +67,7 @@ namespace ifp.arena.bep.Networking
         }
     }
 
-    public struct RestartChangePacket : INetSerializable
+    public struct RestartPacket : INetSerializable
     {
         public string mapName;
 
@@ -75,6 +79,21 @@ namespace ifp.arena.bep.Networking
         public void Deserialize(NetDataReader reader)
         {
             mapName = reader.GetString();
+        }
+    }
+
+    public struct RoundStatePacket : INetSerializable
+    {
+        public RoundState roundState;
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put((int)roundState);
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            roundState = (RoundState)reader.GetInt();
         }
     }
 
@@ -90,6 +109,7 @@ namespace ifp.arena.bep.Networking
 
             var packet = new SessionInfoPacket
             {
+                roundState = session.roundState,
                 gameMode = session.currentGameMode,
                 // Loop through KeyValuePairs instead of objects
                 scores = session.scoreboard.Select(kvp => new PlayerScoreSyncData
@@ -110,6 +130,7 @@ namespace ifp.arena.bep.Networking
             var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
             if (session == null) return;
 
+            session.roundState = packet.roundState;
             session.currentGameMode = packet.gameMode;
             session.mapName = packet.mapName;
 
@@ -135,71 +156,75 @@ namespace ifp.arena.bep.Networking
                     };
                 }
             }
+
+            Plugin.Logger.LogInfo("SessionInfoPacketHandler");
         }
     }
 
     // Admin side after match is ended, or admin requests it. scoreboard is fresh.
-    public class RestartChangePacketHandler : PacketHandler<SessionInfoPacket>
+    public class RestartPacketHandler : PacketHandler<RestartPacket>
     {
-        public RestartChangePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+        public RestartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
         public void Send()
         {
-            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
-            if (session == null) return;
-
-            var packet = new SessionInfoPacket
+            var packet = new RestartPacket
             {
-                gameMode = session.currentGameMode,
-                // Loop through KeyValuePairs instead of objects
-                scores = session.scoreboard.Select(kvp => new PlayerScoreSyncData
-                {
-                    playerId = kvp.Key,
-                    faction = (int)kvp.Value.faction,
-                    kills = 0,
-                    assists = 0,
-                    deaths = 0
-                }).ToArray()
+                mapName = "",
             };
+
+            RequestSend(packet);
         }
 
-        public override void OnReceive(SessionInfoPacket packet)
+        public override void OnReceive(RestartPacket packet)
+        {
+            Plugin.Logger.LogInfo("RestartPacketHandler");
+
+            Singleton<RoundStatePacketHandler>.Instance.Send(RoundState.Prepare);
+        }
+    }
+
+    public class RoundStatePacketHandler : PacketHandler<RoundStatePacket>
+    {
+        public RoundStatePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+
+        public void Send(RoundState roundState)
         {
             var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
             if (session == null) return;
 
-            session.currentGameMode = packet.gameMode;
-            session.mapName = packet.mapName;
-
-            foreach (var syncScore in packet.scores)
+            var packet = new RoundStatePacket
             {
-                // TryGetValue operates at an O(1) complexity unlike the O(N) LINQ FirstOrDefault
-                if (session.scoreboard.TryGetValue(syncScore.playerId, out var playerScore))
-                {
-                    playerScore.faction = (Faction)syncScore.faction;
-                    playerScore.kills = syncScore.kills;
-                    playerScore.assists = syncScore.assists;
-                    playerScore.deaths = syncScore.deaths;
-                }
-                else
-                {
-                    // Failsafe: if the client receives a score for a player not in their dictionary, add them.
-                    session.scoreboard[syncScore.playerId] = new PlayerScore
-                    {
-                        faction = (Faction)syncScore.faction,
-                        kills = syncScore.kills,
-                        assists = syncScore.assists,
-                        deaths = syncScore.deaths
-                    };
-                }
+                roundState = roundState,
+
+            };
+
+            RequestSend(packet);
+        }
+
+        public override void OnReceive(RoundStatePacket packet)
+        {
+            var session = Singleton<BaseGameMode>.Instance?.sessionInfo;
+            if (session == null) return;
+
+            session.roundState = packet.roundState;
+            Plugin.Logger.LogInfo("RoundStatePacketHandler");
+
+            switch (packet.roundState)
+            {
+                case RoundState.None:
+                    break;
+                case RoundState.Prepare:
+                    Player mainPlayer = Singleton<GameWorld>.Instance.MainPlayer;
+                    Teleporter.Teleport(mainPlayer);
+                    
+                    break;
+                case RoundState.Action:
+                    Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
+                    break;
             }
 
-
-            // Load to default waiting room
-            // Load map
-            // Wait for round start packet
-            // Teleport to spawn
-            // On load, report back to server
         }
     }
+
 }

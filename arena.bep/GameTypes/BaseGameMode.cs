@@ -52,8 +52,18 @@ namespace ifp.arena.bep.GameTypes
         }
     }
 
+    public enum RoundState
+    {
+        None,
+        Warmup,
+        Prepare,
+        Action,
+        End
+    }
+
     public class SessionInfo
     {
+        public RoundState roundState = RoundState.None;
         public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
         public GameModes currentGameMode = GameModes.SND;
         public string mapName = "gold_dust2";

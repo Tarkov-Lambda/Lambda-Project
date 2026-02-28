@@ -30,6 +30,8 @@ namespace ifp.arena.bep
 
         public static void CreateRagdollFromPlayer(Player player)
         {
+            if ( player == null || player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id) return;
+
             GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
                 typeof(PlayerBody),
                 typeof(PlayerBones),
