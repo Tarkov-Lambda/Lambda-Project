@@ -12,6 +12,8 @@ namespace ifp.arena.bep.Core.Dying
     {
         Collider[] cols;
 
+        GameObject itemInHands;
+
         void Start()
         {
             cols = GetComponentsInChildren<Collider>();
@@ -36,9 +38,20 @@ namespace ifp.arena.bep.Core.Dying
             }
         }
 
+        public void SetItemInHands(GameObject item)
+        {
+            itemInHands = item;
+        }
+
         public void OnRigidbodyStopped()
         {
 
+        }
+
+        void OnDestroy()
+        {
+            if (itemInHands != null)
+                Destroy(itemInHands);
         }
     }
 }

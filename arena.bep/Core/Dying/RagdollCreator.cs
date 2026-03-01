@@ -57,6 +57,7 @@ namespace ifp.arena.bep.Core.Dying
                 typeof(Collider),
                 typeof(Joint),
 
+                typeof(MeshFilter),
                 typeof(Renderer)
                 );
 
@@ -93,7 +94,7 @@ namespace ifp.arena.bep.Core.Dying
             Func<bool> isVisibleTest = () => true;
             Action onRigidbodyStopped = fakeCorpse.OnRigidbodyStopped;
             bool keepRigidbody = false;
-            bool putToSleep = false;
+            bool putToSleep = true;
 
             new CorpseRagdoll(
                 rigidbodySpawners,
@@ -110,6 +111,38 @@ namespace ifp.arena.bep.Core.Dying
                 keepRigidbody,
                 putToSleep
                 );
+
+            
+            if (player.HandsController != null && player.HandsController.ControllerGameObject != null)
+            {
+                GameObject fakePhysicalItem = CloneWithSpecificComponents(player.HandsController.ControllerGameObject,
+                    typeof(MeshFilter),
+                    typeof(Renderer),
+
+                    typeof(BoxCollider)
+                    );
+
+                fakePhysicalItem.name += " (fake physical item)";
+
+                const float pointSize = 0.03f;
+                foreach (var boxCol in fakePhysicalItem.GetComponentsInChildren<BoxCollider>())
+                {
+                    boxCol.size = new Vector3(pointSize, pointSize, pointSize);
+                    boxCol.isTrigger = false;
+
+                    if (boxCol.gameObject == fakePhysicalItem)
+                        continue;
+
+                    boxCol.enabled = true;
+                    boxCol.gameObject.layer = 23;
+                    boxCol.gameObject.transform.localScale = Vector3.one;
+                }
+
+                fakePhysicalItem.AddComponent<Rigidbody>();
+
+                fakeCorpse.SetItemInHands(fakePhysicalItem);
+            }
+
 
             if (regsitry.TryGetValue(player, out var corpse))
             {
