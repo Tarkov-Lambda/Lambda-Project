@@ -90,7 +90,7 @@ namespace ifp.arena.bep.Core.Dying
             CollisionDetectionMode collisionDetectionMode = CollisionDetectionMode.Discrete;
             MonoBehaviour owner = fakeCorpse;
             Func<bool, float, bool> checkCorpseIsStill = (sleeping, timePass) => { return sleeping || timePass >= 15f; };
-            PlayerBody playerBody = playerClone.GetComponentInChildren<PlayerBody>();
+            PlayerBody clonePlayerBody = playerClone.GetComponentInChildren<PlayerBody>();
             Func<bool> isVisibleTest = () => true;
             Action onRigidbodyStopped = fakeCorpse.OnRigidbodyStopped;
             bool keepRigidbody = false;
@@ -105,7 +105,7 @@ namespace ifp.arena.bep.Core.Dying
                 collisionDetectionMode,
                 owner,
                 checkCorpseIsStill,
-                playerBody,
+                clonePlayerBody,
                 isVisibleTest,
                 onRigidbodyStopped,
                 keepRigidbody,
@@ -155,6 +155,8 @@ namespace ifp.arena.bep.Core.Dying
                 }
             }
             regsitry[player] = fakeCorpse;
+
+            fakeCorpse.VocalizeDeath(player.Speaker.PlayerVoice, clonePlayerBody.PlayerBones.HeadCameraCollider.transform);
         }
 
         private static GameObject CloneWithSpecificComponents(GameObject original, params Type[] componentsToKeep)
