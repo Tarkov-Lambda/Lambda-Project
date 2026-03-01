@@ -140,7 +140,10 @@ namespace ifp.arena.bep.Core.Dying
 
                 fakePhysicalItem.AddComponent<Rigidbody>();
 
-                fakeCorpse.SetItemInHands(fakePhysicalItem);
+                FakeDroppedItem fakeDroppedItem = fakePhysicalItem.AddComponent<FakeDroppedItem>();
+                fakeDroppedItem.SetOriginalItem(player.HandsController.Item);
+
+                fakeCorpse.SetItemInHands(fakeDroppedItem);
             }
 
 

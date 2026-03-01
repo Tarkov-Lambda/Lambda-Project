@@ -12,7 +12,7 @@ namespace ifp.arena.bep.Core.Dying
     {
         Collider[] cols;
 
-        GameObject itemInHands;
+        FakeDroppedItem itemInHands;
 
         void Start()
         {
@@ -38,7 +38,7 @@ namespace ifp.arena.bep.Core.Dying
             }
         }
 
-        public void SetItemInHands(GameObject item)
+        public void SetItemInHands(FakeDroppedItem item)
         {
             itemInHands = item;
         }
@@ -51,7 +51,7 @@ namespace ifp.arena.bep.Core.Dying
         void OnDestroy()
         {
             if (itemInHands != null)
-                Destroy(itemInHands);
+                Destroy(itemInHands.gameObject);
         }
     }
 }
