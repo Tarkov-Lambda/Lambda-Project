@@ -43,10 +43,15 @@ namespace ifp.arena.bep.Networking
     {
         public void Send(bool isLoaded, string msg)
         {
-            Plugin.Logger.LogInfo($"Sending AssetLoadStatus");
+            var mainPlayer = Singleton<GameWorld>.Instance?.MainPlayer;
+            if (mainPlayer == null)
+            {
+                return;
+            }
+
             var packet = new AssetLoadStatePacket
             {
-                id = Singleton<GameWorld>.Instance.MainPlayer.Id + 1,
+                id = mainPlayer.Id,
                 isReady = isLoaded,
                 msg = msg
             };

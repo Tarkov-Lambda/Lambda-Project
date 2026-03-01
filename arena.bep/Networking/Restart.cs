@@ -38,15 +38,17 @@ namespace ifp.arena.bep.Networking
 
         public void Send()
         {
-            // Reset Scoreboard
-            Singleton<BaseGameMode>.Instance.session.InitializeScoreBoard();
+            var gameMode = Singleton<BaseGameMode>.Instance;
+            if (gameMode?.session == null) return;
 
-            Singleton<BaseGameMode>.Instance.session.mapName = Plugin.MapName.Value;
+            gameMode.session.scoreboard.Clear();
+            gameMode.session.factionWins.Clear();
+            gameMode.session.roundState = RoundState.None;
+            gameMode.session.mapName = Plugin.MapName.Value;
+            gameMode.session.InitializeScoreBoard();
             
-            // Send new info
             Singleton<SessionInfoPacketHandler>.Instance.Send();
 
-            // Send packet signaling a restart
             var packet = new RestartPacket
             {
                 mapName = Plugin.MapName.Value,
@@ -60,9 +62,12 @@ namespace ifp.arena.bep.Networking
             Plugin.Logger.LogInfo($"Host is sending {nameof(AssetLoadStatePacket)}");
             Plugin.Logger.LogInfo(packet.mapName);
 
-            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+            var mainPlayer = Singleton<GameWorld>.Instance?.MainPlayer;
+            if (mainPlayer != null)
+            {
+                Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+            }
 
-            // Let the server drive the State Machine appropriately
             if (FikaBackendUtils.IsServer)
             {
                 Singleton<BaseGameMode>.Instance.ChangeState(new StateWarmup());
@@ -75,7 +80,10 @@ namespace ifp.arena.bep.Networking
 
             EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
 
-            Teleporter.Teleport(player);
+            if (player != null)
+            {
+                Teleporter.Teleport(player);
+            }
         }
     }
 }

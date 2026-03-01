@@ -73,7 +73,8 @@ namespace ifp.arena.bep
             Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
             Singleton<FactionChangePacketHandler>.Create(new FactionChangePacketHandler());
             Singleton<BombStatePacketHandler>.Create(new BombStatePacketHandler());
-            Singleton<RoundStatePacketHandler>.Create(new RoundStatePacketHandler());
+            // New: includes timestamps so clients can run IGameState logic without predicting transitions
+            Singleton<RoundStateSyncPacketHandler>.Create(new RoundStateSyncPacketHandler());
 
             Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
 
@@ -110,7 +111,7 @@ namespace ifp.arena.bep
             if (RoundStateChangeKey.Value.IsDown())
             {
                 Singleton<BaseGameMode>.Instance.session.roundState = (RoundState)(((int)Singleton<BaseGameMode>.Instance.session.roundState + 1) % 6); ;
-                Singleton<RoundStatePacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.session.roundState);
+                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.session.roundState, 5f);
                 Logger.LogInfo(Singleton<BaseGameMode>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
@@ -138,7 +139,7 @@ namespace ifp.arena.bep
 
             Singleton<SessionInfoPacketHandler>.Instance.Dispose();
             Singleton<RestartPacketHandler>.Instance.Dispose();
-            Singleton<RoundStatePacketHandler>.Instance.Dispose();
+            Singleton<RoundStateSyncPacketHandler>.Instance.Dispose();
             Singleton<AssetLoadStatePacketHandler>.Instance.Dispose();
 
             Singleton<BaseGameMode>.Instance.Dispose();

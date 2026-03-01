@@ -15,50 +15,50 @@ using System.Threading.Tasks;
 
 namespace ifp.arena.bep.Networking
 {
-    public struct RoundStatePacket : INetSerializable
+    public struct RoundStateSyncPacket : INetSerializable
     {
         public RoundState roundState;
+        public float phaseDurationSeconds;
+        public float serverPhaseStartSeconds;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put((int)roundState);
+            writer.Put(phaseDurationSeconds);
+            writer.Put(serverPhaseStartSeconds);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             roundState = (RoundState)reader.GetInt();
+            phaseDurationSeconds = reader.GetFloat();
+            serverPhaseStartSeconds = reader.GetFloat();
         }
     }
 
-    public class RoundStatePacketHandler : PacketHandler<RoundStatePacket>
+    public class RoundStateSyncPacketHandler : PacketHandler<RoundStateSyncPacket>
     {
-        public RoundStatePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+        public RoundStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-        public void Send(RoundState roundState)
+        public void Send(RoundState roundState, float phaseDurationSeconds)
         {
-            var session = Singleton<BaseGameMode>.Instance?.session;
-            if (session == null) return;
+            // serverPhaseStartSeconds is "now" on the server. Clients derive remaining time from it.
+            float serverNow = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
 
-            var packet = new RoundStatePacket
+            var packet = new RoundStateSyncPacket
             {
                 roundState = roundState,
+                phaseDurationSeconds = phaseDurationSeconds,
+                serverPhaseStartSeconds = serverNow
             };
 
             RequestSend(packet);
         }
 
-        public override void OnReceive(RoundStatePacket packet)
+        public override void OnReceive(RoundStateSyncPacket packet)
         {
-            var session = Singleton<BaseGameMode>.Instance?.session;
-            if (session == null) return;
-
-            session.roundState = packet.roundState;
-            if (packet.roundState == RoundState.Prepare)
-            {
-                EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
-                Teleporter.Teleport(player);
-                pActiveHealthController_Kill.FixMe(player.ActiveHealthController);
-            }
+            NotificationManagerClass.DisplayMessageNotification($"{packet.roundState} {packet.phaseDurationSeconds} {packet.serverPhaseStartSeconds}");
+            Singleton<BaseGameMode>.Instance.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
         }
     }
 }

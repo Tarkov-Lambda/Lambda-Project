@@ -91,6 +91,7 @@ namespace ifp.arena.bep.Networking
             {
                 roundState = session.roundState,
                 gameMode = session.currentGameMode,
+                mapName = session.mapName,
                 // Loop through KeyValuePairs instead of objects
                 scores = session.scoreboard.Select(kvp => new PlayerScoreSyncData
                 {
@@ -98,7 +99,8 @@ namespace ifp.arena.bep.Networking
                     faction = (int)kvp.Value.faction,
                     kills = kvp.Value.kills,
                     assists = kvp.Value.assists,
-                    deaths = kvp.Value.deaths
+                    deaths = kvp.Value.deaths,
+                    isAlive = kvp.Value.isAlive
                 }).ToArray()
             };
 
@@ -123,6 +125,7 @@ namespace ifp.arena.bep.Networking
                     playerScore.kills = syncScore.kills;
                     playerScore.assists = syncScore.assists;
                     playerScore.deaths = syncScore.deaths;
+                    playerScore.isAlive = syncScore.isAlive;
                 }
                 else
                 {
@@ -132,7 +135,8 @@ namespace ifp.arena.bep.Networking
                         faction = (Faction)syncScore.faction,
                         kills = syncScore.kills,
                         assists = syncScore.assists,
-                        deaths = syncScore.deaths
+                        deaths = syncScore.deaths,
+                        isAlive = syncScore.isAlive
                     };
                 }
             }
