@@ -53,7 +53,6 @@ namespace ifp.arena.bep.Networking
             if (session == null) return;
 
             session.roundState = packet.roundState;
-
             if (packet.roundState == RoundState.Prepare)
             {
                 EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;

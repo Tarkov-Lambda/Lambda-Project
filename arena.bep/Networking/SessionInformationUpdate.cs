@@ -77,7 +77,7 @@ namespace ifp.arena.bep.Networking
         }
     }
 
-    // event driven, mostly used during round end to sync
+    // This only runs explicitly, not on interval
     public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
     {
         public SessionInfoPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }

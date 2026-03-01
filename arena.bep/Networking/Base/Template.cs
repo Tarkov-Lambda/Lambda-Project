@@ -43,7 +43,6 @@ namespace ifp.arena.bep.Networking
 
         public override bool ServerValidation(ref TemplatePacket packet, NetPeer netPeer)
         {
-            packet.id = netPeer.Id;
             return base.ServerValidation(ref packet, netPeer);
         }
 

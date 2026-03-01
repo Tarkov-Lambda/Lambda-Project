@@ -57,10 +57,8 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        // Server validation ensures the packet ID matches the sender (Anti-spoof)
         public override bool ServerValidation(ref ObjectTransformPacket packet, NetPeer netPeer)
         {
-            packet.id = netPeer.Id;
             return base.ServerValidation(ref packet, netPeer);
         }
 

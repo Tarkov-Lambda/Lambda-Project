@@ -56,7 +56,6 @@ namespace ifp.arena.bep.Networking
 
         public override bool ServerValidation(ref AssetLoadStatePacket packet, NetPeer netPeer)
         {
-            //packet.id = netPeer.Id;
             return base.ServerValidation(ref packet, netPeer);
         }
 
