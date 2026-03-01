@@ -7,6 +7,7 @@ using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking.Base;
+using ifp.arena.bep.Networking.TimeSync;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System.Linq;
@@ -18,8 +19,8 @@ namespace ifp.arena.bep.Networking
     public struct RoundStateSyncPacket : INetSerializable
     {
         public RoundState roundState;
-        public float phaseDurationSeconds;
-        public float serverPhaseStartSeconds;
+        public double phaseDurationSeconds;
+        public double serverPhaseStartSeconds;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -31,8 +32,8 @@ namespace ifp.arena.bep.Networking
         public void Deserialize(NetDataReader reader)
         {
             roundState = (RoundState)reader.GetInt();
-            phaseDurationSeconds = reader.GetFloat();
-            serverPhaseStartSeconds = reader.GetFloat();
+            phaseDurationSeconds = reader.GetDouble();
+            serverPhaseStartSeconds = reader.GetDouble();
         }
     }
 
@@ -40,10 +41,10 @@ namespace ifp.arena.bep.Networking
     {
         public RoundStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-        public void Send(RoundState roundState, float phaseDurationSeconds)
+        public void Send(RoundState roundState, double phaseDurationSeconds)
         {
             // serverPhaseStartSeconds is "now" on the server. Clients derive remaining time from it.
-            float serverNow = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
+            double serverNow = NetworkTime.ServerNowSeconds;
 
             var packet = new RoundStateSyncPacket
             {

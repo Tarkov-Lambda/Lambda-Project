@@ -21,6 +21,7 @@ namespace ifp.arena.bep.GameTypes
         WarmupEnd,
         Prepare,
         Action,
+        Planted,
         End
     }
 
@@ -29,6 +30,7 @@ namespace ifp.arena.bep.GameTypes
         public RoundState roundState = RoundState.None;
         public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
         public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
+        public BombState bombState = BombState.None;
 
         public GameModes currentGameMode = GameModes.SND;
         public string mapName = "gold_dust2";

@@ -5,6 +5,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Networking.Base;
+using ifp.arena.bep.Networking.TimeSync;
 using System.Linq;
 
 namespace ifp.arena.bep.Networking
@@ -13,7 +14,7 @@ namespace ifp.arena.bep.Networking
     {
         public int playerId;
         public BombState state;
-        public float timestamp;
+        public double timestamp;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -26,12 +27,11 @@ namespace ifp.arena.bep.Networking
         {
             playerId = reader.GetInt();
             state = (BombState)reader.GetInt();
-            timestamp = reader.GetFloat();
         }
 
         public override string ToString()
         {
-            return $"{playerId} state: {state} at {timestamp:F2}";
+            return $"{playerId} state: {state}";
         }
     }
 
@@ -46,7 +46,7 @@ namespace ifp.arena.bep.Networking
             {
                 playerId = playerId,
                 state = state,
-                timestamp = 0f
+                timestamp = 0d
             };
 
             RequestSend(packet);
@@ -60,41 +60,12 @@ namespace ifp.arena.bep.Networking
                 return false;
             }
 
-            float serverNow = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
-
-            float latencySeconds = 0f;
-
-            if (Singleton<FikaServer>.Instance != null)
-            {
-                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == peer.Id);
-
-                if (client != null)
-                {
-                    latencySeconds = (client.Ping / 1000f) / 2f;
-                }
-            }
-
-            packet.timestamp = serverNow - latencySeconds;
-
-            Plugin.Logger.LogInfo($"Server: Player {packet.playerId} action {packet.state} validated at {packet.timestamp} (Lag Comp: {latencySeconds:F4}s)");
-
             return base.ServerValidation(ref packet, peer);
         }
 
         public override void OnReceive(BombStatePacket packet, NetPeer peer)
         {
-            float now = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
-
-            float timeElapsed = now - packet.timestamp;
-
-            if (timeElapsed < 0) timeElapsed = 0;
-
-            Plugin.Logger.LogInfo($"Received {packet.state}. Action started {timeElapsed:F2} seconds ago.");
-
-            switch (packet.state)
-            {
-
-            }
+            Singleton<BaseGameMode>.Instance.session.bombState = packet.state;   
         }
     }
 }

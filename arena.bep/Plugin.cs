@@ -19,6 +19,7 @@ using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Patches.Fika;
+using ifp.arena.bep.Networking.TimeSync;
 
 namespace ifp.arena.bep
 {
@@ -79,12 +80,21 @@ namespace ifp.arena.bep
             Singleton<BombStatePacketHandler>.Create(new BombStatePacketHandler());
             Singleton<RoundStateSyncPacketHandler>.Create(new RoundStateSyncPacketHandler());
 
+            // Time sync
+            Singleton<TimeSyncRequestPacketHandler>.Create(new TimeSyncRequestPacketHandler());
+            Singleton<TimeSyncResponsePacketHandler>.Create(new TimeSyncResponsePacketHandler());
+
             Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
 
             Singleton<RestartPacketHandler>.Create(new RestartPacketHandler());
             Singleton<AssetLoadStatePacketHandler>.Create(new AssetLoadStatePacketHandler());
 
             Singleton<BaseGameMode>.Create(new BaseGameMode());
+
+            // Client tick for time sync sampling
+            var timeSyncObject = new GameObject("SnD_TimeSyncTicker");
+            timeSyncObject.AddComponent<TimeSyncTicker>();
+            UnityEngine.Object.DontDestroyOnLoad(timeSyncObject);
 
             ragdollCreator = new RagdollCreator();
 
@@ -114,7 +124,7 @@ namespace ifp.arena.bep
             if (RoundStateChangeKey.Value.IsDown())
             {
                 Singleton<BaseGameMode>.Instance.session.roundState = (RoundState)(((int)Singleton<BaseGameMode>.Instance.session.roundState + 1) % 6); ;
-                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.session.roundState, 5f);
+                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.session.roundState, 5d);
                 Logger.LogInfo(Singleton<BaseGameMode>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
@@ -144,6 +154,9 @@ namespace ifp.arena.bep
             Singleton<RestartPacketHandler>.Instance.Dispose();
             Singleton<RoundStateSyncPacketHandler>.Instance.Dispose();
             Singleton<AssetLoadStatePacketHandler>.Instance.Dispose();
+
+            Singleton<TimeSyncRequestPacketHandler>.Instance.Dispose();
+            Singleton<TimeSyncResponsePacketHandler>.Instance.Dispose();
 
             Singleton<BaseGameMode>.Instance.Dispose();
 

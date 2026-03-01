@@ -122,10 +122,21 @@ namespace ifp.arena.bep.Networking.Base
             bool validPacket = ServerValidation(ref packet, netPeer);
             if (!validPacket) return;
 
-            Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
+            // Most client->server packets are broadcast back out to all clients.
+            // Some packet types (e.g., time sync requests) should NOT be re-broadcast.
+            if (ShouldBroadcastClientPacket(packet))
+            {
+                Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
+            }
 
             OnReceive(packet, netPeer);
         }
+
+        /// <summary>
+        /// Override to prevent the server from re-broadcasting a client->server packet to other clients.
+        /// Default behavior matches existing implementation (broadcast everything).
+        /// </summary>
+        protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
 
         public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
         {

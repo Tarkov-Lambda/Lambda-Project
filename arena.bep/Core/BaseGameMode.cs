@@ -5,6 +5,7 @@ using Fika.Core.Networking;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Networking;
+using ifp.arena.bep.Networking.TimeSync;
 using ifp.arena.bep.Patches.Fika;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
@@ -12,12 +13,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements.UIR;
 
 namespace ifp.arena.bep.GameTypes
 {
-    // ---------------------------------------------------------
-    // 1. STATE MACHINE INTERFACE
-    // ---------------------------------------------------------
     public interface IGameState
     {
         RoundState StateType { get; }
@@ -26,17 +25,14 @@ namespace ifp.arena.bep.GameTypes
         void OnExit(BaseGameMode gameMode);
     }
 
-    // ---------------------------------------------------------
-    // 2. MAIN GAME MODE CONTROLLER (THE CONTEXT)
-    // ---------------------------------------------------------
     public class BaseGameMode : Singleton<BaseGameMode>, IDisposable
     {
         public SessionInfo session;
         public float StateTimer;
 
         // Used client-side to derive timer from server timestamps.
-        public float ServerPhaseStartSeconds;
-        public float PhaseDurationSeconds;
+        public double ServerPhaseStartSeconds;
+        public double PhaseDurationSeconds;
 
         private IGameState _currentState;
         private GameObject _tickerObject;
@@ -94,9 +90,9 @@ namespace ifp.arena.bep.GameTypes
                 else
                 {
                     // Client derives remaining time from server timestamps.
-                    float now = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
-                    float end = ServerPhaseStartSeconds + PhaseDurationSeconds;
-                    StateTimer = end - now;
+                    double now = NetworkTime.ServerNowSeconds;
+                    double end = ServerPhaseStartSeconds + PhaseDurationSeconds;
+                    StateTimer = (float)(end - now);
 
                     // NotificationManagerClass.DisplayMessageNotification($"{now} {end} {StateTimer}");
 
@@ -108,6 +104,10 @@ namespace ifp.arena.bep.GameTypes
 
         public void ChangeState(IGameState newState)
         {
+            // Client changes state only when server says so
+            // Also avoiding double function execution here
+            if (FikaBackendUtils.IsClient) return;
+
             if (_currentState != null)
             {
                 _currentState.OnExit(this);
@@ -124,7 +124,7 @@ namespace ifp.arena.bep.GameTypes
             // Capture authoritative phase start for host-side UI as well.
             if (Singleton<AbstractGame>.Instance != null)
             {
-                ServerPhaseStartSeconds = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
+                ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
                 PhaseDurationSeconds = StateTimer;
             }
 
@@ -139,11 +139,14 @@ namespace ifp.arena.bep.GameTypes
         /// Client/server entry point for applying an authoritative state transition received over the network.
         /// This lets packet handlers remain data-only.
         /// </summary>
-        public void ApplyReplicatedRoundState(RoundState state, float phaseDurationSeconds, float serverPhaseStartSeconds)
+        public void ApplyReplicatedRoundState(RoundState state, double phaseDurationSeconds, double serverPhaseStartSeconds)
         {
             // Update replicated timer model
             PhaseDurationSeconds = phaseDurationSeconds;
             ServerPhaseStartSeconds = serverPhaseStartSeconds;
+
+            // Bootstrap clock from the authoritative timestamp if we don't have sync yet.
+            NetworkTime.BootstrapFromServerStamp(serverPhaseStartSeconds);
             session.roundState = state;
 
             // Swap local state object to match
@@ -153,6 +156,7 @@ namespace ifp.arena.bep.GameTypes
                 RoundState.WarmupEnd => new StateWarmupEnd(),
                 RoundState.Prepare => new StatePrepare(),
                 RoundState.Action => new StateAction(),
+                RoundState.Planted => new StatePlanted(),
                 RoundState.End => new StateEnd(),
                 _ => null
             };
@@ -165,9 +169,9 @@ namespace ifp.arena.bep.GameTypes
             _currentState = newState;
 
             // Derive remaining timer immediately
-            float now = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
-            float end = ServerPhaseStartSeconds + PhaseDurationSeconds;
-            StateTimer = end - now;
+            double now = NetworkTime.ServerNowSeconds;
+            double end = ServerPhaseStartSeconds + PhaseDurationSeconds;
+            StateTimer = (float)(end - now);
 
             _currentState.OnEnter(this);
         }
@@ -177,7 +181,6 @@ namespace ifp.arena.bep.GameTypes
             Singleton<SessionInfoPacketHandler>.Instance.Send();
         }
     }
-
 
     public class GameModeTicker : MonoBehaviour
     {
@@ -422,10 +425,6 @@ namespace ifp.arena.bep.GameTypes
 
     }
 
-    // ---------------------------------------------------------
-    // 4. CONCRETE STATES (THE LOGIC)
-    // ---------------------------------------------------------
-
     public class StateWarmup : IGameState
     {
         public RoundState StateType => RoundState.Warmup;
@@ -537,8 +536,14 @@ namespace ifp.arena.bep.GameTypes
                 return;
             }
 
+            if (game.session.bombState == BombState.Planted)
+            {
+                game.ChangeState(new StatePlanted());
+            }
+
             if (game.StateTimer <= 0)
             {
+                AwardRound(game, Faction.CT);
                 game.ChangeState(new StateEnd());
             }
         }
@@ -564,6 +569,70 @@ namespace ifp.arena.bep.GameTypes
                     // This faction is wiped → other faction wins
                     return allFactions.FirstOrDefault(f => f != faction);
                 }
+            }
+
+            return null;
+        }
+
+        private void AwardRound(BaseGameMode game, Faction winner)
+        {
+            if (!game.session.factionWins.ContainsKey(winner))
+                game.session.factionWins[winner] = 0;
+
+            game.session.factionWins[winner]++;
+        }
+
+        public void OnExit(BaseGameMode game) { }
+    }
+
+    public class StatePlanted : IGameState
+    {
+        public RoundState StateType => RoundState.Planted;
+
+        public void OnEnter(BaseGameMode game)
+        {
+            if (FikaBackendUtils.IsServer)
+            {
+                game.StateTimer = 45f;
+            }
+        }
+
+        public void OnUpdate(BaseGameMode game)
+        {
+            if (!FikaBackendUtils.IsServer) return;
+            Faction? winningFaction = CheckFactionElimination(game);
+
+            if (winningFaction.HasValue)
+            {
+                AwardRound(game, winningFaction.Value);
+                game.ChangeState(new StateEnd());
+                return;
+            }
+
+            if (game.StateTimer <= 0)
+            {
+                AwardRound(game, Faction.T);
+                game.ChangeState(new StateEnd());
+            }
+        }
+
+        private Faction? CheckFactionElimination(BaseGameMode game)
+        {
+            var aliveByFaction = game.session.scoreboard.Values
+                .Where(p => p.isAlive)
+                .GroupBy(p => p.faction)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // Get all factions currently in match
+            var allFactions = game.session.scoreboard.Values
+                .Select(p => p.faction)
+                .Distinct()
+                .Where(f => f != Faction.None)
+                .ToList();
+
+            if (!aliveByFaction.ContainsKey(Faction.CT) || aliveByFaction[Faction.CT] == 0)
+            {
+                return Faction.T;
             }
 
             return null;

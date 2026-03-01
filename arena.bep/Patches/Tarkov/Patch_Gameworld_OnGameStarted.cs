@@ -1,5 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
+using ifp.arena.bep.Networking.TimeSync;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
@@ -19,6 +20,8 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(GameWorld __instance)
         {
+            // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
+            NetworkTime.Reset();
             OnGameStarted?.Invoke(__instance);
         }
     }
