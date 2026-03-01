@@ -55,7 +55,7 @@ namespace ifp.arena.bep.GameTypes
         // Locking out player shooting, moving, jumping during certain session states
         public bool IsControllerPartiallyLocked()
         {
-            if (roundState == RoundState.None || roundState == RoundState.Prepare) return true;
+            if (roundState == RoundState.Prepare) return true;
             return false;
         }
     }

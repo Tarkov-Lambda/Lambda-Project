@@ -53,7 +53,7 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(PlayerKilledPacket packet)
+        public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
 
@@ -108,7 +108,7 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(FactionChangePacket packet)
+        public override void OnReceive(FactionChangePacket packet, NetPeer peer)
         {
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
 

@@ -5,6 +5,7 @@ using Fika.Core.Networking;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Networking;
+using ifp.arena.bep.Patches.Fika;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
@@ -97,7 +98,7 @@ namespace ifp.arena.bep.GameTypes
                     float end = ServerPhaseStartSeconds + PhaseDurationSeconds;
                     StateTimer = end - now;
 
-                    NotificationManagerClass.DisplayMessageNotification($"{now} {end} {StateTimer}");
+                    // NotificationManagerClass.DisplayMessageNotification($"{now} {end} {StateTimer}");
 
                 }
 
@@ -574,9 +575,6 @@ namespace ifp.arena.bep.GameTypes
                 game.session.factionWins[winner] = 0;
 
             game.session.factionWins[winner]++;
-
-            // Optional: log
-            // Plugin.Logger.LogInfo($"Faction {winner} wins the round!");
         }
 
         public void OnExit(BaseGameMode game) { }

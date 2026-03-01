@@ -57,11 +57,8 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override async void OnReceive(RestartPacket packet)
+        public override async void OnReceive(RestartPacket packet, NetPeer peer)
         {
-            Plugin.Logger.LogInfo($"Host is sending {nameof(AssetLoadStatePacket)}");
-            Plugin.Logger.LogInfo(packet.mapName);
-
             var mainPlayer = Singleton<GameWorld>.Instance?.MainPlayer;
             if (mainPlayer != null)
             {

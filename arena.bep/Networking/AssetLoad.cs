@@ -64,13 +64,10 @@ namespace ifp.arena.bep.Networking
             return base.ServerValidation(ref packet, netPeer);
         }
 
-        public override void OnReceive(AssetLoadStatePacket packet)
+        public override void OnReceive(AssetLoadStatePacket packet, NetPeer peer)
         {
             if (Singleton<BaseGameMode>.Instance.session.scoreboard.TryGetValue(packet.id, out var playerScore))
             {
-                Plugin.Logger.LogInfo(playerScore.faction.ToString());
-                Plugin.Logger.LogInfo(playerScore.isReady);
-
                 playerScore.isReady = packet.isReady;
             }
             else

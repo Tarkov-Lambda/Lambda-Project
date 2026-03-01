@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.UI;
 using Fika.Core.ConsoleCommands;
 using Fika.Core.Main.Components;
 using Fika.Core.Main.Players;
@@ -52,7 +53,7 @@ namespace ifp.arena.bep.Networking.Base
                 Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
             } else
             {
-                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T>(OnReceive);
+                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(OnReceive);
 
             }
         }
@@ -103,7 +104,7 @@ namespace ifp.arena.bep.Networking.Base
 
             if (FikaBackendUtils.IsServer)
             {
-                OnReceive(packet);
+                OnReceive(packet, Singleton<NetPeer>.Instance);
             }
         }
 
@@ -123,7 +124,7 @@ namespace ifp.arena.bep.Networking.Base
 
             Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
 
-            OnReceive(packet);
+            OnReceive(packet, netPeer);
         }
 
         public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
@@ -131,6 +132,6 @@ namespace ifp.arena.bep.Networking.Base
             return true;
         }
         
-        public abstract void OnReceive(T packet);
+        public abstract void OnReceive(T packet, NetPeer netPeer);
     }
 }

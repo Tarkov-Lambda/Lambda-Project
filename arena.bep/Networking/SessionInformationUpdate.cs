@@ -107,7 +107,7 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(SessionInfoPacket packet)
+        public override void OnReceive(SessionInfoPacket packet, NetPeer peer)
         {
             var session = Singleton<BaseGameMode>.Instance?.session;
             if (session == null) return;

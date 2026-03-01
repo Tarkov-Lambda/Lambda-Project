@@ -55,7 +55,7 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(RoundStateSyncPacket packet)
+        public override void OnReceive(RoundStateSyncPacket packet, NetPeer peer)
         {
             NotificationManagerClass.DisplayMessageNotification($"{packet.roundState} {packet.phaseDurationSeconds} {packet.serverPhaseStartSeconds}");
             Singleton<BaseGameMode>.Instance.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);

@@ -18,6 +18,7 @@ using UnityEngine;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Patches.Fika;
 
 namespace ifp.arena.bep
 {
@@ -67,13 +68,15 @@ namespace ifp.arena.bep
             patches.Push(new Patch_CanPressTrigger());
             patches.Peek().Enable();
 
+            patches.Push(new Patch_ApplyShot());
+            patches.Peek().Enable();
+
             Singleton<AssetBundleHandler>.Create(new AssetBundleHandler());
 
             // Packet Handlers
             Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
             Singleton<FactionChangePacketHandler>.Create(new FactionChangePacketHandler());
             Singleton<BombStatePacketHandler>.Create(new BombStatePacketHandler());
-            // New: includes timestamps so clients can run IGameState logic without predicting transitions
             Singleton<RoundStateSyncPacketHandler>.Create(new RoundStateSyncPacketHandler());
 
             Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());

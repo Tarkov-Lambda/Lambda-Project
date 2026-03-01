@@ -52,7 +52,7 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref BombStatePacket packet, NetPeer netPeer)
+        public override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
         {
             // Only server sends these states
             if (packet.state == BombState.Planted || packet.state == BombState.Defused || packet.state == BombState.Exploded)
@@ -66,7 +66,7 @@ namespace ifp.arena.bep.Networking
 
             if (Singleton<FikaServer>.Instance != null)
             {
-                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == netPeer.Id);
+                var client = Singleton<NetPeer>.Instance.NetManager.FirstOrDefault(c => c.Id == peer.Id);
 
                 if (client != null)
                 {
@@ -78,10 +78,10 @@ namespace ifp.arena.bep.Networking
 
             Plugin.Logger.LogInfo($"Server: Player {packet.playerId} action {packet.state} validated at {packet.timestamp} (Lag Comp: {latencySeconds:F4}s)");
 
-            return base.ServerValidation(ref packet, netPeer);
+            return base.ServerValidation(ref packet, peer);
         }
 
-        public override void OnReceive(BombStatePacket packet)
+        public override void OnReceive(BombStatePacket packet, NetPeer peer)
         {
             float now = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
 

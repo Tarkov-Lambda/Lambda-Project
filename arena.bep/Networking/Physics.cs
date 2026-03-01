@@ -57,12 +57,12 @@ namespace ifp.arena.bep.Networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref ObjectTransformPacket packet, NetPeer netPeer)
+        public override bool ServerValidation(ref ObjectTransformPacket packet, NetPeer peer)
         {
-            return base.ServerValidation(ref packet, netPeer);
+            return base.ServerValidation(ref packet, peer);
         }
 
-        public override void OnReceive(ObjectTransformPacket packet)
+        public override void OnReceive(ObjectTransformPacket packet, NetPeer peer)
         {
             if (NetworkedPhysicsObject.Registry.TryGetValue(packet.objectId, out var netObject) && packet.id != Singleton<IFikaNetworkManager>.Instance.NetId)
             {
