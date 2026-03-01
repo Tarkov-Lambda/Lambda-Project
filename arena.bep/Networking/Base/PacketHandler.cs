@@ -85,6 +85,10 @@ namespace ifp.arena.bep.Networking.Base
             Release(this);
         }
 
+        // EXPLANATION:
+        // Server Send -> Server RequestSend -> Server Broadcast Packet -> Server/Client OnReceive
+        // Client Send -> Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/Client OnReceive
+
         protected void RequestSend(T packet)
         {
             if (authority == PacketAuthority.ServerOnly && !FikaBackendUtils.IsServer)

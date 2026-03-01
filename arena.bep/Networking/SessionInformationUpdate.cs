@@ -77,36 +77,6 @@ namespace ifp.arena.bep.Networking
         }
     }
 
-    public struct RestartPacket : INetSerializable
-    {
-        public string mapName;
-
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(mapName);
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            mapName = reader.GetString();
-        }
-    }
-
-    public struct RoundStatePacket : INetSerializable
-    {
-        public RoundState roundState;
-
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put((int)roundState);
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            roundState = (RoundState)reader.GetInt();
-        }
-    }
-
     // event driven, mostly used during round end to sync
     public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
     {
@@ -166,94 +136,6 @@ namespace ifp.arena.bep.Networking
                     };
                 }
             }
-
-            Plugin.Logger.LogInfo("SessionInfoPacketHandler");
         }
     }
-
-    //
-
-    // Either when game mode has finished, or admin requests it. scoreboard is fresh.
-    // NOTE: We are sending a SessionInfoPacket that updates info right before this (a little redundant but whatever)
-    public class RestartPacketHandler : PacketHandler<RestartPacket>
-    {
-        public RestartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
-
-        public void Send()
-        {
-            // Reset Scoreboard
-            Singleton<BaseGameMode>.Instance.session.InitializeScoreBoard();
-
-            Singleton<BaseGameMode>.Instance.session.mapName = Plugin.MapName.Value;
-            
-            // Send new info
-            Singleton<SessionInfoPacketHandler>.Instance.Send();
-
-            // Send packet signaling a restart
-            var packet = new RestartPacket
-            {
-                mapName = Plugin.MapName.Value,
-            };
-            
-            RequestSend(packet);
-        }
-
-        public override async void OnReceive(RestartPacket packet)
-        {
-            Plugin.Logger.LogInfo($"Host is sending {nameof(AssetLoadStatePacket)}");
-            Plugin.Logger.LogInfo(packet.mapName);
-
-            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
-
-            // Let the server drive the State Machine appropriately
-            if (FikaBackendUtils.IsServer)
-            {
-                Singleton<BaseGameMode>.Instance.ChangeState(new StateWarmup());
-            }
-
-            await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
-
-            Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
-
-
-            EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
-
-            Teleporter.Teleport(player);
-        }
-    }
-
-    public class RoundStatePacketHandler : PacketHandler<RoundStatePacket>
-    {
-        public RoundStatePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
-
-        public void Send(RoundState roundState)
-        {
-            var session = Singleton<BaseGameMode>.Instance?.session;
-            if (session == null) return;
-
-            var packet = new RoundStatePacket
-            {
-                roundState = roundState,
-            };
-
-            RequestSend(packet);
-        }
-
-        public override void OnReceive(RoundStatePacket packet)
-        {
-            var session = Singleton<BaseGameMode>.Instance?.session;
-            if (session == null) return;
-
-            session.roundState = packet.roundState;
-            Plugin.Logger.LogInfo(Singleton<BaseGameMode>.Instance.session.roundState);
-
-            if (packet.roundState == RoundState.Prepare)
-            {
-                EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
-                Teleporter.Teleport(player);
-                pActiveHealthController_Kill.FixMe(player.ActiveHealthController);
-            }
-        }
-    }
-
 }

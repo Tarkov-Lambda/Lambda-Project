@@ -54,12 +54,11 @@ namespace ifp.arena.bep.Networking
 
         public override bool ServerValidation(ref BombStatePacket packet, NetPeer netPeer)
         {
+            // Only server sends these states
             if (packet.state == BombState.Planted || packet.state == BombState.Defused || packet.state == BombState.Exploded)
             {
                 return false;
             }
-
-            packet.playerId = netPeer.Id;
 
             float serverNow = (float)Singleton<AbstractGame>.Instance.GameTimer.SessionTime.Value.TotalSeconds;
 
@@ -94,19 +93,7 @@ namespace ifp.arena.bep.Networking
 
             switch (packet.state)
             {
-                case BombState.Planting:
-                    // Example: Start the UI progress bar starting from 'timeElapsed'
-                    // Coroutine_StartPlanting(initialProgress: timeElapsed, totalDuration: PlantDuration);
-                    break;
 
-                case BombState.Planted:
-                    // The bomb is down. The Timer logic starts here.
-                    // BombTimer = 45sec - timeElapsed;
-                    break;
-
-                case BombState.Exploded:
-                    // Instant event, timestamp mainly useful for logs or killfeed sorting
-                    break;
             }
         }
     }
