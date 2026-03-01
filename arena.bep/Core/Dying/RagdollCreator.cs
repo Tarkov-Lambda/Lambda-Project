@@ -18,17 +18,30 @@ namespace ifp.arena.bep.Core.Dying
 {
     public class RagdollCreator : IDisposable
     {
+        Dictionary<Player, FakeCorpse> regsitry;
+
         public RagdollCreator()
-        { 
+        {
             Singleton<PlayerKilledPacketHandler>.Instance.OnPlayerKilled += CreateRagdollFromPlayer;
+
+            regsitry = new Dictionary<Player, FakeCorpse>();
         }
 
         public void Dispose()
         {
             Singleton<PlayerKilledPacketHandler>.Instance.OnPlayerKilled -= CreateRagdollFromPlayer;
+
+            foreach (var kvp in regsitry)
+            {
+                if (kvp.Value != null)
+                {
+                    GameObject.Destroy(kvp.Value.gameObject);
+                }
+            }
+            regsitry.Clear();
         }
 
-        public static void CreateRagdollFromPlayer(Player player)
+        private void CreateRagdollFromPlayer(Player player)
         {
             if ( player == null || player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id) return;
 
@@ -97,9 +110,18 @@ namespace ifp.arena.bep.Core.Dying
                 keepRigidbody,
                 putToSleep
                 );
+
+            if (regsitry.TryGetValue(player, out var corpse))
+            {
+                if (corpse != null)
+                {
+                    GameObject.Destroy(corpse.gameObject);
+                }
+            }
+            regsitry[player] = fakeCorpse;
         }
 
-        public static GameObject CloneWithSpecificComponents(GameObject original, params Type[] componentsToKeep)
+        private static GameObject CloneWithSpecificComponents(GameObject original, params Type[] componentsToKeep)
         {
             // a disabled parent prevents Awake() from firing on the clone
             GameObject dummyParent = new GameObject("TempDisabledParent");
