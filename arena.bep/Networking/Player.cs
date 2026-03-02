@@ -55,12 +55,13 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
-            NotificationManagerClass.DisplayMessageNotification($"{packet.ToString()}");
+            //NotificationManagerClass.DisplayMessageNotification($"{packet.ToString()}");
 
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
 
             var scoreboard = GameMode.session.scoreboard;
 
+            scoreboard[packet.killerId].kills++;
             scoreboard[packet.victimId].deaths++;
             scoreboard[packet.victimId].isAlive = false;
 

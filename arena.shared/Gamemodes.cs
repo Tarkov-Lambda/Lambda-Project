@@ -12,6 +12,7 @@ namespace ifp.arena.shared
     {
         CT,
         T,
-        None // FFA
+        None, // FFA
+        Lobby
     }
 }

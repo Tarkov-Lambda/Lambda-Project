@@ -31,6 +31,7 @@ namespace ifp.arena.bep.Patches.Fika
 
             if (shot.Player.iPlayer.Id == Singleton<GameWorld>.Instance.MainPlayer.Id && bodyPart == EBodyPart.Head)
             {
+                // Play
                 NotificationManagerClass.DisplayMessageNotification($" {shot.Player.iPlayer.Id} {Singleton<GameWorld>.Instance.MainPlayer.Id}");
             }
         }

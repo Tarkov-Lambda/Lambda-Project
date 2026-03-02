@@ -1,9 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Main.Utils;
-using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
-using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
@@ -13,731 +11,373 @@ using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using tarkin.propdynamics.shared;
 using UnityEngine;
-using UnityEngine.UIElements.UIR;
 
 namespace ifp.arena.bep.GameTypes
 {
+    // ---------------------------------------------------------
+    // CORE INTERFACES & ABSTRACTS (Zero Dependency Segment)
+    // ---------------------------------------------------------
     public interface IGameState
     {
         RoundState StateType { get; }
         void OnEnter(BaseGameMode gameMode);
-        void OnUpdate(BaseGameMode gameMode);
+        RoundState? OnUpdate(BaseGameMode gameMode); // Returns next state, or null to stay
         void OnExit(BaseGameMode gameMode);
     }
 
+    public abstract class GameModeRules
+    {
+        public abstract IGameState CreateState(RoundState state);
+        public abstract void DrawTopBar(BaseGameMode game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer);
+
+        // Base Scoreboard logic (Shared across modes by default)
+        public virtual void DrawScoreboard(BaseGameMode game, Rect bounds, Texture2D bg, Texture2D highlight, GUIStyle header, GUIStyle row)
+        {
+            GUI.DrawTexture(bounds, bg);
+            float currentY = bounds.y + 20f, rowHeight = 35f;
+
+            GUI.Label(new Rect(bounds.x + 20f, currentY, 200, rowHeight), "PLAYER", header);
+            GUI.Label(new Rect(bounds.x + 300f, currentY, 100, rowHeight), "FACTION", header);
+            GUI.Label(new Rect(bounds.x + 450f, currentY, 50, rowHeight), "K", header);
+            GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), "D", header);
+            GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), "A", header);
+            GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), "STATUS", header);
+            currentY += 40f;
+
+            foreach (var p in game.session.scoreboard.Values.OrderByDescending(p => p.kills))
+            {
+                Rect rowRect = new Rect(bounds.x, currentY, bounds.width, rowHeight);
+                if (!p.isAlive) { GUI.color = new Color(1f, 0.5f, 0.5f, 0.3f); GUI.DrawTexture(rowRect, highlight); }
+                else if (p.player != null && Singleton<GameWorld>.Instance.MainPlayer != null && p.player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id)
+                { GUI.color = new Color(1f, 1f, 1f, 0.1f); GUI.DrawTexture(rowRect, highlight); }
+
+                GUI.color = p.isAlive ? Color.white : Color.gray;
+                GUI.Label(new Rect(bounds.x + 20f, currentY, 250, rowHeight), p.player?.Profile?.Nickname ?? "Connecting...", row);
+                GUI.Label(new Rect(bounds.x + 300f, currentY, 100, rowHeight), p.faction.ToString(), row);
+                GUI.Label(new Rect(bounds.x + 450f, currentY, 50, rowHeight), p.kills.ToString(), row);
+                GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), p.deaths.ToString(), row);
+                GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.assists.ToString(), row);
+
+                bool isWarmup = game.session.roundState == RoundState.Warmup;
+                GUI.color = isWarmup ? (p.isReady ? Color.green : Color.yellow) : (p.isAlive ? Color.green : Color.red);
+                GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), isWarmup ? (p.isReady ? "READY" : "WAITING") : (p.isAlive ? "ALIVE" : "DEAD"), row);
+
+                GUI.color = Color.white;
+                currentY += rowHeight;
+            }
+        }
+
+        protected string FormatTime(float seconds)
+        {
+            if (seconds < 0) seconds = 0;
+            TimeSpan t = TimeSpan.FromSeconds(seconds);
+            return $"{t.Minutes:D2}:{t.Seconds:D2}";
+        }
+    }
+
+    // ---------------------------------------------------------
+    // GAME MANAGER & TICKER
+    // ---------------------------------------------------------
     public class BaseGameMode : Singleton<BaseGameMode>, IDisposable
     {
         public SessionInfo session;
-        public float StateTimer;
+        public GameModeRules ActiveRules { get; set; } = new SnDModeRules(); // Set to FFAModeRules() to switch mode
 
-        // Used client-side to derive timer from server timestamps.
-        public double ServerPhaseStartSeconds;
-        public double PhaseDurationSeconds;
+        public float StateTimer;
+        public double ServerPhaseStartSeconds, PhaseDurationSeconds;
 
         private IGameState _currentState;
         private GameObject _tickerObject;
 
         public BaseGameMode()
         {
-            // if statement for hot reloading
-            if (Singleton<GameWorld>.Instance != null)
-            {
-                StartSession(Singleton<GameWorld>.Instance);
-            }
+            if (Singleton<GameWorld>.Instance != null) StartSession(Singleton<GameWorld>.Instance);
             Patch_Gameworld_OnGameStarted.OnGameStarted += StartSession;
-            RigidbodyInjector.OnRigidbodyInjected += InjectNetworkedPhysicsObject;
-
             Patch_Gameworld_OnDispose.OnDispose += EndSession;
-
-            // Create a hidden GameObject to run Unity's Update loop for our State Machine
         }
 
         public void Dispose()
         {
             Patch_Gameworld_OnGameStarted.OnGameStarted -= StartSession;
             Patch_Gameworld_OnDispose.OnDispose -= EndSession;
-
-            RigidbodyInjector.OnRigidbodyInjected -= InjectNetworkedPhysicsObject;
-
             EndSession(Singleton<GameWorld>.Instance);
-
             Release(this);
         }
 
         public void StartSession(GameWorld gameWorld)
         {
-            Plugin.Logger.LogInfo("asdsa");
             _tickerObject = new GameObject("SnD_GameModeTicker");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
-            _tickerObject.AddComponent<PhysicsSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
-
-            if (session != null) return;
-
-            session = new SessionInfo();
-
-            // Singleton<RestartPacketHandler>.Instance.Send();
+            if (session == null) session = new SessionInfo();
         }
 
-        private string GenerateHierarchyPath(GameObject obj)
-        {
-            if (obj == null) return string.Empty;
-            // NOTE: name-only paths collide for runtime clones (e.g. many "(Clone)" objects).
-            // Including sibling index makes the path unique as long as spawn order/hierarchy is deterministic across peers.
-            //
-            // Avoid LINQ here (Unity overload resolution can be funky across versions; we previously hit a compile error).
-            var sb = new System.Text.StringBuilder(128);
-            var stack = new System.Collections.Generic.Stack<Transform>();
+        public void EndSession(GameWorld gameWorld) { if (_tickerObject != null) UnityEngine.Object.Destroy(_tickerObject); }
 
-            Transform t = obj.transform;
-            while (t != null)
-            {
-                stack.Push(t);
-                t = t.parent;
-            }
-
-            while (stack.Count > 0)
-            {
-                Transform cur = stack.Pop();
-                sb.Append(cur.name);
-                sb.Append('[');
-                sb.Append(cur.GetSiblingIndex());
-                sb.Append(']');
-
-                if (stack.Count > 0)
-                    sb.Append('/');
-            }
-
-            return sb.ToString();
-        }
-
-        void InjectNetworkedPhysicsObject(InjectedRigidbodyInfo injectedRigidbodyInfo)
-        {
-            foreach(var RigidBody in injectedRigidbodyInfo.Rigidbodies)
-            {
-                var go = RigidBody.gameObject;
-                var networkObject = go.GetComponent<NetworkedPhysicsObject>();
-                if (networkObject == null)
-                    networkObject = go.AddComponent<NetworkedPhysicsObject>();
-
-                networkObject.Initialize(GenerateHierarchyPath(go));
-            }
-        }
-
-        public void EndSession(GameWorld gameWorld)
-        {
-            if (_tickerObject != null)
-            {
-                UnityEngine.Object.Destroy(_tickerObject);
-            }
-        }
-
-        // Called by the GameModeTicker every Unity frame
         public void Update()
         {
-            // Both client and server should tick. Server advances the authoritative state machine.
-            // Clients derive remaining time from server timestamps and run local-only state effects.
-            if (session == null) return;
+            if (session == null || _currentState == null) return;
 
-            if (_currentState != null)
-            {
-                // If this instance is authoritative, keep a simple local countdown.
-                if (FikaBackendUtils.IsServer)
-                {
-                    StateTimer -= Time.deltaTime;
-                }
-                else
-                {
-                    // Client derives remaining time from server timestamps.
-                    double now = NetworkTime.ServerNowSeconds;
-                    double end = ServerPhaseStartSeconds + PhaseDurationSeconds;
-                    StateTimer = (float)(end - now);
+            if (FikaBackendUtils.IsServer) StateTimer -= Time.deltaTime;
+            else StateTimer = (float)((ServerPhaseStartSeconds + PhaseDurationSeconds) - NetworkTime.ServerNowSeconds);
 
-                    // NotificationManagerClass.DisplayMessageNotification($"{now} {end} {StateTimer}");
-
-                }
-
-                _currentState.OnUpdate(this);
-            }
+            RoundState? nextState = _currentState.OnUpdate(this);
+            if (nextState.HasValue && FikaBackendUtils.IsServer)
+                ChangeState(nextState.Value);
         }
 
-        public void ChangeState(IGameState newState)
+        public void ChangeState(RoundState newStateType)
         {
-            // Client changes state only when server says so
-            // Also avoiding double function execution here
             if (FikaBackendUtils.IsClient) return;
+            _currentState?.OnExit(this);
 
-            if (_currentState != null)
-            {
-                _currentState.OnExit(this);
-            }
-
-            _currentState = newState;
-
-            // Authoritative session state
+            _currentState = ActiveRules.CreateState(newStateType);
             session.roundState = _currentState.StateType;
-
-            // Enter sets the duration (StateTimer) and runs any side effects.
             _currentState.OnEnter(this);
 
-            // Capture authoritative phase start for host-side UI as well.
             if (Singleton<AbstractGame>.Instance != null)
             {
                 ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
                 PhaseDurationSeconds = StateTimer;
             }
 
-            // Server replicates the new state to clients (with timestamps) so they can run local logic.
             if (FikaBackendUtils.IsServer)
-            {
                 Singleton<RoundStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer);
-            }
         }
 
-        /// <summary>
-        /// Client/server entry point for applying an authoritative state transition received over the network.
-        /// This lets packet handlers remain data-only.
-        /// </summary>
         public void ApplyReplicatedRoundState(RoundState state, double phaseDurationSeconds, double serverPhaseStartSeconds)
         {
-            // Update replicated timer model
             PhaseDurationSeconds = phaseDurationSeconds;
             ServerPhaseStartSeconds = serverPhaseStartSeconds;
-
-            // Bootstrap clock from the authoritative timestamp if we don't have sync yet.
             NetworkTime.BootstrapFromServerStamp(serverPhaseStartSeconds);
+
             session.roundState = state;
-
-            // Swap local state object to match
-            IGameState newState = state switch
-            {
-                RoundState.Warmup => new StateWarmup(),
-                RoundState.WarmupEnd => new StateWarmupEnd(),
-                RoundState.Prepare => new StatePrepare(),
-                RoundState.Action => new StateAction(),
-                RoundState.Planted => new StatePlanted(),
-                RoundState.End => new StateEnd(),
-                _ => null
-            };
-
+            IGameState newState = ActiveRules.CreateState(state);
             if (newState == null) return;
 
-            if (_currentState != null)
-                _currentState.OnExit(this);
-
+            _currentState?.OnExit(this);
             _currentState = newState;
-
-            // Derive remaining timer immediately
-            double now = NetworkTime.ServerNowSeconds;
-            double end = ServerPhaseStartSeconds + PhaseDurationSeconds;
-            StateTimer = (float)(end - now);
-
+            StateTimer = (float)((ServerPhaseStartSeconds + PhaseDurationSeconds) - NetworkTime.ServerNowSeconds);
             _currentState.OnEnter(this);
         }
 
-        public void OnRoundEnd()
-        {
-            Singleton<SessionInfoPacketHandler>.Instance.Send();
-        }
+        public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
     public class GameModeTicker : MonoBehaviour
     {
-        // UI Styling
-        private GUIStyle _headerStyle;      // For "PLAYER", "K", "D" headers
-        private GUIStyle _rowStyle;         // For actual player names/stats
-        private GUIStyle _timerStyle;       // For the main clock
-        private GUIStyle _scoreBigStyle;    // For Team Scores
-
-        // Textures
-        private Texture2D _darkBackground;
-        private Texture2D _rowHighlight;
+        private GUIStyle _headerStyle, _rowStyle, _timerStyle, _scoreBigStyle;
+        private Texture2D _darkBackground, _rowHighlight;
         private bool _stylesInitialized = false;
-
-        // Layout Constants
-        private const float TOP_BAR_WIDTH = 400f;
-        private const float TOP_BAR_HEIGHT = 60f;
-        private const float SB_WIDTH = 800f;
-        private const float SB_HEIGHT = 500f;
-
 
         private void OnGUI()
         {
-            if (!Singleton<BaseGameMode>.Instantiated) return;
-            var game = Singleton<BaseGameMode>.Instance;
-            if (game.session == null) return;
-
+            if (!Singleton<BaseGameMode>.Instantiated || Singleton<BaseGameMode>.Instance.session == null) return;
             if (!_stylesInitialized) InitStyles();
 
-            // 1. Always Draw HUD (Timer & Scores)
-            DrawTopBar(game);
+            var game = Singleton<BaseGameMode>.Instance;
+            Rect topBarRect = new Rect((Screen.width / 2f) - 200f, 0, 400f, 60f);
 
-            // 2. Only Draw Scoreboard on TAB
+            GUI.DrawTexture(topBarRect, _darkBackground);
+            game.ActiveRules.DrawTopBar(game, topBarRect, _headerStyle, _scoreBigStyle, _timerStyle);
+
             if (Input.GetKey(KeyCode.Tab))
             {
-                DrawScoreboard(game);
+                Rect sbBounds = new Rect((Screen.width - 800f) / 2f, (Screen.height - 500f) / 2f, 800f, 500f);
+                game.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
             }
-        }
-
-        // ---------------------------------------------------------
-        // HUD DRAWING
-        // ---------------------------------------------------------
-        private void DrawTopBar(BaseGameMode game)
-        {
-            float screenCX = Screen.width / 2f;
-
-            // Define the main area for the top bar
-            Rect topBarRect = new Rect(screenCX - (TOP_BAR_WIDTH / 2), 0, TOP_BAR_WIDTH, TOP_BAR_HEIGHT);
-
-            // Draw Background Box
-            GUI.DrawTexture(topBarRect, _darkBackground);
-
-            // -- BEAR SCORE (Left) --
-            // Aligned to the left side of the bar
-            Rect bearRect = new Rect(topBarRect.x, topBarRect.y, 100, topBarRect.height - 20);
-            int bearScore = game.session.factionWins.ContainsKey(Faction.T) ? game.session.factionWins[Faction.T] : 0;
-
-            GUI.Label(bearRect, "T", _headerStyle); // Label above
-            Rect bearScoreRect = new Rect(bearRect.x, bearRect.y + 15, bearRect.width, bearRect.height);
-            GUI.Label(bearScoreRect, bearScore.ToString(), _scoreBigStyle);
-
-            // -- USEC SCORE (Right) --
-            // Aligned to the right side of the bar
-            Rect usecRect = new Rect(topBarRect.x + TOP_BAR_WIDTH - 100, topBarRect.y, 100, topBarRect.height - 20);
-            int usecScore = game.session.factionWins.ContainsKey(Faction.CT) ? game.session.factionWins[Faction.CT] : 0;
-
-            GUI.Label(usecRect, "CT", _headerStyle);
-            Rect usecScoreRect = new Rect(usecRect.x, usecRect.y + 15, usecRect.width, usecRect.height);
-            GUI.Label(usecScoreRect, usecScore.ToString(), _scoreBigStyle);
-
-            // -- TIMER (Center) --
-            Rect timerRect = new Rect(screenCX - 50, 5, 100, TOP_BAR_HEIGHT);
-            string timeStr = FormatTime(game.StateTimer);
-            GUI.Label(timerRect, timeStr, _timerStyle);
-
-            // Optional: Small state text under timer
-            Rect stateRect = new Rect(screenCX - 50, 40, 100, 20);
-            GUI.Label(stateRect, game.session.roundState.ToString().ToUpper(), _headerStyle);
-        }
-
-        // ---------------------------------------------------------
-        // SCOREBOARD DRAWING
-        // ---------------------------------------------------------
-        private void DrawScoreboard(BaseGameMode game)
-        {
-            float boxX = (Screen.width - SB_WIDTH) / 2f;
-            float boxY = (Screen.height - SB_HEIGHT) / 2f;
-
-            // Main Background
-            GUI.DrawTexture(new Rect(boxX, boxY, SB_WIDTH, SB_HEIGHT), _darkBackground);
-
-            // Define Column Offsets (Relative to BoxX)
-            float colName = 20f;
-            float colFac = 300f;
-            float colK = 450f;
-            float colD = 525f;
-            float colA = 600f;
-            float colStatus = 675f;
-
-            float rowHeight = 35f;
-            float currentY = boxY + 20f;
-
-            // -- HEADERS --
-            GUI.Label(new Rect(boxX + colName, currentY, 200, rowHeight), "PLAYER", _headerStyle);
-            GUI.Label(new Rect(boxX + colFac, currentY, 100, rowHeight), "FACTION", _headerStyle);
-            GUI.Label(new Rect(boxX + colK, currentY, 50, rowHeight), "K", _headerStyle);
-            GUI.Label(new Rect(boxX + colD, currentY, 50, rowHeight), "D", _headerStyle);
-            GUI.Label(new Rect(boxX + colA, currentY, 50, rowHeight), "A", _headerStyle);
-            GUI.Label(new Rect(boxX + colStatus, currentY, 100, rowHeight), "STATUS", _headerStyle);
-
-            currentY += 40f; // Spacing after header
-
-            // Sort logic: Alive first, then Kills
-            var sortedPlayers = game.session.scoreboard.Values
-                .OrderByDescending(p => p.kills)
-                .ToList();
-
-            foreach (var p in sortedPlayers)
-            {
-                // Safety check for null player object
-                string pName = p.player?.Profile?.Nickname ?? "Connecting...";
-                string factionStr = p.faction.ToString();
-
-                // Draw Row Background (Highlight if dead)
-                Rect rowRect = new Rect(boxX, currentY, SB_WIDTH, rowHeight);
-                if (!p.isAlive)
-                {
-                    GUI.color = new Color(1f, 0.5f, 0.5f, 0.3f); // Reddish tint
-                    GUI.DrawTexture(rowRect, _rowHighlight);
-                    GUI.color = Color.white;
-                }
-                else if (p.player != null && p.player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id)
-                {
-                    // Optional: Highlight "Me"
-                    GUI.color = new Color(1f, 1f, 1f, 0.1f);
-                    GUI.DrawTexture(rowRect, _rowHighlight);
-                    GUI.color = Color.white;
-                }
-
-                // Draw Text
-                // Gray out text if dead
-                if (!p.isAlive) GUI.color = Color.gray;
-
-                GUI.Label(new Rect(boxX + colName, currentY, 250, rowHeight), pName, _rowStyle);
-                GUI.Label(new Rect(boxX + colFac, currentY, 100, rowHeight), factionStr, _rowStyle);
-                GUI.Label(new Rect(boxX + colK, currentY, 50, rowHeight), p.kills.ToString(), _rowStyle);
-                GUI.Label(new Rect(boxX + colD, currentY, 50, rowHeight), p.deaths.ToString(), _rowStyle);
-                GUI.Label(new Rect(boxX + colA, currentY, 50, rowHeight), p.assists.ToString(), _rowStyle);
-
-                // Status Logic
-                string statusText = p.isAlive ? "ALIVE" : "DEAD";
-
-                // If in warmup, show Ready status
-                if (game.session.roundState == RoundState.Warmup)
-                {
-                    statusText = p.isReady ? "READY" : "WAITING";
-                    GUI.color = p.isReady ? Color.green : Color.yellow;
-                }
-                else
-                {
-                    GUI.color = p.isAlive ? Color.green : Color.red;
-                }
-
-                GUI.Label(new Rect(boxX + colStatus, currentY, 100, rowHeight), statusText, _rowStyle);
-
-                // Reset Color and move down
-                GUI.color = Color.white;
-                currentY += rowHeight;
-            }
-        }
-
-        // ---------------------------------------------------------
-        // HELPERS
-        // ---------------------------------------------------------
-        private string FormatTime(float seconds)
-        {
-            if (seconds < 0) seconds = 0;
-            TimeSpan t = TimeSpan.FromSeconds(seconds);
-            return string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
         }
 
         private void InitStyles()
         {
-            // Backgrounds
             _darkBackground = MakeTex(2, 2, new Color(0, 0, 0, 0.85f));
-            _rowHighlight = MakeTex(2, 2, new Color(1, 1, 1, 1f)); // White base, tinted by GUI.color
-
-            // Fonts
-            _headerStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 14,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter
-            };
+            _rowHighlight = MakeTex(2, 2, new Color(1, 1, 1, 1f));
+            _headerStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _headerStyle.normal.textColor = new Color(0.8f, 0.8f, 0.8f);
-
-            _rowStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 16,
-                fontStyle = FontStyle.Normal,
-                alignment = TextAnchor.MiddleLeft // Left align looks better for lists
-            };
+            _rowStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleLeft };
             _rowStyle.normal.textColor = Color.white;
-
-            _timerStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 32,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter
-            };
-            _timerStyle.normal.textColor = new Color(1f, 0.8f, 0.2f); // Gold
-
-            _scoreBigStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 24,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter
-            };
+            _timerStyle = new GUIStyle(GUI.skin.label) { fontSize = 32, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _timerStyle.normal.textColor = new Color(1f, 0.8f, 0.2f);
+            _scoreBigStyle = new GUIStyle(GUI.skin.label) { fontSize = 24, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _scoreBigStyle.normal.textColor = Color.white;
-
             _stylesInitialized = true;
         }
 
-        private Texture2D MakeTex(int width, int height, Color col)
+        private Texture2D MakeTex(int w, int h, Color col)
         {
-            Color[] pix = new Color[width * height];
-            for (int i = 0; i < pix.Length; ++i) pix[i] = col;
-            Texture2D result = new Texture2D(width, height);
-            result.SetPixels(pix);
-            result.Apply();
-            return result;
+            Color[] pix = new Color[w * h]; for (int i = 0; i < pix.Length; ++i) pix[i] = col;
+            Texture2D result = new Texture2D(w, h); result.SetPixels(pix); result.Apply(); return result;
         }
 
-        private void Update()
-        {
-            if (Singleton<BaseGameMode>.Instantiated)
-            {
-                Singleton<BaseGameMode>.Instance.Update();
-            }
-        }
-
-
+        private void Update() { if (Singleton<BaseGameMode>.Instantiated) Singleton<BaseGameMode>.Instance.Update(); }
     }
 
-    public class StateWarmup : IGameState
+    // ---------------------------------------------------------
+    // SHARED STATES (SnD & FFA)
+    // ---------------------------------------------------------
+    public class SharedWarmup : IGameState
     {
         public RoundState StateType => RoundState.Warmup;
-
-        public void OnEnter(BaseGameMode game)
+        public void OnEnter(BaseGameMode game) { if (FikaBackendUtils.IsServer) game.StateTimer = 45f; }
+        public RoundState? OnUpdate(BaseGameMode game)
         {
-            // Server sets authoritative duration; client derives remaining from replication.
-            if (FikaBackendUtils.IsServer)
-            {
-                game.StateTimer = 45f;
-            }
+            if (!FikaBackendUtils.IsServer) return null;
+            if (game.StateTimer <= 0 || (game.session.scoreboard.Count > 0 && game.session.scoreboard.Values.All(p => p.isReady)))
+                return RoundState.WarmupEnd;
+            return null;
         }
-
-        public void OnUpdate(BaseGameMode game)
-        {
-            if (!FikaBackendUtils.IsServer) return;
-            bool allReady = game.session.scoreboard.Count > 0 && game.session.scoreboard.Values.All(p => p.isReady);
-
-            if (allReady || game.StateTimer <= 0)
-            {
-                game.ChangeState(new StateWarmupEnd());
-            }
-        }
-
         public void OnExit(BaseGameMode game) { }
     }
 
-    public class StateWarmupEnd : IGameState
+    public class SharedWarmupEnd : IGameState
     {
         public RoundState StateType => RoundState.WarmupEnd;
-
-        public void OnEnter(BaseGameMode game)
-        {
-            if (FikaBackendUtils.IsServer)
-            {
-                game.StateTimer = 5f; // From your previous logic
-            }
-        }
-
-        public void OnUpdate(BaseGameMode game)
-        {
-            if (!FikaBackendUtils.IsServer) return;
-            if (game.StateTimer <= 0)
-            {
-                game.ChangeState(new StatePrepare());
-            }
-        }
-
+        public void OnEnter(BaseGameMode game) { if (FikaBackendUtils.IsServer) game.StateTimer = 5f; }
+        public RoundState? OnUpdate(BaseGameMode game) => FikaBackendUtils.IsServer && game.StateTimer <= 0 ? RoundState.Prepare : null;
         public void OnExit(BaseGameMode game) { }
     }
 
-    public class StatePrepare : IGameState
+    public class SharedPrepare : IGameState
     {
         public RoundState StateType => RoundState.Prepare;
-
         public void OnEnter(BaseGameMode game)
         {
-            // Shared behavior: round reset flags.
-            foreach (var p in game.session.scoreboard)
-                p.Value.isAlive = true;
-
-            // Client-only side effects (dedicated server safe)
-            var mainPlayer = Singleton<GameWorld>.Instance?.MainPlayer;
-            if (mainPlayer != null)
+            foreach (var p in game.session.scoreboard.Values) p.isAlive = true;
+            if (Singleton<GameWorld>.Instance?.MainPlayer != null)
             {
-                Teleporter.Teleport(mainPlayer);
-                Patch_Kill.FixMe(mainPlayer.ActiveHealthController);
+                Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
+                Patch_Kill.FixMe(Singleton<GameWorld>.Instance.MainPlayer.ActiveHealthController);
             }
-
-            if (FikaBackendUtils.IsServer)
-            {
-                game.StateTimer = 5f; // Freeze time
-            }
+            if (FikaBackendUtils.IsServer) game.StateTimer = 5f;
+            game.session.scoreboard.Clear();
+            game.session.InitializeScoreBoard();
         }
-
-        public void OnUpdate(BaseGameMode game)
-        {
-            if (!FikaBackendUtils.IsServer) return;
-            if (game.StateTimer <= 0)
-            {
-                game.ChangeState(new StateAction());
-            }
-        }
-
+        public RoundState? OnUpdate(BaseGameMode game) => FikaBackendUtils.IsServer && game.StateTimer <= 0 ? RoundState.Action : null;
         public void OnExit(BaseGameMode game) { }
     }
 
-    public class StateAction : IGameState
-    {
-        public RoundState StateType => RoundState.Action;
-
-        public void OnEnter(BaseGameMode game)
-        {
-            if (FikaBackendUtils.IsServer)
-            {
-                game.StateTimer = 30f; // Live round timer (10s for testing, change to 120s usually)
-            }
-        }
-
-        public void OnUpdate(BaseGameMode game)
-        {
-            if (!FikaBackendUtils.IsServer) return;
-            Faction? winningFaction = CheckFactionElimination(game);
-
-            if (winningFaction.HasValue)
-            {
-                AwardRound(game, winningFaction.Value);
-                game.ChangeState(new StateEnd());
-                return;
-            }
-
-            if (game.session.bombState == BombState.Planted)
-            {
-                game.ChangeState(new StatePlanted());
-            }
-
-            if (game.StateTimer <= 0)
-            {
-                AwardRound(game, Faction.CT);
-                game.ChangeState(new StateEnd());
-            }
-        }
-
-        private Faction? CheckFactionElimination(BaseGameMode game)
-        {
-            var aliveByFaction = game.session.scoreboard.Values
-                .Where(p => p.isAlive)
-                .GroupBy(p => p.faction)
-                .ToDictionary(g => g.Key, g => g.Count());
-
-            // Get all factions currently in match
-            var allFactions = game.session.scoreboard.Values
-                .Select(p => p.faction)
-                .Distinct()
-                .Where(f => f != Faction.None)
-                .ToList();
-
-            foreach (var faction in allFactions)
-            {
-                if (!aliveByFaction.ContainsKey(faction) || aliveByFaction[faction] == 0)
-                {
-                    // This faction is wiped → other faction wins
-                    return allFactions.FirstOrDefault(f => f != faction);
-                }
-            }
-
-            return null;
-        }
-
-        private void AwardRound(BaseGameMode game, Faction winner)
-        {
-            if (!game.session.factionWins.ContainsKey(winner))
-                game.session.factionWins[winner] = 0;
-
-            game.session.factionWins[winner]++;
-        }
-
-        public void OnExit(BaseGameMode game) { }
-    }
-
-    public class StatePlanted : IGameState
-    {
-        public RoundState StateType => RoundState.Planted;
-
-        public void OnEnter(BaseGameMode game)
-        {
-            if (FikaBackendUtils.IsServer)
-            {
-                game.StateTimer = 45f;
-            }
-        }
-
-        public void OnUpdate(BaseGameMode game)
-        {
-            if (!FikaBackendUtils.IsServer) return;
-            Faction? winningFaction = CheckFactionElimination(game);
-
-            if (winningFaction.HasValue)
-            {
-                AwardRound(game, winningFaction.Value);
-                game.ChangeState(new StateEnd());
-                return;
-            }
-
-            if (game.StateTimer <= 0)
-            {
-                AwardRound(game, Faction.T);
-                game.ChangeState(new StateEnd());
-            }
-        }
-
-        private Faction? CheckFactionElimination(BaseGameMode game)
-        {
-            var aliveByFaction = game.session.scoreboard.Values
-                .Where(p => p.isAlive)
-                .GroupBy(p => p.faction)
-                .ToDictionary(g => g.Key, g => g.Count());
-
-            // Get all factions currently in match
-            var allFactions = game.session.scoreboard.Values
-                .Select(p => p.faction)
-                .Distinct()
-                .Where(f => f != Faction.None)
-                .ToList();
-
-            if (!aliveByFaction.ContainsKey(Faction.CT) || aliveByFaction[Faction.CT] == 0)
-            {
-                return Faction.T;
-            }
-
-            return null;
-        }
-
-        private void AwardRound(BaseGameMode game, Faction winner)
-        {
-            if (!game.session.factionWins.ContainsKey(winner))
-                game.session.factionWins[winner] = 0;
-
-            game.session.factionWins[winner]++;
-        }
-
-        public void OnExit(BaseGameMode game) { }
-    }
-
-    public class StateEnd : IGameState
+    public class SharedEnd : IGameState
     {
         public RoundState StateType => RoundState.End;
-
-        public void OnEnter(BaseGameMode game)
-        {
-            if (FikaBackendUtils.IsServer)
-            {
-                game.StateTimer = 10f; // Scoreboard showing time
-            }
-            if (FikaBackendUtils.IsServer)
-            {
-                game.OnRoundEnd();     // Sync the scoreboard data to clients
-            }
-        }
-
-        public void OnUpdate(BaseGameMode game)
-        {
-            if (!FikaBackendUtils.IsServer) return;
-            if (game.StateTimer <= 0)
-            {
-                // Go to next round
-                game.ChangeState(new StatePrepare());
-            }
-        }
-
+        public void OnEnter(BaseGameMode game) { if (FikaBackendUtils.IsServer) { game.StateTimer = 10f; game.OnRoundEnd(); } }
+        public RoundState? OnUpdate(BaseGameMode game) => FikaBackendUtils.IsServer && game.StateTimer <= 0 ? RoundState.Prepare : null;
         public void OnExit(BaseGameMode game) { }
+    }
+
+    // ---------------------------------------------------------
+    // S&D IMPLEMENTATION
+    // ---------------------------------------------------------
+    public class SnDAction : IGameState
+    {
+        public RoundState StateType => RoundState.Action;
+        public void OnEnter(BaseGameMode game) { if (FikaBackendUtils.IsServer) game.StateTimer = 120f; }
+        public RoundState? OnUpdate(BaseGameMode game)
+        {
+            if (!FikaBackendUtils.IsServer) return null;
+            Faction? winner = CheckWipe(game);
+            if (winner.HasValue) { Award(game, winner.Value); return RoundState.End; }
+            if (game.session.bombState == BombState.Planted) return RoundState.Planted;
+            if (game.StateTimer <= 0) { Award(game, Faction.CT); return RoundState.End; }
+            return null;
+        }
+        public void OnExit(BaseGameMode game) { }
+
+        private Faction? CheckWipe(BaseGameMode game)
+        {
+            var alive = game.session.scoreboard.Values.Where(p => p.isAlive).GroupBy(p => p.faction).ToDictionary(g => g.Key, g => g.Count());
+            var factions = game.session.scoreboard.Values.Select(p => p.faction).Where(f => f != Faction.None).Distinct();
+            foreach (var f in factions) if (!alive.ContainsKey(f) || alive[f] == 0) return factions.FirstOrDefault(o => o != f);
+            return null;
+        }
+        private void Award(BaseGameMode game, Faction w) { if (!game.session.factionWins.ContainsKey(w)) game.session.factionWins[w] = 0; game.session.factionWins[w]++; }
+    }
+
+    public class SnDPlanted : IGameState
+    {
+        public RoundState StateType => RoundState.Planted;
+        public void OnEnter(BaseGameMode game) { if (FikaBackendUtils.IsServer) game.StateTimer = 45f; }
+        public RoundState? OnUpdate(BaseGameMode game)
+        {
+            if (!FikaBackendUtils.IsServer) return null;
+            if (!game.session.scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT)) { Award(game, Faction.T); return RoundState.End; }
+            if (game.StateTimer <= 0) { Award(game, Faction.T); return RoundState.End; }
+            return null;
+        }
+        public void OnExit(BaseGameMode game) { }
+        private void Award(BaseGameMode game, Faction w) { if (!game.session.factionWins.ContainsKey(w)) game.session.factionWins[w] = 0; game.session.factionWins[w]++; }
+    }
+
+    public class SnDModeRules : GameModeRules
+    {
+        public override IGameState CreateState(RoundState state) => state switch
+        {
+            RoundState.Warmup => new SharedWarmup(),
+            RoundState.WarmupEnd => new SharedWarmupEnd(),
+            RoundState.Prepare => new SharedPrepare(),
+            RoundState.Action => new SnDAction(),
+            RoundState.Planted => new SnDPlanted(),
+            RoundState.End => new SharedEnd(),
+            _ => null
+        };
+
+        public override void DrawTopBar(BaseGameMode game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
+        {
+            GUI.Label(new Rect(bounds.x, bounds.y, 100, bounds.height - 20), "T", header);
+            GUI.Label(new Rect(bounds.x, bounds.y + 15, 100, bounds.height), game.session.factionWins.GetValueOrDefault(Faction.T, 0).ToString(), scoreBig);
+            GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y, 100, bounds.height - 20), "CT", header);
+            GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y + 15, 100, bounds.height), game.session.factionWins.GetValueOrDefault(Faction.CT, 0).ToString(), scoreBig);
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(game.StateTimer), timer);
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), game.session.roundState.ToString().ToUpper(), header);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // FFA IMPLEMENTATION
+    // ---------------------------------------------------------
+    public class FFAAction : IGameState
+    {
+        public RoundState StateType => RoundState.Action;
+        public void OnEnter(BaseGameMode game) { if (FikaBackendUtils.IsServer) game.StateTimer = 600f; } // 10 min
+        public RoundState? OnUpdate(BaseGameMode game)
+        {
+            if (!FikaBackendUtils.IsServer) return null;
+            Plugin.Logger.LogInfo(game.session.scoreboard.Values.Any(p => p.kills >= 1));
+            if (game.StateTimer <= 0 || game.session.scoreboard.Values.Any(p => p.kills >= 3)) return RoundState.End;
+            return null;
+        }
+        public void OnExit(BaseGameMode game) { }
+    }
+
+    public class FFAModeRules : GameModeRules
+    {
+        public override IGameState CreateState(RoundState state) => state switch
+        {
+            RoundState.Warmup => new SharedWarmup(),
+            RoundState.WarmupEnd => new SharedWarmupEnd(),
+            RoundState.Prepare => new SharedPrepare(),
+            RoundState.Action => new FFAAction(),
+            RoundState.End => new SharedEnd(),
+            _ => null
+        };
+
+        public override void DrawTopBar(BaseGameMode game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
+        {
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(game.StateTimer), timer);
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), "FFA", header);
+
+            var top = game.session.scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
+            if (top.Count > 0)
+            {
+                GUI.Label(new Rect(bounds.x, bounds.y, 100, 20), "1ST", header);
+                GUI.Label(new Rect(bounds.x, bounds.y + 15, 100, bounds.height), top[0].kills.ToString(), scoreBig);
+            }
+            if (top.Count > 1)
+            {
+                GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y, 100, 20), "2ND", header);
+                GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y + 15, 100, bounds.height), top[1].kills.ToString(), scoreBig);
+            }
+        }
     }
 }

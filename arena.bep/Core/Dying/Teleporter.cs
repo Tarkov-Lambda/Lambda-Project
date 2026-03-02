@@ -1,5 +1,8 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
+using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
+using RootMotion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +16,8 @@ namespace ifp.arena.bep.Core.Dying
 
         static public void Teleport(Player player)
         {
-            newPos = GetNewPosition(Plugin.PrefferedFaction.Value);
+            var faction = BaseGameMode.Instance.session.currentGameMode == GameModes.FFA;
+            newPos = GetNewPosition( Plugin.PrefferedFaction.Value);
             player.Teleport(newPos);
         }
 

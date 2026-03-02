@@ -45,15 +45,16 @@ namespace ifp.arena.bep.networking
             gameMode.session.factionWins.Clear();
             gameMode.session.roundState = RoundState.None;
             gameMode.session.mapName = Plugin.MapName.Value;
+            gameMode.session.currentGameMode = Plugin.GameMode.Value;
             gameMode.session.InitializeScoreBoard();
-            
+
             Singleton<SessionInfoPacketHandler>.Instance.Send();
 
             var packet = new RestartPacket
             {
                 mapName = Plugin.MapName.Value,
             };
-            
+
             RequestSend(packet);
         }
 
@@ -67,12 +68,22 @@ namespace ifp.arena.bep.networking
 
             if (FikaBackendUtils.IsServer)
             {
-                Singleton<BaseGameMode>.Instance.ChangeState(new StateWarmup());
+                Singleton<BaseGameMode>.Instance.ChangeState(RoundState.Warmup);
             }
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
+
+            switch (Singleton<BaseGameMode>.Instance.session.currentGameMode)
+            {
+                case GameModes.FFA:
+                    Singleton<BaseGameMode>.Instance.ActiveRules = new FFAModeRules();
+                    break;
+                case GameModes.SND:
+                    Singleton<BaseGameMode>.Instance.ActiveRules = new SnDModeRules();
+                    break;
+            }
 
 
             EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
@@ -81,6 +92,6 @@ namespace ifp.arena.bep.networking
             {
                 Teleporter.Teleport(player);
             }
-        }
+}
     }
 }

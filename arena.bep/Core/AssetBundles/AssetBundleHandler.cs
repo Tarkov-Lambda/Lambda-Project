@@ -55,7 +55,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
                 BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
 
-                NotificationManagerClass.DisplayMessageNotification($"{scenePaths.ToString()}");
+                //NotificationManagerClass.DisplayMessageNotification($"{scenePaths.ToString()}");
 
                 if (SceneManager.GetSceneByName(scenePaths[0]).isLoaded)
                     await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();

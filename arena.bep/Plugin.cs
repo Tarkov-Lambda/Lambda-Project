@@ -73,6 +73,8 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_CanJump());
             RegisterPatch(new Patch_CanPressTrigger());
             RegisterPatch(new Patch_ApplyShot());
+            RegisterPatch(new Patch_ApplyDamage());
+
 
             RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
 
@@ -85,8 +87,6 @@ namespace ifp.arena.bep
             CreateSingleton<RoundStateSyncPacketHandler>();
             CreateSingleton<RestartPacketHandler>();
             CreateSingleton<AssetLoadStatePacketHandler>();
-
-            CreateSingleton<PhysicsSnapshotPacketHandler>();
 
             CreateSingleton<TimeSyncRequestPacketHandler>();
             CreateSingleton<TimeSyncResponsePacketHandler>();
