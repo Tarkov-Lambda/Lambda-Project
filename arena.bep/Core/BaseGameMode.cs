@@ -93,7 +93,6 @@ namespace ifp.arena.bep.GameTypes
             foreach(var RigidBody in injectedRigidbodyInfo.Rigidbodies)
             {
                 var networkObject = RigidBody.gameObject.GetOrAddComponent<NetworkedPhysicsObject>();
-                networkObject.ObjectId = GenerateHierarchyPath(injectedRigidbodyInfo.OriginalGameObject);
             }
         }
 
