@@ -57,8 +57,8 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
                 NotificationManagerClass.DisplayMessageNotification($"{scenePaths.ToString()}");
 
-                if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded)
-                    return;
+                if (SceneManager.GetSceneByName(scenePaths[0]).isLoaded)
+                    await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();
 
                 // Explicitly define LoadSceneMode.Single (or Additive if you are layering maps)
                 await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
@@ -76,8 +76,15 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
         {
             foreach (var kvp in loadedAssetBundles)
             {
-                if (kvp.Value != null)
+                AssetBundle bundle = kvp.Value;
+                if (bundle != null)
                 {
+                    foreach (var scenePath in bundle.GetAllScenePaths())
+                    {
+                        if (SceneManager.GetSceneByName(scenePath).isLoaded)
+                            SceneManager.UnloadSceneAsync(scenePath);
+                    }
+
                     kvp.Value.Unload(true);
                 }
             }
