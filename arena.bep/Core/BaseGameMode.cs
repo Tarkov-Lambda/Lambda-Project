@@ -222,6 +222,17 @@ namespace ifp.arena.bep.GameTypes
     // ---------------------------------------------------------
     // SHARED STATES (SnD & FFA)
     // ---------------------------------------------------------
+    public class SharedNone : IGameState
+    {
+        public RoundState StateType => RoundState.None;
+        public void OnEnter(BaseGameMode game) { Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer); }
+        public RoundState? OnUpdate(BaseGameMode game)
+        {
+            return null;
+        }
+        public void OnExit(BaseGameMode game) { }
+    }
+
     public class SharedWarmup : IGameState
     {
         public RoundState StateType => RoundState.Warmup;

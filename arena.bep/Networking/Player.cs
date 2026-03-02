@@ -63,7 +63,11 @@ namespace ifp.arena.bep.networking
 
             scoreboard[packet.killerId].kills++;
             scoreboard[packet.victimId].deaths++;
-            scoreboard[packet.victimId].isAlive = false;
+
+            if (GameMode.session.currentGameMode == GameModes.SND)
+            {
+                scoreboard[packet.victimId].isAlive = false;
+            }
 
             EFT.Player victimPlayer = Singleton<GameWorld>.Instance.AllAlivePlayersList.FirstOrDefault(p => p.Id == packet.victimId);
             if (victimPlayer != null)

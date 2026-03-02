@@ -2,7 +2,6 @@
 using EFT;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
-using RootMotion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +15,18 @@ namespace ifp.arena.bep.Core.Dying
 
         static public void Teleport(Player player)
         {
-            var faction = BaseGameMode.Instance.session.currentGameMode == GameModes.FFA;
-            newPos = GetNewPosition( Plugin.PrefferedFaction.Value);
+            Faction faction;
+            SessionInfo session = BaseGameMode.Instance.session;
+            PlayerScore playerScore = session.scoreboard.FirstOrDefault(p => p.Value.player == Singleton<GameWorld>.Instance.MainPlayer).Value;
+            if (session.roundState == RoundState.None || (playerScore != null && !playerScore.isAlive))
+            {
+                faction = Faction.Lobby;
+            } else
+            {
+                faction = Plugin.PrefferedFaction.Value;
+            }
+
+                newPos = GetNewPosition(Plugin.PrefferedFaction.Value);
             player.Teleport(newPos);
         }
 

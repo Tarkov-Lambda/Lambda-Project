@@ -59,11 +59,6 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref AssetLoadStatePacket packet, NetPeer netPeer)
-        {
-            return base.ServerValidation(ref packet, netPeer);
-        }
-
         public override void OnReceive(AssetLoadStatePacket packet, NetPeer peer)
         {
             if (Singleton<BaseGameMode>.Instance.session.scoreboard.TryGetValue(packet.id, out var playerScore))
