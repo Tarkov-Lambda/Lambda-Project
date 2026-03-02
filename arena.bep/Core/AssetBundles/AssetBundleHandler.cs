@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -55,10 +56,10 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
                 BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
 
-                //NotificationManagerClass.DisplayMessageNotification($"{scenePaths.ToString()}");
-
-                if (SceneManager.GetSceneByName(scenePaths[0]).isLoaded)
+                if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded && !scenePaths[0].Contains("Lobby"))
+                {
                     await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();
+                }
 
                 // Explicitly define LoadSceneMode.Single (or Additive if you are layering maps)
                 await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
@@ -79,13 +80,17 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
                 AssetBundle bundle = kvp.Value;
                 if (bundle != null)
                 {
+                    if (bundle.name == "Lobby") continue;
+
                     foreach (var scenePath in bundle.GetAllScenePaths())
                     {
-                        if (SceneManager.GetSceneByName(scenePath).isLoaded)
+                        if (SceneManager.GetSceneByPath(scenePath).isLoaded)
+                        {
                             SceneManager.UnloadSceneAsync(scenePath);
+                        }
                     }
 
-                    kvp.Value.Unload(true);
+                        kvp.Value.Unload(true);
                 }
             }
 

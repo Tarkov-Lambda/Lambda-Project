@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
+using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
@@ -11,6 +12,7 @@ using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using UnityEngine;
 
 namespace ifp.arena.bep.GameTypes
@@ -105,12 +107,15 @@ namespace ifp.arena.bep.GameTypes
             Release(this);
         }
 
-        public void StartSession(GameWorld gameWorld)
+        public async void StartSession(GameWorld gameWorld)
         {
             _tickerObject = new GameObject("SnD_GameModeTicker");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
+
+            await Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
+
             if (session == null) session = new SessionInfo();
         }
 
