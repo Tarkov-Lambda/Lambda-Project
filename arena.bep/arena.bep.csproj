@@ -51,8 +51,8 @@
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
-      <FilesToCopy Include="$(OutputPath)\*.pdb" />
+      <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
