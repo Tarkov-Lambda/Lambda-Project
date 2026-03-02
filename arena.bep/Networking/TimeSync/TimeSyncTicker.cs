@@ -1,4 +1,5 @@
 using Comfort.Common;
+using EFT;
 using Fika.Core.Main.Utils;
 using UnityEngine;
 
@@ -35,6 +36,9 @@ namespace ifp.arena.bep.networking.TimeSync
             _nextSendLocalSeconds = now + IntervalSeconds;
 
             if (!Singleton<TimeSyncRequestPacketHandler>.Instantiated)
+                return;
+
+            if (Singleton<GameWorld>.Instance == null)
                 return;
 
             Singleton<TimeSyncRequestPacketHandler>.Instance.Send();

@@ -65,6 +65,7 @@ namespace ifp.arena.bep
             Plugin.Logger.LogInfo("Load");
 
             RegisterPatch(new Patch_Gameworld_OnGameStarted());
+            RegisterPatch(new Patch_Gameworld_OnDispose());
 
             RegisterPatch(new Patch_Kill());
 
@@ -91,11 +92,6 @@ namespace ifp.arena.bep
             CreateSingleton<BaseGameMode>();
             CreateSingleton<AssetBundleHandler>();
             CreateSingleton<RagdollCreator>();
-
-            // Client tick for time sync sampling
-            var timeSyncObject = new GameObject("SnD_TimeSyncTicker");
-            timeSyncObject.AddComponent<TimeSyncTicker>();
-            UnityEngine.Object.DontDestroyOnLoad(timeSyncObject);
 
             InitConfiguration();
         }

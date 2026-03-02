@@ -1,8 +1,9 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -53,6 +54,11 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
                 }
 
                 BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
+
+                NotificationManagerClass.DisplayMessageNotification($"{scenePaths.ToString()}");
+
+                if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded)
+                    return;
 
                 // Explicitly define LoadSceneMode.Single (or Additive if you are layering maps)
                 await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);

@@ -25,4 +25,23 @@ namespace ifp.arena.bep.Patches.Tarkov
             OnGameStarted?.Invoke(__instance);
         }
     }
+
+    internal class Patch_Gameworld_OnDispose : ModulePatch
+    {
+        public static event Action<GameWorld> OnDispose;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(GameWorld), nameof(GameWorld.Dispose));
+        }
+
+
+        [PatchPostfix]
+        static void Postfix(GameWorld __instance)
+        {
+            // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
+            NetworkTime.Reset();
+            OnDispose?.Invoke(__instance);
+        }
+    }
 }

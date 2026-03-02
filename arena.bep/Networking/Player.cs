@@ -33,7 +33,7 @@ namespace ifp.arena.bep.networking
 
         public override string ToString()
         {
-            return $"{killerId} ubil {victimId}";
+            return $"{killerId} killed {victimId}";
         }
     }
 
@@ -55,6 +55,8 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
+            NotificationManagerClass.DisplayMessageNotification($"{packet.ToString()}");
+
             BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
 
             var scoreboard = GameMode.session.scoreboard;

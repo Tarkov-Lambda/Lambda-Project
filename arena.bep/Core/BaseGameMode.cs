@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Main.Utils;
+using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -45,32 +46,42 @@ namespace ifp.arena.bep.GameTypes
                 StartSession(Singleton<GameWorld>.Instance);
             }
             Patch_Gameworld_OnGameStarted.OnGameStarted += StartSession;
+            Patch_Gameworld_OnDispose.OnDispose += EndSession;
 
             // Create a hidden GameObject to run Unity's Update loop for our State Machine
-            _tickerObject = new GameObject("SnD_GameModeTicker");
-            _tickerObject.AddComponent<GameModeTicker>();
-            UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
         }
 
         public void Dispose()
         {
             Patch_Gameworld_OnGameStarted.OnGameStarted -= StartSession;
+            Patch_Gameworld_OnDispose.OnDispose -= EndSession;
 
-            if (_tickerObject != null)
-            {
-                UnityEngine.Object.Destroy(_tickerObject);
-            }
+            EndSession(Singleton<GameWorld>.Instance);
 
             Release(this);
         }
 
         public void StartSession(GameWorld gameWorld)
         {
+            Plugin.Logger.LogInfo("asdsa");
+            _tickerObject = new GameObject("SnD_GameModeTicker");
+            _tickerObject.AddComponent<GameModeTicker>();
+            _tickerObject.AddComponent<TimeSyncTicker>();
+            UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
+
             if (session != null) return;
 
             session = new SessionInfo();
 
             // Singleton<RestartPacketHandler>.Instance.Send();
+        }
+
+        public void EndSession(GameWorld gameWorld)
+        {
+            if (_tickerObject != null)
+            {
+                UnityEngine.Object.Destroy(_tickerObject);
+            }
         }
 
         // Called by the GameModeTicker every Unity frame
