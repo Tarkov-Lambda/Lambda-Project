@@ -86,7 +86,7 @@ namespace ifp.arena.bep
             CreateSingleton<RestartPacketHandler>();
             CreateSingleton<AssetLoadStatePacketHandler>();
 
-            CreateSingleton<ObjectTransformPacketHandler>();
+            CreateSingleton<PhysicsSnapshotPacketHandler>();
 
             CreateSingleton<TimeSyncRequestPacketHandler>();
             CreateSingleton<TimeSyncResponsePacketHandler>();

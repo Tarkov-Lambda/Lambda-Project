@@ -13,6 +13,7 @@ using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using tarkin.propdynamics.shared;
 using UnityEngine;
 using UnityEngine.UIElements.UIR;
@@ -72,6 +73,7 @@ namespace ifp.arena.bep.GameTypes
             _tickerObject = new GameObject("SnD_GameModeTicker");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
+            _tickerObject.AddComponent<PhysicsSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
             if (session != null) return;
@@ -84,15 +86,45 @@ namespace ifp.arena.bep.GameTypes
         private string GenerateHierarchyPath(GameObject obj)
         {
             if (obj == null) return string.Empty;
-            string path = string.Join("/", obj.GetComponentsInParent<Transform>(true).Reverse().Select(t => t.name));
-            return path;
+            // NOTE: name-only paths collide for runtime clones (e.g. many "(Clone)" objects).
+            // Including sibling index makes the path unique as long as spawn order/hierarchy is deterministic across peers.
+            //
+            // Avoid LINQ here (Unity overload resolution can be funky across versions; we previously hit a compile error).
+            var sb = new System.Text.StringBuilder(128);
+            var stack = new System.Collections.Generic.Stack<Transform>();
+
+            Transform t = obj.transform;
+            while (t != null)
+            {
+                stack.Push(t);
+                t = t.parent;
+            }
+
+            while (stack.Count > 0)
+            {
+                Transform cur = stack.Pop();
+                sb.Append(cur.name);
+                sb.Append('[');
+                sb.Append(cur.GetSiblingIndex());
+                sb.Append(']');
+
+                if (stack.Count > 0)
+                    sb.Append('/');
+            }
+
+            return sb.ToString();
         }
 
         void InjectNetworkedPhysicsObject(InjectedRigidbodyInfo injectedRigidbodyInfo)
         {
             foreach(var RigidBody in injectedRigidbodyInfo.Rigidbodies)
             {
-                var networkObject = RigidBody.gameObject.GetOrAddComponent<NetworkedPhysicsObject>();
+                var go = RigidBody.gameObject;
+                var networkObject = go.GetComponent<NetworkedPhysicsObject>();
+                if (networkObject == null)
+                    networkObject = go.AddComponent<NetworkedPhysicsObject>();
+
+                networkObject.Initialize(GenerateHierarchyPath(go));
             }
         }
 
