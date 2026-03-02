@@ -10,6 +10,7 @@ using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -28,9 +29,9 @@ namespace ifp.arena.bep.Patches.Fika
         {
             if (FikaBackendUtils.IsHeadless) return;
 
-            if (shot.Player.Nickname == Singleton<GameWorld>.Instance.MainPlayer.name && bodyPart == EBodyPart.Head)
+            if (shot.Player.iPlayer.Id == Singleton<GameWorld>.Instance.MainPlayer.Id && bodyPart == EBodyPart.Head)
             {
-                Plugin.Logger.LogInfo("Headshot");
+                NotificationManagerClass.DisplayMessageNotification($" {shot.Player.iPlayer.Id} {Singleton<GameWorld>.Instance.MainPlayer.Id}");
             }
         }
     }

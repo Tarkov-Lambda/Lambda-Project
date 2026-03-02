@@ -11,7 +11,7 @@ namespace ifp.arena.bep.networking
     public struct ObjectTransformPacket : INetSerializable
     {
         public int id;
-        public int objectId;
+        public string objectId;
 
         public Vector3 position;
         public Quaternion rotation;
@@ -27,7 +27,7 @@ namespace ifp.arena.bep.networking
         public void Deserialize(NetDataReader reader)
         {
             id = reader.GetInt();
-            objectId = reader.GetInt();
+            objectId = reader.GetString();
             position = reader.GetVector3();
             rotation = reader.GetQuaternion();
         }
@@ -45,7 +45,7 @@ namespace ifp.arena.bep.networking
             Instance = this;
         }
 
-        public void Send(GameObject gameObject, int objectId)
+        public void Send(GameObject gameObject, string objectId)
         {
             var packet = new ObjectTransformPacket
             {

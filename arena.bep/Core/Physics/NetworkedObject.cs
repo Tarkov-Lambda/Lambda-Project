@@ -7,9 +7,9 @@ namespace ifp.arena.bep.networking
     public class NetworkedPhysicsObject : MonoBehaviour
     {
         // Global registry to lookup objects by ID
-        public static Dictionary<int, NetworkedPhysicsObject> Registry = new Dictionary<int, NetworkedPhysicsObject>();
+        public static Dictionary<string, NetworkedPhysicsObject> Registry = new Dictionary<string, NetworkedPhysicsObject>();
 
-        public int ObjectId; // Set this unique per object (hash of name, or manual ID)
+        public string ObjectId; // Set this unique per object (hash of name, or manual ID)
         public Rigidbody Rb;
 
         // Interpolation variables

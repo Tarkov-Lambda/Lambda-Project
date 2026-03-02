@@ -13,6 +13,7 @@ using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using tarkin.propdynamics.shared;
 using UnityEngine;
 using UnityEngine.UIElements.UIR;
 
@@ -46,6 +47,8 @@ namespace ifp.arena.bep.GameTypes
                 StartSession(Singleton<GameWorld>.Instance);
             }
             Patch_Gameworld_OnGameStarted.OnGameStarted += StartSession;
+            RigidbodyInjector.OnRigidbodyInjected += InjectNetworkedPhysicsObject;
+
             Patch_Gameworld_OnDispose.OnDispose += EndSession;
 
             // Create a hidden GameObject to run Unity's Update loop for our State Machine
@@ -55,6 +58,8 @@ namespace ifp.arena.bep.GameTypes
         {
             Patch_Gameworld_OnGameStarted.OnGameStarted -= StartSession;
             Patch_Gameworld_OnDispose.OnDispose -= EndSession;
+
+            RigidbodyInjector.OnRigidbodyInjected -= InjectNetworkedPhysicsObject;
 
             EndSession(Singleton<GameWorld>.Instance);
 
@@ -74,6 +79,22 @@ namespace ifp.arena.bep.GameTypes
             session = new SessionInfo();
 
             // Singleton<RestartPacketHandler>.Instance.Send();
+        }
+
+        private string GenerateHierarchyPath(GameObject obj)
+        {
+            if (obj == null) return string.Empty;
+            string path = string.Join("/", obj.GetComponentsInParent<Transform>(true).Reverse().Select(t => t.name));
+            return path;
+        }
+
+        void InjectNetworkedPhysicsObject(InjectedRigidbodyInfo injectedRigidbodyInfo)
+        {
+            foreach(var RigidBody in injectedRigidbodyInfo.Rigidbodies)
+            {
+                var networkObject = RigidBody.gameObject.GetOrAddComponent<NetworkedPhysicsObject>();
+                networkObject.ObjectId = GenerateHierarchyPath(injectedRigidbodyInfo.OriginalGameObject);
+            }
         }
 
         public void EndSession(GameWorld gameWorld)
