@@ -3,7 +3,7 @@ using EFT;
 using EFT.HealthSystem;
 using HarmonyLib;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Networking;
+using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Diagnostics;

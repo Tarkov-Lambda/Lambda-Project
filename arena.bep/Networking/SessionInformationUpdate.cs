@@ -1,19 +1,12 @@
 ﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Networking.Base;
-using ifp.arena.bep.Patches.Tarkov;
+using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using System.Linq;
-using System.Net.Sockets;
-using System.Threading.Tasks;
 
-namespace ifp.arena.bep.Networking
+namespace ifp.arena.bep.networking
 {
     public struct PlayerScoreSyncData
     {

@@ -4,7 +4,7 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Networking;
+using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;

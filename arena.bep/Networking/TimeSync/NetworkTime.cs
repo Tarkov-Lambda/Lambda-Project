@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace ifp.arena.bep.Networking.TimeSync
+namespace ifp.arena.bep.networking.TimeSync
 {
     /// <summary>
     /// Provides a monotonic local clock and (on clients) an estimate of server time using an offset.

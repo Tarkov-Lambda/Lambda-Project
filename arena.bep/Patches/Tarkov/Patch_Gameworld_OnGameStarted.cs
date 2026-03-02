@@ -1,6 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
-using ifp.arena.bep.Networking.TimeSync;
+using ifp.arena.bep.networking.TimeSync;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;

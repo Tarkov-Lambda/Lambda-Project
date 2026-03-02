@@ -2,11 +2,11 @@
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Networking.Base;
+using ifp.arena.bep.networking.Base;
 using UnityEngine;
 
 
-namespace ifp.arena.bep.Networking
+namespace ifp.arena.bep.networking
 {
     public struct ObjectTransformPacket : INetSerializable
     {

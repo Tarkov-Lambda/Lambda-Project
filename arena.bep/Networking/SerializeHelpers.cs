@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace ifp.arena.bep.Networking
+namespace ifp.arena.bep.networking
 {
     public static class NetExtensions
     {

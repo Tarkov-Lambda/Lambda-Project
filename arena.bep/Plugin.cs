@@ -6,7 +6,7 @@ using Dissonance;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Networking;
+using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches;
 using ifp.arena.shared;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Patches.Fika;
-using ifp.arena.bep.Networking.TimeSync;
+using ifp.arena.bep.networking.TimeSync;
 
 namespace ifp.arena.bep
 {
@@ -38,65 +38,64 @@ namespace ifp.arena.bep
         private ConfigEntry<KeyboardShortcut> RoundStateChangeKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
 
-        Stack<ModulePatch> patches;
-
-        RagdollCreator ragdollCreator;
-
         public static async Task Delay(int ms)
         {
             await Task.Delay(ms);
         }
 
+        private readonly List<ModulePatch> _patches = new();
+        private readonly List<IDisposable> _disposables = new();
+
+        private void RegisterPatch(ModulePatch patch)
+        {
+            patch.Enable();
+            _patches.Add(patch);
+        }
+
+        private void CreateSingleton<T>() where T : class, IDisposable, new()
+        {
+            var instance = new T();
+            Singleton<T>.Create(instance);
+            _disposables.Add(instance);
+        }
+
         void Start()
         {
-            patches = new Stack<ModulePatch>();
-
             Logger = base.Logger;
             Plugin.Logger.LogInfo("Load");
 
-            patches.Push(new Patch_Gameworld_OnGameStarted());
-            patches.Peek().Enable();
+            RegisterPatch(new Patch_Gameworld_OnGameStarted());
 
-            patches.Push(new pActiveHealthController_Kill());
-            patches.Peek().Enable();
+            RegisterPatch(new Patch_Kill());
 
-            patches.Push(new Patch_CanWalk());
-            patches.Peek().Enable();
+            RegisterPatch(new Patch_CanWalk());
+            RegisterPatch(new Patch_CanJump());
+            RegisterPatch(new Patch_CanPressTrigger());
+            RegisterPatch(new Patch_ApplyShot());
 
-            patches.Push(new Patch_CanJump());
-            patches.Peek().Enable();
+            RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
 
-            patches.Push(new Patch_CanPressTrigger());
-            patches.Peek().Enable();
 
-            patches.Push(new Patch_ApplyShot());
-            patches.Peek().Enable();
+            CreateSingleton<PlayerKilledPacketHandler>();
+            CreateSingleton<FactionChangePacketHandler>();
 
-            Singleton<AssetBundleHandler>.Create(new AssetBundleHandler());
+            CreateSingleton<SessionInfoPacketHandler>();
+            CreateSingleton<BombStatePacketHandler>();
+            CreateSingleton<RoundStateSyncPacketHandler>();
+            CreateSingleton<RestartPacketHandler>();
+            CreateSingleton<AssetLoadStatePacketHandler>();
 
-            // Packet Handlers
-            Singleton<PlayerKilledPacketHandler>.Create(new PlayerKilledPacketHandler());
-            Singleton<FactionChangePacketHandler>.Create(new FactionChangePacketHandler());
-            Singleton<BombStatePacketHandler>.Create(new BombStatePacketHandler());
-            Singleton<RoundStateSyncPacketHandler>.Create(new RoundStateSyncPacketHandler());
+            CreateSingleton<TimeSyncRequestPacketHandler>();
+            CreateSingleton<TimeSyncResponsePacketHandler>();
 
-            // Time sync
-            Singleton<TimeSyncRequestPacketHandler>.Create(new TimeSyncRequestPacketHandler());
-            Singleton<TimeSyncResponsePacketHandler>.Create(new TimeSyncResponsePacketHandler());
-
-            Singleton<SessionInfoPacketHandler>.Create(new SessionInfoPacketHandler());
-
-            Singleton<RestartPacketHandler>.Create(new RestartPacketHandler());
-            Singleton<AssetLoadStatePacketHandler>.Create(new AssetLoadStatePacketHandler());
-
-            Singleton<BaseGameMode>.Create(new BaseGameMode());
+            CreateSingleton<BaseGameMode>();
+            CreateSingleton<AssetBundleHandler>();
+            CreateSingleton<RagdollCreator>();
 
             // Client tick for time sync sampling
             var timeSyncObject = new GameObject("SnD_TimeSyncTicker");
             timeSyncObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(timeSyncObject);
-
-            ragdollCreator = new RagdollCreator();
 
             InitConfiguration();
         }
@@ -136,31 +135,17 @@ namespace ifp.arena.bep
         void OnDestroy()
         {
             Plugin.Logger.LogInfo("Unload");
-            while (patches.Count > 0)
-            {
-                patches.Pop().Disable();
-            }
 
-            ragdollCreator.Dispose();
-            ragdollCreator = null;
+            foreach (var patch in _patches)
+                patch.Disable();
 
-            // Packet Handlers
-            Singleton<PlayerKilledPacketHandler>.Instance.Dispose();
-            Singleton<FactionChangePacketHandler>.Instance.Dispose();
+            _patches.Clear();
 
-            Singleton<BombStatePacketHandler>.Instance.Dispose();
+            foreach (var disposable in _disposables)
+                disposable.Dispose();
 
-            Singleton<SessionInfoPacketHandler>.Instance.Dispose();
-            Singleton<RestartPacketHandler>.Instance.Dispose();
-            Singleton<RoundStateSyncPacketHandler>.Instance.Dispose();
-            Singleton<AssetLoadStatePacketHandler>.Instance.Dispose();
+            _disposables.Clear();
 
-            Singleton<TimeSyncRequestPacketHandler>.Instance.Dispose();
-            Singleton<TimeSyncResponsePacketHandler>.Instance.Dispose();
-
-            Singleton<BaseGameMode>.Instance.Dispose();
-
-            Singleton<AssetBundleHandler>.Instance.Dispose();
             Logger = null;
         }
     }

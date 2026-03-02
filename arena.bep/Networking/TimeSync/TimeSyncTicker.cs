@@ -2,7 +2,7 @@ using Comfort.Common;
 using Fika.Core.Main.Utils;
 using UnityEngine;
 
-namespace ifp.arena.bep.Networking.TimeSync
+namespace ifp.arena.bep.networking.TimeSync
 {
     /// <summary>
     /// Client-side Unity ticker that periodically sends timesync requests.

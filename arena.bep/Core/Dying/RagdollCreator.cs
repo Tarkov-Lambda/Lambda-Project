@@ -5,7 +5,7 @@ using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Networking;
+using ifp.arena.bep.networking;
 using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ifp.arena.bep.Networking
+namespace ifp.arena.bep.networking
 {
     public class NetworkedPhysicsObject : MonoBehaviour
     {

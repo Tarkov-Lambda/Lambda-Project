@@ -1,6 +1,6 @@
 using Fika.Core.Networking.LiteNetLib.Utils;
 
-namespace ifp.arena.bep.Networking.TimeSync
+namespace ifp.arena.bep.networking.TimeSync
 {
     public struct TimeSyncRequestPacket : INetSerializable
     {

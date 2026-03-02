@@ -3,11 +3,11 @@ using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Networking.Base;
+using ifp.arena.bep.networking.Base;
 using System;
 using System.Linq;
 
-namespace ifp.arena.bep.Networking
+namespace ifp.arena.bep.networking
 {
     public struct TemplatePacket : INetSerializable
     {

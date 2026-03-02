@@ -2,9 +2,9 @@ using Comfort.Common;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
-using ifp.arena.bep.Networking.Base;
+using ifp.arena.bep.networking.Base;
 
-namespace ifp.arena.bep.Networking.TimeSync
+namespace ifp.arena.bep.networking.TimeSync
 {
     /// <summary>
     /// Client -> Server request. Server replies with server send timestamp.

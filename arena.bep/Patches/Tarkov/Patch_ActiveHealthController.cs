@@ -3,7 +3,7 @@ using EFT;
 using EFT.HealthSystem;
 using HarmonyLib;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Networking;
+using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
-    public class pActiveHealthController_Kill : ModulePatch
+    public class Patch_Kill : ModulePatch
     {
         private static long _lastKillTime;
         private const int CooldownMs = 500;

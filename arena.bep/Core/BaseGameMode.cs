@@ -4,8 +4,8 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Networking;
-using ifp.arena.bep.Networking.TimeSync;
+using ifp.arena.bep.networking;
+using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches.Fika;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
@@ -491,7 +491,7 @@ namespace ifp.arena.bep.GameTypes
             if (mainPlayer != null)
             {
                 Teleporter.Teleport(mainPlayer);
-                pActiveHealthController_Kill.FixMe(mainPlayer.ActiveHealthController);
+                Patch_Kill.FixMe(mainPlayer.ActiveHealthController);
             }
 
             if (FikaBackendUtils.IsServer)

@@ -8,7 +8,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Networking;
+using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Linq;

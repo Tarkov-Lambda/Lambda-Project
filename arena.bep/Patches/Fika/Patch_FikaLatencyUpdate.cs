@@ -3,7 +3,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
-using ifp.arena.bep.Networking.TimeSync;
+using ifp.arena.bep.networking.TimeSync;
 using SPT.Reflection.Patching;
 using System.Reflection;
 

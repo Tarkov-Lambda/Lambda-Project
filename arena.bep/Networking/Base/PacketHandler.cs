@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using static GClass1485;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
-namespace ifp.arena.bep.Networking.Base
+namespace ifp.arena.bep.networking.Base
 {
     public enum PacketAuthority
     {
