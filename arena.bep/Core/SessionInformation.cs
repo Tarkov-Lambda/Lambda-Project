@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.networking;
@@ -42,10 +43,10 @@ namespace ifp.arena.bep.GameTypes
 
         public void InitializeScoreBoard()
         {
-            if (Singleton<GameWorld>.Instance == null || Singleton<GameWorld>.Instance.AllAlivePlayersList == null)
+            if (H.gameWorld == null || H.gameWorld.AllAlivePlayersList == null)
                 return;
 
-            foreach (var p in Singleton<GameWorld>.Instance.AllAlivePlayersList.ToArray())
+            foreach (var p in H.GetAllPlayers())
             {
                 if (!scoreboard.ContainsKey(p.Id))
                 {
@@ -66,7 +67,7 @@ namespace ifp.arena.bep.GameTypes
     {
         public PlayerScore(int id)
         {
-            this.player = Singleton<GameWorld>.Instance.AllAlivePlayersList.FirstOrDefault(p => p.Id == id);
+            player = H.GetPlayer(id);
         }
 
         public Faction faction = Faction.None;

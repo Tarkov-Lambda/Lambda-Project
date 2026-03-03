@@ -24,9 +24,9 @@ namespace ifp.arena.bep.Core.Gamemode
     public interface IGameState
     {
         RoundState StateType { get; }
-        void OnEnter(Base gameMode);
-        RoundState? OnUpdate(Base gameMode); // Returns next state, or null to stay
-        void OnExit(Base gameMode);
+        void OnEnter();
+        RoundState? OnUpdate(); // Returns next state, or null to stay
+        void OnExit();
     }
 
     public abstract class GameModeRules
@@ -48,7 +48,7 @@ namespace ifp.arena.bep.Core.Gamemode
             GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), "STATUS", header);
             currentY += 40f;
 
-            foreach (var p in game.session.scoreboard.Values.OrderByDescending(p => p.kills))
+            foreach (var p in H.game.session.scoreboard.Values.OrderByDescending(p => p.kills))
             {
                 Rect rowRect = new Rect(bounds.x, currentY, bounds.width, rowHeight);
                 if (!p.isAlive) { GUI.color = new Color(1f, 0.5f, 0.5f, 0.3f); GUI.DrawTexture(rowRect, highlight); }
@@ -62,7 +62,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), p.deaths.ToString(), row);
                 GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.assists.ToString(), row);
 
-                bool isWarmup = game.session.roundState == RoundState.Warmup;
+                bool isWarmup = H.game.session.roundState == RoundState.Warmup;
                 GUI.color = isWarmup ? p.isReady ? Color.green : Color.yellow : p.isAlive ? Color.green : Color.red;
                 GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), isWarmup ? p.isReady ? "READY" : "WAITING" : p.isAlive ? "ALIVE" : "DEAD", row);
 
@@ -141,7 +141,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (FikaBackendUtils.IsServer) StateTimer -= Time.deltaTime;
             else StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
-            RoundState? nextState = _currentState.OnUpdate(this);
+            RoundState? nextState = _currentState.OnUpdate();
             if (nextState.HasValue && FikaBackendUtils.IsServer)
                 ChangeState(nextState.Value);
         }
@@ -149,11 +149,11 @@ namespace ifp.arena.bep.Core.Gamemode
         public void ChangeState(RoundState newStateType)
         {
             if (FikaBackendUtils.IsClient) return;
-            _currentState?.OnExit(this);
+            _currentState?.OnExit();
 
             _currentState = ActiveRules.CreateState(newStateType);
             session.roundState = _currentState.StateType;
-            _currentState.OnEnter(this);
+            _currentState.OnEnter();
 
             ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
             PhaseDurationSeconds = StateTimer;
@@ -195,12 +195,12 @@ namespace ifp.arena.bep.Core.Gamemode
             Rect topBarRect = new Rect(Screen.width / 2f - 200f, 0, 400f, 60f);
 
             GUI.DrawTexture(topBarRect, _darkBackground);
-            game.ActiveRules.DrawTopBar(game, topBarRect, _headerStyle, _scoreBigStyle, _timerStyle);
+            H.game.ActiveRules.DrawTopBar(game, topBarRect, _headerStyle, _scoreBigStyle, _timerStyle);
 
             if (Input.GetKey(KeyCode.Tab))
             {
                 Rect sbBounds = new Rect((Screen.width - 800f) / 2f, (Screen.height - 500f) / 2f, 800f, 500f);
-                game.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
+                H.game.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
             }
         }
 
