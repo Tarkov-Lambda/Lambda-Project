@@ -4,6 +4,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using System;
@@ -39,8 +40,6 @@ namespace ifp.arena.bep.networking
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
-        public event Action<EFT.Player> OnPlayerKilled;
-
         public void Send(int killerId, int victimId, int assistId)
         {
             var packet = new PlayerKilledPacket
@@ -62,12 +61,7 @@ namespace ifp.arena.bep.networking
             {
                 H.scoreboard[packet.victimId].isAlive = false;
             }
-
-            EFT.Player victimPlayer = H.GetPlayer(packet.victimId);
-            if (victimPlayer != null)
-            {
-                OnPlayerKilled?.Invoke(victimPlayer);
-            }
+            EventBus.OnPlayerKill(packet);
         }
     }
 

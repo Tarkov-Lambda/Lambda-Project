@@ -22,13 +22,13 @@ namespace ifp.arena.bep.Core
         // bro thinks he's the main character
         public static Player GetMainPlayer()
         {
-            if (!Singleton<GameWorld>.Instantiated) return null;
+            if (!isGameWorldActive()) return null;
             return gameWorld.MainPlayer;
         }
 
         public static Player GetPlayer(int playerId)
         {
-            if (!Singleton<GameWorld>.Instantiated) return null;
+            if (!isGameWorldActive()) return null;
             return gameWorld.AllAlivePlayersList.FirstOrDefault(p => p.Id == playerId);;
         }
 
@@ -42,14 +42,13 @@ namespace ifp.arena.bep.Core
 
         public static List<Player> GetAllPlayers()
         {
-            if (!Singleton<GameWorld>.Instantiated) return null;
+            if (!isGameWorldActive()) return null;
             return Singleton<GameWorld>.Instance.AllAlivePlayersList;
         }
 
-        public static List<Player> isGameWorldActive()
+        public static bool isGameWorldActive()
         {
-            if (!Singleton<GameWorld>.Instantiated) return null;
-            return Singleton<GameWorld>.Instance.AllAlivePlayersList;
+            return Singleton<GameWorld>.Instantiated;
         }
 
 

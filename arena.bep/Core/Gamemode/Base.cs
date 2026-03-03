@@ -80,13 +80,10 @@ namespace ifp.arena.bep.Core.Gamemode
     }
 
     public static class EventBus {
-        static Action<RoundState> OnEnter;
-        static Action<RoundState> OnEnd;
-        
-        static Action<BombState> OnBombStateChange;
-
-        static Action<Player> OnPlayerKill;
-        static Action<Player> OnPlayerDeath;
+        public static Action<RoundState> OnEnter;
+        public static Action<RoundState> OnEnd;
+        public static Action<BombState> OnBombStateChange;
+        public static Action<PlayerKilledPacket> OnPlayerKill;
     }
     
     // This is the place where we manage both server/client arena behaviour
@@ -150,11 +147,13 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsClient) return;
             _currentState?.OnExit();
+            EventBus.OnEnd(_currentState.StateType);
 
             _currentState = ActiveRules.CreateState(newStateType);
             session.roundState = _currentState.StateType;
             _currentState.OnEnter();
-
+            EventBus.OnEnter(_currentState.StateType);
+            
             ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
             PhaseDurationSeconds = StateTimer;
 
@@ -171,10 +170,10 @@ namespace ifp.arena.bep.Core.Gamemode
             session.roundState = state;
             IGameState newState = ActiveRules.CreateState(state);
             if (newState == null) return;
-            _currentState?.OnExit(this);
+            _currentState?.OnExit();
             _currentState = newState;
             StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
-            _currentState.OnEnter(this);
+            _currentState.OnEnter();
         }
 
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();

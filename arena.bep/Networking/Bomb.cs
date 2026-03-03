@@ -4,6 +4,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
@@ -55,8 +56,8 @@ namespace ifp.arena.bep.networking
 
         public override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
         {
-            // Only server sends these states
-            if (packet.state == BombState.Planted || packet.state == BombState.Defused || packet.state == BombState.Exploded)
+            // Only server is allowed to send these states
+            if (packet.state is BombState.Planted or BombState.Defused or BombState.Exploded)
             {
                 return false;
             }
@@ -67,6 +68,7 @@ namespace ifp.arena.bep.networking
         public override void OnReceive(BombStatePacket packet, NetPeer peer)
         {
             H.game.session.bombState = packet.state;
+            EventBus.OnBombStateChange(packet.state);
         }
     }
 }

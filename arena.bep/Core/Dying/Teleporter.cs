@@ -14,20 +14,22 @@ namespace ifp.arena.bep.Core.Dying
     {
         static public Vector3 newPos;
 
+        // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
         static public void Teleport(Player player)
         {
             Faction faction;
-            SessionInfo session = Base.Instance.session;
-            PlayerScore playerScore = session.scoreboard.FirstOrDefault(p => p.Value.player == Singleton<GameWorld>.Instance.MainPlayer).Value;
-            if (session.roundState == RoundState.None || (playerScore != null && !playerScore.isAlive))
+            PlayerScore playerScore = H.GetPlayerScore(player.Id);
+
+            if (H.session.roundState == RoundState.None || (playerScore != null && !playerScore.isAlive))
             {
                 faction = Faction.Lobby;
-            } else
+            }
+            else
             {
                 faction = Plugin.PrefferedFaction.Value;
             }
 
-                newPos = GetNewPosition(Plugin.PrefferedFaction.Value);
+            newPos = GetNewPosition(faction);
             player.Teleport(newPos);
         }
 

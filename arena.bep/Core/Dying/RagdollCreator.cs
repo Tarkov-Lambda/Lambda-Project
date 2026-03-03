@@ -4,6 +4,7 @@ using EFT.AssetsManager;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using RootMotion.FinalIK;
@@ -22,14 +23,14 @@ namespace ifp.arena.bep.Core.Dying
 
         public RagdollCreator()
         {
-            Singleton<PlayerKilledPacketHandler>.Instance.OnPlayerKilled += CreateRagdollFromPlayer;
+            EventBus.OnPlayerKill += CreateRagdollFromPlayer;
 
             regsitry = new Dictionary<Player, FakeCorpse>();
         }
 
         public void Dispose()
         {
-            Singleton<PlayerKilledPacketHandler>.Instance.OnPlayerKilled -= CreateRagdollFromPlayer;
+            EventBus.OnPlayerKill -= CreateRagdollFromPlayer;
 
             foreach (var kvp in regsitry)
             {
@@ -41,9 +42,10 @@ namespace ifp.arena.bep.Core.Dying
             regsitry.Clear();
         }
 
-        private void CreateRagdollFromPlayer(Player player)
+        private void CreateRagdollFromPlayer(PlayerKilledPacket playerKilledPacket)
         {
-            if ( player == null || player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id) return;
+            var player = H.GetPlayer(playerKilledPacket.victimId);
+            if (player == null || player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id) return;
 
             GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
                 typeof(PlayerBody),

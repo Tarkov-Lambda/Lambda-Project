@@ -61,8 +61,8 @@ namespace ifp.arena.bep.networking
 
         public override async void OnReceive(RestartPacket packet, NetPeer peer)
         {
-            var mainPlayer = Singleton<GameWorld>.Instance?.MainPlayer;
-            if (mainPlayer != null)
+            Player player = H.GetMainPlayer();
+            if (player != null)
             {
                 Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
             }
@@ -85,13 +85,10 @@ namespace ifp.arena.bep.networking
                     H.game.ActiveRules = new SnDModeRules();
                     break;
             }
-
-
-            Player player = H.GetMainPlayer();
             if (player != null)
             {
                 Teleporter.Teleport(player);
             }
-}
+        }
     }
 }
