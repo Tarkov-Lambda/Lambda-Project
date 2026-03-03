@@ -13,7 +13,7 @@ namespace ifp.arena.bep.Core
     // vague posting
     public static class H
     {
-        public static GameWorld gameWorld => H.gameWorld;
+        public static GameWorld gameWorld => Singleton<GameWorld>.Instance;
 
         // vague posting again
         public static ArenaController game => Singleton<ArenaController>.Instance;
