@@ -69,7 +69,7 @@ namespace ifp.arena.bep.networking
 
             if (FikaBackendUtils.IsServer)
             {
-                H.game.ChangeState(MatchState.Warmup);
+                H.game.ChangeState(MatchState.RoundPrepare);
             }
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);

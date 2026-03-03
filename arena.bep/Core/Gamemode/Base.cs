@@ -28,7 +28,6 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public abstract class GameModeRules
     {
-
         public abstract IGameState CreateState(MatchState state);
         public abstract void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer);
 
@@ -77,13 +76,14 @@ namespace ifp.arena.bep.Core.Gamemode
         }
     }
 
-    public static class EventBus {
+    public static class EventBus
+    {
         public static Action<MatchState> OnEnter;
         public static Action<MatchState> OnEnd;
         public static Action<BombState> OnBombStateChange;
         public static Action<PlayerKilledPacket> OnPlayerKill;
     }
-    
+
     // This is the place where we manage both server/client arena behaviour
     public class ArenaController : Singleton<ArenaController>, IDisposable
     {
@@ -120,10 +120,12 @@ namespace ifp.arena.bep.Core.Gamemode
 
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
+            H.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
         }
 
-        public void EndSession(GameWorld gameWorld) {
+        public void EndSession(GameWorld gameWorld)
+        {
             if (_tickerObject != null)
                 UnityEngine.Object.Destroy(_tickerObject);
         }
@@ -144,6 +146,8 @@ namespace ifp.arena.bep.Core.Gamemode
         public void ChangeState(MatchState newStateType)
         {
             if (FikaBackendUtils.IsClient) return;
+
+
             _currentState?.OnExit();
             EventBus.OnEnd(_currentState.StateType);
 
@@ -151,7 +155,7 @@ namespace ifp.arena.bep.Core.Gamemode
             session.roundState = _currentState.StateType;
             _currentState.OnEnter();
             EventBus.OnEnter(_currentState.StateType);
-            
+
             ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
             PhaseDurationSeconds = StateTimer;
 
@@ -222,7 +226,8 @@ namespace ifp.arena.bep.Core.Gamemode
             Texture2D result = new Texture2D(w, h); result.SetPixels(pix); result.Apply(); return result;
         }
 
-        private void Update() {
+        private void Update()
+        {
             if (Singleton<ArenaController>.Instantiated)
                 Singleton<ArenaController>.Instance.Update();
         }

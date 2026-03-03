@@ -8,6 +8,7 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ifp.arena.bep.networking
@@ -54,6 +55,8 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
+            NotificationManagerClass.DisplayMessageNotification($"{packet}");
+            
             H.scoreboard[packet.killerId].kills++;
             H.scoreboard[packet.victimId].deaths++;
 

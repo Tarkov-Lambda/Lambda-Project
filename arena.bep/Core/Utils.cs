@@ -18,10 +18,14 @@ namespace ifp.arena.bep.Core
         public static ArenaController game => Singleton<ArenaController>.Instance;
         public static SessionInfo session => Singleton<ArenaController>.Instance.session;
         public static Dictionary<int, PlayerScore> scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
+        public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
+
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()
         {
+            NotificationManagerClass.DisplayMessageNotification($"{isGameWorldActive()}");
+
             if (!isGameWorldActive()) return null;
             return gameWorld.MainPlayer;
         }
@@ -29,7 +33,7 @@ namespace ifp.arena.bep.Core
         public static Player GetPlayer(int playerId)
         {
             if (!isGameWorldActive()) return null;
-            return gameWorld.AllAlivePlayersList.FirstOrDefault(p => p.Id == playerId);;
+            return gameWorld.AllAlivePlayersList.FirstOrDefault(p => p.Id == playerId); ;
         }
 
         public static PlayerScore GetPlayerScore(int playerId)
@@ -50,7 +54,5 @@ namespace ifp.arena.bep.Core
         {
             return Singleton<GameWorld>.Instantiated;
         }
-
-
     }
 }
