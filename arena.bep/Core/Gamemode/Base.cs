@@ -18,9 +18,6 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode
 {
-    // ---------------------------------------------------------
-    // CORE INTERFACES & ABSTRACTS (Zero Dependency Segment)
-    // ---------------------------------------------------------
     public interface IGameState
     {
         RoundState StateType { get; }

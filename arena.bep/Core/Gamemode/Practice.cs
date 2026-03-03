@@ -8,29 +8,16 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode
 {
-    public class FFAAction : IGameState
-    {
-        public RoundState StateType => RoundState.Action;
-        public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 600f; } // 10 min
-        public RoundState? OnUpdate()
-        {
-            if (FikaBackendUtils.IsClient) return null;
-            if (H.game.StateTimer <= 0 || H.game.session.scoreboard.Values.Any(p => p.kills >= 20)) return RoundState.Finish;
-            return null;
-        }
-        public void OnExit() { }
-    }
-
-    public class FFAModeRules : GameModeRules
+    public class PracticeModeRules : GameModeRules
     {
         public override IGameState CreateState(RoundState state) => state switch
         {
             RoundState.None => new SharedNone(),
-            RoundState.Warmup => new SharedWarmup(),
-            RoundState.WarmupEnd => new SharedWarmupEnd(),
-            RoundState.Prepare => new SharedPrepare(),
-            RoundState.Action => new FFAAction(),
-            RoundState.Finish => new SharedFinish(),
+            RoundState.Warmup => new SharedNone(),
+            RoundState.WarmupEnd => new SharedNone(),
+            RoundState.Prepare => new SharedNone(),
+            RoundState.Action => new SharedNone(),
+            RoundState.End => new SharedNone(),
             _ => null
         };
         

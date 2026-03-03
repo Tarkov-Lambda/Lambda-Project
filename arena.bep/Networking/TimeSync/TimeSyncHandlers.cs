@@ -6,9 +6,7 @@ using ifp.arena.bep.networking.Base;
 
 namespace ifp.arena.bep.networking.TimeSync
 {
-    /// <summary>
-    /// Client -> Server request. Server replies with server send timestamp.
-    /// </summary>
+    // Client to server
     public class TimeSyncRequestPacketHandler : PacketHandler<TimeSyncRequestPacket>
     {
         public TimeSyncRequestPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
@@ -30,8 +28,7 @@ namespace ifp.arena.bep.networking.TimeSync
 
         public override void OnReceive(TimeSyncRequestPacket packet, NetPeer netPeer)
         {
-            // Server receives request and responds only to the requesting peer.
-            if (!FikaBackendUtils.IsServer)
+            if (FikaBackendUtils.IsClient)
                 return;
 
             var response = new TimeSyncResponsePacket
@@ -45,9 +42,7 @@ namespace ifp.arena.bep.networking.TimeSync
         }
     }
 
-    /// <summary>
-    /// Server -> Client time sync response.
-    /// </summary>
+    // Server to client responding
     public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacket>
     {
         public TimeSyncResponsePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }

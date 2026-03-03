@@ -5,7 +5,8 @@ namespace ifp.arena.shared
     {
         TDM,
         SND,
-        FFA
+        FFA,
+        PRACTICE
     }
 
     public enum Faction

@@ -5,14 +5,10 @@ using UnityEngine;
 
 namespace ifp.arena.bep.networking.TimeSync
 {
-    /// <summary>
-    /// Client-side Unity ticker that periodically sends timesync requests.
-    /// </summary>
     public class TimeSyncTicker : MonoBehaviour
     {
         private double _nextSendLocalSeconds;
 
-        // Requested cadence: 1 second
         private const double IntervalSeconds = 1.0;
 
         private void Awake()

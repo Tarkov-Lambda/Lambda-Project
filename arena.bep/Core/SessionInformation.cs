@@ -17,13 +17,20 @@ namespace ifp.arena.bep.GameTypes
 {
     public enum RoundState
     {
+        // Just chilling type beat
         None,
+        // Waiting for player to load
         Warmup,
         WarmupEnd,
+        // Round / Mainloop
         Prepare,
         Action,
         Planted,
-        End
+        End,
+        
+        // Probably a good way to do these
+        SideSwap,
+        Finish
     }
 
     public class SessionInfo

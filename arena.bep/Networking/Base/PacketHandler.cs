@@ -1,22 +1,12 @@
 ﻿using Comfort.Common;
 using EFT;
-using EFT.UI;
-using Fika.Core.ConsoleCommands;
-using Fika.Core.Main.Components;
-using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using FlyingWormConsole3.LiteNetLib;
 using HarmonyLib;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using static GClass1485;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
 namespace ifp.arena.bep.networking.Base
