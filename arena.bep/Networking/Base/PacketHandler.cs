@@ -30,7 +30,7 @@ namespace ifp.arena.bep.networking.Base
 
             Patch_Gameworld_OnGameStarted.OnGameStarted += RegisterPacket;
 
-            if (Singleton<GameWorld>.Instance != null)
+            if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
             {
                 RegisterPacket(Singleton<GameWorld>.Instance);
             }

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Comfort.Common;
 using EFT;
 using ifp.arena.bep.Core.Gamemode;
@@ -24,13 +25,13 @@ namespace ifp.arena.bep.Core
         // bro thinks he's the main character
         public static Player GetMainPlayer()
         {
-            if (!isGameWorldActive()) return null;
+            if (!isInRaid()) return null;
             return gameWorld.MainPlayer;
         }
 
         public static Player GetPlayer(int playerId)
         {
-            if (!isGameWorldActive()) return null;
+            if (!isInRaid()) return null;
             return gameWorld.AllAlivePlayersList.FirstOrDefault(p => p.Id == playerId); ;
         }
 
@@ -44,13 +45,18 @@ namespace ifp.arena.bep.Core
 
         public static List<Player> GetAllPlayers()
         {
-            if (!isGameWorldActive()) return null;
+            if (!isInRaid()) return null;
             return Singleton<GameWorld>.Instance.AllAlivePlayersList;
         }
 
-        public static bool isGameWorldActive()
+        public static bool isInRaid()
         {
-            return Singleton<GameWorld>.Instantiated;
+            return gameWorld != null && gameWorld is not HideoutGameWorld;
+        }
+
+        public static async Task Delay(int ms)
+        {
+            await Task.Delay(ms);
         }
     }
 }

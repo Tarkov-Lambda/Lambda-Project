@@ -42,11 +42,6 @@ namespace ifp.arena.bep
         private ConfigEntry<KeyboardShortcut> RoundStateChangeKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
 
-        public static async Task Delay(int ms)
-        {
-            await Task.Delay(ms);
-        }
-
         private readonly List<ModulePatch> _patches = new();
         private readonly List<IDisposable> _disposables = new();
 
@@ -66,7 +61,7 @@ namespace ifp.arena.bep
         void Start()
         {
             Logger = base.Logger;
-            Plugin.Logger.LogInfo("Load");
+            Logger.LogInfo("Load");
 
             // PATCHES
             RegisterPatch(new Patch_Gameworld_OnGameStarted());
@@ -74,11 +69,11 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_Kill());
 
-            // RegisterPatch(new Patch_CanWalk());
-            // RegisterPatch(new Patch_CanJump());
+            RegisterPatch(new Patch_CanWalk());
+            RegisterPatch(new Patch_CanJump());
             // RegisterPatch(new Patch_CanPressTrigger());
-            // RegisterPatch(new Patch_ApplyShot());
-            // RegisterPatch(new Patch_ApplyDamage());
+            RegisterPatch(new Patch_ApplyShot());
+            RegisterPatch(new Patch_ApplyDamage());
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
 
@@ -90,7 +85,7 @@ namespace ifp.arena.bep
 
             CreateSingleton<SessionInfoPacketHandler>();
             CreateSingleton<BombStatePacketHandler>();
-            CreateSingleton<RoundStateSyncPacketHandler>();
+            CreateSingleton<MatchStateSyncPacketHandler>();
             CreateSingleton<RestartPacketHandler>();
             CreateSingleton<AssetLoadStatePacketHandler>();
 
@@ -130,7 +125,7 @@ namespace ifp.arena.bep
             if (RoundStateChangeKey.Value.IsDown())
             {
                 Singleton<ArenaController>.Instance.session.roundState = (MatchState)(((int)Singleton<ArenaController>.Instance.session.roundState + 1) % 6); ;
-                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<ArenaController>.Instance.session.roundState, 5d);
+                Singleton<MatchStateSyncPacketHandler>.Instance.Send(Singleton<ArenaController>.Instance.session.roundState, 5d);
                 Logger.LogInfo(Singleton<ArenaController>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
@@ -141,7 +136,7 @@ namespace ifp.arena.bep
 
         void OnDestroy()
         {
-            Plugin.Logger.LogInfo("Unload");
+            Logger.LogInfo("Unload");
 
             if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
             {

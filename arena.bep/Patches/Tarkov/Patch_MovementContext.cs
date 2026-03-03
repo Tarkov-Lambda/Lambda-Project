@@ -7,6 +7,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
@@ -28,6 +29,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(ref bool __result)
         {
+            if(!H.isInRaid()) return;
             if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;
@@ -45,6 +47,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(ref bool __result)
         {
+            if(!H.isInRaid()) return;
             if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;

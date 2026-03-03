@@ -1,5 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.TimeSync;
 using SPT.Reflection.Patching;
 using System;
@@ -41,7 +42,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(GameWorld __instance)
         {
-            if(__instance is HideoutGameWorld) return;
+            if(!H.isInRaid()) return;
 
             // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
             NetworkTime.Reset();

@@ -23,7 +23,6 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (player != null && player.IsYourPlayer)
             {
-                H.Notify($"{player.Id}");
                 Singleton<HandsInspectPacketHandler>.Instance.Send(player.Id);
             }
         }

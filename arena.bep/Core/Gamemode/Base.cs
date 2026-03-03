@@ -161,7 +161,7 @@ namespace ifp.arena.bep.Core.Gamemode
             PhaseDurationSeconds = StateTimer;
 
             if (FikaBackendUtils.IsServer)
-                Singleton<RoundStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer);
+                Singleton<MatchStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer);
         }
 
         public void ApplyReplicatedRoundState(MatchState state, double phaseDurationSeconds, double serverPhaseStartSeconds)

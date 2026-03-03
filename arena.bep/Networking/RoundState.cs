@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace ifp.arena.bep.networking
 {
-    public struct RoundStateSyncPacket : INetSerializable
+    public struct MatchStateSyncPacket : INetSerializable
     {
         public MatchState roundState;
         public double phaseDurationSeconds;
@@ -38,16 +38,16 @@ namespace ifp.arena.bep.networking
         }
     }
 
-    public class RoundStateSyncPacketHandler : PacketHandler<RoundStateSyncPacket>
+    public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
     {
-        public RoundStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+        public MatchStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
         public void Send(MatchState roundState, double phaseDurationSeconds)
         {
             // serverPhaseStartSeconds is "now" on the server. Clients derive remaining time from it.
             double serverNow = NetworkTime.ServerNowSeconds;
 
-            var packet = new RoundStateSyncPacket
+            var packet = new MatchStateSyncPacket
             {
                 roundState = roundState,
                 phaseDurationSeconds = phaseDurationSeconds,
@@ -57,7 +57,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(RoundStateSyncPacket packet, NetPeer peer)
+        public override void OnReceive(MatchStateSyncPacket packet, NetPeer peer)
         {
             H.game.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
         }
