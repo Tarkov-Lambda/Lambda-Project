@@ -44,7 +44,6 @@ namespace ifp.arena.bep.networking.Base
             } else
             {
                 Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(OnReceive);
-
             }
         }
 
@@ -81,7 +80,7 @@ namespace ifp.arena.bep.networking.Base
 
         // EXPLANATION:
         // Server Send -> Server RequestSend -> Server Broadcast Packet -> Server/Client OnReceive
-        // Client Send -> Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/Client OnReceive
+        // Local Client Send -> Local Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/Client OnReceive
 
         protected void RequestSend(T packet)
         {

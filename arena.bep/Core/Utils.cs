@@ -15,9 +15,9 @@ namespace ifp.arena.bep.Core
         public static GameWorld gameWorld => Singleton<GameWorld>.Instance;
 
         // vague posting again
-        public static Base game => Singleton<Base>.Instance;
-        public static SessionInfo session => Singleton<Base>.Instance.session;
-        public static Dictionary<int, PlayerScore> scoreboard => Singleton<Base>.Instance.session.scoreboard;
+        public static ArenaController game => Singleton<ArenaController>.Instance;
+        public static SessionInfo session => Singleton<ArenaController>.Instance.session;
+        public static Dictionary<int, PlayerScore> scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()
@@ -34,7 +34,7 @@ namespace ifp.arena.bep.Core
 
         public static PlayerScore GetPlayerScore(int playerId)
         {
-            if (!Singleton<Base>.Instantiated) return null;
+            if (!Singleton<ArenaController>.Instantiated) return null;
 
             game.session.scoreboard.TryGetValue(playerId, out var playerScore);
             return playerScore;

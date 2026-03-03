@@ -10,12 +10,12 @@ namespace ifp.arena.bep.Core.Gamemode
 {
     public class FFAAction : IGameState
     {
-        public RoundState StateType => RoundState.Action;
+        public MatchState StateType => MatchState.RoundAction;
         public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 600f; } // 10 min
-        public RoundState? OnUpdate()
+        public MatchState? OnUpdate()
         {
             if (FikaBackendUtils.IsClient) return null;
-            if (H.game.StateTimer <= 0 || H.game.session.scoreboard.Values.Any(p => p.kills >= 20)) return RoundState.Finish;
+            if (H.game.StateTimer <= 0 || H.scoreboard.Values.Any(p => p.kills >= 20)) return MatchState.MatchEnd;
             return null;
         }
         public void OnExit() { }
@@ -23,23 +23,23 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class FFAModeRules : GameModeRules
     {
-        public override IGameState CreateState(RoundState state) => state switch
+        public override IGameState CreateState(MatchState state) => state switch
         {
-            RoundState.None => new SharedNone(),
-            RoundState.Warmup => new SharedWarmup(),
-            RoundState.WarmupEnd => new SharedWarmupEnd(),
-            RoundState.Prepare => new SharedPrepare(),
-            RoundState.Action => new FFAAction(),
-            RoundState.Finish => new SharedFinish(),
+            MatchState.None => new SharedNone(),
+            MatchState.Warmup => new SharedWarmup(),
+            MatchState.WarmupEnd => new SharedWarmupEnd(),
+            MatchState.RoundPrepare => new SharedPrepare(),
+            MatchState.RoundAction => new FFAAction(),
+            MatchState.MatchEnd => new SharedFinish(),
             _ => null
         };
         
-        public override void DrawTopBar(Base game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
+        public override void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
         {
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.game.StateTimer), timer);
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), "FFA", header);
 
-            var top = H.game.session.scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
+            var top = H.scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
             if (top.Count > 0)
             {
                 GUI.Label(new Rect(bounds.x, bounds.y, 100, 20), "1ST", header);

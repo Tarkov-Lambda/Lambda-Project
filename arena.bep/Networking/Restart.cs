@@ -44,7 +44,7 @@ namespace ifp.arena.bep.networking
 
             H.session.scoreboard.Clear();
             H.session.factionWins.Clear();
-            H.session.roundState = RoundState.None;
+            H.session.roundState = MatchState.None;
             H.session.mapName = Plugin.MapName.Value;
             H.session.currentGameMode = Plugin.GameMode.Value;
             H.session.InitializeScoreBoard();
@@ -69,7 +69,7 @@ namespace ifp.arena.bep.networking
 
             if (FikaBackendUtils.IsServer)
             {
-                H.game.ChangeState(RoundState.Warmup);
+                H.game.ChangeState(MatchState.Warmup);
             }
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);

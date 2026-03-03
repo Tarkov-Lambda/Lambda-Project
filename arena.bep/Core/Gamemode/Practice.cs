@@ -10,18 +10,18 @@ namespace ifp.arena.bep.Core.Gamemode
 {
     public class PracticeModeRules : GameModeRules
     {
-        public override IGameState CreateState(RoundState state) => state switch
+        public override IGameState CreateState(MatchState state) => state switch
         {
-            RoundState.None => new SharedNone(),
-            RoundState.Warmup => new SharedNone(),
-            RoundState.WarmupEnd => new SharedNone(),
-            RoundState.Prepare => new SharedNone(),
-            RoundState.Action => new SharedNone(),
-            RoundState.End => new SharedNone(),
+            MatchState.None => new SharedNone(),
+            MatchState.Warmup => new SharedNone(),
+            MatchState.WarmupEnd => new SharedNone(),
+            MatchState.RoundPrepare => new SharedNone(),
+            MatchState.RoundAction => new SharedNone(),
+            MatchState.RoundEnd => new SharedNone(),
             _ => null
         };
         
-        public override void DrawTopBar(Base game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
+        public override void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
         {
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.game.StateTimer), timer);
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), "FFA", header);

@@ -28,7 +28,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         static bool Prefix(ref bool __result)
         {
-            if (Singleton<Base>.Instance.session.IsControllerPartiallyLocked())
+            if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;
                 return false;

@@ -11,15 +11,15 @@ namespace ifp.arena.bep.Core.Gamemode
 {
     public class SnDAction : IGameState
     {
-        public RoundState StateType => RoundState.Action;
+        public MatchState StateType => MatchState.RoundAction;
         public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 120f; }
-        public RoundState? OnUpdate()
+        public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
             Faction? winner = CheckWipe();
-            if (winner.HasValue) { Award(winner.Value); return RoundState.End; }
-            if (H.session.bombState == BombState.Planted) return RoundState.Planted;
-            if (H.game.StateTimer <= 0) { Award(Faction.CT); return RoundState.End; }
+            if (winner.HasValue) { Award(winner.Value); return MatchState.RoundEnd; }
+            if (H.session.bombState == BombState.Planted) return MatchState.RoundPlanted;
+            if (H.game.StateTimer <= 0) { Award(Faction.CT); return MatchState.RoundEnd; }
             return null;
         }
         public void OnExit() { }
@@ -42,13 +42,13 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class SnDPlanted : IGameState
     {
-        public RoundState StateType => RoundState.Planted;
+        public MatchState StateType => MatchState.RoundPlanted;
         public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 45f; }
-        public RoundState? OnUpdate()
+        public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
-            if (!H.scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT)) { Award(Faction.T); return RoundState.End; }
-            if (H.game.StateTimer <= 0) { Award(Faction.T); return RoundState.End; }
+            if (!H.scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT)) { Award(Faction.T); return MatchState.RoundEnd; }
+            if (H.game.StateTimer <= 0) { Award(Faction.T); return MatchState.RoundEnd; }
             return null;
         }
         public void OnExit() { }
@@ -72,24 +72,24 @@ namespace ifp.arena.bep.Core.Gamemode
         public float platingTime = 4.5f;
         public float defusingTime = 5f;
 
-        public override IGameState CreateState(RoundState state) => state switch
+        public override IGameState CreateState(MatchState state) => state switch
         {
-            RoundState.None => new SharedNone(),
+            MatchState.None => new SharedNone(),
 
-            RoundState.Warmup => new SharedWarmup(),
-            RoundState.WarmupEnd => new SharedWarmupEnd(),
+            MatchState.Warmup => new SharedWarmup(),
+            MatchState.WarmupEnd => new SharedWarmupEnd(),
 
-            RoundState.Prepare => new SharedPrepare(),
-            RoundState.Action => new SnDAction(),
-            RoundState.Planted => new SnDPlanted(),
-            RoundState.End => new SharedEnd(),
+            MatchState.RoundPrepare => new SharedPrepare(),
+            MatchState.RoundAction => new SnDAction(),
+            MatchState.RoundPlanted => new SnDPlanted(),
+            MatchState.RoundEnd => new SharedEnd(),
 
-            RoundState.SideSwap => new SharedSideSwap(),
-            RoundState.Finish => new SharedFinish(),
+            MatchState.SideSwap => new SharedSideSwap(),
+            MatchState.MatchEnd => new SharedFinish(),
             _ => null
         };
 
-        public override void DrawTopBar(Base game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
+        public override void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
         {
             GUI.Label(new Rect(bounds.x, bounds.y, 100, bounds.height - 20), "T", header);
             GUI.Label(new Rect(bounds.x, bounds.y + 15, 100, bounds.height), H.game.session.factionWins.GetValueOrDefault(Faction.T, 0).ToString(), scoreBig);

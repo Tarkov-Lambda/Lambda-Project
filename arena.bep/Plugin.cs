@@ -94,7 +94,7 @@ namespace ifp.arena.bep
             CreateSingleton<TimeSyncRequestPacketHandler>();
             CreateSingleton<TimeSyncResponsePacketHandler>();
 
-            CreateSingleton<Base>();
+            CreateSingleton<ArenaController>();
             CreateSingleton<AssetBundleHandler>();
             CreateSingleton<RagdollCreator>();
 
@@ -123,9 +123,9 @@ namespace ifp.arena.bep
             }
             if (RoundStateChangeKey.Value.IsDown())
             {
-                Singleton<Base>.Instance.session.roundState = (RoundState)(((int)Singleton<Base>.Instance.session.roundState + 1) % 6); ;
-                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<Base>.Instance.session.roundState, 5d);
-                Logger.LogInfo(Singleton<Base>.Instance.session.roundState);
+                Singleton<ArenaController>.Instance.session.roundState = (MatchState)(((int)Singleton<ArenaController>.Instance.session.roundState + 1) % 6); ;
+                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<ArenaController>.Instance.session.roundState, 5d);
+                Logger.LogInfo(Singleton<ArenaController>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
             {
@@ -137,7 +137,7 @@ namespace ifp.arena.bep
         {
             Plugin.Logger.LogInfo("Unload");
 
-            Base.Instance.session.roundState = RoundState.None;
+            ArenaController.Instance.session.roundState = MatchState.None;
             Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
 
             foreach (var patch in _patches)

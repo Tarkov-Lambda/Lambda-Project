@@ -20,7 +20,7 @@ namespace ifp.arena.bep.Core.Dying
             Faction faction;
             PlayerScore playerScore = H.GetPlayerScore(player.Id);
 
-            if (H.session.roundState == RoundState.None || (playerScore != null && !playerScore.isAlive))
+            if (H.session.roundState == MatchState.None || (playerScore != null && !playerScore.isAlive))
             {
                 faction = Faction.Lobby;
             }

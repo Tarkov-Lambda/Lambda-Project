@@ -21,7 +21,7 @@ namespace ifp.arena.bep.networking
 
     public struct SessionInfoPacket : INetSerializable
     {
-        public RoundState roundState;
+        public MatchState roundState;
         public GameModes gameMode;
         public PlayerScoreSyncData[] scores;
         public string mapName;
@@ -49,7 +49,7 @@ namespace ifp.arena.bep.networking
 
         public void Deserialize(NetDataReader reader)
         {
-            roundState = (RoundState)reader.GetInt();
+            roundState = (MatchState)reader.GetInt();
             gameMode = (GameModes)reader.GetInt();
             mapName = reader.GetString();
 

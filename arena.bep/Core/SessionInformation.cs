@@ -15,33 +15,50 @@ using UnityEngine;
 
 namespace ifp.arena.bep.GameTypes
 {
-    public enum RoundState
+    public enum MatchState
     {
         // Just chilling type beat
         None,
-        // Waiting for player to load
+
+        // Waiting for players to load
         Warmup,
         WarmupEnd,
-        // Round / Mainloop
-        Prepare,
-        Action,
-        Planted,
-        End,
-        
+
+        // Shared
+        RoundPrepare,
+        RoundAction,
+        RoundEnd,
+
+        // SND
+        RoundPlanted,
+
         // Probably a good way to do these
         SideSwap,
-        Finish
+        MatchEnd,
     }
 
     public class SessionInfo
     {
-        public RoundState roundState = RoundState.None;
+        public MatchState roundState = MatchState.None;
         public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
         public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
         public BombState bombState = BombState.None;
 
         public GameModes currentGameMode = GameModes.SND;
         public string mapName = "gold_dust2";
+
+        public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
+        {
+            {MatchState.None, 0},
+            {MatchState.Warmup, 120},
+            {MatchState.WarmupEnd, 5},
+            {MatchState.RoundPrepare, 10},
+            {MatchState.RoundAction, 140},
+            {MatchState.RoundEnd, 8},
+            {MatchState.RoundPlanted, 45},
+            {MatchState.SideSwap, 10},
+            {MatchState.MatchEnd, 30}
+        };
 
         public SessionInfo()
         {
@@ -65,7 +82,7 @@ namespace ifp.arena.bep.GameTypes
         // Locking out player shooting, moving, jumping during certain session states
         public bool IsControllerPartiallyLocked()
         {
-            if (roundState == RoundState.Prepare) return true;
+            if (roundState == MatchState.RoundPrepare) return true;
             return false;
         }
     }

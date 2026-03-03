@@ -13,9 +13,9 @@ namespace ifp.arena.bep.Core.Gamemode
     // just kind of a "nothing is happening" state type beat
     public class SharedNone : IGameState
     {
-        public RoundState StateType => RoundState.None;
+        public MatchState StateType => MatchState.None;
         public void OnEnter() { Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer); }
-        public RoundState? OnUpdate()
+        public MatchState? OnUpdate()
         {
             return null;
         }
@@ -25,17 +25,17 @@ namespace ifp.arena.bep.Core.Gamemode
     // Sets when server says we are restarting
     public class SharedWarmup : IGameState
     {
-        public RoundState StateType => RoundState.Warmup;
+        public MatchState StateType => MatchState.Warmup;
         public void OnEnter()
         {
             if (FikaBackendUtils.IsServer) H.game.StateTimer = 45f;
         }
 
-        public RoundState? OnUpdate()
+        public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
             if (H.game.StateTimer <= 0 || H.scoreboard.Count > 0 && H.scoreboard.Values.All(p => p.isReady))
-                return RoundState.WarmupEnd;
+                return MatchState.WarmupEnd;
             return null;
         }
         public void OnExit()
@@ -46,15 +46,15 @@ namespace ifp.arena.bep.Core.Gamemode
     // Triggers whenever a minimum warmup time has been reached and players have been loaded, or warmup full time has ended
     public class SharedWarmupEnd : IGameState
     {
-        public RoundState StateType => RoundState.WarmupEnd;
+        public MatchState StateType => MatchState.WarmupEnd;
         public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 5f; }
-        public RoundState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? RoundState.Prepare : null;
+        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundPrepare : null;
         public void OnExit() { }
     }
 
     public class SharedPrepare : IGameState
     {
-        public RoundState StateType => RoundState.Prepare;
+        public MatchState StateType => MatchState.RoundPrepare;
         public void OnEnter()
         {
             foreach (var p in H.game.session.scoreboard.Values) p.isAlive = true;
@@ -68,13 +68,13 @@ namespace ifp.arena.bep.Core.Gamemode
             H.game.session.scoreboard.Clear();
             H.game.session.InitializeScoreBoard();
         }
-        public RoundState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? RoundState.Action : null;
+        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundAction : null;
         public void OnExit() { }
     }
 
     public class SharedEnd : IGameState
     {
-        public RoundState StateType => RoundState.End;
+        public MatchState StateType => MatchState.RoundEnd;
         public void OnEnter()
         {
             if (FikaBackendUtils.IsServer)
@@ -83,7 +83,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 H.game.OnRoundEnd();
             }
         }
-        public RoundState? OnUpdate()
+        public MatchState? OnUpdate()
         {
             if (FikaBackendUtils.IsClient) return null;
 
@@ -96,15 +96,15 @@ namespace ifp.arena.bep.Core.Gamemode
 
                     if (wins[Faction.CT] + wins[Faction.T] == snd.maxRoundsToWin - 1)
                     {
-                        return RoundState.SideSwap;
+                        return MatchState.SideSwap;
                     }
 
                     if (wins[Faction.CT] >= snd.maxRoundsToWin || wins[Faction.T] >= snd.maxRoundsToWin)
                     {
-                        return RoundState.Finish;
+                        return MatchState.MatchEnd;
                     }
                 }
-                return RoundState.Prepare;
+                return MatchState.RoundPrepare;
             }
 
             return null;
@@ -114,7 +114,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class SharedSideSwap : IGameState
     {
-        public RoundState StateType => RoundState.SideSwap;
+        public MatchState StateType => MatchState.SideSwap;
         public void OnEnter()
         {
             if (FikaBackendUtils.IsServer)
@@ -130,13 +130,13 @@ namespace ifp.arena.bep.Core.Gamemode
                 Singleton<SessionInfoPacketHandler>.Instance.Send();
             }
         }
-        public RoundState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? RoundState.Prepare : null;
+        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundPrepare : null;
         public void OnExit() { }
     }
 
     // Really only used for UI and actions so doesn't really matter ig
     public class SharedFinish : SharedNone
     {
-        new public RoundState StateType => RoundState.Finish;
+        new public MatchState StateType => MatchState.MatchEnd;
     }
 }

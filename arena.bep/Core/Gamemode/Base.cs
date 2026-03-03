@@ -20,19 +20,20 @@ namespace ifp.arena.bep.Core.Gamemode
 {
     public interface IGameState
     {
-        RoundState StateType { get; }
+        MatchState StateType { get; }
         void OnEnter();
-        RoundState? OnUpdate(); // Returns next state, or null to stay
+        MatchState? OnUpdate(); // Returns next state, or null to stay
         void OnExit();
     }
 
     public abstract class GameModeRules
     {
-        public abstract IGameState CreateState(RoundState state);
-        public abstract void DrawTopBar(Base game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer);
+
+        public abstract IGameState CreateState(MatchState state);
+        public abstract void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer);
 
         // Base Scoreboard logic (Shared across modes by default)
-        public virtual void DrawScoreboard(Base game, Rect bounds, Texture2D bg, Texture2D highlight, GUIStyle header, GUIStyle row)
+        public virtual void DrawScoreboard(ArenaController game, Rect bounds, Texture2D bg, Texture2D highlight, GUIStyle header, GUIStyle row)
         {
             GUI.DrawTexture(bounds, bg);
             float currentY = bounds.y + 20f, rowHeight = 35f;
@@ -59,7 +60,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), p.deaths.ToString(), row);
                 GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.assists.ToString(), row);
 
-                bool isWarmup = H.game.session.roundState == RoundState.Warmup;
+                bool isWarmup = H.game.session.roundState == MatchState.Warmup;
                 GUI.color = isWarmup ? p.isReady ? Color.green : Color.yellow : p.isAlive ? Color.green : Color.red;
                 GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), isWarmup ? p.isReady ? "READY" : "WAITING" : p.isAlive ? "ALIVE" : "DEAD", row);
 
@@ -77,14 +78,14 @@ namespace ifp.arena.bep.Core.Gamemode
     }
 
     public static class EventBus {
-        public static Action<RoundState> OnEnter;
-        public static Action<RoundState> OnEnd;
+        public static Action<MatchState> OnEnter;
+        public static Action<MatchState> OnEnd;
         public static Action<BombState> OnBombStateChange;
         public static Action<PlayerKilledPacket> OnPlayerKill;
     }
     
     // This is the place where we manage both server/client arena behaviour
-    public class Base : Singleton<Base>, IDisposable
+    public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         public SessionInfo session;
         public GameModeRules ActiveRules { get; set; } = new SnDModeRules();
@@ -95,7 +96,7 @@ namespace ifp.arena.bep.Core.Gamemode
         private IGameState _currentState;
         private GameObject _tickerObject;
 
-        public Base()
+        public ArenaController()
         {
             if (H.gameWorld != null) StartSession(H.gameWorld);
             Patch_Gameworld_OnGameStarted.OnGameStarted += StartSession;
@@ -135,12 +136,12 @@ namespace ifp.arena.bep.Core.Gamemode
             if (FikaBackendUtils.IsServer) StateTimer -= Time.deltaTime;
             else StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
-            RoundState? nextState = _currentState.OnUpdate();
+            MatchState? nextState = _currentState.OnUpdate();
             if (nextState.HasValue && FikaBackendUtils.IsServer)
                 ChangeState(nextState.Value);
         }
 
-        public void ChangeState(RoundState newStateType)
+        public void ChangeState(MatchState newStateType)
         {
             if (FikaBackendUtils.IsClient) return;
             _currentState?.OnExit();
@@ -158,7 +159,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 Singleton<RoundStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer);
         }
 
-        public void ApplyReplicatedRoundState(RoundState state, double phaseDurationSeconds, double serverPhaseStartSeconds)
+        public void ApplyReplicatedRoundState(MatchState state, double phaseDurationSeconds, double serverPhaseStartSeconds)
         {
             PhaseDurationSeconds = phaseDurationSeconds;
             ServerPhaseStartSeconds = serverPhaseStartSeconds;
@@ -184,10 +185,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
         private void OnGUI()
         {
-            if (!Singleton<Base>.Instantiated || Singleton<Base>.Instance.session == null) return;
+            if (!Singleton<ArenaController>.Instantiated || Singleton<ArenaController>.Instance.session == null) return;
             if (!_stylesInitialized) InitStyles();
 
-            var game = Singleton<Base>.Instance;
+            var game = Singleton<ArenaController>.Instance;
             Rect topBarRect = new Rect(Screen.width / 2f - 200f, 0, 400f, 60f);
 
             GUI.DrawTexture(topBarRect, _darkBackground);
@@ -222,8 +223,8 @@ namespace ifp.arena.bep.Core.Gamemode
         }
 
         private void Update() {
-            if (Singleton<Base>.Instantiated)
-                Singleton<Base>.Instance.Update();
+            if (Singleton<ArenaController>.Instantiated)
+                Singleton<ArenaController>.Instance.Update();
         }
     }
 }

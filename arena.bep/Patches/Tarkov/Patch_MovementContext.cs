@@ -28,7 +28,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(ref bool __result)
         {
-            if (Singleton<Base>.Instance.session.IsControllerPartiallyLocked())
+            if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;
             }
@@ -45,7 +45,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(ref bool __result)
         {
-            if (Singleton<Base>.Instance.session.IsControllerPartiallyLocked())
+            if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;
             }

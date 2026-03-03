@@ -19,7 +19,7 @@ namespace ifp.arena.bep.networking
 {
     public struct RoundStateSyncPacket : INetSerializable
     {
-        public RoundState roundState;
+        public MatchState roundState;
         public double phaseDurationSeconds;
         public double serverPhaseStartSeconds;
 
@@ -32,7 +32,7 @@ namespace ifp.arena.bep.networking
 
         public void Deserialize(NetDataReader reader)
         {
-            roundState = (RoundState)reader.GetInt();
+            roundState = (MatchState)reader.GetInt();
             phaseDurationSeconds = reader.GetDouble();
             serverPhaseStartSeconds = reader.GetDouble();
         }
@@ -42,7 +42,7 @@ namespace ifp.arena.bep.networking
     {
         public RoundStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-        public void Send(RoundState roundState, double phaseDurationSeconds)
+        public void Send(MatchState roundState, double phaseDurationSeconds)
         {
             // serverPhaseStartSeconds is "now" on the server. Clients derive remaining time from it.
             double serverNow = NetworkTime.ServerNowSeconds;
