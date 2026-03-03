@@ -3,7 +3,7 @@ using EFT;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using System;
@@ -55,21 +55,15 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
-            //NotificationManagerClass.DisplayMessageNotification($"{packet.ToString()}");
+            H.scoreboard[packet.killerId].kills++;
+            H.scoreboard[packet.victimId].deaths++;
 
-            BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-
-            var scoreboard = GameMode.session.scoreboard;
-
-            scoreboard[packet.killerId].kills++;
-            scoreboard[packet.victimId].deaths++;
-
-            if (GameMode.session.currentGameMode == GameModes.SND)
+            if (H.session.currentGameMode == GameModes.SND)
             {
-                scoreboard[packet.victimId].isAlive = false;
+                H.scoreboard[packet.victimId].isAlive = false;
             }
 
-            EFT.Player victimPlayer = Singleton<GameWorld>.Instance.AllAlivePlayersList.FirstOrDefault(p => p.Id == packet.victimId);
+            EFT.Player victimPlayer = H.GetPlayer(packet.victimId);
             if (victimPlayer != null)
             {
                 OnPlayerKilled?.Invoke(victimPlayer);
@@ -117,11 +111,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(FactionChangePacket packet, NetPeer peer)
         {
-            BaseGameMode GameMode = Singleton<BaseGameMode>.Instance;
-
-            var scoreboard = GameMode.session.scoreboard;
-
-            scoreboard[packet.id].faction = packet.faction;
+            H.scoreboard[packet.id].faction = packet.faction;
         }
     }
 }

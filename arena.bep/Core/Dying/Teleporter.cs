@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
 using System;
@@ -16,7 +17,7 @@ namespace ifp.arena.bep.Core.Dying
         static public void Teleport(Player player)
         {
             Faction faction;
-            SessionInfo session = BaseGameMode.Instance.session;
+            SessionInfo session = Base.Instance.session;
             PlayerScore playerScore = session.scoreboard.FirstOrDefault(p => p.Value.player == Singleton<GameWorld>.Instance.MainPlayer).Value;
             if (session.roundState == RoundState.None || (playerScore != null && !playerScore.isAlive))
             {

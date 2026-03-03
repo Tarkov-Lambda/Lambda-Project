@@ -3,7 +3,7 @@ using EFT;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using System;
@@ -61,7 +61,8 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(AssetLoadStatePacket packet, NetPeer peer)
         {
-            if (Singleton<BaseGameMode>.Instance.session.scoreboard.TryGetValue(packet.id, out var playerScore))
+            var playerScore = H.GetPlayerScore(packet.id);
+            if (playerScore != null)
             {
                 playerScore.isReady = packet.isReady;
             }

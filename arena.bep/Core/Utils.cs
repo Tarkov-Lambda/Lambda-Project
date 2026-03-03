@@ -1,0 +1,57 @@
+
+
+using System.Collections.Generic;
+using System.Linq;
+using Comfort.Common;
+using EFT;
+using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.GameTypes;
+
+namespace ifp.arena.bep.Core
+{
+    // vague posting
+    public static class H
+    {
+        public static GameWorld gameWorld => Singleton<GameWorld>.Instance;
+
+        // vague posting again
+        public static Base game => Singleton<Base>.Instance;
+        public static SessionInfo session => Singleton<Base>.Instance.session;
+        public static Dictionary<int, PlayerScore> scoreboard => Singleton<Base>.Instance.session.scoreboard;
+
+        // bro thinks he's the main character
+        public static Player GetMainPlayer()
+        {
+            if (!Singleton<GameWorld>.Instantiated) return null;
+            return gameWorld.MainPlayer;
+        }
+
+        public static Player GetPlayer(int playerId)
+        {
+            if (!Singleton<GameWorld>.Instantiated) return null;
+            return gameWorld.AllAlivePlayersList.FirstOrDefault(p => p.Id == playerId);;
+        }
+
+        public static PlayerScore GetPlayerScore(int playerId)
+        {
+            if (!Singleton<Base>.Instantiated) return null;
+
+            game.session.scoreboard.TryGetValue(playerId, out var playerScore);
+            return playerScore;
+        }
+
+        public static List<Player> GetAllPlayers()
+        {
+            if (!Singleton<GameWorld>.Instantiated) return null;
+            return Singleton<GameWorld>.Instance.AllAlivePlayersList;
+        }
+
+        public static List<Player> isGameWorldActive()
+        {
+            if (!Singleton<GameWorld>.Instantiated) return null;
+            return Singleton<GameWorld>.Instance.AllAlivePlayersList;
+        }
+
+
+    }
+}

@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
@@ -77,7 +78,7 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            var session = Singleton<BaseGameMode>.Instance?.session;
+            var session = H.session;
             if (session == null) return;
 
             var packet = new SessionInfoPacket
@@ -102,7 +103,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(SessionInfoPacket packet, NetPeer peer)
         {
-            var session = Singleton<BaseGameMode>.Instance?.session;
+            var session = H.session;
             if (session == null) return;
 
             session.roundState = packet.roundState;
@@ -111,7 +112,6 @@ namespace ifp.arena.bep.networking
 
             foreach (var syncScore in packet.scores)
             {
-                // TryGetValue operates at an O(1) complexity unlike the O(N) LINQ FirstOrDefault
                 if (session.scoreboard.TryGetValue(syncScore.playerId, out var playerScore))
                 {
                     playerScore.faction = (Faction)syncScore.faction;
@@ -122,7 +122,6 @@ namespace ifp.arena.bep.networking
                 }
                 else
                 {
-                    // Failsafe: if the client receives a score for a player not in their dictionary, add them.
                     session.scoreboard[syncScore.playerId] = new PlayerScore(syncScore.playerId)
                     {
                         faction = (Faction)syncScore.faction,

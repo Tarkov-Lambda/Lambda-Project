@@ -3,23 +3,26 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using Dissonance;
+using EFT;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
+using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
+using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches;
+using ifp.arena.bep.Patches.Fika;
+using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
-using System.Collections.Generic;
 using SPT.Reflection;
 using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Patches.Tarkov;
-using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Patches.Fika;
-using ifp.arena.bep.networking.TimeSync;
+using static System.Collections.Specialized.BitVector32;
 
 namespace ifp.arena.bep
 {
@@ -91,7 +94,7 @@ namespace ifp.arena.bep
             CreateSingleton<TimeSyncRequestPacketHandler>();
             CreateSingleton<TimeSyncResponsePacketHandler>();
 
-            CreateSingleton<BaseGameMode>();
+            CreateSingleton<Base>();
             CreateSingleton<AssetBundleHandler>();
             CreateSingleton<RagdollCreator>();
 
@@ -120,9 +123,9 @@ namespace ifp.arena.bep
             }
             if (RoundStateChangeKey.Value.IsDown())
             {
-                Singleton<BaseGameMode>.Instance.session.roundState = (RoundState)(((int)Singleton<BaseGameMode>.Instance.session.roundState + 1) % 6); ;
-                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<BaseGameMode>.Instance.session.roundState, 5d);
-                Logger.LogInfo(Singleton<BaseGameMode>.Instance.session.roundState);
+                Singleton<Base>.Instance.session.roundState = (RoundState)(((int)Singleton<Base>.Instance.session.roundState + 1) % 6); ;
+                Singleton<RoundStateSyncPacketHandler>.Instance.Send(Singleton<Base>.Instance.session.roundState, 5d);
+                Logger.LogInfo(Singleton<Base>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
             {
@@ -133,6 +136,9 @@ namespace ifp.arena.bep
         void OnDestroy()
         {
             Plugin.Logger.LogInfo("Unload");
+
+            Base.Instance.session.roundState = RoundState.None;
+            Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
 
             foreach (var patch in _patches)
                 patch.Disable();

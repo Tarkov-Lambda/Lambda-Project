@@ -25,7 +25,6 @@ namespace ifp.arena.bep.networking.TimeSync
             if (!Plugin.Active.Value)
                 return;
 
-            // Dedicated server / host server shouldn't send requests.
             if (FikaBackendUtils.IsServer)
                 return;
 
@@ -44,7 +43,6 @@ namespace ifp.arena.bep.networking.TimeSync
             Singleton<TimeSyncRequestPacketHandler>.Instance.Send();
         }
 
-        // Helpful when hot-reloading / restarting sessions without destroying DontDestroyOnLoad objects.
         private void OnDestroy()
         {
             NetworkTime.Reset();

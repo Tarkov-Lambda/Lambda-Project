@@ -3,6 +3,7 @@ using EFT;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
@@ -65,7 +66,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(BombStatePacket packet, NetPeer peer)
         {
-            Singleton<BaseGameMode>.Instance.session.bombState = packet.state;   
+            H.game.session.bombState = packet.state;
         }
     }
 }

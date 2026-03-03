@@ -3,8 +3,10 @@ using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.Patches.Tarkov;
@@ -38,15 +40,14 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            var gameMode = Singleton<BaseGameMode>.Instance;
-            if (gameMode?.session == null) return;
+            if (H.session == null) return;
 
-            gameMode.session.scoreboard.Clear();
-            gameMode.session.factionWins.Clear();
-            gameMode.session.roundState = RoundState.None;
-            gameMode.session.mapName = Plugin.MapName.Value;
-            gameMode.session.currentGameMode = Plugin.GameMode.Value;
-            gameMode.session.InitializeScoreBoard();
+            H.session.scoreboard.Clear();
+            H.session.factionWins.Clear();
+            H.session.roundState = RoundState.None;
+            H.session.mapName = Plugin.MapName.Value;
+            H.session.currentGameMode = Plugin.GameMode.Value;
+            H.session.InitializeScoreBoard();
 
             Singleton<SessionInfoPacketHandler>.Instance.Send();
 
@@ -68,26 +69,25 @@ namespace ifp.arena.bep.networking
 
             if (FikaBackendUtils.IsServer)
             {
-                Singleton<BaseGameMode>.Instance.ChangeState(RoundState.Warmup);
+                H.game.ChangeState(RoundState.Warmup);
             }
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
 
-            switch (Singleton<BaseGameMode>.Instance.session.currentGameMode)
+            switch (H.session.currentGameMode)
             {
                 case GameModes.FFA:
-                    Singleton<BaseGameMode>.Instance.ActiveRules = new FFAModeRules();
+                    H.game.ActiveRules = new FFAModeRules();
                     break;
                 case GameModes.SND:
-                    Singleton<BaseGameMode>.Instance.ActiveRules = new SnDModeRules();
+                    H.game.ActiveRules = new SnDModeRules();
                     break;
             }
 
 
-            EFT.Player player = Singleton<GameWorld>.Instance.MainPlayer;
-
+            Player player = H.GetMainPlayer();
             if (player != null)
             {
                 Teleporter.Teleport(player);

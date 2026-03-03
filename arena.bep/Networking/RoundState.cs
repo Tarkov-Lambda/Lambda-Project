@@ -3,6 +3,7 @@ using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.GameTypes;
@@ -58,8 +59,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(RoundStateSyncPacket packet, NetPeer peer)
         {
-            //NotificationManagerClass.DisplayMessageNotification($"{packet.roundState} {packet.phaseDurationSeconds} {packet.serverPhaseStartSeconds}");
-            Singleton<BaseGameMode>.Instance.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
+            H.game.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
         }
     }
 }

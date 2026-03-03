@@ -36,7 +36,6 @@ namespace ifp.arena.bep.Patches.Tarkov
         private static long _lastKillTime;
         private const int CooldownMs = 500;
 
-
         protected override MethodBase GetTargetMethod()
         {
             return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
@@ -64,6 +63,7 @@ namespace ifp.arena.bep.Patches.Tarkov
   
             try
             {
+                Singleton<ClientFirearmController>.Instance.SetAim(false);
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id, __instance.Player.Id, 1);
                 Teleporter.Teleport(__instance.Player);
             }
