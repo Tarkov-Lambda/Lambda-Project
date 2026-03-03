@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
@@ -46,10 +47,10 @@ namespace ifp.arena.bep.networking
         {
             // H.Notify($"{packet}");
 
-            DateTime currentDateTime = Singleton<GameWorld>.Instance.GameDateTime.Calculate();
+            DateTime currentDateTime = H.gameWorld.GameDateTime.Calculate();
             DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);
 
-            Singleton<GameWorld>.Instance.GameDateTime.Reset(modifiedDateTime);
+            H.gameWorld.GameDateTime.Reset(modifiedDateTime);
         }
     }
 }

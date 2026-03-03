@@ -13,7 +13,7 @@ namespace ifp.arena.bep.Core
     // vague posting
     public static class H
     {
-        public static GameWorld gameWorld => Singleton<GameWorld>.Instance;
+        public static GameWorld gameWorld => H.gameWorld;
 
         // vague posting again
         public static ArenaController game => Singleton<ArenaController>.Instance;
@@ -46,7 +46,7 @@ namespace ifp.arena.bep.Core
         public static List<Player> GetAllPlayers()
         {
             if (!isInRaid()) return null;
-            return Singleton<GameWorld>.Instance.AllAlivePlayersList;
+            return H.gameWorld.AllAlivePlayersList;
         }
 
         public static bool isInRaid()

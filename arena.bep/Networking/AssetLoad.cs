@@ -43,7 +43,7 @@ namespace ifp.arena.bep.networking
     {
         public void Send(bool isLoaded, string msg)
         {
-            var mainPlayer = Singleton<GameWorld>.Instance?.MainPlayer;
+            var mainPlayer = H.gameWorld?.MainPlayer;
             if (mainPlayer == null)
             {
                 return;

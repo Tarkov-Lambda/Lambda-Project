@@ -30,10 +30,10 @@ namespace ifp.arena.bep.Patches.Fika
         {
             if (FikaBackendUtils.IsHeadless) return;
 
-            if (shot.Player.iPlayer.Id == Singleton<GameWorld>.Instance.MainPlayer.Id && bodyPart == EBodyPart.Head)
+            if (shot.Player.iPlayer.Id == H.gameWorld.MainPlayer.Id && bodyPart == EBodyPart.Head)
             {
                 // Play
-                H.Notify($" {shot.Player.iPlayer.Id} {Singleton<GameWorld>.Instance.MainPlayer.Id}");
+                H.Notify($" {shot.Player.iPlayer.Id} {H.gameWorld.MainPlayer.Id}");
             }
         }
     }

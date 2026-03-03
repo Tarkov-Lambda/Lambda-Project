@@ -49,7 +49,7 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 Rect rowRect = new Rect(bounds.x, currentY, bounds.width, rowHeight);
                 if (!p.isAlive) { GUI.color = new Color(1f, 0.5f, 0.5f, 0.3f); GUI.DrawTexture(rowRect, highlight); }
-                else if (p.player != null && Singleton<GameWorld>.Instance.MainPlayer != null && p.player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id)
+                else if (p.player != null && H.gameWorld.MainPlayer != null && p.player.Id == H.gameWorld.MainPlayer.Id)
                 { GUI.color = new Color(1f, 1f, 1f, 0.1f); GUI.DrawTexture(rowRect, highlight); }
 
                 GUI.color = p.isAlive ? Color.white : Color.gray;

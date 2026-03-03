@@ -32,7 +32,7 @@ namespace ifp.arena.bep.networking.Base
 
             if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
             {
-                RegisterPacket(Singleton<GameWorld>.Instance);
+                RegisterPacket(H.gameWorld);
             }
         }
 

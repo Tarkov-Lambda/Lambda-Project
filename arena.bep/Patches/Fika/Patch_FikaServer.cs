@@ -8,6 +8,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
@@ -71,7 +72,7 @@ namespace ifp.arena.bep.Patches.Fika
                     if (damage.ProfileId.HasValue)
                     {
                         // Mirrors FikaPlayer.HandleDamagePacket logic
-                        var killerBridge = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(damage.ProfileId.Value);
+                        var killerBridge = H.gameWorld.GetAlivePlayerBridgeByProfileID(damage.ProfileId.Value);
                         if (killerBridge?.iPlayer is Player killerPlayer)
                         {
                             killerId = killerPlayer.Id;

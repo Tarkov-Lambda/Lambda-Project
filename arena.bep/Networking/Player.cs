@@ -99,7 +99,7 @@ namespace ifp.arena.bep.networking
         {
             var packet = new FactionChangePacket
             {
-                id = Singleton<GameWorld>.Instance.MainPlayer.Id,
+                id = H.gameWorld.MainPlayer.Id,
                 faction = faction
             };
 

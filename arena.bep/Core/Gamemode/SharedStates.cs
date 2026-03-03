@@ -14,7 +14,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedNone : IGameState
     {
         public MatchState StateType => MatchState.None;
-        public void OnEnter() { Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer); }
+        public void OnEnter() { Teleporter.Teleport(H.gameWorld.MainPlayer); }
         public MatchState? OnUpdate()
         {
             return null;
@@ -56,10 +56,10 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnEnter()
         {
             foreach (var p in H.game.session.scoreboard.Values) p.isAlive = true;
-            if (Singleton<GameWorld>.Instance?.MainPlayer != null)
+            if (H.gameWorld?.MainPlayer != null)
             {
-                Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
-                Patch_Kill.FixMe(Singleton<GameWorld>.Instance.MainPlayer.ActiveHealthController);
+                Teleporter.Teleport(H.gameWorld.MainPlayer);
+                Patch_Kill.FixMe(H.gameWorld.MainPlayer.ActiveHealthController);
             }
 
             if (FikaBackendUtils.IsServer) H.game.StateTimer = 5f;

@@ -45,7 +45,7 @@ namespace ifp.arena.bep.Core.Dying
         private void CreateRagdollFromPlayer(PlayerKilledPacket playerKilledPacket)
         {
             var player = H.GetPlayer(playerKilledPacket.victimId);
-            if (player == null || player.Id == Singleton<GameWorld>.Instance.MainPlayer.Id) return;
+            if (player == null || player.Id == H.gameWorld.MainPlayer.Id) return;
 
             GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
                 typeof(PlayerBody),

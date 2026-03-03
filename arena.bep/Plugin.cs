@@ -141,7 +141,7 @@ namespace ifp.arena.bep
             if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
             {
                 ArenaController.Instance.session.roundState = MatchState.None;
-                Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
+                Teleporter.Teleport(H.gameWorld.MainPlayer);
             }
 
 
