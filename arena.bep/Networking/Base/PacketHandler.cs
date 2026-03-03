@@ -5,6 +5,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Patches.Tarkov;
 using System;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
@@ -38,10 +39,11 @@ namespace ifp.arena.bep.networking.Base
         public void RegisterPacket(GameWorld gameWorld)
         {
             Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
-            if(FikaBackendUtils.IsServer)
+            if (FikaBackendUtils.IsServer)
             {
                 Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
-            } else
+            }
+            else
             {
                 Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(OnReceive);
             }
@@ -74,7 +76,7 @@ namespace ifp.arena.bep.networking.Base
             {
                 Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
             }
-            
+
             Release(this);
         }
 
@@ -84,6 +86,8 @@ namespace ifp.arena.bep.networking.Base
 
         protected void RequestSend(T packet)
         {
+            if (H.game != null && H.gameWorld is HideoutGameWorld) return;
+
             if (authority == PacketAuthority.ServerOnly && !FikaBackendUtils.IsServer)
             {
                 return;
@@ -131,7 +135,7 @@ namespace ifp.arena.bep.networking.Base
         {
             return true;
         }
-        
+
         public abstract void OnReceive(T packet, NetPeer netPeer);
     }
 }

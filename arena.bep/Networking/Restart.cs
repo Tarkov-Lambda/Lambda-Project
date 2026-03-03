@@ -67,12 +67,12 @@ namespace ifp.arena.bep.networking
                 Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
             }
 
+            await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
+
             if (FikaBackendUtils.IsServer)
             {
-                H.game.ChangeState(MatchState.RoundPrepare);
+                H.game.ChangeState(MatchState.Warmup);
             }
-
-            await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
 

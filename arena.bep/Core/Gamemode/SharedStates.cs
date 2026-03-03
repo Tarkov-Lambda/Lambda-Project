@@ -38,9 +38,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 return MatchState.WarmupEnd;
             return null;
         }
-        public void OnExit()
-        {
-        }
+        public void OnExit() { }
     }
 
     // Triggers whenever a minimum warmup time has been reached and players have been loaded, or warmup full time has ended

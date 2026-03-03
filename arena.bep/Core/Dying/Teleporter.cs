@@ -5,6 +5,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -17,20 +18,29 @@ namespace ifp.arena.bep.Core.Dying
         // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
         static public void Teleport(Player player)
         {
-            Faction faction;
-            PlayerScore playerScore = H.GetPlayerScore(player.Id);
-
-            if (H.session.roundState == MatchState.None || (playerScore != null && !playerScore.isAlive))
+            try
             {
-                faction = Faction.Lobby;
-            }
-            else
-            {
-                faction = Plugin.PrefferedFaction.Value;
-            }
+                Faction faction;
+                PlayerScore playerScore = H.GetPlayerScore(player.Id);
 
-            newPos = GetNewPosition(faction);
-            player.Teleport(newPos);
+                // if (H.session.roundState == MatchState.None || (playerScore != null && !playerScore.isAlive))
+                // {
+                //     faction = Faction.Lobby;
+                // }
+                // else
+                // {
+                //     faction = Plugin.PrefferedFaction.Value;
+                // }
+                    faction = Plugin.PrefferedFaction.Value;
+
+                newPos = GetNewPosition(faction);
+                player.Teleport(newPos);
+            }
+            catch (Exception ex)
+            {
+                H.Notify("ERROR: Can't teleport");
+                Plugin.Logger.LogError(ex);
+            }
         }
 
         public static Vector3 GetNewPosition(Faction faction)

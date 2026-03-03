@@ -113,6 +113,8 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void StartSession(GameWorld gameWorld)
         {
+            if(H.gameWorld is HideoutGameWorld) return;
+
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
@@ -147,14 +149,13 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsClient) return;
 
-
             _currentState?.OnExit();
-            EventBus.OnEnd(_currentState.StateType);
+            EventBus.OnEnd?.Invoke(_currentState.StateType);
 
             _currentState = ActiveRules.CreateState(newStateType);
             session.roundState = _currentState.StateType;
             _currentState.OnEnter();
-            EventBus.OnEnter(_currentState.StateType);
+            EventBus.OnEnter?.Invoke(_currentState.StateType);
 
             ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
             PhaseDurationSeconds = StateTimer;

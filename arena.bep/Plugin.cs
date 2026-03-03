@@ -6,6 +6,7 @@ using Dissonance;
 using EFT;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Gamemode;
@@ -67,21 +68,23 @@ namespace ifp.arena.bep
             Logger = base.Logger;
             Plugin.Logger.LogInfo("Load");
 
+            // PATCHES
             RegisterPatch(new Patch_Gameworld_OnGameStarted());
             RegisterPatch(new Patch_Gameworld_OnDispose());
 
             RegisterPatch(new Patch_Kill());
 
-            RegisterPatch(new Patch_CanWalk());
-            RegisterPatch(new Patch_CanJump());
-            RegisterPatch(new Patch_CanPressTrigger());
-            RegisterPatch(new Patch_ApplyShot());
-            RegisterPatch(new Patch_ApplyDamage());
+            // RegisterPatch(new Patch_CanWalk());
+            // RegisterPatch(new Patch_CanJump());
+            // RegisterPatch(new Patch_CanPressTrigger());
+            // RegisterPatch(new Patch_ApplyShot());
+            // RegisterPatch(new Patch_ApplyDamage());
 
+            RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
 
             RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
 
-
+            // NETWORK
             CreateSingleton<PlayerKilledPacketHandler>();
             CreateSingleton<FactionChangePacketHandler>();
 
@@ -90,6 +93,9 @@ namespace ifp.arena.bep
             CreateSingleton<RoundStateSyncPacketHandler>();
             CreateSingleton<RestartPacketHandler>();
             CreateSingleton<AssetLoadStatePacketHandler>();
+
+            CreateSingleton<HandsInspectPacketHandler>();
+
 
             CreateSingleton<TimeSyncRequestPacketHandler>();
             CreateSingleton<TimeSyncResponsePacketHandler>();
@@ -137,8 +143,12 @@ namespace ifp.arena.bep
         {
             Plugin.Logger.LogInfo("Unload");
 
-            ArenaController.Instance.session.roundState = MatchState.None;
-            Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
+            if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
+            {
+                ArenaController.Instance.session.roundState = MatchState.None;
+                Teleporter.Teleport(Singleton<GameWorld>.Instance.MainPlayer);
+            }
+
 
             foreach (var patch in _patches)
                 patch.Disable();

@@ -55,7 +55,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
-            NotificationManagerClass.DisplayMessageNotification($"{packet}");
+            H.Notify($"{packet}");
             
             H.scoreboard[packet.killerId].kills++;
             H.scoreboard[packet.victimId].deaths++;

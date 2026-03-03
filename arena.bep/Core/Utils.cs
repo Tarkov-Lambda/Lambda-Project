@@ -24,8 +24,6 @@ namespace ifp.arena.bep.Core
         // bro thinks he's the main character
         public static Player GetMainPlayer()
         {
-            NotificationManagerClass.DisplayMessageNotification($"{isGameWorldActive()}");
-
             if (!isGameWorldActive()) return null;
             return gameWorld.MainPlayer;
         }

@@ -48,7 +48,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(TemplatePacket packet, NetPeer peer)
         {
-            // NotificationManagerClass.DisplayMessageNotification($"{packet}");
+            // H.Notify($"{packet}");
         }
     }
 }

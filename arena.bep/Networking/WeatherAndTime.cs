@@ -44,7 +44,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(WeatherAndTimePacket packet, NetPeer peer)
         {
-            // NotificationManagerClass.DisplayMessageNotification($"{packet}");
+            // H.Notify($"{packet}");
 
             DateTime currentDateTime = Singleton<GameWorld>.Instance.GameDateTime.Calculate();
             DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);

@@ -2,6 +2,7 @@
 using EFT;
 using EFT.HealthSystem;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
@@ -23,10 +24,9 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
 
         [PatchPrefix]
-        static bool Postfix(ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+        static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
             LastReceivedDamageInfo = damageInfo;
-
             return true;
         }
     }
@@ -63,8 +63,9 @@ namespace ifp.arena.bep.Patches.Tarkov
   
             try
             {
-                Singleton<ClientFirearmController>.Instance.SetAim(false);
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id, __instance.Player.Id, 1);
+                // Singleton<ClientFirearmController>.Instance.SetAim(false);
+                int killerId = Patch_ApplyDamage.LastReceivedDamageInfo.Player != null ? Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id : 1;
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, __instance.Player.Id, 1);
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)
