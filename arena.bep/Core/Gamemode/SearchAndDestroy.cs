@@ -65,10 +65,6 @@ namespace ifp.arena.bep.Core.Gamemode
     {
         public int maxRoundsToWin = 13;
 
-        public float prepareTime = 120;
-        public float roundTime = 120;
-        public float plantTime = 120;
-
         public float platingTime = 4.5f;
         public float defusingTime = 5f;
 
@@ -96,7 +92,7 @@ namespace ifp.arena.bep.Core.Gamemode
             GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y, 100, bounds.height - 20), "CT", header);
             GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y + 15, 100, bounds.height), H.game.session.factionWins.GetValueOrDefault(Faction.CT, 0).ToString(), scoreBig);
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.game.StateTimer), timer);
-            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), H.game.session.roundState.ToString().ToUpper(), header);
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 75, 40, 150, 20), H.game.session.roundState.ToString().ToUpper(), header);
         }
     }
 

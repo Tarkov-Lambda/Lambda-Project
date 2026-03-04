@@ -85,6 +85,8 @@ namespace ifp.arena.bep.networking
                     H.game.ActiveRules = new SnDModeRules();
                     break;
             }
+
+            await H.Delay(25);
             if (player != null)
             {
                 Teleporter.Teleport(player);

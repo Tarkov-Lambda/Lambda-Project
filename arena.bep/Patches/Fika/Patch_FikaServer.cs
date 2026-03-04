@@ -30,8 +30,6 @@ namespace ifp.arena.bep.Patches.Fika
         [PatchPrefix]
         private static bool Prefix(FikaServer __instance, CommonPlayerPacket packet, NetPeer peer)
         {
-            //H.Notify($"{packet.SubPacket}");
-            
             // Only run this logic on the server runtime
             if (!FikaBackendUtils.IsServer)
                 return true;

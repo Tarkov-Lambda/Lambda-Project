@@ -126,7 +126,6 @@ namespace ifp.arena.bep
             {
                 Singleton<ArenaController>.Instance.session.roundState = (MatchState)(((int)Singleton<ArenaController>.Instance.session.roundState + 1) % 6); ;
                 Singleton<MatchStateSyncPacketHandler>.Instance.Send(Singleton<ArenaController>.Instance.session.roundState, 5d);
-                Logger.LogInfo(Singleton<ArenaController>.Instance.session.roundState);
             }
             if (RestartKey.Value.IsDown())
             {

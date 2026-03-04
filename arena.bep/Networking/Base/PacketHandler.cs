@@ -81,8 +81,8 @@ namespace ifp.arena.bep.networking.Base
         }
 
         // EXPLANATION:
-        // Server Send -> Server RequestSend -> Server Broadcast Packet -> Server/Client OnReceive
-        // Local Client Send -> Local Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/Client OnReceive
+        // Server Send -> Server RequestSend -> Server Broadcast Packet -> Server/All Clients OnReceive (Server at no ping, All Clients at ping)
+        // Local Client Send -> Local Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/All Clients OnReceive
 
         protected void RequestSend(T packet)
         {
@@ -125,17 +125,17 @@ namespace ifp.arena.bep.networking.Base
             OnReceive(packet, netPeer);
         }
 
-        /// <summary>
-        /// Override to prevent the server from re-broadcasting a client->server packet to other clients.
-        /// Default behavior matches existing implementation (broadcast everything).
-        /// </summary>
+        // Override to prevent the server from re-broadcasting a client->server packet to other clients.
+        // Default behavior matches existing implementation (broadcast everything).
         protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
 
         public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
         {
             return true;
         }
-
+        
+        // Server applies this via BroadcastAndReceive
+        // Local client receives its own packet at ping time
         public abstract void OnReceive(T packet, NetPeer netPeer);
     }
 }

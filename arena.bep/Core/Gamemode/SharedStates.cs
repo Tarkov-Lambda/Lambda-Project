@@ -28,7 +28,9 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.Warmup;
         public void OnEnter()
         {
-            if (FikaBackendUtils.IsServer) H.game.StateTimer = 45f;
+            if (FikaBackendUtils.IsClient) return;
+            H.game.StateTimer = 15f;
+
         }
 
         public MatchState? OnUpdate()
@@ -47,7 +49,10 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.WarmupEnd;
         public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 5f; }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-        public void OnExit() { }
+        public void OnExit()
+        {
+            H.session.InitializeScoreBoard();
+        }
     }
 
     public class SharedPrepare : IGameState
@@ -63,8 +68,7 @@ namespace ifp.arena.bep.Core.Gamemode
             }
 
             if (FikaBackendUtils.IsServer) H.game.StateTimer = 5f;
-            H.game.session.scoreboard.Clear();
-            H.game.session.InitializeScoreBoard();
+            H.session.ResetRoundScopeFields();
         }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundAction : null;
         public void OnExit() { }

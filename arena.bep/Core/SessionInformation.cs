@@ -82,6 +82,23 @@ namespace ifp.arena.bep.GameTypes
             }
         }
 
+        public void ResetRoundScopeFields()
+        {
+            if (H.gameWorld == null || H.gameWorld.AllAlivePlayersList == null)
+                return;
+
+            foreach (var p in H.GetAllPlayers())
+            {
+                if (scoreboard.ContainsKey(p.Id))
+                {
+                    scoreboard[p.Id].kills = 0;
+                    scoreboard[p.Id].assists = 0;
+                    scoreboard[p.Id].deaths = 0;
+                    scoreboard[p.Id].isAlive = true;
+                }
+            }
+        }
+
         // Locking out player shooting, moving, jumping during certain session states
         public bool IsControllerPartiallyLocked()
         {
@@ -98,8 +115,16 @@ namespace ifp.arena.bep.GameTypes
             player = H.GetPlayer(id);
         }
 
+        public void Reset()
+        {
+            kills = 0;
+            assists = 0;
+            deaths = 0;
+            isAlive = true;
+        }
+
         public Faction faction = Faction.None;
-        public EFT.Player player;
+        public Player player;
         public int kills = 0;
         public int assists = 0;
         public int deaths = 0;
