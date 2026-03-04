@@ -9,3 +9,5 @@ obj/
 .sync-conflict*
 .stignore
 .stfolder
+
+audio/*
