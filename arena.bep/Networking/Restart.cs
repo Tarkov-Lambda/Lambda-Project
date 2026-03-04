@@ -86,7 +86,7 @@ namespace ifp.arena.bep.networking
                     break;
             }
 
-            await H.Delay(25);
+            await Task.Delay(25);
             if (player != null)
             {
                 Teleporter.Teleport(player);

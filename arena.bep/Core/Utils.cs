@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using Fika.Core.Networking;
 using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
@@ -19,6 +20,7 @@ namespace ifp.arena.bep.Core
     {
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
         public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
+        public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
 
         public static ArenaController Arena => Singleton<ArenaController>.Instance;
         public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
@@ -56,13 +58,15 @@ namespace ifp.arena.bep.Core
         {
             return GameWorld != null && GameWorld is not HideoutGameWorld;
         }
+    }
 
+    public static class PlayerUtils
+    {
         public static void ApplyPainkiller()
         {
-            if (!isInRaid()) return;
+            if (!H.isInRaid()) return;
 
-            var player = GetMainPlayer();
-            var healthController = player.ActiveHealthController;
+            var healthController = H.MainPlayer.ActiveHealthController;
 
             Type painKillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
 
@@ -72,9 +76,37 @@ namespace ifp.arena.bep.Core
             healthController.DoPainKiller();
         }
 
-        public static async Task Delay(int ms)
+        public static void RepairMe()
         {
-            await Task.Delay(ms);
+            foreach (var slot in H.MainPlayer.Inventory.Equipment.AllSlots)
+            {
+                foreach (var item in slot.Items)
+                {
+                    RepairItem(item);
+                }
+            }
+
+        }
+
+        private static void RepairItem(Item item)
+        {
+            if (item is CompoundItem compoundItem)
+            {
+                foreach (var slot in compoundItem.AllSlots)
+                {
+                    foreach (var childItem in slot.Items)
+                    {
+                        if (childItem is ArmoredEquipmentItemClass armoredEquipmentItemClass)
+                        {
+                            armoredEquipmentItemClass.Repairable.Durability = armoredEquipmentItemClass.Repairable.MaxDurability;
+                        }
+                    }
+                }
+            }
+            if (item is Weapon weapon)
+            {
+                weapon.Repairable.Durability = 100;
+            }
         }
     }
 }

@@ -1,17 +1,19 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.CameraControl;
 using EFT.HealthSystem;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Comfort;
+using UnityEngine;
+using EFT.UI;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
@@ -76,15 +78,18 @@ namespace ifp.arena.bep.Patches.Tarkov
             // Delayed double healing to make sure every negative effect is fixed
             FixMe(__instance);
 
-            //Plugin.Logger.LogInfo(__instance.GetAllEffects().Where(iEffect => iEffect is ActiveHealthController.Painkiller);
-
             try
             {
-                // Singleton<ClientFirearmController>.Instance.SetAim(false);
+                // Close Inventory
+                H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+                PlayerUtils.RepairMe();
+
                 int killerId = Patch_ApplyDamage.LastReceivedDamageInfo.Player != null ? Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id : 1;
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, __instance.Player.Id, 1);
 
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
+
+                CloseEyes();
 
                 Teleporter.Teleport(__instance.Player);
             }
@@ -107,6 +112,28 @@ namespace ifp.arena.bep.Patches.Tarkov
             }
 
             __instance.RestoreFullHealth();
+        }
+
+        public static async void CloseEyes()
+        {
+            Camera pCamera = CameraClass.Instance.Camera;
+            DeathFade deathFade = pCamera.GetComponent<DeathFade>();
+            deathFade.enabled = true;
+
+            await Task.Delay(250);
+            deathFade.enabled = true;
+            deathFade.EnableEffect();
+
+            ResourceRequest resourceRequest2 = Resources.LoadAsync<UISoundsWrapper>("Audio/UISoundsWrapper");
+            UISoundsWrapper uisoundsWrapper_0 = (UISoundsWrapper)resourceRequest2.asset;
+            AudioClip uIClip = uisoundsWrapper_0.GetUIClip(EUISoundType.PlayerIsDead);
+            Singleton<GUISounds>.Instance.PlaySound(uIClip, false, true);
+
+            // Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.PlayerIsDead);
+
+            await Task.Delay(2000);
+            deathFade.enabled = true;
+            deathFade.DisableEffect();
         }
     }
 }

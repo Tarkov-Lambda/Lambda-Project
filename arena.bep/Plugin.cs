@@ -38,8 +38,7 @@ namespace ifp.arena.bep
         internal static ConfigEntry<Faction> PrefferedFaction;
         internal static ConfigEntry<string> MapName;
 
-        private ConfigEntry<KeyboardShortcut> SessionInfoKey;
-        private ConfigEntry<KeyboardShortcut> RoundStateChangeKey;
+        private ConfigEntry<KeyboardShortcut> DeathKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
 
         private readonly List<ModulePatch> _patches = new();
@@ -110,22 +109,17 @@ namespace ifp.arena.bep
             MapName = Config.Bind("Admin", "Map Name", "", "");
 
             Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
-            SessionInfoKey = Config.Bind("Debug", "SessionInfoKey", new KeyboardShortcut(KeyCode.F3));
-            RoundStateChangeKey = Config.Bind("Debug", "RoundStateChangeKey", new KeyboardShortcut(KeyCode.F2));
+            DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
             RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
 
         }
 
         private void Update()
         {
-            if (SessionInfoKey.Value.IsDown())
+            if (DeathKey.Value.IsDown())
             {
-                Singleton<SessionInfoPacketHandler>.Instance.Send();
-            }
-            if (RoundStateChangeKey.Value.IsDown())
-            {
-                Singleton<ArenaController>.Instance.session.roundState = (MatchState)(((int)Singleton<ArenaController>.Instance.session.roundState + 1) % 6); ;
-                Singleton<MatchStateSyncPacketHandler>.Instance.Send(Singleton<ArenaController>.Instance.session.roundState, 5d);
+                EDamageType type = EDamageType.Fall;
+                H.MainPlayer.ActiveHealthController.Kill(type);
             }
             if (RestartKey.Value.IsDown())
             {

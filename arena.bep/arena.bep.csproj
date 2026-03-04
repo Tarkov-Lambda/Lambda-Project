@@ -37,14 +37,18 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
       <Private>False</Private>
     </Reference>
-    
+
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll">
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
     </Reference>
 
-	  <Reference Include="$(SPTPath)\BepInEx\plugins\int\*.dll">
-		  <Private>False</Private>
-	  </Reference>
+    <Reference Include="$(SPTPath)\BepInEx\plugins\int\*.dll">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

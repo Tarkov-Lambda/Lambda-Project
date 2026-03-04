@@ -121,7 +121,7 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-            H.ApplyPainkiller();
+            PlayerUtils.ApplyPainkiller();
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
             H.Notify("Plugin Reloaded");
