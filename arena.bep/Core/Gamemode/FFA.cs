@@ -11,11 +11,11 @@ namespace ifp.arena.bep.Core.Gamemode
     public class FFAAction : IGameState
     {
         public MatchState StateType => MatchState.RoundAction;
-        public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 600f; } // 10 min
+        public void OnEnter() { if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 600f; } // 10 min
         public MatchState? OnUpdate()
         {
             if (FikaBackendUtils.IsClient) return null;
-            if (H.game.StateTimer <= 0 || H.scoreboard.Values.Any(p => p.kills >= 20)) return MatchState.MatchEnd;
+            if (H.Arena.StateTimer <= 0 || H.Scoreboard.Values.Any(p => p.kills >= 20)) return MatchState.MatchEnd;
             return null;
         }
         public void OnExit() { }
@@ -36,10 +36,10 @@ namespace ifp.arena.bep.Core.Gamemode
         
         public override void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
         {
-            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.game.StateTimer), timer);
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.Arena.StateTimer), timer);
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), "FFA", header);
 
-            var top = H.scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
+            var top = H.Scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
             if (top.Count > 0)
             {
                 GUI.Label(new Rect(bounds.x, bounds.y, 100, 20), "1ST", header);

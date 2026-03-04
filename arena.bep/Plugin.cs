@@ -137,10 +137,10 @@ namespace ifp.arena.bep
         {
             Logger.LogInfo("Unload");
 
-            if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
+            if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
             {
                 ArenaController.Instance.session.roundState = MatchState.None;
-                Teleporter.Teleport(H.gameWorld.MainPlayer);
+                Teleporter.Teleport(H.GameWorld.MainPlayer);
             }
 
 

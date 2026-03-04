@@ -67,7 +67,7 @@ namespace ifp.arena.bep.GameTypes
 
         public void InitializeScoreBoard()
         {
-            if (H.gameWorld == null || H.gameWorld.AllAlivePlayersList == null)
+            if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
                 return;
 
             factionWins[Faction.CT] = 0;
@@ -84,7 +84,7 @@ namespace ifp.arena.bep.GameTypes
 
         public void ResetRoundScopeFields()
         {
-            if (H.gameWorld == null || H.gameWorld.AllAlivePlayersList == null)
+            if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
                 return;
 
             foreach (var p in H.GetAllPlayers())
@@ -102,7 +102,7 @@ namespace ifp.arena.bep.GameTypes
         // Locking out player shooting, moving, jumping during certain session states
         public bool IsControllerPartiallyLocked()
         {
-            if (H.gameWorld is HideoutGameWorld) return false;
+            if (H.GameWorld is HideoutGameWorld) return false;
             if (roundState == MatchState.RoundPrepare) return true;
             return false;
         }

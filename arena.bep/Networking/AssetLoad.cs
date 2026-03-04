@@ -43,7 +43,7 @@ namespace ifp.arena.bep.networking
     {
         public void Send(bool isLoaded, string msg)
         {
-            var mainPlayer = H.gameWorld?.MainPlayer;
+            var mainPlayer = H.GameWorld?.MainPlayer;
             if (mainPlayer == null)
             {
                 return;

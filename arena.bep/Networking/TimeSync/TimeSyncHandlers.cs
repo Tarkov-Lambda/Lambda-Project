@@ -2,6 +2,7 @@ using Comfort.Common;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 
 namespace ifp.arena.bep.networking.TimeSync
@@ -38,7 +39,7 @@ namespace ifp.arena.bep.networking.TimeSync
                 serverSendSeconds = NetworkTime.LocalNowSeconds
             };
 
-            Singleton<IFikaNetworkManager>.Instance.SendDataToPeer(ref response, DeliveryMethod.ReliableOrdered, netPeer);
+            H.FikaNet.SendDataToPeer(ref response, DeliveryMethod.ReliableOrdered, netPeer);
         }
     }
 

@@ -23,10 +23,10 @@ namespace ifp.arena.bep.Core.Gamemode
         
         public override void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
         {
-            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.game.StateTimer), timer);
+            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.Arena.StateTimer), timer);
             GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 40, 100, 20), "FFA", header);
 
-            var top = H.game.session.scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
+            var top = H.Arena.session.scoreboard.Values.OrderByDescending(p => p.kills).Take(2).ToList();
             if (top.Count > 0)
             {
                 GUI.Label(new Rect(bounds.x, bounds.y, 100, 20), "1ST", header);

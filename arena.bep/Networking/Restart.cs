@@ -40,14 +40,14 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            if (H.session == null) return;
+            if (H.Session == null) return;
 
-            H.session.scoreboard.Clear();
-            H.session.factionWins.Clear();
-            H.session.roundState = MatchState.None;
-            H.session.mapName = Plugin.MapName.Value;
-            H.session.currentGameMode = Plugin.GameMode.Value;
-            H.session.InitializeScoreBoard();
+            H.Session.scoreboard.Clear();
+            H.Session.factionWins.Clear();
+            H.Session.roundState = MatchState.None;
+            H.Session.mapName = Plugin.MapName.Value;
+            H.Session.currentGameMode = Plugin.GameMode.Value;
+            H.Session.InitializeScoreBoard();
 
             Singleton<SessionInfoPacketHandler>.Instance.Send();
 
@@ -71,18 +71,18 @@ namespace ifp.arena.bep.networking
 
             if (FikaBackendUtils.IsServer)
             {
-                H.game.ChangeState(MatchState.Warmup);
+                H.Arena.ChangeState(MatchState.Warmup);
             }
 
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
 
-            switch (H.session.currentGameMode)
+            switch (H.Session.currentGameMode)
             {
                 case GameModes.FFA:
-                    H.game.ActiveRules = new FFAModeRules();
+                    H.Arena.ActiveRules = new FFAModeRules();
                     break;
                 case GameModes.SND:
-                    H.game.ActiveRules = new SnDModeRules();
+                    H.Arena.ActiveRules = new SnDModeRules();
                     break;
             }
 

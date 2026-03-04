@@ -59,7 +59,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(MatchStateSyncPacket packet, NetPeer peer)
         {
-            H.game.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
+            H.Arena.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
         }
     }
 }

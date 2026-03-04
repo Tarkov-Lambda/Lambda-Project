@@ -34,7 +34,7 @@ namespace ifp.arena.bep.networking.TimeSync
             if (!Singleton<TimeSyncRequestPacketHandler>.Instantiated)
                 return;
 
-            if (H.gameWorld == null)
+            if (H.GameWorld == null)
                 return;
 
             Singleton<TimeSyncRequestPacketHandler>.Instance.Send();

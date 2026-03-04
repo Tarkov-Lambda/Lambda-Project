@@ -55,12 +55,19 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
         {
-            H.scoreboard[packet.killerId].kills++;
-            H.scoreboard[packet.victimId].deaths++;
-
-            if (H.session.currentGameMode == GameModes.SND)
+            if (H.Scoreboard[packet.killerId] != null)
             {
-                H.scoreboard[packet.victimId].isAlive = false;
+                H.Scoreboard[packet.killerId].kills++;
+            }
+
+            if (H.Scoreboard[packet.victimId] != null)
+            {
+                H.Scoreboard[packet.victimId].deaths++;
+            }
+
+            if (H.Session.currentGameMode == GameModes.SND)
+            {
+                H.Scoreboard[packet.victimId].isAlive = false;
             }
             EventBus.OnPlayerKill(packet);
         }
@@ -97,7 +104,7 @@ namespace ifp.arena.bep.networking
         {
             var packet = new FactionChangePacket
             {
-                id = H.gameWorld.MainPlayer.Id,
+                id = H.GameWorld.MainPlayer.Id,
                 faction = faction
             };
 
@@ -106,7 +113,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(FactionChangePacket packet, NetPeer peer)
         {
-            H.scoreboard[packet.id].faction = packet.faction;
+            H.Scoreboard[packet.id].faction = packet.faction;
         }
     }
 }

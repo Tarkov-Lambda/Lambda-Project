@@ -15,7 +15,7 @@ namespace ifp.arena.bep.networking.Base
     public enum PacketAuthority
     {
         Both,       // Anyone can send/receive
-        ServerOnly  // Only Server can create/send. Clients only receive.
+        ServerOnly  // Only Server can send. Clients only receive.
     }
 
     public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
@@ -30,9 +30,9 @@ namespace ifp.arena.bep.networking.Base
 
             Patch_Gameworld_OnGameStarted.OnGameStarted += RegisterPacket;
 
-            if (H.gameWorld != null && H.gameWorld is not HideoutGameWorld)
+            if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
             {
-                RegisterPacket(H.gameWorld);
+                RegisterPacket(H.GameWorld);
             }
         }
 
@@ -41,11 +41,11 @@ namespace ifp.arena.bep.networking.Base
             Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
             if (FikaBackendUtils.IsServer)
             {
-                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
+                H.FikaNet.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
             }
             else
             {
-                Singleton<IFikaNetworkManager>.Instance.RegisterPacket<T, NetPeer>(OnReceive);
+                H.FikaNet.RegisterPacket<T, NetPeer>(OnReceive);
             }
         }
 
@@ -57,7 +57,7 @@ namespace ifp.arena.bep.networking.Base
 
             try
             {
-                var manager = Singleton<IFikaNetworkManager>.Instance;
+                var manager = H.FikaNet;
 
                 if (manager == null || manager.Equals(null))
                     return;
@@ -86,14 +86,14 @@ namespace ifp.arena.bep.networking.Base
 
         protected void RequestSend(T packet)
         {
-            if (H.game != null && H.gameWorld is HideoutGameWorld) return;
+            if (H.Arena != null && H.GameWorld is HideoutGameWorld) return;
 
             if (authority == PacketAuthority.ServerOnly && !FikaBackendUtils.IsServer)
             {
                 return;
             }
 
-            Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
+            H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
 
             if (FikaBackendUtils.IsServer)
             {
@@ -119,7 +119,7 @@ namespace ifp.arena.bep.networking.Base
             // Some packet types (e.g., time sync requests) should NOT be re-broadcast.
             if (ShouldBroadcastClientPacket(packet))
             {
-                Singleton<IFikaNetworkManager>.Instance.SendData(ref packet, deliveryMethod, true);
+                H.FikaNet.SendData(ref packet, deliveryMethod, true);
             }
 
             OnReceive(packet, netPeer);

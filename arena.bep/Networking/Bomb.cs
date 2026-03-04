@@ -67,7 +67,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(BombStatePacket packet, NetPeer peer)
         {
-            H.game.session.bombState = packet.state;
+            H.Arena.session.bombState = packet.state;
             EventBus.OnBombStateChange(packet.state);
         }
     }

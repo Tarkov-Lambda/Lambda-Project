@@ -14,7 +14,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedNone : IGameState
     {
         public MatchState StateType => MatchState.None;
-        public void OnEnter() { Teleporter.Teleport(H.gameWorld.MainPlayer); }
+        public void OnEnter() { Teleporter.Teleport(H.GameWorld.MainPlayer); }
         public MatchState? OnUpdate()
         {
             return null;
@@ -29,14 +29,14 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnEnter()
         {
             if (FikaBackendUtils.IsClient) return;
-            H.game.StateTimer = 15f;
+            H.Arena.StateTimer = 15f;
 
         }
 
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
-            if (H.game.StateTimer <= 0 || H.scoreboard.Count > 0 && H.scoreboard.Values.All(p => p.isReady))
+            if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.isReady))
                 return MatchState.WarmupEnd;
             return null;
         }
@@ -47,11 +47,11 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedWarmupEnd : IGameState
     {
         public MatchState StateType => MatchState.WarmupEnd;
-        public void OnEnter() { if (FikaBackendUtils.IsServer) H.game.StateTimer = 5f; }
-        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+        public void OnEnter() { if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 5f; }
+        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
         public void OnExit()
         {
-            H.session.InitializeScoreBoard();
+            H.Session.InitializeScoreBoard();
         }
     }
 
@@ -60,17 +60,17 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.RoundPrepare;
         public void OnEnter()
         {
-            foreach (var p in H.game.session.scoreboard.Values) p.isAlive = true;
-            if (H.gameWorld?.MainPlayer != null)
+            foreach (var p in H.Arena.session.scoreboard.Values) p.isAlive = true;
+            if (H.GameWorld?.MainPlayer != null)
             {
-                Teleporter.Teleport(H.gameWorld.MainPlayer);
-                Patch_Kill.FixMe(H.gameWorld.MainPlayer.ActiveHealthController);
+                Teleporter.Teleport(H.GameWorld.MainPlayer);
+                Patch_Kill.FixMe(H.GameWorld.MainPlayer.ActiveHealthController);
             }
 
-            if (FikaBackendUtils.IsServer) H.game.StateTimer = 5f;
-            H.session.ResetRoundScopeFields();
+            if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 5f;
+            H.Session.ResetRoundScopeFields();
         }
-        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundAction : null;
+        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
         public void OnExit() { }
     }
 
@@ -81,20 +81,20 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsServer)
             {
-                H.game.StateTimer = 10f;
-                H.game.OnRoundEnd();
+                H.Arena.StateTimer = 10f;
+                H.Arena.OnRoundEnd();
             }
         }
         public MatchState? OnUpdate()
         {
             if (FikaBackendUtils.IsClient) return null;
 
-            if (H.game.StateTimer <= 0)
+            if (H.Arena.StateTimer <= 0)
             {
-                if (H.game.ActiveRules is SnDModeRules)
+                if (H.Arena.ActiveRules is SnDModeRules)
                 {
-                    SnDModeRules snd = H.game.ActiveRules as SnDModeRules;
-                    var wins = H.session.factionWins;
+                    SnDModeRules snd = H.Arena.ActiveRules as SnDModeRules;
+                    var wins = H.Session.factionWins;
 
                     if (wins[Faction.CT] + wins[Faction.T] == snd.maxRoundsToWin - 1)
                     {
@@ -121,18 +121,18 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsServer)
             {
-                H.game.StateTimer = 10f;
-                H.game.OnRoundEnd();
+                H.Arena.StateTimer = 10f;
+                H.Arena.OnRoundEnd();
                 foreach (var player in H.GetAllPlayers())
                 {
                     var playerScore = H.GetPlayerScore(player.Id);
                     playerScore.faction = playerScore.faction == Faction.CT ? Faction.T : Faction.CT;
                 }
-                (H.session.factionWins[Faction.CT], H.session.factionWins[Faction.T]) = (H.session.factionWins[Faction.T], H.session.factionWins[Faction.CT]);
+                (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
                 Singleton<SessionInfoPacketHandler>.Instance.Send();
             }
         }
-        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.game.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
         public void OnExit() { }
     }
 

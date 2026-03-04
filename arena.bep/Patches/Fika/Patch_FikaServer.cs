@@ -70,7 +70,7 @@ namespace ifp.arena.bep.Patches.Fika
                     if (damage.ProfileId.HasValue)
                     {
                         // Mirrors FikaPlayer.HandleDamagePacket logic
-                        var killerBridge = H.gameWorld.GetAlivePlayerBridgeByProfileID(damage.ProfileId.Value);
+                        var killerBridge = H.GameWorld.GetAlivePlayerBridgeByProfileID(damage.ProfileId.Value);
                         if (killerBridge?.iPlayer is Player killerPlayer)
                         {
                             killerId = killerPlayer.Id;

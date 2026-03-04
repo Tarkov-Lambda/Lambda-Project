@@ -45,11 +45,11 @@ namespace ifp.arena.bep.Core.Gamemode
             GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), "STATUS", header);
             currentY += 40f;
 
-            foreach (var p in H.game.session.scoreboard.Values.OrderByDescending(p => p.kills))
+            foreach (var p in H.Arena.session.scoreboard.Values.OrderByDescending(p => p.kills))
             {
                 Rect rowRect = new Rect(bounds.x, currentY, bounds.width, rowHeight);
                 if (!p.isAlive) { GUI.color = new Color(1f, 0.5f, 0.5f, 0.3f); GUI.DrawTexture(rowRect, highlight); }
-                else if (p.player != null && H.gameWorld.MainPlayer != null && p.player.Id == H.gameWorld.MainPlayer.Id)
+                else if (p.player != null && H.GameWorld.MainPlayer != null && p.player.Id == H.GameWorld.MainPlayer.Id)
                 { GUI.color = new Color(1f, 1f, 1f, 0.1f); GUI.DrawTexture(rowRect, highlight); }
 
                 GUI.color = p.isAlive ? Color.white : Color.gray;
@@ -59,7 +59,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), p.deaths.ToString(), row);
                 GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.assists.ToString(), row);
 
-                bool isWarmup = H.game.session.roundState == MatchState.Warmup;
+                bool isWarmup = H.Arena.session.roundState == MatchState.Warmup;
                 GUI.color = isWarmup ? p.isReady ? Color.green : Color.yellow : p.isAlive ? Color.green : Color.red;
                 GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), isWarmup ? p.isReady ? "READY" : "WAITING" : p.isAlive ? "ALIVE" : "DEAD", row);
 
@@ -98,7 +98,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public ArenaController()
         {
-            if (H.gameWorld != null) StartSession(H.gameWorld);
+            if (H.GameWorld != null) StartSession(H.GameWorld);
             Patch_Gameworld_OnGameStarted.OnGameStarted += StartSession;
             Patch_Gameworld_OnDispose.OnDispose += EndSession;
         }
@@ -107,13 +107,13 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             Patch_Gameworld_OnGameStarted.OnGameStarted -= StartSession;
             Patch_Gameworld_OnDispose.OnDispose -= EndSession;
-            EndSession(H.gameWorld);
+            EndSession(H.GameWorld);
             Release(this);
         }
 
         public void StartSession(GameWorld gameWorld)
         {
-            if(H.gameWorld is HideoutGameWorld) return;
+            if(H.GameWorld is HideoutGameWorld) return;
 
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
@@ -197,12 +197,12 @@ namespace ifp.arena.bep.Core.Gamemode
             Rect topBarRect = new Rect(Screen.width / 2f - 200f, 0, 400f, 60f);
 
             GUI.DrawTexture(topBarRect, _darkBackground);
-            H.game.ActiveRules.DrawTopBar(game, topBarRect, _headerStyle, _scoreBigStyle, _timerStyle);
+            H.Arena.ActiveRules.DrawTopBar(game, topBarRect, _headerStyle, _scoreBigStyle, _timerStyle);
 
             if (Input.GetKey(KeyCode.Tab))
             {
                 Rect sbBounds = new Rect((Screen.width - 800f) / 2f, (Screen.height - 500f) / 2f, 800f, 500f);
-                H.game.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
+                H.Arena.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
             }
         }
 

@@ -78,7 +78,7 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            var session = H.session;
+            var session = H.Session;
             if (session == null) return;
 
             var packet = new SessionInfoPacket
@@ -103,7 +103,7 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(SessionInfoPacket packet, NetPeer peer)
         {
-            var session = H.session;
+            var session = H.Session;
             if (session == null) return;
 
             session.roundState = packet.roundState;
