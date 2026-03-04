@@ -7,9 +7,6 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
-using System;
-using System.Diagnostics;
-using System.Linq;
 
 namespace ifp.arena.bep.networking
 {
@@ -69,6 +66,14 @@ namespace ifp.arena.bep.networking
             {
                 H.Scoreboard[packet.victimId].isAlive = false;
             }
+
+            // Player position interpolation mitigation
+            Player victim = H.GetPlayer(packet.victimId);
+            if (victim != null && victim != H.MainPlayer)
+            {
+                H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
+            }
+
             EventBus.OnPlayerKill(packet);
         }
     }

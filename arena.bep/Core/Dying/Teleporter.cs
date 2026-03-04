@@ -31,15 +31,16 @@ namespace ifp.arena.bep.Core.Dying
                 // {
                 //     faction = Plugin.PrefferedFaction.Value;
                 // }
-                    faction = Plugin.PrefferedFaction.Value;
+                faction = Plugin.PrefferedFaction.Value;
 
                 newPos = GetNewPosition(faction);
+                // player.Position = newPos;
                 player.Teleport(newPos);
             }
             catch (Exception ex)
             {
                 H.Notify("ERROR: Can't teleport");
-                Plugin.Logger.LogError(ex);
+                // Plugin.Logger.LogError(ex);
             }
         }
 

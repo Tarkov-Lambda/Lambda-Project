@@ -82,7 +82,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             {
                 // Close Inventory
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                PlayerUtils.RepairMe();
+                PlayerUtils.ReplenishMe();
 
                 int killerId = Patch_ApplyDamage.LastReceivedDamageInfo.Player != null ? Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id : 1;
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, __instance.Player.Id, 1);
@@ -90,7 +90,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
                 CloseEyes();
-
+                // await Task.Delay(10);
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)
@@ -123,13 +123,14 @@ namespace ifp.arena.bep.Patches.Tarkov
             await Task.Delay(250);
             deathFade.enabled = true;
             deathFade.EnableEffect();
+            H.MainPlayer.PlayDeathSound();
 
             ResourceRequest resourceRequest2 = Resources.LoadAsync<UISoundsWrapper>("Audio/UISoundsWrapper");
             UISoundsWrapper uisoundsWrapper_0 = (UISoundsWrapper)resourceRequest2.asset;
             AudioClip uIClip = uisoundsWrapper_0.GetUIClip(EUISoundType.PlayerIsDead);
             Singleton<GUISounds>.Instance.PlaySound(uIClip, false, true);
 
-            // Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.PlayerIsDead);
+            Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.PlayerIsDead);
 
             await Task.Delay(2000);
             deathFade.enabled = true;

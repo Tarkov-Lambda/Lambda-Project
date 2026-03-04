@@ -75,6 +75,8 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_ApplyDamage());
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
+            RegisterPatch(new Patch_FirearmController_InitiateShot());
+
 
             RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
 
