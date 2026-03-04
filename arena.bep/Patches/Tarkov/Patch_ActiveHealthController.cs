@@ -76,7 +76,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             _lastKillTime = now;
 
             // Delayed double healing to make sure every negative effect is fixed
-            FixMe(__instance);
+            PlayerUtils.FixMe();
 
             try
             {
@@ -89,7 +89,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
-                CloseEyes();
+                PlayerUtils.CloseEyes();
                 // await Task.Delay(10);
                 Teleporter.Teleport(__instance.Player);
             }
@@ -100,41 +100,6 @@ namespace ifp.arena.bep.Patches.Tarkov
 
 
             return false;
-        }
-
-        public static async void FixMe(ActiveHealthController __instance)
-        {
-            __instance.RestoreFullHealth();
-            await Task.Delay(500);
-            foreach (EBodyPart bodypart in Enum.GetValues(typeof(EBodyPart)))
-            {
-                __instance.RemoveNegativeEffects(bodypart);
-            }
-
-            __instance.RestoreFullHealth();
-        }
-
-        public static async void CloseEyes()
-        {
-            Camera pCamera = CameraClass.Instance.Camera;
-            DeathFade deathFade = pCamera.GetComponent<DeathFade>();
-            deathFade.enabled = true;
-
-            await Task.Delay(250);
-            deathFade.enabled = true;
-            deathFade.EnableEffect();
-            H.MainPlayer.PlayDeathSound();
-
-            ResourceRequest resourceRequest2 = Resources.LoadAsync<UISoundsWrapper>("Audio/UISoundsWrapper");
-            UISoundsWrapper uisoundsWrapper_0 = (UISoundsWrapper)resourceRequest2.asset;
-            AudioClip uIClip = uisoundsWrapper_0.GetUIClip(EUISoundType.PlayerIsDead);
-            Singleton<GUISounds>.Instance.PlaySound(uIClip, false, true);
-
-            Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.PlayerIsDead);
-
-            await Task.Delay(2000);
-            deathFade.enabled = true;
-            deathFade.DisableEffect();
         }
     }
 }

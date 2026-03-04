@@ -64,7 +64,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (H.GameWorld?.MainPlayer != null)
             {
                 Teleporter.Teleport(H.GameWorld.MainPlayer);
-                Patch_Kill.FixMe(H.GameWorld.MainPlayer.ActiveHealthController);
+                PlayerUtils.FixMe();
             }
 
             if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 5f;

@@ -61,6 +61,8 @@ namespace ifp.arena.bep.networking
 
         public override async void OnReceive(RestartPacket packet, NetPeer peer)
         {
+            PlayerUtils.CloseEyes(false, false);
+            await Task.Delay(500);
             Player player = H.GetMainPlayer();
             if (player != null)
             {
@@ -87,10 +89,14 @@ namespace ifp.arena.bep.networking
             }
 
             await Task.Delay(25);
+
             if (player != null)
             {
                 Teleporter.Teleport(player);
             }
+            await Task.Delay(25);
+
+            PlayerUtils.OpenEyes();
         }
     }
 }

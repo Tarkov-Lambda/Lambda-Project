@@ -67,24 +67,28 @@ namespace ifp.arena.bep.Core
 
     public static class PlayerUtils
     {
-        // Permament painkiller that gets applied at the start of the raid
+        // Applies a permanent painkiller at the start of the raid
         public static void ApplyPainkiller()
         {
             if (!H.isInRaid()) return;
 
             var healthController = H.MainPlayer.ActiveHealthController;
+            Type painkillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
 
-            Type painKillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
+            bool hasPainkiller = healthController.GetAllEffects()
+                .Any(effect => effect.GetType() == painkillerType && effect.BodyPart == EBodyPart.Head);
 
-            var isPainkillerAlreadyActive = healthController.GetAllEffects().FirstOrDefault(effect => effect.GetType() == painKillerType && effect.BodyPart == EBodyPart.Head);
-
-            if (isPainkillerAlreadyActive != null) return;
-            healthController.DoPainKiller();
+            if (!hasPainkiller)
+            {
+                healthController.DoPainKiller();
+            }
         }
 
-        // Repl all equipped weapons/armor
-        public static void ReplenishMe()
+        // Replenish all equipped weapons and armor
+        public static void ReplenishMe(bool shouldReloadGun = true)
         {
+            Slot tacticalVest = H.MainPlayer.Equipment.GetSlot(EquipmentSlot.TacticalVest);
+
             foreach (var slot in H.MainPlayer.Equipment.AllSlots)
             {
                 foreach (var item in slot.Items)
@@ -93,44 +97,31 @@ namespace ifp.arena.bep.Core
 
                     if (item is Weapon weapon)
                     {
-                        ReplenishGun(weapon, H.AmmoRegistry[weapon].ammo);
-
-                        Slot vest = H.MainPlayer.Equipment.GetSlot(EquipmentSlot.TacticalVest);
-                        if (vest.ContainedItem is CompoundItem vestCompoundItem)
+                        if (shouldReloadGun)
                         {
-                            foreach (var grid in vestCompoundItem.Grids)
-                            {
-                                var containerItem = grid.Items.FirstOrDefault();
-                                if (containerItem != null && containerItem is MagazineItemClass magazineItem)
-                                {
-                                    ReplenishMagazine(magazineItem, H.AmmoRegistry[weapon].ammo);
-                                }
-                            }
+                            ReplenishGun(weapon, H.AmmoRegistry[weapon].ammo);
                         }
-                        // if (TryCreateItem(weapon.GetCurrentMagazine().TemplateId, out Item newMag))
-                        // {
-                        //     ItemContextAbstractClass baseContext = new SimpleItemContext(newMag, EItemViewType.Inventory);
-                        //     ItemContextClass itemContext = new ItemContextClass(baseContext, ItemRotation.Vertical);
 
-                        //     Plugin.Logger.LogInfo(ItemUiContext.Instance.QuickFindAppropriatePlace(itemContext, H.MainPlayer.InventoryController));
-                        // }
+                        ReplenishVestMagazines(tacticalVest, weapon);
                     }
                 }
             }
-
         }
 
-        public class SimpleItemContext : ItemContextAbstractClass
+        public static void ReplenishVestMagazines(Slot vest, Weapon weapon)
         {
-            public SimpleItemContext(Item item, EItemViewType viewType) : base(item, viewType, null) { }
-
-            public override ItemContextAbstractClass CreateChild(Item item)
+            if (vest.ContainedItem is CompoundItem vestCompound)
             {
-                return new SimpleItemContext(item, this.ViewType);
+                foreach (var grid in vestCompound.Grids)
+                {
+                    if (grid.Items.FirstOrDefault() is MagazineItemClass magazine)
+                    {
+                        ReplenishMagazine(magazine, H.AmmoRegistry[weapon].ammo);
+                    }
+                }
             }
         }
 
-        // This method replenishes gun (ReplenishGun) using weapon and ammo parameters <- TRUTH NUKE (truth nuke)
         public static void ReplenishGun(Weapon weapon, AmmoItemClass ammo)
         {
             var magazine = weapon.GetCurrentMagazine();
@@ -143,12 +134,9 @@ namespace ifp.arena.bep.Core
 
             foreach (var chamber in weapon.Chambers)
             {
-                if (chamber.ContainedItem == null)
+                if (chamber.ContainedItem == null && TryCreateItem(ammo.TemplateId, out Item newItem))
                 {
-                    if (TryCreateItem(ammo.TemplateId, out Item newItem))
-                    {
-                        chamber.AddWithoutRestrictions(newItem);
-                    }
+                    chamber.AddWithoutRestrictions(newItem);
                 }
             }
         }
@@ -160,15 +148,11 @@ namespace ifp.arena.bep.Core
             {
                 foreach (var camora in cylinder.Camoras)
                 {
-                    if (camora.ContainedItem == null)
+                    if (camora.ContainedItem == null && TryCreateItem(ammo.TemplateId, out Item newItem))
                     {
-                        if (TryCreateItem(ammo.TemplateId, out Item newItem))
-                        {
-                            camora.AddWithoutRestrictions(newItem);
-                        }
+                        camora.AddWithoutRestrictions(newItem);
                     }
                 }
-
                 return;
             }
 
@@ -178,16 +162,12 @@ namespace ifp.arena.bep.Core
 
                 if (topAmmoItem != null)
                 {
-                    topAmmoItem.StackObjectsCount =
-                        Math.Min(topAmmoItem.Template.StackMaxSize, magazine.MaxCount);
+                    topAmmoItem.StackObjectsCount = Math.Min(topAmmoItem.Template.StackMaxSize, magazine.MaxCount);
                 }
-                else
+                else if (TryCreateItem(ammo.TemplateId, out Item newItem))
                 {
-                    if (TryCreateItem(ammo.TemplateId, out Item newItem))
-                    {
-                        newItem.StackObjectsCount = magazine.MaxCount;
-                        magazine.Cartridges.Add(newItem, simulate: false);
-                    }
+                    newItem.StackObjectsCount = magazine.MaxCount;
+                    magazine.Cartridges.Add(newItem, simulate: false);
                 }
             }
         }
@@ -196,36 +176,83 @@ namespace ifp.arena.bep.Core
         {
             newItem = null;
 
-            if (!Singleton<ItemFactoryClass>.Instantiated)
-                return false;
-
-            if (!Singleton<ItemFactoryClass>.Instance.ItemTemplates.ContainsKey(templateId))
+            if (!Singleton<ItemFactoryClass>.Instantiated || !Singleton<ItemFactoryClass>.Instance.ItemTemplates.ContainsKey(templateId))
                 return false;
 
             newItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
-
             return newItem != null;
         }
 
         private static void RepairItem(Item item)
         {
+            if (item is Weapon weapon)
+            {
+                weapon.Repairable.Durability = 100;
+            }
+
             if (item is CompoundItem compoundItem)
             {
                 foreach (var slot in compoundItem.AllSlots)
                 {
                     foreach (var childItem in slot.Items)
                     {
-                        if (childItem is ArmoredEquipmentItemClass armoredEquipmentItemClass)
+                        if (childItem is ArmoredEquipmentItemClass armor)
                         {
-                            armoredEquipmentItemClass.Repairable.Durability = armoredEquipmentItemClass.Repairable.MaxDurability;
+                            armor.Repairable.Durability = armor.Repairable.MaxDurability;
                         }
                     }
                 }
             }
-            else if (item is Weapon weapon)
+        }
+
+        public static async Task FixMe()
+        {
+            var health = H.MainPlayer.ActiveHealthController;
+
+            health.ChangeHydration(100f);
+            health.ChangeEnergy(100f);
+            health.RestoreFullHealth();
+
+            await Task.Delay(500);
+
+            foreach (EBodyPart bodyPart in Enum.GetValues(typeof(EBodyPart)))
             {
-                weapon.Repairable.Durability = 100;
+                health.RemoveNegativeEffects(bodyPart);
             }
+
+            health.RestoreFullHealth();
+        }
+
+        public static async Task CloseEyes(bool playAudio = true, bool openAfter = true, int delay = 2000)
+        {
+            DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
+            deathFade.enabled = true;
+
+            await Task.Delay(250);
+            deathFade.EnableEffect();
+
+            if (playAudio)
+            {
+                var resourceRequest = Resources.LoadAsync<UISoundsWrapper>("Audio/UISoundsWrapper");
+                var soundsWrapper = (UISoundsWrapper)resourceRequest.asset;
+                var uIClip = soundsWrapper.GetUIClip(EUISoundType.PlayerIsDead);
+
+                Singleton<GUISounds>.Instance.PlaySound(uIClip, false, true);
+                Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.PlayerIsDead);
+            }
+
+            if (openAfter)
+            {
+                await Task.Delay(delay);
+                OpenEyes();
+            }
+        }
+
+        public static void OpenEyes()
+        {
+            DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
+            deathFade.enabled = true;
+            deathFade.DisableEffect();
         }
     }
 }

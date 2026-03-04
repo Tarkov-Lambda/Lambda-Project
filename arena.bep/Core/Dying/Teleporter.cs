@@ -39,7 +39,7 @@ namespace ifp.arena.bep.Core.Dying
             }
             catch (Exception ex)
             {
-                H.Notify("ERROR: Can't teleport");
+                // H.Notify("ERROR: Can't teleport");
                 // Plugin.Logger.LogError(ex);
             }
         }
