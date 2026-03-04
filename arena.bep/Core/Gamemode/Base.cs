@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
+using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.GameTypes;
@@ -113,13 +114,14 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void StartSession(GameWorld gameWorld)
         {
-            if(H.GameWorld is HideoutGameWorld) return;
+            if (H.GameWorld is HideoutGameWorld) return;
 
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
+            H.ApplyPainkiller();
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
             H.Notify("Plugin Reloaded");

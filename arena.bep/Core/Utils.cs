@@ -1,30 +1,30 @@
 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Comfort.Common;
 using EFT;
 using Fika.Core.Networking;
+using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 
 namespace ifp.arena.bep.Core
 {
-    // vague posting
+    // Helper class for singleton refences & helper functions
     public static class H
     {
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-        public static IFikaNetworkManager FikaNet => H.FikaNet;
+        public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
 
-        // vague posting again
         public static ArenaController Arena => Singleton<ArenaController>.Instance;
         public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
         public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
-
         public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
-
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()
@@ -49,13 +49,27 @@ namespace ifp.arena.bep.Core
 
         public static List<Player> GetAllPlayers()
         {
-            if (!isInRaid()) return null;
-            return H.GameWorld.AllAlivePlayersList;
+            return GameWorld.AllAlivePlayersList;
         }
 
         public static bool isInRaid()
         {
             return GameWorld != null && GameWorld is not HideoutGameWorld;
+        }
+
+        public static void ApplyPainkiller()
+        {
+            if (!isInRaid()) return;
+
+            var player = GetMainPlayer();
+            var healthController = player.ActiveHealthController;
+
+            Type painKillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
+
+            var isPainkillerAlreadyActive = healthController.GetAllEffects().FirstOrDefault(effect => effect.GetType() == painKillerType && effect.BodyPart == EBodyPart.Head);
+
+            if (isPainkillerAlreadyActive != null) return;
+            healthController.DoPainKiller();
         }
 
         public static async Task Delay(int ms)
