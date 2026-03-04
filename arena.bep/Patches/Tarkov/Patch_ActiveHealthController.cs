@@ -66,6 +66,9 @@ namespace ifp.arena.bep.Patches.Tarkov
                 // Singleton<ClientFirearmController>.Instance.SetAim(false);
                 int killerId = Patch_ApplyDamage.LastReceivedDamageInfo.Player != null ? Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id : 1;
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, __instance.Player.Id, 1);
+
+                Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
+
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)

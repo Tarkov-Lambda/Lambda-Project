@@ -15,11 +15,17 @@ namespace ifp.arena.bep.Core.Dying
 {
     public class FakeCorpse : MonoBehaviour
     {
+        PlayerBones bones;
+
         Collider[] cols;
 
         FakeDroppedItem itemInHands;
 
         BetterSource speaker;
+
+        Camera attachedCamera;
+        Vector3 attacthedCameraLocalPos;
+        Quaternion attacthedCameraLocalRot;
 
         void Start()
         {
@@ -50,10 +56,18 @@ namespace ifp.arena.bep.Core.Dying
             itemInHands = item;
         }
 
-        public void VocalizeDeath(string playerVoiceId, Transform head)
+        public void SetBones(PlayerBones bones)
+        {
+            Plugin.Logger.LogInfo(bones.name);
+            this.bones = bones;
+        }
+
+        public void VocalizeDeath(string playerVoiceId)
         {
             EPhraseTrigger trigger = EPhraseTrigger.OnDeath;
             ETagStatus tags = ETagStatus.BadlyInjured;
+
+            Transform head = bones.HeadCameraCollider.transform;
 
             string key = ResourceKeyManagerAbstractClass.TakePhrasePath(playerVoiceId);
             if (!EasyAssetsExtensions.TryGetAsset<Voice>(Singleton<IEasyAssets>.Instance, out var asset, key))
@@ -89,6 +103,23 @@ namespace ifp.arena.bep.Core.Dying
             speaker.StartTrackingPosition(head);
             speaker.SetMixerGroup(MonoBehaviourSingleton<BetterAudio>.Instance.ObservedPlayerSpeechMixer);
             speaker.Play(taggedClip.Clip, null, 1f);
+        }
+
+        public void SetAttachedCamera(Camera cam)
+        {
+            attachedCamera = cam;
+        }
+
+        void Update()
+        {
+            if (attachedCamera != null)
+            {
+                Matrix4x4 parentMatrix = bones.HeadCameraCollider.transform.localToWorldMatrix;
+                Matrix4x4 localMatrix = Matrix4x4.TRS(attacthedCameraLocalPos, attacthedCameraLocalRot, Vector3.one);
+                Matrix4x4 worldMatrix = parentMatrix * localMatrix;
+                attachedCamera.transform.position = worldMatrix.GetColumn(3);
+                attachedCamera.transform.rotation = worldMatrix.rotation;
+            }
         }
 
         public void OnRigidbodyStopped()

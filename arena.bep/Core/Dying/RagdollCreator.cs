@@ -1,6 +1,8 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.AssetsManager;
+using EFT.CameraControl;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -17,20 +19,18 @@ using CorpseRagdoll = RagdollClass;
 
 namespace ifp.arena.bep.Core.Dying
 {
-    public class RagdollCreator : IDisposable
+    public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
     {
-        Dictionary<Player, FakeCorpse> regsitry;
+        readonly Dictionary<Player, FakeCorpse> regsitry = new Dictionary<Player, FakeCorpse>();
 
         public RagdollCreator()
         {
-            EventBus.OnPlayerKill += CreateRagdollFromPlayer;
-
-            regsitry = new Dictionary<Player, FakeCorpse>();
+            EventBus.OnPlayerKill += OnPacket;
         }
 
         public void Dispose()
         {
-            EventBus.OnPlayerKill -= CreateRagdollFromPlayer;
+            EventBus.OnPlayerKill -= OnPacket;
 
             foreach (var kvp in regsitry)
             {
@@ -42,11 +42,35 @@ namespace ifp.arena.bep.Core.Dying
             regsitry.Clear();
         }
 
-        private void CreateRagdollFromPlayer(PlayerKilledPacket playerKilledPacket)
+        void OnPacket(PlayerKilledPacket playerKilledPacket)
         {
             var player = H.GetPlayer(playerKilledPacket.victimId);
-            if (player == null || player.Id == H.gameWorld.MainPlayer.Id) return;
+            if (player == null || player.IsYourPlayer) return;
 
+            CreateRagdollFromPlayer(player);
+        }
+
+        public void CreateLocalPlayerRagdoll()
+        {
+            Player mainPlayer = H.GetMainPlayer();
+            FakeCorpse fakeCorpse = CreateRagdollFromPlayer(mainPlayer);
+
+            PlayerCameraController playerCameraController = mainPlayer.GetComponent<PlayerCameraController>();
+            fakeCorpse.SetAttachedCamera(playerCameraController.Camera);
+            playerCameraController.enabled = false;
+            UniTask.Delay(2000).ContinueWith(() =>
+            { 
+                playerCameraController.enabled = true;
+
+                if (fakeCorpse != null)
+                {
+                    fakeCorpse.SetAttachedCamera(null);
+                }
+            });
+        }
+
+        private FakeCorpse CreateRagdollFromPlayer(Player player)
+        {
             GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
                 typeof(PlayerBody),
                 typeof(PlayerBones),
@@ -73,6 +97,7 @@ namespace ifp.arena.bep.Core.Dying
             UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
 
             FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
+            fakeCorpse.SetBones(playerClone.GetComponentInChildren<PlayerBones>());
 
             RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();
             foreach (var rbs in rigidbodySpawners)
@@ -158,7 +183,9 @@ namespace ifp.arena.bep.Core.Dying
             }
             regsitry[player] = fakeCorpse;
 
-            fakeCorpse.VocalizeDeath(player.Speaker.PlayerVoice, clonePlayerBody.PlayerBones.HeadCameraCollider.transform);
+            fakeCorpse.VocalizeDeath(player.Speaker.PlayerVoice);
+
+            return fakeCorpse;
         }
 
         private static GameObject CloneWithSpecificComponents(GameObject original, params Type[] componentsToKeep)
