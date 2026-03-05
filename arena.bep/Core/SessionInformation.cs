@@ -1,9 +1,11 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.Hideout;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
@@ -54,12 +56,12 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.None, 0},
             {MatchState.Warmup, 120},
             {MatchState.WarmupEnd, 5},
-            {MatchState.RoundPrepare, 10},
+            {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 140},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},
             {MatchState.SideSwap, 10},
-            {MatchState.MatchEnd, 30}
+            {MatchState.MatchEnd, 15}
         };
 
         public SessionInfo()
@@ -123,6 +125,7 @@ namespace ifp.arena.bep.GameTypes
             kills = 0;
             assists = 0;
             deaths = 0;
+            musicKit = "valve_cs2_01";
             isAlive = true;
         }
 
@@ -133,6 +136,7 @@ namespace ifp.arena.bep.GameTypes
         public int mvps = 0;
         public int kills = 0;
         public int assists = 0;
+        public string musicKit = "valve_cs2_01";
         public int deaths = 0;
         public bool isAlive = true;
         public bool isReady = false;

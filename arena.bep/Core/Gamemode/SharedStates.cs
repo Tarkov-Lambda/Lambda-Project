@@ -30,7 +30,6 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsClient) return;
             H.Arena.StateTimer = 15f;
-
         }
 
         public MatchState? OnUpdate()
