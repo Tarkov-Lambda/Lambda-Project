@@ -55,7 +55,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.InitiateShot));
         }
-//
+
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, IWeapon weapon, AmmoItemClass ammo)
         {

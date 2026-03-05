@@ -21,6 +21,7 @@ using SPT.Reflection;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using static System.Collections.Specialized.BitVector32;
@@ -78,6 +79,8 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_method_10());
 
+            // RegisterPatch(new Patch_Class308_RequestBuilds());
+
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());
 
@@ -113,7 +116,7 @@ namespace ifp.arena.bep
             Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
             PrefferedFaction = Config.Bind("", "Preffered Faction", Faction.None, "Faction swaps only happen after the round end");
             MusicKitPath = Config.Bind("", "MusicKitPath", "", "C:/Users/mrimf/Documents/GitHub/fika-arena/audio/music");
-            
+
             MapName = Config.Bind("Admin", "Map Name", "", "");
             GameMode = Config.Bind("Admin", "Gamemodes", GameModes.FFA, "");
             MapName = Config.Bind("Admin", "Map Name", "", "");

@@ -31,6 +31,12 @@ namespace ifp.arena.bep.Core
         public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
         public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
+        public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
+        public static WeaponBuildsStorageClass WeaponBuildsStorage => ItemFactory.WeaponBuildsStorageClass;
+        public static EquipmentBuildsStorageClass EquipmentBuildsStorage => Singleton<EquipmentBuildsStorageClass>.Instance;
+
+        // public static ArenaWeaponBuilds WeaponBuilds => Singleton<ArenaWeaponBuilds>.Instance;
+
         public static Dictionary<Weapon, MagAndAmmo> AmmoRegistry => Patch_FirearmController_InitiateShot.AmmoRegistry;
 
         public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);

@@ -77,25 +77,14 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             // Delayed double healing to make sure every negative effect is fixed
             _ = PlayerUtils.FixMe();
-
+            Singleton<ReplenishPacketHandler>.Instance.Send();
             try
             {
-                // Close Inventory
-                // H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                try
-                {
-                    Singleton<ReplenishPacketHandler>.Instance.Send();
-                }
-                catch (Exception ex)
-                {
-
-                }
-                
+                H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(H.MainPlayer, Patch_ApplyDamage.LastReceivedDamageInfo);
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
                 _ = PlayerUtils.CloseEyes();
-                // await Task.Delay(10);
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)

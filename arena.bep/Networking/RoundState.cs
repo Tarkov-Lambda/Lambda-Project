@@ -67,32 +67,20 @@ namespace ifp.arena.bep.networking
 
         public void Send(MatchState roundState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
         {
-            double serverNow = NetworkTime.ServerNowSeconds;
-
             var packet = new MatchStateSyncPacket
             {
                 roundState = roundState,
                 phaseDurationSeconds = phaseDurationSeconds,
-                serverPhaseStartSeconds = serverNow,
+                serverPhaseStartSeconds = NetworkTime.ServerNowSeconds,
                 hasRoundActionEnd = roundActionEnd.HasValue,
                 roundActionEnd = roundActionEnd.GetValueOrDefault()
             };
-
             RequestSend(packet);
         }
 
         public override void OnReceive(MatchStateSyncPacket packet, NetPeer peer)
         {
-            if (FikaBackendUtils.IsClient)
-            {
-                H.Arena.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
-            }
-
-            if (packet.hasRoundActionEnd)
-            {
-                H.Arena.LastRoundActionEnd = packet.roundActionEnd;
-                EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd);
-            }
+            H.Arena.TransitionToState(packet);
         }
     }
 }

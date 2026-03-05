@@ -36,7 +36,7 @@ namespace ifp.arena.bep.Core.Gamemode
             GUI.Label(new Rect(bounds.x + 20f, currentY, 200, rowHeight), "PLAYER", header);
             GUI.Label(new Rect(bounds.x + 300f, currentY, 100, rowHeight), "FACTION", header);
             GUI.Label(new Rect(bounds.x + 450f, currentY, 50, rowHeight), "K", header);
-            GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), "D", header);                                 
+            GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), "D", header);
             GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), "MONEY", header);
             GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), "STATUS", header);
             currentY += 40f;
@@ -132,6 +132,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void StartSession(GameWorld gameWorld)
         {
+
             if (H.GameWorld is HideoutGameWorld) return;
 
             _tickerObject = new GameObject("Arena Gamesession");
@@ -167,43 +168,32 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (session == null || _currentState == null) return;
 
-            // Timer Synchronization
-            if (FikaBackendUtils.IsServer) StateTimer -= Time.deltaTime;
-            else StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
+            // Unified Timer Logic (Works for both Server and Client)
+            // On Server: Start + Duration - Now ~= Duration (since Start is Now)
+            // On Client: Start + Duration - Now = Remaining Time accurately synced
+            StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
-            MatchState? nextState = _currentState.OnUpdate();
-            if (nextState.HasValue && FikaBackendUtils.IsServer)
-                ChangeState(nextState.Value);
+            // Only Server runs the logic loop
+            if (FikaBackendUtils.IsServer)
+            {
+                MatchState? nextState = _currentState.OnUpdate();
+                if (nextState.HasValue)
+                {
+
+                    ChangeState(nextState.Value);
+                }
+            }
         }
 
         public void ChangeState(MatchState newStateType)
         {
-            if (FikaBackendUtils.IsClient) return;
-
-            if (_currentState != null)
-            {
-                _currentState.OnExit();
-                EventBus.OnEnd?.Invoke(_currentState.StateType);
-            }
-
-            _currentState = ActiveRules.CreateState(newStateType);
-            session.roundState = _currentState.StateType;
-
-            StateTimer = H.Session.StateTimerConfig[_currentState.StateType];
-            _currentState.OnEnter();
-            EventBus.OnEnter?.Invoke(_currentState.StateType);
-
-            ServerPhaseStartSeconds = NetworkTime.ServerNowSeconds;
-            PhaseDurationSeconds = StateTimer;
-
-            if (FikaBackendUtils.IsServer)
-                Singleton<MatchStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer, PendingRoundActionEnd);
-
-            // payload should only fire once
+            RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
             PendingRoundActionEnd = null;
+
+            Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Session.StateTimerConfig[newStateType], roundEndData);
         }
 
-        public void ApplyReplicatedRoundState(MatchState state, double phaseDurationSeconds, double serverPhaseStartSeconds)
+        public void TransitionToState(MatchStateSyncPacket packet)
         {
             if (_currentState != null)
             {
@@ -211,18 +201,25 @@ namespace ifp.arena.bep.Core.Gamemode
                 EventBus.OnEnd?.Invoke(_currentState.StateType);
             }
 
-            PhaseDurationSeconds = phaseDurationSeconds;
-            ServerPhaseStartSeconds = serverPhaseStartSeconds;
-            // NetworkTime.BootstrapFromServerStamp(serverPhaseStartSeconds);
+            PhaseDurationSeconds = packet.phaseDurationSeconds;
+            ServerPhaseStartSeconds = packet.serverPhaseStartSeconds;
 
-            session.roundState = state;
-            IGameState newState = ActiveRules.CreateState(state);
-            if (newState == null) return;
+            if (packet.hasRoundActionEnd)
+            {
+                LastRoundActionEnd = packet.roundActionEnd;
+                EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd);
+            }
 
-            _currentState = newState;
+            session.roundState = packet.roundState;
+            _currentState = ActiveRules.CreateState(packet.roundState);
+
             StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
-            _currentState.OnEnter();
-            EventBus.OnEnter?.Invoke(_currentState.StateType);
+
+            if (_currentState != null)
+            {
+                _currentState.OnEnter();
+                EventBus.OnEnter?.Invoke(_currentState.StateType);
+            }
         }
 
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
