@@ -57,6 +57,12 @@ namespace ifp.arena.bep.networking
 
         public override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
         {
+            // Only server is allowed to send these states
+            // if (packet.state is BombState.Planted or BombState.Defused or BombState.Exploded)
+            // {
+            //     return false;
+            // }
+            
             return base.ServerValidation(ref packet, peer);
         }
 

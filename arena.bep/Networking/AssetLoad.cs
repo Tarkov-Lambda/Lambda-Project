@@ -30,7 +30,6 @@ namespace ifp.arena.bep.networking
             id = reader.GetInt();
             isReady = reader.GetBool();
             msg = reader.GetString();
-
         }
 
         public override string ToString()

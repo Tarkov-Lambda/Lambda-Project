@@ -263,4 +263,12 @@ namespace ifp.arena.bep.Core
             deathFade.DisableEffect();
         }
     }
+
+    public static class EconomyUtils
+    {
+        public static void Buy(Item weapon)
+        {
+            
+        }
+    }
 }

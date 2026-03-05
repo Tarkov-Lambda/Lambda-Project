@@ -74,12 +74,15 @@ namespace ifp.arena.bep
             // RegisterPatch(new Patch_CanPressTrigger());
             RegisterPatch(new Patch_ApplyShot());
             RegisterPatch(new Patch_ApplyDamage());
+            RegisterPatch(new Patch_ApplyDamage());
+
+            RegisterPatch(new Patch_method_10());
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());
 
 
-            RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
+            // RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
 
             // NETWORK
             RegisterPacket<PlayerKilledPacketHandler>();

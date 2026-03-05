@@ -86,14 +86,11 @@ namespace ifp.arena.bep.Patches.Fika
                     // fallback to 0
                 }
 
-                var victimId = victim.Id; // IMPORTANT: your handler searches AllAlivePlayersList by Player.Id
-                var assistId = 0;
                 
-                // Call your custom packet sender
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, victim.Id, assistId);
+                
+                // Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, victim.Id, assistId, true);
             }
 
-            // We handled Damage packets ourselves; do not run Fika’s default OnCommonPlayerPacketReceived path.
             return false;
         }
     }

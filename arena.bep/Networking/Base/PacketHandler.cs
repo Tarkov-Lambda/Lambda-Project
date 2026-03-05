@@ -55,28 +55,9 @@ namespace ifp.arena.bep.networking.Base
 
             Patch_Gameworld_OnGameStarted.OnGameStarted -= RegisterPacket;
 
-            try
-            {
-                var manager = H.FikaNet;
-
-                if (manager == null || manager.Equals(null))
-                    return;
-
-                var field = AccessTools.Field(manager.GetType(), "_packetProcessor");
-                if (field == null)
-                    return;
-
-                var processor = field.GetValue(manager) as NetPacketProcessor;
-                if (processor == null)
-                    return;
-
-                processor.RemoveSubscription<T>();
-            }
-            catch (Exception ex)
-            {
-                Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
-            }
-
+            NetPacketProcessor processor = AccessTools.Field(H.FikaNet.GetType(), "_packetProcessor").GetValue(H.FikaNet) as NetPacketProcessor;
+            processor.RemoveSubscription<T>();
+            
             Release(this);
         }
 

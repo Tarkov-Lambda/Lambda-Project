@@ -52,6 +52,10 @@ namespace ifp.arena.bep.Core.Audio
                     StartBombTenSecondCountdown();
                     break;
 
+                case MatchState.SideSwap:
+                    H.PlayMusic(MusicEvent.ChooseTeam);
+                    break;
+
                 case MatchState.MatchEnd:
                     H.PlayMusic(MusicEvent.EndMatch);
                     break;

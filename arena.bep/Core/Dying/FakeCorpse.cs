@@ -1,15 +1,8 @@
 ﻿using Comfort.Common;
-using EFT;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 using EasyAssetsExtensions = GClass1857;
-using EnumExtensions = GClass867;
 
 namespace ifp.arena.bep.Core.Dying
 {
@@ -58,7 +51,6 @@ namespace ifp.arena.bep.Core.Dying
 
         public void SetBones(PlayerBones bones)
         {
-            Plugin.Logger.LogInfo(bones.name);
             this.bones = bones;
         }
 

@@ -16,6 +16,7 @@ namespace ifp.arena.bep.networking
         public int faction;
         public int mvps;
         public int kills;
+        public int headshots;
         public int assists;
         public int deaths;
         public bool isAlive;
@@ -63,6 +64,7 @@ namespace ifp.arena.bep.networking
                 writer.Put(scores[i].faction);
                 writer.Put(scores[i].mvps);
                 writer.Put(scores[i].kills);
+                writer.Put(scores[i].headshots);
                 writer.Put(scores[i].assists);
                 writer.Put(scores[i].deaths);
                 writer.Put(scores[i].isAlive);
@@ -98,6 +100,7 @@ namespace ifp.arena.bep.networking
                     faction = reader.GetInt(),
                     mvps = reader.GetInt(),
                     kills = reader.GetInt(),
+                    headshots = reader.GetInt(),
                     assists = reader.GetInt(),
                     deaths = reader.GetInt(),
                     isAlive = reader.GetBool(),
@@ -137,6 +140,7 @@ namespace ifp.arena.bep.networking
                     faction = (int)kvp.Value.faction,
                     mvps = kvp.Value.mvps,
                     kills = kvp.Value.kills,
+                    headshots = kvp.Value.kills,
                     assists = kvp.Value.assists,
                     deaths = kvp.Value.deaths,
                     isAlive = kvp.Value.isAlive,
@@ -175,6 +179,7 @@ namespace ifp.arena.bep.networking
                     playerScore.faction = (Faction)syncScore.faction;
                     playerScore.mvps = syncScore.mvps;
                     playerScore.kills = syncScore.kills;
+                    playerScore.headshots = syncScore.headshots;
                     playerScore.assists = syncScore.assists;
                     playerScore.deaths = syncScore.deaths;
                     playerScore.isAlive = syncScore.isAlive;
@@ -188,6 +193,7 @@ namespace ifp.arena.bep.networking
                         faction = (Faction)syncScore.faction,
                         mvps = syncScore.mvps,
                         kills = syncScore.kills,
+                        headshots = syncScore.headshots,
                         assists = syncScore.assists,
                         deaths = syncScore.deaths,
                         isAlive = syncScore.isAlive,

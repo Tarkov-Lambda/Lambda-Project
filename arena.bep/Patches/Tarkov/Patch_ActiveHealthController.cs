@@ -76,7 +76,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             _lastKillTime = now;
 
             // Delayed double healing to make sure every negative effect is fixed
-            PlayerUtils.FixMe();
+            _ = PlayerUtils.FixMe();
 
             try
             {
@@ -90,13 +90,11 @@ namespace ifp.arena.bep.Patches.Tarkov
                 {
 
                 }
-
-                int killerId = Patch_ApplyDamage.LastReceivedDamageInfo.Player != null ? Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id : 1;
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, __instance.Player.Id, 1);
-
+                
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(H.MainPlayer, Patch_ApplyDamage.LastReceivedDamageInfo);
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
-                PlayerUtils.CloseEyes();
+                _ = PlayerUtils.CloseEyes();
                 // await Task.Delay(10);
                 Teleporter.Teleport(__instance.Player);
             }

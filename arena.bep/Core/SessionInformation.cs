@@ -95,10 +95,7 @@ namespace ifp.arena.bep.GameTypes
             {
                 if (scoreboard.ContainsKey(p.Id))
                 {
-                    scoreboard[p.Id].kills = 0;
-                    scoreboard[p.Id].assists = 0;
-                    scoreboard[p.Id].deaths = 0;
-                    scoreboard[p.Id].isAlive = true;
+                    scoreboard[p.Id].Reset();
                 }
             }
         }
@@ -123,10 +120,16 @@ namespace ifp.arena.bep.GameTypes
         {
             mvps = 0;
             kills = 0;
+            headshots = 0;
             assists = 0;
             deaths = 0;
-            musicKit = "valve_cs2_01";
+            money = 800;
             isAlive = true;
+        }
+
+        public void AwardMoney(int addedMoney)
+        {
+            money += addedMoney;
         }
 
         public Faction faction = Faction.None;
@@ -135,11 +138,13 @@ namespace ifp.arena.bep.GameTypes
         // Round scope
         public int mvps = 0;
         public int kills = 0;
+        public int headshots = 0;
         public int assists = 0;
-        public string musicKit = "valve_cs2_01";
         public int deaths = 0;
+        public int money = 800;
         public bool isAlive = true;
         public bool isReady = false;
+        public string musicKit = "valve_cs2_01";
     }
 
     public enum BombState

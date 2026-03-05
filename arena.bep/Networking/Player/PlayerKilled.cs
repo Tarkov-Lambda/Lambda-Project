@@ -1,6 +1,4 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Networking;
+﻿using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -15,12 +13,16 @@ namespace ifp.arena.bep.networking
         public int killerId;
         public int victimId;
         public int assistId;
+        public bool isHeadshot;
+        public string weaponId;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(killerId);
             writer.Put(victimId);
             writer.Put(assistId);
+            writer.Put(isHeadshot);
+            writer.Put(weaponId);
         }
 
         public void Deserialize(NetDataReader reader)
@@ -28,6 +30,8 @@ namespace ifp.arena.bep.networking
             killerId = reader.GetInt();
             victimId = reader.GetInt();
             assistId = reader.GetInt();
+            isHeadshot = reader.GetBool();
+            weaponId = reader.GetString();
         }
 
         public override string ToString()
@@ -38,13 +42,19 @@ namespace ifp.arena.bep.networking
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
-        public void Send(int killerId, int victimId, int assistId)
+        public void Send(Player victim, DamageInfoStruct damage)
         {
+            int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
+            bool isHeadshot = damage.BodyPartColliderType == EBodyPartColliderType.HeadCommon;
+            // Item weapon = damage.Weapon;
+
             var packet = new PlayerKilledPacket
             {
                 killerId = killerId,
-                victimId = victimId,
-                assistId = assistId
+                victimId = H.MainPlayer.Id,
+                assistId = 1,
+                isHeadshot = isHeadshot,
+                weaponId = "weapon.Id",
             };
 
             RequestSend(packet);
@@ -55,6 +65,7 @@ namespace ifp.arena.bep.networking
             if (H.Scoreboard[packet.killerId] != null)
             {
                 H.Scoreboard[packet.killerId].kills++;
+                H.Scoreboard[packet.killerId].headshots++;
             }
 
             if (H.Scoreboard[packet.victimId] != null)
@@ -71,56 +82,13 @@ namespace ifp.arena.bep.networking
             Player victim = H.GetPlayer(packet.victimId);
             if (victim != null && victim != H.MainPlayer)
             {
-                H.Notify($"{H.GetPlayer(packet.victimId).name}");
+                // H.Notify($"{H.GetPlayer(packet.victimId).name}");
 
                 // H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
             }
 
+            // H.Notify(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString());
             EventBus.OnPlayerKill(packet);
-        }
-    }
-
-    public struct FactionChangePacket : INetSerializable
-    {
-        public int id;
-        public Faction faction;
-
-
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(id);
-            writer.Put((int)faction);
-
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            id = reader.GetInt();
-            faction = (Faction)reader.GetInt();
-        }
-
-        public override string ToString()
-        {
-            return $"{id} changed faction to {faction}";
-        }
-    }
-
-    public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
-    {
-        public void Send(Faction faction)
-        {
-            var packet = new FactionChangePacket
-            {
-                id = H.GameWorld.MainPlayer.Id,
-                faction = faction
-            };
-
-            RequestSend(packet);
-        }
-
-        public override void OnReceive(FactionChangePacket packet, NetPeer peer)
-        {
-            H.Scoreboard[packet.id].faction = packet.faction;
         }
     }
 }

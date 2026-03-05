@@ -1,22 +1,15 @@
 ﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
-using HarmonyLib;
-using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Audio;
-using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.bep.Patches.Fika;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode
@@ -43,8 +36,8 @@ namespace ifp.arena.bep.Core.Gamemode
             GUI.Label(new Rect(bounds.x + 20f, currentY, 200, rowHeight), "PLAYER", header);
             GUI.Label(new Rect(bounds.x + 300f, currentY, 100, rowHeight), "FACTION", header);
             GUI.Label(new Rect(bounds.x + 450f, currentY, 50, rowHeight), "K", header);
-            GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), "D", header);
-            GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), "A", header);
+            GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), "D", header);                                 
+            GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), "MONEY", header);
             GUI.Label(new Rect(bounds.x + 675f, currentY, 100, rowHeight), "STATUS", header);
             currentY += 40f;
 
@@ -60,7 +53,8 @@ namespace ifp.arena.bep.Core.Gamemode
                 GUI.Label(new Rect(bounds.x + 300f, currentY, 100, rowHeight), p.faction.ToString(), row);
                 GUI.Label(new Rect(bounds.x + 450f, currentY, 50, rowHeight), p.kills.ToString(), row);
                 GUI.Label(new Rect(bounds.x + 525f, currentY, 50, rowHeight), p.deaths.ToString(), row);
-                GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.assists.ToString(), row);
+                // GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.assists.ToString(), row);
+                GUI.Label(new Rect(bounds.x + 600f, currentY, 50, rowHeight), p.money.ToString(), row);
 
                 bool isWarmup = H.Arena.session.roundState == MatchState.Warmup;
                 GUI.color = isWarmup ? p.isReady ? Color.green : Color.yellow : p.isAlive ? Color.green : Color.red;
@@ -87,6 +81,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action<PlayerKilledPacket> OnPlayerKill;
 
         public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
+        public static Action<int> OnSelfMoneyAdded;
     }
 
     public struct RoundActionPhaseEnd
@@ -101,6 +96,7 @@ namespace ifp.arena.bep.Core.Gamemode
     {
         public SessionInfo session;
         public GameModeRules ActiveRules { get; set; } = new SnDModeRules();
+        public EconomyManager EconomyManager = new();
 
         public float StateTimer;
         public double ServerPhaseStartSeconds, PhaseDurationSeconds;
@@ -143,11 +139,10 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-            //
-            // _musicObject = new GameObject("ArenaMusicKit");
-            // _musicObject.AddComponent<MusicManager>();
-            // _musicObject.AddComponent<MusicEventRouter>();
-            // _musicObject.transform.SetParent(H.MainPlayer.PlayerBody.transform, false);
+            _musicObject = new GameObject("ArenaMusicKit");
+            _musicObject.AddComponent<MusicManager>();
+            _musicObject.AddComponent<MusicEventRouter>();
+            _musicObject.transform.SetParent(H.MainPlayer.PlayerBody.transform, false);
 
             H.PlayMusic(MusicEvent.DeathCam);
 
