@@ -71,7 +71,9 @@ namespace ifp.arena.bep.networking
             Player victim = H.GetPlayer(packet.victimId);
             if (victim != null && victim != H.MainPlayer)
             {
-                H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
+                H.Notify($"{H.GetPlayer(packet.victimId).name}");
+
+                // H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
             }
 
             EventBus.OnPlayerKill(packet);

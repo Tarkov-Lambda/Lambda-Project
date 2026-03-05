@@ -88,7 +88,7 @@ namespace ifp.arena.bep.Patches.Fika
 
                 var victimId = victim.Id; // IMPORTANT: your handler searches AllAlivePlayersList by Player.Id
                 var assistId = 0;
-
+                
                 // Call your custom packet sender
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, victim.Id, assistId);
             }

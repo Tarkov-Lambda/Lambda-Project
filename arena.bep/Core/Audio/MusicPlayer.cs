@@ -1,100 +1,135 @@
 using System.Collections;
 using System.IO;
+using Comfort.Common;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Networking;
 namespace ifp.arena.bep.Core.Audio
 {
-    [RequireComponent(typeof(AudioSource))]
-    public class MusicPlayer : MonoBehaviour
-    {
-        [Header("Settings")]
-        public string kitFolderName = "valve_cs2_01"; // Change this in Inspector
-        public float fadeDuration = 0.5f;
 
-        private AudioSource _audioSource;
-        private MusicKit _currentKit;
+
+    public class MusicManager : MonoBehaviour
+    {
+        public static MusicManager Instance;
+
+        // PATH SETTINGS
+        private const string ROOT_PATH = @"";
+        private string _currentKitName = "valve_cs2_01";
+
+        // AUDIO COMPONENTS
+        private MusicKit _activeKit;
+        private AudioSource _sourceA;
+        private AudioSource _sourceB;
+        private bool _isSourceAPlaying = false; // Toggles back and forth
+
+        // STATE
         private Coroutine _activeFadeJob;
+        private float _fadeDuration = 1.5f;
 
         void Awake()
         {
-            _audioSource = GetComponent<AudioSource>();
+            Instance = this;
 
-            // Construct path to StreamingAssets
-            string fullPath = Path.Combine(Application.streamingAssetsPath, "MusicKits", kitFolderName);
-            _currentKit = new MusicKit(fullPath);
+            // Create two audio sources for crossfading
+            _sourceA = gameObject.AddComponent<AudioSource>();
+            _sourceB = gameObject.AddComponent<AudioSource>();
 
-            Debug.Log($"Loaded Kit: {_currentKit.Name}");
+            _sourceA.playOnAwake = false;
+            _sourceB.playOnAwake = false;
+            _sourceA.loop = false;
+            _sourceB.loop = false;
+
+            LoadKit(_currentKitName);
         }
 
-        // Call this from your Game Logic
-        public void TriggerEvent(MusicEvent musicEvent)
+        public void LoadKit(string folderName)
         {
-            string filePath = _currentKit.GetRandomTrackPath(musicEvent);
+            string fullPath = Path.Combine(ROOT_PATH, folderName);
+            _activeKit = new MusicKit(fullPath);
+            Debug.Log($"[CS2 Music] Kit Loaded: {_activeKit.Name}");
+        }
 
-            if (string.IsNullOrEmpty(filePath))
+        public void PlayEvent(MusicEvent eventType)
+        {
+            string filePath = _activeKit.GetRandomTrack(eventType);
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            // Stop any existing fade to prevent fighting
+            if (_activeFadeJob != null) StopCoroutine(_activeFadeJob);
+
+            _activeFadeJob = StartCoroutine(LoadAndCrossfade(filePath));
+        }
+
+        private IEnumerator LoadAndCrossfade(string filePath)
+        {
+            // 1. Get Target Volume from EFT (so we match game settings)
+            float targetVolume = 0.1f; // Default safety
+            if (Singleton<EFT.UI.GUISounds>.Instance != null)
             {
-                Debug.LogWarning($"No track found for event: {musicEvent} in kit {_currentKit.Name}");
-                return;
+                var gameAudio = AccessTools.FieldRefAccess<EFT.UI.GUISounds, AudioSource>("audioSource_0")(Singleton<EFT.UI.GUISounds>.Instance);
+                if (gameAudio != null)
+                {
+                    // We assume the game's UI volume is a good reference for music volume
+                    // targetVolume = gameAudio.volume;
+                }
             }
 
-            StartCoroutine(LoadAndPlay(filePath));
-        }
+            // 2. Load File
+            string url = "file://" + filePath;
+            AudioType aType = filePath.EndsWith(".wav") ? AudioType.WAV : AudioType.MPEG;
 
-        IEnumerator LoadAndPlay(string path)
-        {
-            // 1. Determine Audio Type
-            AudioType audioType = AudioType.UNKNOWN;
-            if (path.EndsWith(".mp3")) audioType = AudioType.MPEG;
-            else if (path.EndsWith(".wav")) audioType = AudioType.WAV;
-
-            // 2. Load from Disk (Must use file:// protocol for Windows/Mac paths)
-            string url = "file://" + path;
-
-            using (UnityWebRequest uwr = UnityWebRequestMultimedia.GetAudioClip(url, audioType))
+            using (UnityWebRequest uwr = UnityWebRequestMultimedia.GetAudioClip(url, aType))
             {
                 yield return uwr.SendWebRequest();
 
-                if (uwr.result == UnityWebRequest.Result.ConnectionError || uwr.result == UnityWebRequest.Result.ProtocolError)
+                if (uwr.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError(uwr.error);
+                    Debug.LogError($"[CS2 Music] Error: {uwr.error}");
+                    yield break;
                 }
-                else
+
+                AudioClip clip = DownloadHandlerAudioClip.GetContent(uwr);
+                clip.name = Path.GetFileName(filePath);
+
+                // 3. Determine which source is "In" and which is "Out"
+                AudioSource sourceIn = _isSourceAPlaying ? _sourceB : _sourceA;
+                AudioSource sourceOut = _isSourceAPlaying ? _sourceA : _sourceB;
+
+                // 4. Setup "In" Source
+                sourceIn.clip = clip;
+                sourceIn.volume = 0f;
+                sourceIn.Play();
+
+                // 5. Perform Crossfade
+                float timer = 0f;
+                float startVolumeOut = sourceOut.volume;
+
+                while (timer < _fadeDuration)
                 {
-                    AudioClip clip = DownloadHandlerAudioClip.GetContent(uwr);
-                    clip.name = Path.GetFileName(path);
+                    timer += Time.deltaTime;
+                    float t = timer / _fadeDuration;
 
-                    // 3. Play with Crossfade
-                    if (_activeFadeJob != null) StopCoroutine(_activeFadeJob);
-                    _activeFadeJob = StartCoroutine(CrossfadeTo(clip));
-                }
-            }
-        }
+                    // Lerp volumes
+                    sourceIn.volume = Mathf.Lerp(0f, targetVolume, t);
 
-        IEnumerator CrossfadeTo(AudioClip newClip)
-        {
-            float startVolume = _audioSource.volume;
+                    if (sourceOut.isPlaying)
+                    {
+                        sourceOut.volume = Mathf.Lerp(startVolumeOut, 0f, t);
+                    }
 
-            // Fade Out old if playing
-            if (_audioSource.isPlaying)
-            {
-                for (float t = 0; t < fadeDuration; t += Time.deltaTime)
-                {
-                    _audioSource.volume = Mathf.Lerp(startVolume, 0, t / fadeDuration);
                     yield return null;
                 }
-            }
 
-            _audioSource.Stop();
-            _audioSource.clip = newClip;
-            _audioSource.Play();
+                // 6. Cleanup
+                sourceIn.volume = targetVolume;
+                sourceOut.volume = 0f;
+                sourceOut.Stop();
+                sourceOut.clip = null; // Free memory
 
-            // Fade In new
-            for (float t = 0; t < fadeDuration; t += Time.deltaTime)
-            {
-                _audioSource.volume = Mathf.Lerp(0, 1f, t / fadeDuration); // Assuming max volume 1
-                yield return null;
+                // Toggle state
+                _isSourceAPlaying = !_isSourceAPlaying;
             }
-            _audioSource.volume = 1f;
         }
     }
+
 }

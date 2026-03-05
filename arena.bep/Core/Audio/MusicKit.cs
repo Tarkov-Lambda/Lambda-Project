@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,48 +10,36 @@ namespace ifp.arena.bep.Core.Audio
     public class MusicKit
     {
         public string Name;
-        public string BasePath;
-
-        // key: Event Type, value: List of absolute file paths
         private Dictionary<MusicEvent, List<string>> _trackPaths;
 
-        public MusicKit(string folderPath)
+        public MusicKit(string kitPath)
         {
-            BasePath = folderPath;
-            Name = new DirectoryInfo(folderPath).Name;
+            Name = new DirectoryInfo(kitPath).Name;
             _trackPaths = new Dictionary<MusicEvent, List<string>>();
-
-            ScanFiles();
+            ScanFiles(kitPath);
         }
 
-        private void ScanFiles()
+        private void ScanFiles(string path)
         {
-            // Ensure all enum keys exist to avoid KeyNotFound exceptions
-            foreach (MusicEvent me in System.Enum.GetValues(typeof(MusicEvent)))
-            {
+            // Initialize Lists
+            foreach (MusicEvent me in Enum.GetValues(typeof(MusicEvent)))
                 _trackPaths[me] = new List<string>();
-            }
 
-            if (!Directory.Exists(BasePath))
+            if (!Directory.Exists(path))
             {
-                Debug.LogError($"Music Kit not found at: {BasePath}");
+                H.Notify($"[CS2 Music] Kit path not found: {path}");
                 return;
             }
 
-            string[] files = Directory.GetFiles(BasePath);
+            // Get all audio files
+            var files = Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(s => s.EndsWith(".mp3") || s.EndsWith(".wav"));
 
             foreach (var file in files)
             {
                 string fileName = Path.GetFileNameWithoutExtension(file).ToLower();
-                string extension = Path.GetExtension(file).ToLower();
 
-                // 1. Filter junk
-                if (extension == ".vsnd" || extension == ".meta") continue;
-                if (extension != ".mp3" && extension != ".wav" && extension != ".ogg") continue;
-
-                // 2. Map filename to Enum
-                // The order matters slightly (e.g. check "mainmenu" before generic checks if needed)
-
+                // Mapping Logic
                 if (fileName.StartsWith("mainmenu")) Add(MusicEvent.MainMenu, file);
                 else if (fileName.StartsWith("startround")) Add(MusicEvent.RoundStart, file);
                 else if (fileName.StartsWith("startaction")) Add(MusicEvent.StartAction, file);
@@ -67,16 +56,13 @@ namespace ifp.arena.bep.Core.Audio
             }
         }
 
-        private void Add(MusicEvent type, string path)
-        {
-            _trackPaths[type].Add(path);
-        }
+        private void Add(MusicEvent type, string path) => _trackPaths[type].Add(path);
 
-        public string GetRandomTrackPath(MusicEvent type)
+        public string GetRandomTrack(MusicEvent type)
         {
-            if (_trackPaths[type].Count == 0) return null;
-            int index = Random.Range(0, _trackPaths[type].Count);
-            return _trackPaths[type][index];
+            var list = _trackPaths[type];
+            if (list.Count == 0) return null;
+            return list[UnityEngine.Random.Range(0, list.Count)];
         }
     }
 }

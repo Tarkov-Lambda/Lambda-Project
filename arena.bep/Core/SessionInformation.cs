@@ -47,6 +47,8 @@ namespace ifp.arena.bep.GameTypes
         public GameModes currentGameMode = GameModes.SND;
         public string mapName = "gold_dust2";
 
+        public int mvpId;
+
         public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
         {
             {MatchState.None, 0},
@@ -117,6 +119,7 @@ namespace ifp.arena.bep.GameTypes
 
         public void Reset()
         {
+            mvps = 0;
             kills = 0;
             assists = 0;
             deaths = 0;
@@ -125,6 +128,9 @@ namespace ifp.arena.bep.GameTypes
 
         public Faction faction = Faction.None;
         public Player player;
+
+        // Round scope
+        public int mvps = 0;
         public int kills = 0;
         public int assists = 0;
         public int deaths = 0;
@@ -140,5 +146,13 @@ namespace ifp.arena.bep.GameTypes
         Defusing,
         Defused,
         Exploded
+    }
+
+    public enum RoundWinReason
+    {
+        None,
+        Objective,
+        Elimination,
+        Timeout
     }
 }

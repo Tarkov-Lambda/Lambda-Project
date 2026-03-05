@@ -11,6 +11,7 @@ using EFT.InventoryLogic;
 using EFT.UI;
 using Fika.Core.Networking;
 using HarmonyLib;
+using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
@@ -32,6 +33,8 @@ namespace ifp.arena.bep.Core
         public static Dictionary<Weapon, MagAndAmmo> AmmoRegistry => Patch_FirearmController_InitiateShot.AmmoRegistry;
 
         public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
+
+        public static void PlayMusic(MusicEvent musicEvent) => H.Arena._musicObject.GetComponent<MusicManager>().PlayEvent(musicEvent);
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()

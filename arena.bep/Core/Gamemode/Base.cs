@@ -4,6 +4,7 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
@@ -83,6 +84,15 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action<MatchState> OnEnd;
         public static Action<BombState> OnBombStateChange;
         public static Action<PlayerKilledPacket> OnPlayerKill;
+
+        public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
+    }
+
+    public struct RoundActionPhaseEnd
+    {
+        public int mvpId;
+        public Faction winner;
+        public RoundWinReason roundWinReason;
     }
 
     // This is the place where we manage both server/client arena behaviour
@@ -94,8 +104,19 @@ namespace ifp.arena.bep.Core.Gamemode
         public float StateTimer;
         public double ServerPhaseStartSeconds, PhaseDurationSeconds;
 
+
+        // This here is absolute bullshit
+        public RoundActionPhaseEnd? PendingRoundActionEnd;
+        public RoundActionPhaseEnd? LastRoundActionEnd;
+        public int LastObjectivePlayerId = -1; // planter/defuser
+        public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
+        // End of absolute bullshit
+
         private IGameState _currentState;
+
         private GameObject _tickerObject;
+        public GameObject _musicObject;
+
 
         public ArenaController()
         {
@@ -121,6 +142,13 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
+            _musicObject = new GameObject("ArenaMusicKit");
+            _musicObject.AddComponent<MusicManager>();
+            _musicObject.transform.SetParent(H.MainPlayer.PlayerBody.transform, false);
+            UnityEngine.Object.DontDestroyOnLoad(_musicObject);
+
+            H.PlayMusic(MusicEvent.DeathCam);
+
             PlayerUtils.ApplyPainkiller();
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
@@ -131,7 +159,10 @@ namespace ifp.arena.bep.Core.Gamemode
         public void EndSession(GameWorld gameWorld)
         {
             if (_tickerObject != null)
+            {
                 UnityEngine.Object.Destroy(_tickerObject);
+                UnityEngine.Object.Destroy(_musicObject);
+            }
         }
 
         public void Update()
@@ -163,14 +194,17 @@ namespace ifp.arena.bep.Core.Gamemode
             PhaseDurationSeconds = StateTimer;
 
             if (FikaBackendUtils.IsServer)
-                Singleton<MatchStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer);
+                Singleton<MatchStateSyncPacketHandler>.Instance.Send(_currentState.StateType, StateTimer, PendingRoundActionEnd);
+
+            // payload should only fire once
+            PendingRoundActionEnd = null;
         }
 
         public void ApplyReplicatedRoundState(MatchState state, double phaseDurationSeconds, double serverPhaseStartSeconds)
         {
             PhaseDurationSeconds = phaseDurationSeconds;
             ServerPhaseStartSeconds = serverPhaseStartSeconds;
-            NetworkTime.BootstrapFromServerStamp(serverPhaseStartSeconds);
+            // NetworkTime.BootstrapFromServerStamp(serverPhaseStartSeconds);
 
             session.roundState = state;
             IGameState newState = ActiveRules.CreateState(state);
@@ -187,6 +221,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class GameModeTicker : MonoBehaviour
     {
         private GUIStyle _headerStyle, _rowStyle, _timerStyle, _scoreBigStyle;
+        private GUIStyle _mvpStyle;
         private Texture2D _darkBackground, _rowHighlight;
         private bool _stylesInitialized = false;
 
@@ -206,6 +241,8 @@ namespace ifp.arena.bep.Core.Gamemode
                 Rect sbBounds = new Rect((Screen.width - 800f) / 2f, (Screen.height - 500f) / 2f, 800f, 500f);
                 H.Arena.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
             }
+
+            DrawRoundMvpBanner(game);
         }
 
         private void InitStyles()
@@ -220,7 +257,33 @@ namespace ifp.arena.bep.Core.Gamemode
             _timerStyle.normal.textColor = new Color(1f, 0.8f, 0.2f);
             _scoreBigStyle = new GUIStyle(GUI.skin.label) { fontSize = 24, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _scoreBigStyle.normal.textColor = Color.white;
+            _mvpStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _mvpStyle.normal.textColor = new Color(0.9f, 0.9f, 0.9f);
             _stylesInitialized = true;
+        }
+
+        private void DrawRoundMvpBanner(ArenaController game)
+        {
+            if (game.session.roundState != MatchState.RoundEnd) return;
+
+            var payload = game.LastRoundActionEnd;
+            if (!payload.HasValue) return;
+
+            string text;
+            if (payload.Value.mvpId <= 0)
+            {
+                text = "NO MVP AWARDED";
+            }
+            else
+            {
+                var ps = H.GetPlayerScore(payload.Value.mvpId);
+                string name = ps?.player?.Profile?.Nickname ?? $"Player {payload.Value.mvpId}";
+                text = $"ROUND MVP: {name}";
+            }
+
+            Rect bounds = new Rect(Screen.width / 2f - 250f, 70f, 500f, 28f);
+            GUI.DrawTexture(new Rect(bounds.x, bounds.y, bounds.width, bounds.height), _darkBackground);
+            GUI.Label(bounds, text, _mvpStyle);
         }
 
         private Texture2D MakeTex(int w, int h, Color col)

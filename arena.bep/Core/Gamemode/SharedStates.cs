@@ -66,9 +66,12 @@ namespace ifp.arena.bep.Core.Gamemode
                 Teleporter.Teleport(H.GameWorld.MainPlayer);
                 PlayerUtils.FixMe();
             }
-
+            
             if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 5f;
             H.Session.ResetRoundScopeFields();
+
+            H.Arena.LastObjectivePlayerId = -1;
+            H.Arena.LastObjectiveBombState = BombState.None;
         }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
         public void OnExit() { }
@@ -81,7 +84,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsServer)
             {
-                H.Arena.StateTimer = 10f;
+                H.Arena.StateTimer = 500f;
                 H.Arena.OnRoundEnd();
             }
         }

@@ -13,6 +13,7 @@ namespace ifp.arena.bep.networking
     {
         public int playerId;
         public int faction;
+        public int mvps;
         public int kills;
         public int assists;
         public int deaths;
@@ -39,6 +40,7 @@ namespace ifp.arena.bep.networking
             {
                 writer.Put(scores[i].playerId);
                 writer.Put(scores[i].faction);
+                writer.Put(scores[i].mvps);
                 writer.Put(scores[i].kills);
                 writer.Put(scores[i].assists);
                 writer.Put(scores[i].deaths);
@@ -62,6 +64,7 @@ namespace ifp.arena.bep.networking
                 {
                     playerId = reader.GetInt(),
                     faction = reader.GetInt(),
+                    mvps = reader.GetInt(),
                     kills = reader.GetInt(),
                     assists = reader.GetInt(),
                     deaths = reader.GetInt(),
@@ -91,6 +94,7 @@ namespace ifp.arena.bep.networking
                 {
                     playerId = kvp.Key,
                     faction = (int)kvp.Value.faction,
+                    mvps = kvp.Value.mvps,
                     kills = kvp.Value.kills,
                     assists = kvp.Value.assists,
                     deaths = kvp.Value.deaths,
@@ -115,6 +119,7 @@ namespace ifp.arena.bep.networking
                 if (session.scoreboard.TryGetValue(syncScore.playerId, out var playerScore))
                 {
                     playerScore.faction = (Faction)syncScore.faction;
+                    playerScore.mvps = syncScore.mvps;
                     playerScore.kills = syncScore.kills;
                     playerScore.assists = syncScore.assists;
                     playerScore.deaths = syncScore.deaths;
@@ -125,6 +130,7 @@ namespace ifp.arena.bep.networking
                     session.scoreboard[syncScore.playerId] = new PlayerScore(syncScore.playerId)
                     {
                         faction = (Faction)syncScore.faction,
+                        mvps = syncScore.mvps,
                         kills = syncScore.kills,
                         assists = syncScore.assists,
                         deaths = syncScore.deaths,

@@ -29,6 +29,7 @@ namespace ifp.arena.bep.networking
         {
             playerId = reader.GetInt();
             state = (BombState)reader.GetInt();
+            timestamp = reader.GetDouble();
         }
 
         public override string ToString()
@@ -48,7 +49,7 @@ namespace ifp.arena.bep.networking
             {
                 playerId = playerId,
                 state = state,
-                timestamp = 0d
+                timestamp = NetworkTime.ServerNowSeconds
             };
 
             RequestSend(packet);
@@ -56,18 +57,25 @@ namespace ifp.arena.bep.networking
 
         public override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
         {
-            // Only server is allowed to send these states
-            if (packet.state is BombState.Planted or BombState.Defused or BombState.Exploded)
-            {
-                return false;
-            }
-
             return base.ServerValidation(ref packet, peer);
         }
 
         public override void OnReceive(BombStatePacket packet, NetPeer peer)
         {
-            H.Arena.session.bombState = packet.state;
+            H.Session.bombState = packet.state;
+
+            if (packet.state == BombState.Planted)
+            {
+                H.Arena.LastObjectivePlayerId = packet.playerId;
+            }
+
+            if (packet.state is BombState.Defused or BombState.Exploded)
+            {
+                H.Arena.LastObjectiveBombState = packet.state;
+                if (packet.playerId > 0)
+                    H.Arena.LastObjectivePlayerId = packet.playerId;
+            }
+
             EventBus.OnBombStateChange(packet.state);
         }
     }

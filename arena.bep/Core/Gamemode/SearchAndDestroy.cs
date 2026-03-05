@@ -17,9 +17,9 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (!FikaBackendUtils.IsServer) return null;
             Faction? winner = CheckWipe();
-            if (winner.HasValue) { Award(winner.Value); return MatchState.RoundEnd; }
+            if (winner.HasValue) { Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
             if (H.Session.bombState == BombState.Planted) return MatchState.RoundPlanted;
-            if (H.Arena.StateTimer <= 0) { Award(Faction.CT); return MatchState.RoundEnd; }
+            if (H.Arena.StateTimer <= 0) { Award(Faction.CT, RoundWinReason.Timeout); return MatchState.RoundEnd; }
             return null;
         }
         public void OnExit() { }
@@ -32,11 +32,16 @@ namespace ifp.arena.bep.Core.Gamemode
             return null;
         }
 
-        private void Award(Faction w)
+        private void Award(Faction w, RoundWinReason reason)
         {
             if (!H.Session.factionWins.ContainsKey(w))
                 H.Session.factionWins[w] = 0;
             H.Session.factionWins[w]++;
+
+            int mvpId = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
+
+
+            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, winner = w, roundWinReason = reason };
         }
     }
 
@@ -47,17 +52,23 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
-            if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT)) { Award(Faction.T); return MatchState.RoundEnd; }
-            if (H.Arena.StateTimer <= 0) { Award(Faction.T); return MatchState.RoundEnd; }
+            if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT)) { AwardExploded(Faction.T); return MatchState.RoundEnd; }
+            if (H.Arena.StateTimer <= 0) { AwardExploded(Faction.T); return MatchState.RoundEnd; }
             return null;
         }
         public void OnExit() { }
 
-        private void Award(Faction w)
+        private void AwardExploded(Faction w)
         {
             if (!H.Session.factionWins.ContainsKey(w))
                 H.Session.factionWins[w] = 0;
             H.Session.factionWins[w]++;
+
+            int mvpId = MvpCalculator.CalculateRoundMvp(w, RoundWinReason.Objective, BombState.Exploded, H.Arena.LastObjectivePlayerId);
+            if (mvpId > 0 && H.Scoreboard.TryGetValue(mvpId, out var ps) && ps != null)
+                ps.mvps++;
+
+            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, winner = w, roundWinReason = RoundWinReason.Objective };
         }
     }
 

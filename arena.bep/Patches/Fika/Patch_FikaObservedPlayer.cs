@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Patches.Fika
             if (shot.Player.iPlayer.Id == H.GameWorld.MainPlayer.Id && bodyPart == EBodyPart.Head)
             {
                 // Play
-                H.Notify($" {shot.Player.iPlayer.Id} {H.GameWorld.MainPlayer.Id}");
+                // H.Notify($" {shot.Player.iPlayer.Id} {H.GameWorld.MainPlayer.Id}");
             }
         }
     }

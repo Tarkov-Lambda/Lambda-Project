@@ -109,10 +109,12 @@ namespace ifp.arena.bep
 
             GameMode = Config.Bind("Admin", "Gamemodes", GameModes.FFA, "");
             MapName = Config.Bind("Admin", "Map Name", "", "");
+            // MapName = Config.Bind("Admin", "Map Name", "", "");
 
             Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
             DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
             RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
+
 
         }
 
