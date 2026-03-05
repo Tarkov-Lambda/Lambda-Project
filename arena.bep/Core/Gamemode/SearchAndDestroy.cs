@@ -12,7 +12,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SnDAction : IGameState
     {
         public MatchState StateType => MatchState.RoundAction;
-        public void OnEnter() { if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 120f; }
+        public void OnEnter() { }
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
@@ -48,7 +48,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SnDPlanted : IGameState
     {
         public MatchState StateType => MatchState.RoundPlanted;
-        public void OnEnter() { if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 45f; }
+        public void OnEnter() { }
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
@@ -74,7 +74,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class SnDModeRules : GameModeRules
     {
-        public int maxRoundsToWin = 13;
+        public int maxRoundsToWin = 3;
 
         public float platingTime = 4.5f;
         public float defusingTime = 5f;

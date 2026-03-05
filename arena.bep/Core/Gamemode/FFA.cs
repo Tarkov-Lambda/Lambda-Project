@@ -11,7 +11,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class FFAAction : IGameState
     {
         public MatchState StateType => MatchState.RoundAction;
-        public void OnEnter() { if (FikaBackendUtils.IsServer) H.Arena.StateTimer = 600f; } // 10 min
+        public void OnEnter() { }
         public MatchState? OnUpdate()
         {
             if (FikaBackendUtils.IsClient) return null;

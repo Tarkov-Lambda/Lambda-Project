@@ -37,6 +37,7 @@ namespace ifp.arena.bep
         internal static ConfigEntry<GameModes> GameMode;
         internal static ConfigEntry<Faction> PrefferedFaction;
         internal static ConfigEntry<string> MapName;
+        internal static ConfigEntry<string> MusicKitPath;
 
         private ConfigEntry<KeyboardShortcut> DeathKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
@@ -105,17 +106,17 @@ namespace ifp.arena.bep
 
         private void InitConfiguration()
         {
+            Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
             PrefferedFaction = Config.Bind("", "Preffered Faction", Faction.None, "Faction swaps only happen after the round end");
-
+            MusicKitPath = Config.Bind("", "MusicKitPath", "", "C:/Users/mrimf/Documents/GitHub/fika-arena/audio/music");
+            
+            MapName = Config.Bind("Admin", "Map Name", "", "");
             GameMode = Config.Bind("Admin", "Gamemodes", GameModes.FFA, "");
             MapName = Config.Bind("Admin", "Map Name", "", "");
-            // MapName = Config.Bind("Admin", "Map Name", "", "");
 
-            Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
+
             DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
             RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
-
-
         }
 
         private void Update()
