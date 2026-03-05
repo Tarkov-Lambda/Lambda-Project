@@ -81,10 +81,10 @@ namespace ifp.arena.bep.Patches.Tarkov
             try
             {
                 // Close Inventory
-                H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+                // H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
                 try
                 {
-                    PlayerUtils.ReplenishMe();
+                    Singleton<ReplenishPacketHandler>.Instance.Send();
                 }
                 catch (Exception ex)
                 {

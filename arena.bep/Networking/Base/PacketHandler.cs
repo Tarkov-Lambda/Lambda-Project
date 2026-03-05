@@ -88,7 +88,8 @@ namespace ifp.arena.bep.networking.Base
         {
             if (H.Arena != null && H.GameWorld is HideoutGameWorld) return;
 
-            if (authority == PacketAuthority.ServerOnly && !FikaBackendUtils.IsServer)
+            // Save traffic
+            if (authority == PacketAuthority.ServerOnly && FikaBackendUtils.IsClient)
             {
                 return;
             }
@@ -116,12 +117,13 @@ namespace ifp.arena.bep.networking.Base
             if (!validPacket) return;
 
             // Most client->server packets are broadcast back out to all clients.
-            // Some packet types (e.g., time sync requests) should NOT be re-broadcast.
+            // time sync packets between client and server need it, so
             if (ShouldBroadcastClientPacket(packet))
             {
                 H.FikaNet.SendData(ref packet, deliveryMethod, true);
             }
 
+            // We might want to add artificial lag here if the server is not headless.
             OnReceive(packet, netPeer);
         }
 
@@ -133,8 +135,8 @@ namespace ifp.arena.bep.networking.Base
         {
             return true;
         }
-        
-        // Server applies this via BroadcastAndReceive
+
+        // Server applies this via BroadcastAndReceive (instantly)
         // Local client receives its own packet at ping time
         public abstract void OnReceive(T packet, NetPeer netPeer);
     }

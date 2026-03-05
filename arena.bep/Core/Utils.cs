@@ -14,6 +14,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using UnityEngine;
 
@@ -34,7 +35,8 @@ namespace ifp.arena.bep.Core
 
         public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
 
-        public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
+        // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
+        public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()
@@ -88,11 +90,11 @@ namespace ifp.arena.bep.Core
         }
 
         // Replenish all equipped weapons and armor
-        public static void ReplenishMe(bool shouldReloadGun = true)
+        public static void  Replenish(Player player, bool shouldReloadGun = true)
         {
-            Slot tacticalVest = H.MainPlayer.Equipment.GetSlot(EquipmentSlot.TacticalVest);
+            Slot tacticalVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
 
-            foreach (var slot in H.MainPlayer.Equipment.AllSlots)
+            foreach (var slot in player.Equipment.AllSlots)
             {
                 foreach (var item in slot.Items)
                 {
@@ -113,7 +115,7 @@ namespace ifp.arena.bep.Core
 
         public static void ReplenishVestMagazines(Slot vest, Weapon weapon)
         {
-            if (vest.ContainedItem is CompoundItem vestCompound)
+            if (vest != null && vest.ContainedItem is CompoundItem vestCompound)
             {
                 foreach (var grid in vestCompound.Grids)
                 {
@@ -208,9 +210,11 @@ namespace ifp.arena.bep.Core
             }
         }
 
+        // This is really stupid and the amount of replenish shit im doing is really bad
         public static async Task FixMe()
         {
             var health = H.MainPlayer.ActiveHealthController;
+            Replenish(H.MainPlayer);
 
             health.ChangeHydration(100f);
             health.ChangeEnergy(100f);
@@ -223,6 +227,7 @@ namespace ifp.arena.bep.Core
                 health.RemoveNegativeEffects(bodyPart);
             }
 
+            Replenish(H.MainPlayer);
             health.RestoreFullHealth();
         }
 

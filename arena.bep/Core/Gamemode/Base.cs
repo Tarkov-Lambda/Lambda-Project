@@ -143,10 +143,11 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-            _musicObject = new GameObject("ArenaMusicKit");
-            _musicObject.AddComponent<MusicManager>();
-            _musicObject.AddComponent<MusicEventRouter>();
-            _musicObject.transform.SetParent(H.MainPlayer.PlayerBody.transform, false);
+            //
+            // _musicObject = new GameObject("ArenaMusicKit");
+            // _musicObject.AddComponent<MusicManager>();
+            // _musicObject.AddComponent<MusicEventRouter>();
+            // _musicObject.transform.SetParent(H.MainPlayer.PlayerBody.transform, false);
 
             H.PlayMusic(MusicEvent.DeathCam);
 

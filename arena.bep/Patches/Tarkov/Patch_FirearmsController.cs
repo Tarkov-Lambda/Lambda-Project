@@ -59,7 +59,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, IWeapon weapon, AmmoItemClass ammo)
         {
-            if (H.MainPlayer.HandsController != __instance) return;
+            // if (H.MainPlayer.HandsController != __instance) return;
 
             Weapon weap = weapon.Item as Weapon;
             if (weap == null) return;

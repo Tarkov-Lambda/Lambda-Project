@@ -51,7 +51,7 @@ namespace ifp.arena.bep
             _patches.Add(patch);
         }
 
-        private void CreateSingleton<T>() where T : class, IDisposable, new()
+        private void RegisterPacket<T>() where T : class, IDisposable, new()
         {
             var instance = new T();
             Singleton<T>.Create(instance);
@@ -82,24 +82,25 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
 
             // NETWORK
-            CreateSingleton<PlayerKilledPacketHandler>();
-            CreateSingleton<FactionChangePacketHandler>();
+            RegisterPacket<PlayerKilledPacketHandler>();
+            RegisterPacket<FactionChangePacketHandler>();
 
-            CreateSingleton<SessionInfoPacketHandler>();
-            CreateSingleton<BombStatePacketHandler>();
-            CreateSingleton<MatchStateSyncPacketHandler>();
-            CreateSingleton<RestartPacketHandler>();
-            CreateSingleton<AssetLoadStatePacketHandler>();
+            RegisterPacket<SessionInfoPacketHandler>();
+            RegisterPacket<BombStatePacketHandler>();
+            RegisterPacket<MatchStateSyncPacketHandler>();
+            RegisterPacket<RestartPacketHandler>();
+            RegisterPacket<AssetLoadStatePacketHandler>();
 
-            CreateSingleton<HandsInspectPacketHandler>();
+            RegisterPacket<HandsInspectPacketHandler>();
 
+            RegisterPacket<ReplenishPacketHandler>();
 
-            CreateSingleton<TimeSyncRequestPacketHandler>();
-            CreateSingleton<TimeSyncResponsePacketHandler>();
+            RegisterPacket<TimeSyncRequestPacketHandler>();
+            RegisterPacket<TimeSyncResponsePacketHandler>();
 
-            CreateSingleton<ArenaController>();
-            CreateSingleton<AssetBundleHandler>();
-            CreateSingleton<RagdollCreator>();
+            RegisterPacket<ArenaController>();
+            RegisterPacket<AssetBundleHandler>();
+            RegisterPacket<RagdollCreator>();
 
             InitConfiguration();
         }

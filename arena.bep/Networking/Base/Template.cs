@@ -1,11 +1,6 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
-using System;
-using System.Linq;
 
 namespace ifp.arena.bep.networking
 {
@@ -21,11 +16,6 @@ namespace ifp.arena.bep.networking
         public void Deserialize(NetDataReader reader)
         {
             id = reader.GetInt();
-        }
-
-        public override string ToString()
-        {
-            return $"{id}";
         }
     }
 
