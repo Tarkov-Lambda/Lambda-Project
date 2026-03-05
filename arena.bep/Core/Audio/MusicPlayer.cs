@@ -6,15 +6,13 @@ using UnityEngine;
 using UnityEngine.Networking;
 namespace ifp.arena.bep.Core.Audio
 {
-
-
     public class MusicManager : MonoBehaviour
     {
         public static MusicManager Instance;
 
         // PATH SETTINGS
         private const string ROOT_PATH = @"";
-        private string _currentKitName = "valve_cs2_01";
+        private string _currentKitName = "selectiveresponse_01";
 
         // AUDIO COMPONENTS
         private MusicKit _activeKit;
@@ -22,9 +20,14 @@ namespace ifp.arena.bep.Core.Audio
         private AudioSource _sourceB;
         private bool _isSourceAPlaying = false; // Toggles back and forth
 
+        // SETTINGS
+        private float _targetVolume = 0.1f;
+        private float _crossfadeDuration = 1.5f;
+        private float _outroFadeDuration = 1.0f;
+
         // STATE
         private Coroutine _activeFadeJob;
-        private float _fadeDuration = 1.5f;
+        private int _playToken = 0; // increments every PlayEvent to invalidate pending outro fades
 
         void Awake()
         {
@@ -38,6 +41,10 @@ namespace ifp.arena.bep.Core.Audio
             _sourceB.playOnAwake = false;
             _sourceA.loop = false;
             _sourceB.loop = false;
+
+            // Ensure 2D audio (these objects are parented to the player body)
+            _sourceA.spatialBlend = 0f;
+            _sourceB.spatialBlend = 0f;
 
             LoadKit(_currentKitName);
         }
@@ -54,27 +61,16 @@ namespace ifp.arena.bep.Core.Audio
             string filePath = _activeKit.GetRandomTrack(eventType);
             if (string.IsNullOrEmpty(filePath)) return;
 
+            _playToken++; // invalidate any pending outro fades
+
             // Stop any existing fade to prevent fighting
             if (_activeFadeJob != null) StopCoroutine(_activeFadeJob);
 
-            _activeFadeJob = StartCoroutine(LoadAndCrossfade(filePath));
+            _activeFadeJob = StartCoroutine(LoadAndCrossfade(filePath, eventType, _playToken));
         }
 
-        private IEnumerator LoadAndCrossfade(string filePath)
+        private IEnumerator LoadAndCrossfade(string filePath, MusicEvent eventType, int token)
         {
-            // 1. Get Target Volume from EFT (so we match game settings)
-            float targetVolume = 0.1f; // Default safety
-            if (Singleton<EFT.UI.GUISounds>.Instance != null)
-            {
-                var gameAudio = AccessTools.FieldRefAccess<EFT.UI.GUISounds, AudioSource>("audioSource_0")(Singleton<EFT.UI.GUISounds>.Instance);
-                if (gameAudio != null)
-                {
-                    // We assume the game's UI volume is a good reference for music volume
-                    // targetVolume = gameAudio.volume;
-                }
-            }
-
-            // 2. Load File
             string url = "file://" + filePath;
             AudioType aType = filePath.EndsWith(".wav") ? AudioType.WAV : AudioType.MPEG;
 
@@ -95,6 +91,9 @@ namespace ifp.arena.bep.Core.Audio
                 AudioSource sourceIn = _isSourceAPlaying ? _sourceB : _sourceA;
                 AudioSource sourceOut = _isSourceAPlaying ? _sourceA : _sourceB;
 
+                bool shouldLoop = eventType == MusicEvent.MainMenu;
+                sourceIn.loop = shouldLoop;
+
                 // 4. Setup "In" Source
                 sourceIn.clip = clip;
                 sourceIn.volume = 0f;
@@ -104,30 +103,77 @@ namespace ifp.arena.bep.Core.Audio
                 float timer = 0f;
                 float startVolumeOut = sourceOut.volume;
 
-                while (timer < _fadeDuration)
+                // Equal-power crossfade to avoid perceived loudness dip/peak.
+                while (timer < _crossfadeDuration)
                 {
                     timer += Time.deltaTime;
-                    float t = timer / _fadeDuration;
+                    float t = Mathf.Clamp01(timer / _crossfadeDuration);
 
-                    // Lerp volumes
-                    sourceIn.volume = Mathf.Lerp(0f, targetVolume, t);
+                    // Equal-power curve: in=sin, out=cos.
+                    float inGain = Mathf.Sin(t * Mathf.PI * 0.5f);
+                    float outGain = Mathf.Cos(t * Mathf.PI * 0.5f);
+
+                    sourceIn.volume = _targetVolume * inGain;
 
                     if (sourceOut.isPlaying)
-                    {
-                        sourceOut.volume = Mathf.Lerp(startVolumeOut, 0f, t);
-                    }
+                        sourceOut.volume = startVolumeOut * outGain;
 
                     yield return null;
                 }
 
                 // 6. Cleanup
-                sourceIn.volume = targetVolume;
+                sourceIn.volume = _targetVolume;
                 sourceOut.volume = 0f;
                 sourceOut.Stop();
                 sourceOut.clip = null; // Free memory
 
                 // Toggle state
                 _isSourceAPlaying = !_isSourceAPlaying;
+
+                // If this clip isn't looping, fade it out at the end (unless interrupted by another PlayEvent).
+                if (!shouldLoop)
+                    StartCoroutine(OutroFadeWhenNearEnd(sourceIn, token));
+            }
+        }
+
+        private IEnumerator OutroFadeWhenNearEnd(AudioSource src, int token)
+        {
+            if (src == null || src.clip == null)
+                yield break;
+
+            // If the clip is shorter than the fade duration, just fade immediately.
+            float clipLength = src.clip.length;
+            float fadeStart = Mathf.Max(0f, clipLength - _outroFadeDuration);
+
+            // Wait until we're close to the end (using src.time to tolerate minor timing drift).
+            while (src != null && src.isPlaying && _playToken == token && src.time < fadeStart)
+                yield return null;
+
+            if (src == null || !src.isPlaying || _playToken != token)
+                yield break;
+
+            float startVol = src.volume;
+            float t = 0f;
+            while (src != null && src.isPlaying && _playToken == token && t < _outroFadeDuration)
+            {
+                t += Time.deltaTime;
+                float a = Mathf.Clamp01(t / _outroFadeDuration);
+                src.volume = Mathf.Lerp(startVol, 0f, a);
+                yield return null;
+            }
+
+            if (src != null && _playToken == token)
+            {
+                src.volume = 0f;
+                // Allow natural stop, but in case we finished early due to timing issues:
+                if (src.isPlaying && src.time < clipLength)
+                    yield return new WaitForSeconds(Mathf.Max(0f, clipLength - src.time));
+
+                if (src != null && _playToken == token)
+                {
+                    src.Stop();
+                    src.clip = null;
+                }
             }
         }
     }

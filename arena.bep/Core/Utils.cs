@@ -34,7 +34,7 @@ namespace ifp.arena.bep.Core
 
         public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
 
-        public static void PlayMusic(MusicEvent musicEvent) => H.Arena._musicObject.GetComponent<MusicManager>().PlayEvent(musicEvent);
+        public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()
