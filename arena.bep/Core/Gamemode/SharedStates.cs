@@ -61,7 +61,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 Teleporter.Teleport(H.GameWorld.MainPlayer);
                 PlayerUtils.FixMe();
             }
-            
+
             H.Session.ResetRoundScopeFields();
 
             H.Arena.LastObjectivePlayerId = -1;
@@ -117,7 +117,6 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsServer)
             {
-                H.Arena.OnRoundEnd();
                 foreach (var player in H.GetAllPlayers())
                 {
                     var playerScore = H.GetPlayerScore(player.Id);
@@ -132,8 +131,12 @@ namespace ifp.arena.bep.Core.Gamemode
     }
 
     // Really only used for UI and actions so doesn't really matter ig
-    public class SharedFinish : SharedNone
+    public class SharedFinish : IGameState
     {
-        new public MatchState StateType => MatchState.MatchEnd;
+        public MatchState StateType => MatchState.MatchEnd;
+        public void OnEnter() { }
+        public MatchState? OnUpdate() => null;
+        public void OnExit() { }
+
     }
 }

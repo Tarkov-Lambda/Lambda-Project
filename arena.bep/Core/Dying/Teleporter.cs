@@ -31,9 +31,8 @@ namespace ifp.arena.bep.Core.Dying
                 // {
                 //     faction = Plugin.PrefferedFaction.Value;
                 // }
-                faction = Plugin.PrefferedFaction.Value;
 
-                newPos = GetNewPosition(faction);
+                newPos = GetNewPosition(playerScore.faction);
                 // player.Position = newPos;
                 player.Teleport(newPos);
             }

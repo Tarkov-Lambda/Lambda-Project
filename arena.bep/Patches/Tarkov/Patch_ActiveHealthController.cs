@@ -82,7 +82,14 @@ namespace ifp.arena.bep.Patches.Tarkov
             {
                 // Close Inventory
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                PlayerUtils.ReplenishMe();
+                try
+                {
+                    PlayerUtils.ReplenishMe();
+                }
+                catch (Exception ex)
+                {
+
+                }
 
                 int killerId = Patch_ApplyDamage.LastReceivedDamageInfo.Player != null ? Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id : 1;
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, __instance.Player.Id, 1);

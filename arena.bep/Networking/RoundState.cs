@@ -83,7 +83,10 @@ namespace ifp.arena.bep.networking
 
         public override void OnReceive(MatchStateSyncPacket packet, NetPeer peer)
         {
-            H.Arena.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
+            if (FikaBackendUtils.IsClient)
+            {
+                H.Arena.ApplyReplicatedRoundState(packet.roundState, packet.phaseDurationSeconds, packet.serverPhaseStartSeconds);
+            }
 
             if (packet.hasRoundActionEnd)
             {
