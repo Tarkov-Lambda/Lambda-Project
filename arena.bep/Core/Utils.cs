@@ -89,8 +89,49 @@ namespace ifp.arena.bep.Core
             }
         }
 
+        public static List<Weapon> GetAllWeapons(Player player)
+        {
+            List<Weapon> weapons = new();
+            foreach (var slot in player.Equipment.AllSlots)
+            {
+                foreach (var item in slot.Items)
+                {
+                    if (item is Weapon weapon)
+                    {
+                        weapons.Add(weapon);
+                    }
+
+                }
+            }
+            return weapons;
+        }
+
+        public static void RegisterBullet(Weapon weapon)
+        {
+            MagazineItemClass magazine = weapon.GetCurrentMagazine();
+            AmmoItemClass ammo = magazine.GetBulletAtPosition(0);
+
+            Patch_FirearmController_InitiateShot.AmmoRegistry[weapon] = new MagAndAmmo
+            {
+                magazine = magazine,
+                ammo = ammo
+            };
+        }
+
+        public static void RegisterAllBullets()
+        {
+            foreach (Player player in H.GetAllPlayers())
+            {
+                foreach (Weapon weapon in GetAllWeapons(player))
+                {
+                    H.Notify(weapon.ShortName.ToString());
+                    RegisterBullet(weapon);
+                }
+            }
+        }
+
         // Replenish all equipped weapons and armor
-        public static void  Replenish(Player player, bool shouldReloadGun = true)
+        public static void Replenish(Player player, bool shouldReloadGun = true)
         {
             Slot tacticalVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
 
@@ -268,7 +309,7 @@ namespace ifp.arena.bep.Core
     {
         public static void Buy(Item weapon)
         {
-            
+
         }
     }
 }

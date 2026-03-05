@@ -147,6 +147,7 @@ namespace ifp.arena.bep.Core.Gamemode
             H.PlayMusic(MusicEvent.DeathCam);
 
             PlayerUtils.ApplyPainkiller();
+            PlayerUtils.RegisterAllBullets();
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
             H.Notify("Plugin Reloaded");
@@ -188,7 +189,7 @@ namespace ifp.arena.bep.Core.Gamemode
             _currentState = ActiveRules.CreateState(newStateType);
             session.roundState = _currentState.StateType;
 
-            H.Arena.StateTimer = H.Session.StateTimerConfig[_currentState.StateType];
+            StateTimer = H.Session.StateTimerConfig[_currentState.StateType];
             _currentState.OnEnter();
             EventBus.OnEnter?.Invoke(_currentState.StateType);
 
