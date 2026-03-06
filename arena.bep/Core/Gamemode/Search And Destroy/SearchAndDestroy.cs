@@ -74,10 +74,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class SnDModeRules : GameModeRules
     {
-        public int maxRoundsToWin = 3;
+        public static int maxRoundsToWin = 3;
 
-        public float platingTime = 4.5f;
-        public float defusingTime = 5f;
+        public static float platingTime = 4.5f;
+        public static float defusingTime = 5f;
 
         public override IGameState CreateState(MatchState state) => state switch
         {

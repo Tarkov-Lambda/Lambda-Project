@@ -124,12 +124,18 @@ namespace ifp.arena.bep.Core
         }
 
 
-        private static bool TryCreateItem(string templateId, out Item newItem)
+        public static bool TryCreateItem(string templateId, out Item newItem)
         {
             newItem = null;
 
             newItem = ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
             return newItem != null;
+        }
+
+        public static Item CreateItem(string templateId)
+        {
+            TryCreateItem(templateId, out Item newItem);
+            return newItem;
         }
     }
 }

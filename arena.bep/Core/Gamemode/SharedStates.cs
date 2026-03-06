@@ -92,12 +92,12 @@ namespace ifp.arena.bep.Core.Gamemode
                     SnDModeRules snd = H.Arena.ActiveRules as SnDModeRules;
                     var wins = H.Session.factionWins;
 
-                    if (wins[Faction.CT] + wins[Faction.T] == snd.maxRoundsToWin - 1)
+                    if (wins[Faction.CT] + wins[Faction.T] == SnDModeRules.maxRoundsToWin - 1)
                     {
                         return MatchState.SideSwap;
                     }
 
-                    if (wins[Faction.CT] >= snd.maxRoundsToWin || wins[Faction.T] >= snd.maxRoundsToWin)
+                    if (wins[Faction.CT] >= SnDModeRules.maxRoundsToWin || wins[Faction.T] >= SnDModeRules.maxRoundsToWin)
                     {
                         return MatchState.MatchEnd;
                     }

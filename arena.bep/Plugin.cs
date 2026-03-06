@@ -78,6 +78,8 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_ApplyShot());
             RegisterPatch(new Patch_ApplyDamage());
 
+            RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());
+
             RegisterPatch(new Patch_method_10());
 
             // RegisterPatch(new Patch_Class308_RequestBuilds());

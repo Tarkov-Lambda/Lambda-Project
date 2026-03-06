@@ -9,13 +9,17 @@ using UnityEngine;
 
 namespace ifp.arena.shared
 {
+    [RequireComponent(typeof(BoxCollider))]
     public class BombPlantZone :
 #if EFT_RUNTIME
-        InteractableObject
+        PlaceItemTrigger
 #else
         MonoBehaviour
 #endif
     {
-
+        private void OnValidate()
+        {
+            gameObject.layer = 22;
+        }
     }
 }

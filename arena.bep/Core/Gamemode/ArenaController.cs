@@ -330,6 +330,10 @@ namespace ifp.arena.bep.Core.Gamemode
                 });
             }
 
+            Item tushonka = PresetUtils.CreateItem("57347da92459774491567cf5");
+
+            _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(),price = 2 });
+
             _buyEntries = _buyEntries.OrderBy(e => e.price).ThenBy(e => e.name).ToList();
         }
 
@@ -362,6 +366,7 @@ namespace ifp.arena.bep.Core.Gamemode
             Rect viewRect = new Rect(0, 0, innerWidth, contentHeight);
             Rect scrollRect = new Rect(0, 0, listArea.width, listArea.height);
             _buyScroll = GUI.BeginScrollView(scrollRect, _buyScroll, viewRect);
+
 
             if (_buyEntries == null || _buyEntries.Count == 0)
             {
