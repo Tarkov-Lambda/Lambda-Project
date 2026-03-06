@@ -46,6 +46,8 @@ namespace ifp.arena.bep
         private readonly List<ModulePatch> _patches = new();
         private readonly List<IDisposable> _disposables = new();
 
+        GameObject OneJSScriptEngine;
+
         private void RegisterPatch(ModulePatch patch)
         {
             patch.Enable();
@@ -59,7 +61,7 @@ namespace ifp.arena.bep
             _disposables.Add(instance);
         }
 
-        void Start()
+        async void Start()
         {
             Logger = base.Logger;
             Logger.LogInfo("Load");
@@ -75,7 +77,6 @@ namespace ifp.arena.bep
             // RegisterPatch(new Patch_CanPressTrigger());
             RegisterPatch(new Patch_ApplyShot());
             RegisterPatch(new Patch_ApplyDamage());
-            RegisterPatch(new Patch_ApplyDamage());
 
             RegisterPatch(new Patch_method_10());
 
@@ -90,6 +91,8 @@ namespace ifp.arena.bep
             // NETWORK
             RegisterPacket<PlayerKilledPacketHandler>();
             RegisterPacket<FactionChangePacketHandler>();
+            RegisterPacket<SpawnItemPacketHandler>();
+
 
             RegisterPacket<SessionInfoPacketHandler>();
             RegisterPacket<BombStatePacketHandler>();
@@ -110,6 +113,15 @@ namespace ifp.arena.bep
             // ItemSpawner.GetDefaultPreset();
 
             InitConfiguration();
+
+            // LoadUI();
+        }
+
+        private async void LoadUI()
+        {
+            AssetBundle OneJSBundle = await Singleton<AssetBundleHandler>.Instance.LoadAssetBundle("onejs");
+            OneJSScriptEngine = OneJSBundle.LoadAsset<GameObject>("ScriptEngine");
+            DontDestroyOnLoad(OneJSScriptEngine);
         }
 
         private void InitConfiguration()
@@ -149,7 +161,6 @@ namespace ifp.arena.bep
                 ArenaController.Instance.session.roundState = MatchState.None;
                 Teleporter.Teleport(H.GameWorld.MainPlayer);
             }
-
 
             foreach (var patch in _patches)
                 patch.Disable();

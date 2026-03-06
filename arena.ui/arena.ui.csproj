@@ -14,16 +14,60 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
+    <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\BepInEx\core\BepInEx.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll">
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.Unity.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Newtonsoft.Json.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll">
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="$(SPTPath)\BepInEx\plugins\int\*.dll">
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="..\deps\*.dll">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
+      <!-- <FilesToCopy Include="$(OutputPath)\*.dll" /> -->
+      <Deps Include=".\deps\*.dll" />
+      <App Include=".\app\*" />
+      <OneJSBundle Include="..\bundles\onejs" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <!-- <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
+    <Copy SourceFiles="@(Deps)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
+    <Copy SourceFiles="@(App)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\ui" />
+    <Copy SourceFiles="@(OneJSBundle)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
+
   </Target>
 </Project>

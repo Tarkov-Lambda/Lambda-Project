@@ -4,13 +4,17 @@ using Comfort.Common;
 using Diz.Resources;
 using EFT;
 using EFT.InventoryLogic;
+using Fika.Core.Networking.Packets.Debug;
 using HarmonyLib;
+using ifp.arena.bep.networking;
 
 namespace ifp.arena.bep.Core
 {
     public static class PresetUtils
     {
         public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
+        // public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
+
 
         public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
         public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
@@ -19,26 +23,38 @@ namespace ifp.arena.bep.Core
         public static IEnumerable<WeaponBuildClass> Templates => WeaponBuilds.Dictionary_0.Values;
         public static InventoryEquipment Preset => GetDefaultPreset();
 
-        public static void GiveItem(Item item)
+        public static void SpawnItem(Item item)
         {
             // var presetGun = GetCustomTemplate(item);
+
+            Singleton<SpawnItemPacketHandler>.Instance.Send(item);
+
+            // var slot = H.MainPlayer.Equipment.GetSlot(slotType);
+            // if (slot.ContainedItem != null)
+            // {
+            //     slot.RemoveItemWithoutRestrictions();
+            // }
+
+            // slot.AddWithoutRestrictions(newItem);
+        }
+
+        public static void GiveItem(Item item, Player player)
+        {
             EquipmentSlot slotType = item is PistolItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
-
-            var weapon = GClass3380.CloneItemWithSameId(item);
-
-            var slot = H.MainPlayer.Equipment.GetSlot(slotType);
+            
+            var slot = player.Equipment.GetSlot(slotType);
             if (slot.ContainedItem != null)
             {
                 slot.RemoveItemWithoutRestrictions();
             }
 
-            slot.AddWithoutRestrictions(weapon);
+            slot.AddWithoutRestrictions(item);
         }
 
         public static void PreloadItemAssets(Item item)
         {
             var resourceKey = item.Template;
-            
+
         }
 
         public static void SpawnAndEquip(string templateId, EquipmentSlot slotType)

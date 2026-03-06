@@ -8,6 +8,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Patches.Tarkov;
 using System;
+using System.Reflection;
 using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
 namespace ifp.arena.bep.networking.Base
@@ -28,32 +29,32 @@ namespace ifp.arena.bep.networking.Base
             this.deliveryMethod = deliveryMethod;
             this.authority = authority;
 
-            Patch_Gameworld_OnGameStarted.OnGameStarted += RegisterPacket;
+            H.OnGameStarted += RegisterPacket;
+            H.OnGameDispose += UnregisterPacket;
 
-            if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
-            {
-                RegisterPacket(H.GameWorld);
-            }
+            // Hot-reload
+            RegisterPacket(H.GameWorld);
         }
 
         public void RegisterPacket(GameWorld gameWorld)
         {
-            Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
-            if (FikaBackendUtils.IsServer)
+            if (H.isInRaid())
             {
-                H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
-            }
-            else
-            {
-                H.FikaNet.RegisterPacket<T, NetPeer>(WhenApproved);
+                Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
+                if (FikaBackendUtils.IsServer)
+                {
+                    H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
+                }
+                else
+                {
+                    H.FikaNet.RegisterPacket<T, NetPeer>(WhenApproved);
+                }
             }
         }
 
-        public void Dispose()
+        public void UnregisterPacket(GameWorld gameWorld)
         {
             Plugin.Logger.LogInfo($"Disposing {typeof(T).FullName}");
-
-            Patch_Gameworld_OnGameStarted.OnGameStarted -= RegisterPacket;
 
             try
             {
@@ -76,7 +77,11 @@ namespace ifp.arena.bep.networking.Base
             {
                 Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
             }
+        }
 
+        public void Dispose()
+        {
+            UnregisterPacket(null);
             Release(this);
         }
 
@@ -144,7 +149,6 @@ namespace ifp.arena.bep.networking.Base
         // This is an optional method if the user is doing an action that's supposed to feel instant
         // Of course, if the server does reject it (which I haven't implemented yet), each packet will need undo logic.
         public virtual void ClientPrediction(T packet) { }
-
 
         // If the server approves the packet, everyone receives it here.
         // Server applies this via BroadcastAndReceive (instantly)

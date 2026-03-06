@@ -1,5 +1,6 @@
 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
@@ -24,6 +25,18 @@ namespace ifp.arena.bep.Core
         public static ArenaController Arena => Singleton<ArenaController>.Instance;
         public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
         public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
+
+        public static event Action<GameWorld> OnGameStarted
+        {
+            add => Patch_Gameworld_OnGameStarted.OnGameStarted += value;
+            remove => Patch_Gameworld_OnGameStarted.OnGameStarted -= value;
+        }
+
+        public static event Action<GameWorld> OnGameDispose
+        {
+            add => Patch_Gameworld_OnDispose.OnDispose += value;
+            remove => Patch_Gameworld_OnDispose.OnDispose -= value;
+        }
 
         public static Dictionary<Weapon, MagAndAmmo> AmmoRegistry => Patch_FirearmController_InitiateShot.AmmoRegistry;
 

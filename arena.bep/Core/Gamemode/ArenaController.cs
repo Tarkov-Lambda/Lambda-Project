@@ -120,14 +120,14 @@ namespace ifp.arena.bep.Core.Gamemode
         public ArenaController()
         {
             if (H.GameWorld != null) StartSession(H.GameWorld);
-            Patch_Gameworld_OnGameStarted.OnGameStarted += StartSession;
-            Patch_Gameworld_OnDispose.OnDispose += EndSession;
+            H.OnGameStarted += StartSession;
+            H.OnGameDispose += EndSession;
         }
 
         public void Dispose()
         {
-            Patch_Gameworld_OnGameStarted.OnGameStarted -= StartSession;
-            Patch_Gameworld_OnDispose.OnDispose -= EndSession;
+            H.OnGameStarted -= StartSession;
+            H.OnGameDispose -= EndSession;
             EndSession(H.GameWorld);
             Release(this);
         }
@@ -380,7 +380,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
                     if (GUI.Button(new Rect(0, y, innerWidth, 26f), label))
                     {
-                        PresetUtils.GiveItem(entry.item);
+                        PresetUtils.SpawnItem(entry.item);
                     }
 
                     GUI.enabled = prevEnabled;

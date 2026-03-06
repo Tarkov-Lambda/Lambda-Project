@@ -37,7 +37,9 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
       <Private>False</Private>
     </Reference>
-
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Newtonsoft.Json.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll">
       <Private>False</Private>
     </Reference>
@@ -49,10 +51,21 @@
     <Reference Include="$(SPTPath)\BepInEx\plugins\int\*.dll">
       <Private>False</Private>
     </Reference>
+
+    <Reference Include="..\deps\*.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="..\arena.ui\deps\*.dll">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\arena.shared\arena.shared.csproj">
+      <Private>False</Private>
+    </ProjectReference>
+
+    <ProjectReference Include="..\arena.ui\arena.ui.csproj">
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
@@ -61,8 +74,10 @@
     <ItemGroup>
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <OneJS Include="../bundles/onejs" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy SourceFiles="@(OneJS)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
   </Target>
 </Project>
