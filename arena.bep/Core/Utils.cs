@@ -32,14 +32,15 @@ namespace ifp.arena.bep.Core
         public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
         public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
-        public static WeaponBuildsStorageClass WeaponBuildsStorage => ItemFactory.WeaponBuildsStorageClass;
-        public static EquipmentBuildsStorageClass EquipmentBuildsStorage => Singleton<EquipmentBuildsStorageClass>.Instance;
+        public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
+        public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
 
         // public static ArenaWeaponBuilds WeaponBuilds => Singleton<ArenaWeaponBuilds>.Instance;
 
         public static Dictionary<Weapon, MagAndAmmo> AmmoRegistry => Patch_FirearmController_InitiateShot.AmmoRegistry;
 
         public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
+        public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
 
         // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
         public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());
@@ -224,7 +225,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        private static bool TryCreateItem(string templateId, out Item newItem)
+        public static bool TryCreateItem(string templateId, out Item newItem)
         {
             newItem = null;
 

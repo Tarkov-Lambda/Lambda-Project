@@ -16,6 +16,7 @@ using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Fika;
 using ifp.arena.bep.Patches.Tarkov;
+using ifp.arena.Core;
 using ifp.arena.shared;
 using SPT.Reflection;
 using SPT.Reflection.Patching;
@@ -107,6 +108,7 @@ namespace ifp.arena.bep
             RegisterPacket<ArenaController>();
             RegisterPacket<AssetBundleHandler>();
             RegisterPacket<RagdollCreator>();
+            // ItemSpawner.GetDefaultPreset();
 
             InitConfiguration();
         }
