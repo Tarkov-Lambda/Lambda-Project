@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Economy;
@@ -9,6 +10,7 @@ using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -179,7 +181,6 @@ namespace ifp.arena.bep.Core.Gamemode
                 MatchState? nextState = _currentState.OnUpdate();
                 if (nextState.HasValue)
                 {
-
                     ChangeState(nextState.Value);
                 }
             }
@@ -230,8 +231,22 @@ namespace ifp.arena.bep.Core.Gamemode
     {
         private GUIStyle _headerStyle, _rowStyle, _timerStyle, _scoreBigStyle;
         private GUIStyle _mvpStyle;
+        private GUIStyle _buyHeaderStyle, _buyRowStyle;
         private Texture2D _darkBackground, _rowHighlight;
         private bool _stylesInitialized = false;
+
+        private bool _showBuyMenu;
+        private Vector2 _buyScroll;
+        private List<BuyMenuEntry> _buyEntries;
+        private float _nextBuyRefreshTime;
+
+        private class BuyMenuEntry
+        {
+            public string name;
+            public Item item;
+            public int price;
+
+        }
 
         private void OnGUI()
         {
@@ -250,7 +265,131 @@ namespace ifp.arena.bep.Core.Gamemode
                 H.Arena.ActiveRules.DrawScoreboard(game, sbBounds, _darkBackground, _rowHighlight, _headerStyle, _rowStyle);
             }
 
+            DrawBuyMenu(game);
+
             DrawRoundMvpBanner(game);
+        }
+
+        private void HandleBuyMenuToggle(ArenaController game)
+        {
+            // Only process toggle once per-frame in Update() (OnGUI can be called multiple times)
+            if (game == null || game.session == null) return;
+
+            bool isBuyTime = game.session.roundState == MatchState.RoundPrepare;
+            if (!isBuyTime)
+            {
+                _showBuyMenu = false;
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                _showBuyMenu = !_showBuyMenu;
+                if (_showBuyMenu)
+                    RefreshBuyEntries(force: true);
+            }
+        }
+
+        private void RefreshBuyEntries(bool force)
+        {
+            if (!force && Time.unscaledTime < _nextBuyRefreshTime)
+                return;
+
+            _nextBuyRefreshTime = Time.unscaledTime + 1.0f; // refresh at most once a second
+
+            _buyEntries = new List<BuyMenuEntry>();
+
+            if (!Singleton<ItemFactoryClass>.Instantiated)
+                return;
+
+            // Dedup by weapon template id (you mentioned multiple builds may exist per gun)
+            var builds = PresetUtils.Templates
+                .Where(b => b?.Item != null)
+                .GroupBy(b => b.Item.TemplateId)
+                .Select(g => g.First());
+
+            foreach (var b in builds)
+            {
+                var item = b.Item;
+                if (item == null) continue;
+
+                int price = Purchasing.GetItemPrice(item);
+                if (price <= 0) continue;
+
+                string name = !string.IsNullOrWhiteSpace(b.HandbookName)
+                    ? b.HandbookName
+                    : !string.IsNullOrWhiteSpace(item.ShortName)
+                        ? item.ShortName
+                        : item.Name;
+
+                _buyEntries.Add(new BuyMenuEntry
+                {
+                    name = name,
+                    item = item,
+                    price = price
+                });
+            }
+
+            _buyEntries = _buyEntries.OrderBy(e => e.price).ThenBy(e => e.name).ToList();
+        }
+
+        private void DrawBuyMenu(ArenaController game)
+        {
+            if (!_showBuyMenu) return;
+            // if (game.session.roundState != MatchState.RoundPrepare) return;
+
+            RefreshBuyEntries(force: false);
+
+            float width = 340f;
+            float height = 520f;
+            Rect panel = new Rect(20f, 80f, width, height);
+
+            GUI.DrawTexture(panel, _darkBackground);
+
+            Rect header = new Rect(panel.x, panel.y, panel.width, 40f);
+            GUI.Label(header, "BUY MENU", _buyHeaderStyle);
+
+            var myScore = H.MainPlayer != null ? H.GetPlayerScore(H.MainPlayer.Id) : null;
+            int money = myScore?.money ?? 0;
+            GUI.Label(new Rect(panel.x + 12f, panel.y + 42f, panel.width - 24f, 22f), $"${money}", _buyRowStyle);
+            GUI.Label(new Rect(panel.x + 12f, panel.y + 62f, panel.width - 24f, 18f), "(B to close)", _rowStyle);
+
+            Rect listArea = new Rect(panel.x + 10f, panel.y + 85f, panel.width - 20f, panel.height - 95f);
+            GUI.BeginGroup(listArea);
+
+            float innerWidth = listArea.width - 16f;
+            float contentHeight = (_buyEntries?.Count ?? 0) * 30f + 10f;
+            Rect viewRect = new Rect(0, 0, innerWidth, contentHeight);
+            Rect scrollRect = new Rect(0, 0, listArea.width, listArea.height);
+            _buyScroll = GUI.BeginScrollView(scrollRect, _buyScroll, viewRect);
+
+            if (_buyEntries == null || _buyEntries.Count == 0)
+            {
+                GUI.Label(new Rect(0, 0, innerWidth, 24f), "No weapon presets found.", _rowStyle);
+            }
+            else
+            {
+                float y = 0f;
+                foreach (var entry in _buyEntries)
+                {
+                    bool canAfford = money >= entry.price;
+                    string label = $"{entry.name}   (${entry.price})";
+
+                    var prevEnabled = GUI.enabled;
+                    GUI.enabled = canAfford;
+
+                    if (GUI.Button(new Rect(0, y, innerWidth, 26f), label))
+                    {
+                        PresetUtils.GiveItem(entry.item);
+                    }
+
+                    GUI.enabled = prevEnabled;
+                    y += 30f;
+                }
+            }
+
+            GUI.EndScrollView();
+            GUI.EndGroup();
         }
 
         private void InitStyles()
@@ -267,6 +406,11 @@ namespace ifp.arena.bep.Core.Gamemode
             _scoreBigStyle.normal.textColor = Color.white;
             _mvpStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _mvpStyle.normal.textColor = new Color(0.9f, 0.9f, 0.9f);
+
+            _buyHeaderStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _buyHeaderStyle.normal.textColor = Color.white;
+            _buyRowStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+            _buyRowStyle.normal.textColor = new Color(0.3f, 1f, 0.3f);
             _stylesInitialized = true;
         }
 
@@ -304,6 +448,10 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (Singleton<ArenaController>.Instantiated)
                 Singleton<ArenaController>.Instance.Update();
+
+            // Input handling here so GetKeyDown is reliable
+            if (Singleton<ArenaController>.Instantiated)
+                HandleBuyMenuToggle(Singleton<ArenaController>.Instance);
         }
     }
 }

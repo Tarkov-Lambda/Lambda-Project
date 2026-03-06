@@ -55,7 +55,7 @@ namespace ifp.arena.bep.GameTypes
         {
             {MatchState.None, 0},
             {MatchState.Warmup, 120},
-            {MatchState.WarmupEnd, 5},
+            {MatchState.WarmupEnd, 1},
             {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 140},
             {MatchState.RoundEnd, 8},
@@ -123,7 +123,7 @@ namespace ifp.arena.bep.GameTypes
             headshots = 0;
             assists = 0;
             deaths = 0;
-            money = 800;
+            money = 8000;
             isAlive = true;
         }
 

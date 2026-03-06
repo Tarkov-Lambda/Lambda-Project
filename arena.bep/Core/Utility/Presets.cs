@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
+using Diz.Resources;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -10,6 +11,7 @@ namespace ifp.arena.bep.Core
     public static class PresetUtils
     {
         public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
+
         public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
         public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
 
@@ -19,16 +21,36 @@ namespace ifp.arena.bep.Core
 
         public static void GiveItem(Item item)
         {
-            var presetGun = GetCustomTemplate(item);
-            EquipmentSlot slotType = item is PistolItemClass ? EquipmentSlot.Holster : EquipmentSlot.SecondPrimaryWeapon;
-            SpawnAndEquip(presetGun.Item.Id, slotType);
+            // var presetGun = GetCustomTemplate(item);
+            EquipmentSlot slotType = item is PistolItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
+
+            var weapon = GClass3380.CloneItemWithSameId(item);
+
+            var slot = H.MainPlayer.Equipment.GetSlot(slotType);
+            if (slot.ContainedItem != null)
+            {
+                slot.RemoveItemWithoutRestrictions();
+            }
+
+            slot.AddWithoutRestrictions(weapon);
+        }
+
+        public static void PreloadItemAssets(Item item)
+        {
+            var resourceKey = item.Template;
+            
         }
 
         public static void SpawnAndEquip(string templateId, EquipmentSlot slotType)
         {
+            SpawnAndEquip(H.MainPlayer, templateId, slotType);
+        }
+
+        public static void SpawnAndEquip(Player player, string templateId, EquipmentSlot slotType)
+        {
             if (TryCreateItem(templateId, out Item item))
             {
-                var slot = H.MainPlayer.Equipment.GetSlot(slotType);
+                var slot = player.Equipment.GetSlot(slotType);
                 if (slot.ContainedItem != null)
                 {
                     slot.RemoveItemWithoutRestrictions();
@@ -54,11 +76,10 @@ namespace ifp.arena.bep.Core
         // Fetch a build that exists in the user's gun builds (defaults to stock preset)
         public static WeaponBuildClass GetCustomTemplate(Item templateItem)
         {
-            Templates.Where((build) =>
+            return Templates.First((build) =>
             {
                 return build.Item.Id == templateItem.Id;
             });
-            return null;
         }
 
         public static bool CanEnterRaid(out string[] reasons)
@@ -86,14 +107,12 @@ namespace ifp.arena.bep.Core
             return true;
         }
 
+
         private static bool TryCreateItem(string templateId, out Item newItem)
         {
             newItem = null;
 
-            if (!Singleton<ItemFactoryClass>.Instantiated)
-                return false;
-
-            newItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+            newItem = ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
             return newItem != null;
         }
     }

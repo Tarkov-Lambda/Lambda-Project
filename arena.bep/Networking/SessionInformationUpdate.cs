@@ -19,6 +19,7 @@ namespace ifp.arena.bep.networking
         public int headshots;
         public int assists;
         public int deaths;
+        public int money;
         public bool isAlive;
         public bool isReady;
         public string musicKit;
@@ -67,6 +68,7 @@ namespace ifp.arena.bep.networking
                 writer.Put(scores[i].headshots);
                 writer.Put(scores[i].assists);
                 writer.Put(scores[i].deaths);
+                writer.Put(scores[i].money);
                 writer.Put(scores[i].isAlive);
                 writer.Put(scores[i].isReady);
                 writer.Put(scores[i].musicKit ?? string.Empty);
@@ -103,6 +105,7 @@ namespace ifp.arena.bep.networking
                     headshots = reader.GetInt(),
                     assists = reader.GetInt(),
                     deaths = reader.GetInt(),
+                    money = reader.GetInt(),
                     isAlive = reader.GetBool(),
                     isReady = reader.GetBool(),
                     musicKit = reader.GetString()
@@ -143,6 +146,7 @@ namespace ifp.arena.bep.networking
                     headshots = kvp.Value.kills,
                     assists = kvp.Value.assists,
                     deaths = kvp.Value.deaths,
+                    money = kvp.Value.money,
                     isAlive = kvp.Value.isAlive,
                     isReady = kvp.Value.isReady,
                     musicKit = kvp.Value.musicKit
@@ -182,6 +186,7 @@ namespace ifp.arena.bep.networking
                     playerScore.headshots = syncScore.headshots;
                     playerScore.assists = syncScore.assists;
                     playerScore.deaths = syncScore.deaths;
+                    playerScore.money = syncScore.money;
                     playerScore.isAlive = syncScore.isAlive;
                     playerScore.isReady = syncScore.isReady;
                     playerScore.musicKit = syncScore.musicKit;
@@ -196,6 +201,7 @@ namespace ifp.arena.bep.networking
                         headshots = syncScore.headshots,
                         assists = syncScore.assists,
                         deaths = syncScore.deaths,
+                        money = syncScore.money,
                         isAlive = syncScore.isAlive,
                         isReady = syncScore.isReady,
                         musicKit = syncScore.musicKit
