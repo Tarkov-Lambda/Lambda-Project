@@ -77,7 +77,7 @@ namespace ifp.arena.bep.GameTypes
             factionWins[Faction.CT] = 0;
             factionWins[Faction.T] = 0;
 
-            foreach (var p in H.GetAllPlayers())
+            foreach (var p in H.AllPlayers)
             {
                 if (!scoreboard.ContainsKey(p.Id))
                 {
@@ -91,7 +91,7 @@ namespace ifp.arena.bep.GameTypes
             if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
                 return;
 
-            foreach (var p in H.GetAllPlayers())
+            foreach (var p in H.AllPlayers)
             {
                 if (scoreboard.ContainsKey(p.Id))
                 {

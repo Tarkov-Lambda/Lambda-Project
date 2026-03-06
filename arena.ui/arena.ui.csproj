@@ -67,7 +67,6 @@
     <!-- <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
     <Copy SourceFiles="@(Deps)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
     <Copy SourceFiles="@(App)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\ui" />
-    <Copy SourceFiles="@(OneJSBundle)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
 
   </Target>
 </Project>

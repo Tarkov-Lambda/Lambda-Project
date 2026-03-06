@@ -20,7 +20,7 @@ namespace ifp.arena.bep.Core
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
         public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
         public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
-        public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : null;
+        public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
 
         public static ArenaController Arena => Singleton<ArenaController>.Instance;
         public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
@@ -69,7 +69,7 @@ namespace ifp.arena.bep.Core
             return playerScore;
         }
 
-        public static List<Player> GetAllPlayers()
+        private static List<Player> GetAllPlayers()
         {
             return GameWorld.AllAlivePlayersList;
         }
