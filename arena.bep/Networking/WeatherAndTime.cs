@@ -43,7 +43,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(WeatherAndTimePacket packet, NetPeer peer)
+        public override void WhenApproved(WeatherAndTimePacket packet, NetPeer peer)
         {
             DateTime currentDateTime = H.GameWorld.GameDateTime.Calculate();
             DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);

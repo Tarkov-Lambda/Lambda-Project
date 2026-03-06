@@ -59,7 +59,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override async void OnReceive(RestartPacket packet, NetPeer peer)
+        public override async void WhenApproved(RestartPacket packet, NetPeer peer)
         {
             _ = PlayerUtils.CloseEyes(false, false);
             await Task.Delay(500);

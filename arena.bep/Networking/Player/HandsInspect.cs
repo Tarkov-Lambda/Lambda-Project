@@ -35,7 +35,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(HandsInspectPacket packet, NetPeer peer)
+        public override void WhenApproved(HandsInspectPacket packet, NetPeer peer)
         {
             var player = H.GetPlayer(packet.id);
 

@@ -57,7 +57,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.Warmup, 120},
             {MatchState.WarmupEnd, 1},
             {MatchState.RoundPrepare, 15},
-            {MatchState.RoundAction, 140},
+            {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},
             {MatchState.SideSwap, 10},

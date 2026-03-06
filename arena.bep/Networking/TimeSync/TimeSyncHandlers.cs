@@ -27,7 +27,7 @@ namespace ifp.arena.bep.networking.TimeSync
             RequestSend(packet);
         }
 
-        public override void OnReceive(TimeSyncRequestPacket packet, NetPeer netPeer)
+        public override void WhenApproved(TimeSyncRequestPacket packet, NetPeer netPeer)
         {
             if (FikaBackendUtils.IsClient)
                 return;
@@ -48,7 +48,7 @@ namespace ifp.arena.bep.networking.TimeSync
     {
         public TimeSyncResponsePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-        public override void OnReceive(TimeSyncResponsePacket packet, NetPeer peer)
+        public override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
         {
             if (FikaBackendUtils.IsServer)
                 return;

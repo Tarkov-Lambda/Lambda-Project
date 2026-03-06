@@ -36,7 +36,7 @@ namespace ifp.arena.bep.networking
             return base.ServerValidation(ref packet, netPeer);
         }
 
-        public override void OnReceive(TemplatePacket packet, NetPeer peer)
+        public override void WhenApproved(TemplatePacket packet, NetPeer peer)
         {
             // H.Notify($"{packet}");
         }

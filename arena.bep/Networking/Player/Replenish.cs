@@ -37,7 +37,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(ReplenishPacket packet, NetPeer peer)
+        public override void WhenApproved(ReplenishPacket packet, NetPeer peer)
         {
             PlayerUtils.Replenish(H.GetPlayer(packet.id));
         }

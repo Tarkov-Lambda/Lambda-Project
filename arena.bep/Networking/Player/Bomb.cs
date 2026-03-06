@@ -66,7 +66,7 @@ namespace ifp.arena.bep.networking
             return base.ServerValidation(ref packet, peer);
         }
 
-        public override void OnReceive(BombStatePacket packet, NetPeer peer)
+        public override void WhenApproved(BombStatePacket packet, NetPeer peer)
         {
             H.Session.bombState = packet.state;
 

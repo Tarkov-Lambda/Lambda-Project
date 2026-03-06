@@ -41,11 +41,11 @@ namespace ifp.arena.bep.networking.Base
             Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
             if (FikaBackendUtils.IsServer)
             {
-                H.FikaNet.RegisterPacket<T, NetPeer>(BroadcastAndReceive);
+                H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
             }
             else
             {
-                H.FikaNet.RegisterPacket<T, NetPeer>(OnReceive);
+                H.FikaNet.RegisterPacket<T, NetPeer>(WhenApproved);
             }
         }
 
@@ -83,7 +83,6 @@ namespace ifp.arena.bep.networking.Base
         // EXPLANATION:
         // Server Send -> Server RequestSend -> Server Broadcast Packet -> Server/All Clients OnReceive (Server at no ping, All Clients at ping)
         // Local Client Send -> Local Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/All Clients OnReceive
-
         protected void RequestSend(T packet)
         {
             if (H.Arena != null && H.GameWorld is HideoutGameWorld) return;
@@ -98,11 +97,15 @@ namespace ifp.arena.bep.networking.Base
 
             if (FikaBackendUtils.IsServer)
             {
-                OnReceive(packet, Singleton<NetPeer>.Instance);
+                WhenApproved(packet, Singleton<NetPeer>.Instance);
+            }
+            else
+            {
+                ClientPrediction(packet);
             }
         }
 
-        private void BroadcastAndReceive(T packet, NetPeer netPeer)
+        private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
         {
             if (authority == PacketAuthority.ServerOnly)
             {
@@ -124,10 +127,10 @@ namespace ifp.arena.bep.networking.Base
             }
 
             // We might want to add artificial lag here if the server is not headless.
-            OnReceive(packet, netPeer);
+            WhenApproved(packet, netPeer);
         }
 
-        // Override to prevent the server from re-broadcasting a client->server packet to other clients.
+        // Override to prevent the server from re-broadcasting a client -> server packet to other clients.
         // Default behavior matches existing implementation (broadcast everything).
         protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
 
@@ -136,8 +139,19 @@ namespace ifp.arena.bep.networking.Base
             return true;
         }
 
+
+        // If we are a client, we can predict what's going to happen
+        // This is an optional method if the user is doing an action that's supposed to feel instant
+        // Of course, if the server does reject it (which I haven't implemented yet), each packet will need undo logic.
+        public virtual void ClientPrediction(T packet) { }
+
+
+        // If the server approves the packet, everyone receives it here.
         // Server applies this via BroadcastAndReceive (instantly)
         // Local client receives its own packet at ping time
-        public abstract void OnReceive(T packet, NetPeer netPeer);
+        public abstract void WhenApproved(T packet, NetPeer netPeer);
+
+        // If the server rejects the packet, the original client will receive this.
+        public virtual void WhenRejected(T packet) { }
     }
 }

@@ -39,7 +39,7 @@ namespace ifp.arena.bep.networking
         }
 
         // local client, server, remote clients all execute this when the packet receives them
-        public override void OnReceive(BuyItemPacket packet, NetPeer peer)
+        public override void WhenApproved(BuyItemPacket packet, NetPeer peer)
         {
         }
     }

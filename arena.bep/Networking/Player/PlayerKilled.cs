@@ -59,7 +59,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(PlayerKilledPacket packet, NetPeer peer)
+        public override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
             if (H.Scoreboard[packet.killerId] != null)
             {

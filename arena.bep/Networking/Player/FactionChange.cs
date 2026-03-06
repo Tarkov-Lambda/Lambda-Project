@@ -47,7 +47,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void OnReceive(FactionChangePacket packet, NetPeer peer)
+        public override void WhenApproved(FactionChangePacket packet, NetPeer peer)
         {
             H.Scoreboard[packet.id].faction = packet.faction;
         }
