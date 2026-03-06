@@ -5,7 +5,7 @@
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-    <DefineConstants>$(DefineConstants);SPT_4_0</DefineConstants>
+    <DefineConstants>$(DefineConstants);EFT_RUNTIME</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
