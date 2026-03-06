@@ -62,7 +62,7 @@ namespace ifp.arena.bep.Core
 
         public static void RegisterAllBullets()
         {
-            foreach (Player player in H.GetAllPlayers())
+            foreach (Player player in H.AllPlayers)
             {
                 foreach (Weapon weapon in GetAllWeapons(player))
                 {

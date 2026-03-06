@@ -117,7 +117,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsServer)
             {
-                foreach (var player in H.GetAllPlayers())
+                foreach (var player in H.AllPlayers)
                 {
                     var playerScore = H.GetPlayerScore(player.Id);
                     playerScore.faction = playerScore.faction == Faction.CT ? Faction.T : Faction.CT;

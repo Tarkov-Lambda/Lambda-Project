@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using Dissonance;
 using EFT;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -45,8 +46,6 @@ namespace ifp.arena.bep
 
         private readonly List<ModulePatch> _patches = new();
         private readonly List<IDisposable> _disposables = new();
-
-        GameObject OneJSScriptEngine;
 
         private void RegisterPatch(ModulePatch patch)
         {
@@ -115,15 +114,6 @@ namespace ifp.arena.bep
             // ItemSpawner.GetDefaultPreset();
 
             InitConfiguration();
-
-            // LoadUI();
-        }
-
-        private async void LoadUI()
-        {
-            AssetBundle OneJSBundle = await Singleton<AssetBundleHandler>.Instance.LoadAssetBundle("onejs");
-            OneJSScriptEngine = OneJSBundle.LoadAsset<GameObject>("ScriptEngine");
-            DontDestroyOnLoad(OneJSScriptEngine);
         }
 
         private void InitConfiguration()

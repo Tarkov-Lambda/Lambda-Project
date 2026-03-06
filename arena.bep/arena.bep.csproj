@@ -74,10 +74,8 @@
     <ItemGroup>
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
-      <OneJS Include="../bundles/onejs" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
-    <Copy SourceFiles="@(OneJS)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
   </Target>
 </Project>
