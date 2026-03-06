@@ -1,4 +1,7 @@
-﻿using EFT;
+﻿#if EFT_RUNTIME
+using EFT;
+#endif
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
