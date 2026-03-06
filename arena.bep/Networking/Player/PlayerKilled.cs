@@ -42,11 +42,10 @@ namespace ifp.arena.bep.networking
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
-        public void Send(Player victim, DamageInfoStruct damage)
+        public void Send(DamageInfoStruct damage)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
             bool isHeadshot = damage.BodyPartColliderType == EBodyPartColliderType.HeadCommon;
-            // Item weapon = damage.Weapon;
 
             var packet = new PlayerKilledPacket
             {
@@ -54,7 +53,7 @@ namespace ifp.arena.bep.networking
                 victimId = H.MainPlayer.Id,
                 assistId = 1,
                 isHeadshot = isHeadshot,
-                weaponId = "weapon.Id",
+                weaponId = H.GetPlayer(killerId).HandsController.Item.Id,
             };
 
             RequestSend(packet);
@@ -82,8 +81,6 @@ namespace ifp.arena.bep.networking
             Player victim = H.GetPlayer(packet.victimId);
             if (victim != null && victim != H.MainPlayer)
             {
-                // H.Notify($"{H.GetPlayer(packet.victimId).name}");
-
                 // H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
             }
 

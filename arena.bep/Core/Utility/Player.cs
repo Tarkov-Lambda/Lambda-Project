@@ -160,7 +160,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        public static bool TryCreateItem(string templateId, out Item newItem)
+        private static bool TryCreateItem(string templateId, out Item newItem)
         {
             newItem = null;
 

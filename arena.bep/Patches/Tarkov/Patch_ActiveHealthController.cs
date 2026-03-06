@@ -81,7 +81,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             try
             {
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(H.MainPlayer, Patch_ApplyDamage.LastReceivedDamageInfo);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
                 _ = PlayerUtils.CloseEyes();

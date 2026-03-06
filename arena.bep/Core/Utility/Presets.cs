@@ -17,6 +17,26 @@ namespace ifp.arena.bep.Core
         public static IEnumerable<WeaponBuildClass> Templates => WeaponBuilds.Dictionary_0.Values;
         public static InventoryEquipment Preset => GetDefaultPreset();
 
+        public static void GiveItem(Item item)
+        {
+            var presetGun = GetCustomTemplate(item);
+            EquipmentSlot slotType = item is PistolItemClass ? EquipmentSlot.Holster : EquipmentSlot.SecondPrimaryWeapon;
+            SpawnAndEquip(presetGun.Item.Id, slotType);
+        }
+
+        public static void SpawnAndEquip(string templateId, EquipmentSlot slotType)
+        {
+            if (TryCreateItem(templateId, out Item item))
+            {
+                var slot = H.MainPlayer.Equipment.GetSlot(slotType);
+                if (slot.ContainedItem != null)
+                {
+                    slot.RemoveItemWithoutRestrictions();
+                }
+                slot.AddWithoutRestrictions(item);
+            }
+        }
+
         // Retrieves first custom hideout preset
         public static InventoryEquipment GetDefaultPreset()
         {
@@ -31,26 +51,14 @@ namespace ifp.arena.bep.Core
             return null;
         }
 
-        public static WeaponBuildClass FindCustomTemplate(Item templateItem)
+        // Fetch a build that exists in the user's gun builds (defaults to stock preset)
+        public static WeaponBuildClass GetCustomTemplate(Item templateItem)
         {
             Templates.Where((build) =>
             {
                 return build.Item.Id == templateItem.Id;
             });
             return null;
-        }
-
-        public static void EquipItem(string templateId, EquipmentSlot slotType)
-        {
-            if (PlayerUtils.TryCreateItem(templateId, out Item item))
-            {
-                var slot = H.MainPlayer.Equipment.GetSlot(slotType);
-                if (slot.ContainedItem != null)
-                {
-                    slot.RemoveItemWithoutRestrictions();
-                }
-                slot.AddWithoutRestrictions(item);
-            }
         }
 
         public static bool CanEnterRaid(out string[] reasons)
@@ -73,8 +81,20 @@ namespace ifp.arena.bep.Core
                 H.NotifyLong("You must modify your hideout equipment preset:");
                 H.NotifyLong(reason);
             }
+
             if (reasons.Length > 0) return false;
             return true;
+        }
+
+        private static bool TryCreateItem(string templateId, out Item newItem)
+        {
+            newItem = null;
+
+            if (!Singleton<ItemFactoryClass>.Instantiated)
+                return false;
+
+            newItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+            return newItem != null;
         }
     }
 }
