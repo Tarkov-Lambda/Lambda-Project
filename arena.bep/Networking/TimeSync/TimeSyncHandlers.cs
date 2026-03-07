@@ -14,7 +14,7 @@ namespace ifp.arena.bep.networking.TimeSync
         public TimeSyncRequestPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
 
         protected override RateLimitConfig ServerRateLimit => new(
-            enabled: true,
+            enabled: false,
             refillPerSecond: 5,
             burst: 10,
             costPerPacket: 1,

@@ -111,9 +111,29 @@ namespace ifp.arena.bep.GameTypes
 
     public class PlayerScore
     {
+        public Faction faction = Faction.None;
+        public Player player;
+
+        // Round scope
+        public int mvps = 0;
+        public int kills = 0;
+        public int headshots = 0;
+        public int assists = 0;
+        public int deaths = 0;
+        public int money = 8000;
+        public bool isAlive = true;
+
+        public bool isReady = false;
+        public bool isAdmin = false;
+        public string musicKit = "valve_cs2_01";
+
         public PlayerScore(int id)
         {
             player = H.GetPlayer(id);
+            if (FikaBackendUtils.IsServer && H.MainPlayer.Id == id)
+            {
+                isAdmin = true;
+            }
         }
 
         public void Reset()
@@ -130,22 +150,6 @@ namespace ifp.arena.bep.GameTypes
         {
             money += addedMoney;
         }
-
-        public Faction faction = Faction.None;
-        public Player player;
-
-        // Round scope
-        public int mvps = 0;
-        public int kills = 0;
-        public int headshots = 0;
-        public int assists = 0;
-        public int deaths = 0;
-        public int money = 8000;
-        public bool isAlive = true;
-
-        public bool isReady = false;
-        public bool isAdmin = false;
-        public string musicKit = "valve_cs2_01";
     }
 
     public enum BombState

@@ -27,7 +27,7 @@ namespace ifp.arena.bep.networking
     public class AdminLoginPacketHandler : PacketHandler<AdminLoginPacket>
     {
         public static RateLimitConfig AdminLogin => new(
-            enabled: true,
+            enabled: false,
             refillPerSecond: 1.0,
             burst: 3,
             costPerPacket: 1,
@@ -38,13 +38,13 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            var password = Plugin.MapName.Value;
+            var password = Plugin.Password.Value;
             if (password == "") return;
             
             var packet = new AdminLoginPacket
             {
                 id = H.MainPlayer.Id,
-                password = Plugin.MapName.Value,
+                password = Plugin.Password.Value,
             };
 
             RequestSend(packet);

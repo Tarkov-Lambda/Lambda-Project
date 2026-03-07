@@ -83,13 +83,11 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_method_10());
 
-            // RegisterPatch(new Patch_Class308_RequestBuilds());
-
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());
 
-
-            // RegisterPatch(new Patch_OnCommonPlayerPacketReceived());
+            RegisterPacket<AssetBundleHandler>();
+            RegisterPacket<RagdollCreator>();
 
             // NETWORK
             RegisterPacket<PlayerKilledPacketHandler>();
@@ -102,18 +100,15 @@ namespace ifp.arena.bep
             RegisterPacket<MatchStateSyncPacketHandler>();
             RegisterPacket<RestartPacketHandler>();
             RegisterPacket<AssetLoadStatePacketHandler>();
-
+            RegisterPacket<AdminLoginPacketHandler>();
             RegisterPacket<HandsInspectPacketHandler>();
-
             RegisterPacket<ReplenishPacketHandler>();
-
             RegisterPacket<TimeSyncRequestPacketHandler>();
             RegisterPacket<TimeSyncResponsePacketHandler>();
 
+
+
             RegisterPacket<ArenaController>();
-            RegisterPacket<AssetBundleHandler>();
-            RegisterPacket<RagdollCreator>();
-            // ItemSpawner.GetDefaultPreset();
         }
 
         private void InitConfiguration()

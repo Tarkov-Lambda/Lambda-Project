@@ -157,9 +157,9 @@ namespace ifp.arena.bep.Core.Gamemode
 
             H.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
-            if(FikaBackendUtils.IsClient)
+            if (FikaBackendUtils.IsClient)
             {
-                Singleton<AdminLoginPacketHandler>.Instance.Send();
+                // Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
         }
 
@@ -368,7 +368,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
             Item tushonka = PresetUtils.CreateItem(SnDModeRules.bombTemplateId);
 
-            _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(),price = 2 });
+            _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(), price = 2 });
 
             _buyEntries = _buyEntries.OrderBy(e => e.price).ThenBy(e => e.name).ToList();
         }
