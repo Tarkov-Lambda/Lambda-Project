@@ -74,8 +74,10 @@
     <ItemGroup>
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <Bundles Include="../bundles/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy SourceFiles="@(Bundles)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
   </Target>
 </Project>

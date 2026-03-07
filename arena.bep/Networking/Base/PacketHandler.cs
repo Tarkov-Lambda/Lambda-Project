@@ -110,7 +110,7 @@ namespace ifp.arena.bep.networking.Base
         {
             if (H.Arena != null && H.GameWorld is HideoutGameWorld) return;
 
-            if (authority == PacketAuthority.ServerOnly && FikaBackendUtils.IsClient)
+            if (!H.GetPlayerScore(H.MainPlayer.Id).isAdmin || authority == PacketAuthority.ServerOnly && FikaBackendUtils.IsClient)
                 return;
 
             H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
@@ -127,7 +127,7 @@ namespace ifp.arena.bep.networking.Base
 
         private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
         {
-            if (authority == PacketAuthority.ServerOnly)
+            if (!H.GetPlayerScore(H.MainPlayer.Id).isAdmin ||authority == PacketAuthority.ServerOnly)
             {
                 Plugin.Logger.LogInfo("Unauthorized Packet");
                 return;

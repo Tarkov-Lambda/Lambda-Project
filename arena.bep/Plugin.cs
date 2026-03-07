@@ -39,6 +39,7 @@ namespace ifp.arena.bep
         internal static ConfigEntry<GameModes> GameMode;
         internal static ConfigEntry<Faction> PrefferedFaction;
         internal static ConfigEntry<string> MapName;
+        internal static ConfigEntry<string> Password;
         internal static ConfigEntry<string> MusicKitPath;
 
         private ConfigEntry<KeyboardShortcut> DeathKey;
@@ -64,6 +65,7 @@ namespace ifp.arena.bep
         {
             Logger = base.Logger;
             Logger.LogInfo("Load");
+            InitConfiguration();
 
             // PATCHES
             RegisterPatch(new Patch_Gameworld_OnGameStarted());
@@ -112,8 +114,6 @@ namespace ifp.arena.bep
             RegisterPacket<AssetBundleHandler>();
             RegisterPacket<RagdollCreator>();
             // ItemSpawner.GetDefaultPreset();
-
-            InitConfiguration();
         }
 
         private void InitConfiguration()
@@ -124,8 +124,7 @@ namespace ifp.arena.bep
 
             MapName = Config.Bind("Admin", "Map Name", "", "");
             GameMode = Config.Bind("Admin", "Gamemodes", GameModes.FFA, "");
-            MapName = Config.Bind("Admin", "Map Name", "", "");
-
+            Password = Config.Bind("Admin", "Password", "", "");
 
             DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
             RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));

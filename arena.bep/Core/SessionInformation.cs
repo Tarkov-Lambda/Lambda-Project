@@ -123,7 +123,6 @@ namespace ifp.arena.bep.GameTypes
             headshots = 0;
             assists = 0;
             deaths = 0;
-            money = 8000;
             isAlive = true;
         }
 
@@ -141,9 +140,11 @@ namespace ifp.arena.bep.GameTypes
         public int headshots = 0;
         public int assists = 0;
         public int deaths = 0;
-        public int money = 800;
+        public int money = 8000;
         public bool isAlive = true;
+
         public bool isReady = false;
+        public bool isAdmin = false;
         public string musicKit = "valve_cs2_01";
     }
 

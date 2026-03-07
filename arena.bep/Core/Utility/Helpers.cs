@@ -45,8 +45,8 @@ namespace ifp.arena.bep.Core
 
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
 
-        public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
-        // public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());
+        // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
+        public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()
@@ -54,7 +54,7 @@ namespace ifp.arena.bep.Core
             if (!isInRaid()) return null;
             return GameWorld.MainPlayer;
         }
-
+//
         public static Player GetPlayer(int playerId)
         {
             if (!isInRaid()) return null;

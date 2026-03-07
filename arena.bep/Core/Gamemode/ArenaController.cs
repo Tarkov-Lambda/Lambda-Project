@@ -157,6 +157,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
             H.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
+            if(FikaBackendUtils.IsClient)
+            {
+                Singleton<AdminLoginPacketHandler>.Instance.Send();
+            }
         }
 
         public void EndSession(GameWorld gameWorld)
