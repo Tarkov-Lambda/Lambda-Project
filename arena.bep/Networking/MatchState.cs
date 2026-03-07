@@ -20,8 +20,7 @@ namespace ifp.arena.bep.networking
 {
     public struct MatchStateSyncPacket : INetSerializable
     {
-        public MatchState roundState;
-        public double phaseDurationSeconds;
+        public MatchState matchState;
         public double serverPhaseStartSeconds;
 
         public bool hasRoundActionEnd;
@@ -29,8 +28,7 @@ namespace ifp.arena.bep.networking
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put((int)roundState);
-            writer.Put(phaseDurationSeconds);
+            writer.Put((int)matchState);
             writer.Put(serverPhaseStartSeconds);
 
             writer.Put(hasRoundActionEnd);
@@ -44,8 +42,7 @@ namespace ifp.arena.bep.networking
 
         public void Deserialize(NetDataReader reader)
         {
-            roundState = (MatchState)reader.GetInt();
-            phaseDurationSeconds = reader.GetDouble();
+            matchState = (MatchState)reader.GetInt();
             serverPhaseStartSeconds = reader.GetDouble();
 
             hasRoundActionEnd = reader.GetBool();
@@ -69,8 +66,7 @@ namespace ifp.arena.bep.networking
         {
             var packet = new MatchStateSyncPacket
             {
-                roundState = roundState,
-                phaseDurationSeconds = phaseDurationSeconds,
+                matchState = roundState,
                 serverPhaseStartSeconds = NetworkTime.ServerNowSeconds,
                 hasRoundActionEnd = roundActionEnd.HasValue,
                 roundActionEnd = roundActionEnd.GetValueOrDefault()

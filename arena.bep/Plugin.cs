@@ -105,6 +105,7 @@ namespace ifp.arena.bep
             RegisterPacket<ReplenishPacketHandler>();
             RegisterPacket<TimeSyncRequestPacketHandler>();
             RegisterPacket<TimeSyncResponsePacketHandler>();
+            RegisterPacket<PausePacketHandler>();
 
 
 

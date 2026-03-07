@@ -50,6 +50,21 @@ namespace ifp.arena.bep.Core.Gamemode
         }
     }
 
+    // Sets when server says we are restarting
+    public class SharedPause : IGameState
+    {
+        public MatchState StateType => MatchState.Warmup;
+        public void OnEnter() { }
+
+        public MatchState? OnUpdate()
+        {
+            if (!FikaBackendUtils.IsServer) return null;
+            if (H.Arena.StateTimer <= 0) return MatchState.RoundPrepare;
+            return null;
+        }
+        public void OnExit() { }
+    }
+
     public class SharedPrepare : IGameState
     {
         public MatchState StateType => MatchState.RoundPrepare;

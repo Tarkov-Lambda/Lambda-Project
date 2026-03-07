@@ -106,12 +106,15 @@ namespace ifp.arena.bep.networking.Base
             Release(this);
         }
 
+        private bool IsUnauthorized(int id)
+        {
+            return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(H.MainPlayer.Id).isAdmin;
+        }
+
         protected void RequestSend(T packet)
         {
-            if (H.Arena != null && H.GameWorld is HideoutGameWorld) return;
-
-            if (authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(H.MainPlayer.Id).isAdmin)
-                return;
+            if (!H.isInRaid()) return;
+            if (IsUnauthorized(H.MainPlayer.Id)) return;
 
             H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
 
@@ -127,18 +130,17 @@ namespace ifp.arena.bep.networking.Base
 
         private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
         {
-            // H.Notify("Checking Auth");
-            if (authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(H.MainPlayer.Id).isAdmin)
-            {
-                Plugin.Logger.LogInfo("Unauthorized Packet");
-                return;
-            }
-
-            // H.Notify("Authorized");
+            // We assume that the client does not try to 
             if (!TryPassServerRateLimit(packet, netPeer))
                 return;
 
-            // H.Notify("Passed Server Rate limit");
+            // idk what the best action here is, but for now we just drop
+            if (IsUnauthorized(netPeer.Id))
+            {
+                Plugin.Logger.LogInfo("Unauthorized Packet, dropping");
+                return;
+            }
+
             bool validPacket = ServerValidation(ref packet, netPeer);
             if (!validPacket)
             {
@@ -151,16 +153,12 @@ namespace ifp.arena.bep.networking.Base
                 return;
             }
 
-            // H.Notify("The packet is valid.");
-
             if (ShouldBroadcastClientPacket(packet))
             {
-                // H.Notify("Brodcasting the packet.");
                 H.FikaNet.SendData(ref packet, deliveryMethod, true);
             }
 
             WhenApproved(packet, netPeer);
-            // H.Notify("Marking the Packet approved.");
         }
 
         private void WhenClientReceivesPacket(T packet, NetPeer netPeer)

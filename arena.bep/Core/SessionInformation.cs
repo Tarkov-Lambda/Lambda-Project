@@ -26,7 +26,9 @@ namespace ifp.arena.bep.GameTypes
         Warmup,
         WarmupEnd,
 
+
         // Shared
+        Pause, // Can only be invoked when in RoundPrepare
         RoundPrepare,
         RoundAction,
         RoundEnd,
@@ -56,6 +58,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.None, 0},
             {MatchState.Warmup, 1},
             {MatchState.WarmupEnd, 1},
+            {MatchState.Pause, 1},
             {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},

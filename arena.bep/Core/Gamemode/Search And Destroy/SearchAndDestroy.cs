@@ -88,6 +88,7 @@ namespace ifp.arena.bep.Core.Gamemode
             MatchState.Warmup => new SharedWarmup(),
             MatchState.WarmupEnd => new SharedWarmupEnd(),
 
+            MatchState.Pause => new SharedPause(),
             MatchState.RoundPrepare => new SharedPrepare(),
             MatchState.RoundAction => new SnDAction(),
             MatchState.RoundPlanted => new SnDPlanted(),

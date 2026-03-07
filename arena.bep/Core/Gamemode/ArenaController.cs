@@ -208,7 +208,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 EventBus.OnEnd?.Invoke(_currentState.StateType);
             }
 
-            PhaseDurationSeconds = packet.phaseDurationSeconds;
+            PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
             ServerPhaseStartSeconds = packet.serverPhaseStartSeconds;
 
             if (packet.hasRoundActionEnd)
@@ -217,8 +217,8 @@ namespace ifp.arena.bep.Core.Gamemode
                 EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd);
             }
 
-            session.roundState = packet.roundState;
-            _currentState = ActiveRules.CreateState(packet.roundState);
+            session.roundState = packet.matchState;
+            _currentState = ActiveRules.CreateState(packet.matchState);
 
             StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
