@@ -38,10 +38,8 @@ namespace ifp.arena.bep.networking
     {
         public RestartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-        public void Send()
+        private void PrepareForRestart()
         {
-            if (H.Session == null) return;
-
             H.Session.scoreboard.Clear();
             H.Session.factionWins.Clear();
             H.Session.roundState = MatchState.None;
@@ -50,6 +48,16 @@ namespace ifp.arena.bep.networking
             H.Session.InitializeScoreBoard();
 
             Singleton<SessionInfoPacketHandler>.Instance.Send();
+        }
+
+        public void Send()
+        {
+            if (H.Session == null) return;
+
+            if (FikaBackendUtils.IsServer)
+            {
+                PrepareForRestart();
+            }
 
             var packet = new RestartPacket
             {
@@ -57,6 +65,12 @@ namespace ifp.arena.bep.networking
             };
 
             RequestSend(packet);
+        }
+
+        public override bool ServerValidation(ref RestartPacket packet, NetPeer netPeer)
+        {
+            PrepareForRestart();
+            return base.ServerValidation(ref packet, netPeer);
         }
 
         public override async void WhenApproved(RestartPacket packet, NetPeer peer)

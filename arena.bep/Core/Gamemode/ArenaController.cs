@@ -159,7 +159,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (session == null) session = new SessionInfo();
             if (FikaBackendUtils.IsClient)
             {
-                // Singleton<AdminLoginPacketHandler>.Instance.Send();
+                Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
         }
 
