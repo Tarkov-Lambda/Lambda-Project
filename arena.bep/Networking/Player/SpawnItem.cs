@@ -9,6 +9,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
+using ifp.arena.bep.networking.Base.RateLimiting;
 using Newtonsoft.Json;
 using UnityEngine;
 using static ItemFactoryClass;
@@ -113,6 +114,15 @@ namespace ifp.arena.bep.networking
 
     public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     {
+        protected override RateLimitConfig ServerRateLimit => new(
+            enabled: true,
+            refillPerSecond: 1,
+            burst: 10,
+            costPerPacket: 1,
+            action: RateLimitAction.Reject,
+            stateTtlSeconds: 60,
+            rejectCooldownSeconds: 1.0);
+
         public void Send(Item item)
         {
             var packet = new SpawnItemPacket
@@ -125,7 +135,6 @@ namespace ifp.arena.bep.networking
         }
 
         // local client, server, remote clients all execute this packet on arrival (synchronization of weapon generation)
-
         public override void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
             if (packet.flatItems == null || packet.flatItems.Length == 0) return;
@@ -149,35 +158,20 @@ namespace ifp.arena.bep.networking
 
             if (rootItem != null)
             {
-                // Network packets arrive synchronously.
-                // Fire-and-forget a Task so we don't block the networking thread while Tarkov loads 3D models.
                 _ = LoadBundlesAndSpawnAsync(rootItem, packet.playerId);
             }
         }
 
-        public override bool ServerValidation(ref SpawnItemPacket packet, NetPeer netPeer)
-        {
-            return false;
-        }
-
-        public override void WhenRejected(SpawnItemPacket packet, NetPeer peer)
-        {
-            H.Log("Rejected");
-        }
-
         private async Task LoadBundlesAndSpawnAsync(Item rootItem, int playerId)
         {
-            // 1. Gather all required Asset Bundles (Prefabs) for the root item AND all its nested children
-            // GetAllItems() is an EFT method that traverses the entire item tree.
             var prefabsToLoad = rootItem.GetAllItems()
-                .Select(i => i.Template.Prefab) // Extracts the ResourceKey from the item template
+                .Select(i => i.Template.Prefab)
                 .Where(p => p != null && !string.IsNullOrEmpty(p.path))
                 .ToList();
 
-            // 2. Ask Tarkov's PoolManagerClass to load these bundles into RAM
             if (prefabsToLoad.Count > 0)
             {
-                Plugin.Logger.LogInfo($"Loading {prefabsToLoad.Count} bundles for {rootItem.Name.Localized()}...");
+                // Plugin.Logger.LogInfo($"Loading {prefabsToLoad.Count} bundles for {rootItem.Name.Localized()}...");
 
                 await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(
                     PoolManagerClass.PoolsCategory.Raid,
@@ -189,12 +183,8 @@ namespace ifp.arena.bep.networking
                 );
             }
 
-            Plugin.Logger.LogInfo($"Bundles loaded successfully! Processing spawn for Player ID: {playerId}");
+            // H.Log($"Bundles loaded successfully! Processing spawn for Player ID: {playerId}");
 
-            // 3. Spawning the Item
-
-            // --> OPTION A: Give it directly to the player's inventory
-            // Uncomment this if you want it to appear in their stash/hands
             PresetUtils.GiveItem(rootItem, H.GetPlayer(playerId));
         }
     }

@@ -4,6 +4,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
+using ifp.arena.bep.networking.Base.RateLimiting;
 
 namespace ifp.arena.bep.networking.TimeSync
 {
@@ -11,6 +12,15 @@ namespace ifp.arena.bep.networking.TimeSync
     public class TimeSyncRequestPacketHandler : PacketHandler<TimeSyncRequestPacket>
     {
         public TimeSyncRequestPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
+
+        protected override RateLimitConfig ServerRateLimit => new(
+            enabled: true,
+            refillPerSecond: 5,
+            burst: 10,
+            costPerPacket: 1,
+            action: RateLimitAction.Drop,
+            stateTtlSeconds: 30,
+            rejectCooldownSeconds: 0.5);
 
         protected override bool ShouldBroadcastClientPacket(TimeSyncRequestPacket packet) => false;
 

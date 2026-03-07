@@ -74,7 +74,7 @@ namespace ifp.arena.bep.networking
 
             if (packet.state == BombState.Planted)
             {
-                //  ..literally pizdec().Invoke().Where((x) => x.jopa == x.pisya).FirstOrDefault();
+                //  ..literally pizdec().Invoke();
 
                 H.Arena.LastObjectivePlayerId = packet.playerId;
             }

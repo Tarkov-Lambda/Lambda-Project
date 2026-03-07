@@ -5,7 +5,9 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.networking.Base.RateLimiting;
 using System;
+using System.Diagnostics;
 
 namespace ifp.arena.bep.networking.Base
 {
@@ -35,6 +37,8 @@ namespace ifp.arena.bep.networking.Base
     {
         protected DeliveryMethod deliveryMethod;
         protected PacketAuthority authority;
+
+        private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
 
         public PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
         {
@@ -82,6 +86,8 @@ namespace ifp.arena.bep.networking.Base
 
             try
             {
+                _serverRateLimiter.Clear();
+
                 var processor = GetPacketProcessor();
                 if (processor == null) return;
 
@@ -127,6 +133,9 @@ namespace ifp.arena.bep.networking.Base
                 return;
             }
 
+            if (!TryPassServerRateLimit(packet, netPeer))
+                return;
+
             bool validPacket = ServerValidation(ref packet, netPeer);
             if (!validPacket)
             {
@@ -159,6 +168,65 @@ namespace ifp.arena.bep.networking.Base
 
         protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
 
+        protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default;
+
+        protected virtual void OnRateLimited(T packet, NetPeer netPeer, in RateLimitConfig config)
+        {
+            H.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
+        }
+
+        private bool TryPassServerRateLimit(T packet, NetPeer netPeer)
+        {
+            var config = ServerRateLimit;
+            if (!config.Enabled)
+                return true;
+
+            double nowSeconds = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+
+            _serverRateLimiter.Prune(nowSeconds, config.StateTtlSeconds);
+
+            bool allowed = _serverRateLimiter.TryConsume(netPeer.Id, nowSeconds, config, out bool canSendReject);
+            if (allowed)
+                return true;
+
+            OnRateLimited(packet, netPeer, config);
+
+
+            switch (config.Action)
+            {
+                case RateLimitAction.Drop:
+                    return false;
+
+                case RateLimitAction.Reject:
+                    {
+                        if (!canSendReject)
+                            return false;
+
+                        var processor = GetPacketProcessor();
+                        if (processor == null)
+                            return false;
+
+                        var rejected = new RejectedPacket<T> { Payload = packet };
+                        H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
+                        return false;
+                    }
+
+                case RateLimitAction.Disconnect:
+                    try
+                    {
+                        netPeer.Disconnect();
+                    }
+                    catch
+                    {
+                        // oh well
+                    }
+                    return false;
+
+                default:
+                    return false;
+            }
+        }
+
         public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
         {
             return true;
@@ -168,7 +236,7 @@ namespace ifp.arena.bep.networking.Base
 
         public abstract void WhenApproved(T packet, NetPeer netPeer);
 
-        // This will now successfully trigger when the server rejects it!
+        // Whenever the loca
         public virtual void WhenRejected(T packet, NetPeer netPeer) { }
     }
 }
