@@ -20,6 +20,7 @@ namespace ifp.arena.bep.Core
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
         public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
         public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
+        public static PlayerScore MainPlayerScore => GetMainPlayerScore();
         public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
 
         public static ArenaController Arena => Singleton<ArenaController>.Instance;
@@ -54,7 +55,7 @@ namespace ifp.arena.bep.Core
             if (!isInRaid()) return null;
             return GameWorld.MainPlayer;
         }
-//
+
         public static Player GetPlayer(int playerId)
         {
             if (!isInRaid()) return null;
@@ -63,9 +64,15 @@ namespace ifp.arena.bep.Core
 
         public static PlayerScore GetPlayerScore(int playerId)
         {
-            if (!Singleton<ArenaController>.Instantiated) return null;
-
+            if (!isInRaid()) return null;
             Arena.session.scoreboard.TryGetValue(playerId, out var playerScore);
+            return playerScore;
+        }
+
+        public static PlayerScore GetMainPlayerScore()
+        {
+            if (!isInRaid()) return null;
+            Arena.session.scoreboard.TryGetValue(H.MainPlayer.Id, out var playerScore);
             return playerScore;
         }
 

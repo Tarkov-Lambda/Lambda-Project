@@ -103,11 +103,13 @@ namespace ifp.arena.bep.GameTypes
             }
         }
 
-        // Locking out player shooting, moving, jumping during certain session states
+        // Locking out the player from shooting/jumping/moving
         public bool IsControllerPartiallyLocked()
         {
             if (H.GameWorld is HideoutGameWorld) return false;
-            if (roundState == MatchState.RoundPrepare) return true;
+            if (roundState == MatchState.RoundPrepare || roundState == MatchState.Pause) return true;
+            if (!H.MainPlayerScore.isAlive) return true;
+
             return false;
         }
     }

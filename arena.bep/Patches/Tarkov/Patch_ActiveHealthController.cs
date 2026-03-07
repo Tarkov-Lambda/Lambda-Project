@@ -19,7 +19,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     // Place for patching out damage application if the shooter is already dead.
     // On the server if a shooter headshots, instead of waiting for the victim to report that they are dead
-    // the server preemptively will report death (via PlayerKilledPacket).
+    // the server preemptively will report death (via PlayerKilledPacket). -- (when I figure out how to actually do this correctly)
     // however, considering the server will broadcast any damage packet
     // the victim may also be shooting the original shooter.
     // This will result in non stop kill trading.

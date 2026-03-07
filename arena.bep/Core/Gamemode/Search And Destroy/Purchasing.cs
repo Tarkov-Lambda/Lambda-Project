@@ -53,13 +53,13 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public static bool CanAfford(Item item)
         {
-            return H.GetPlayerScore(H.MainPlayer.Id).money >= GetItemPrice(item);
+            return H.MainPlayerScore.money >= GetItemPrice(item);
         }
 
         public static void BuyItem(Item item)
         {
             PresetUtils.SpawnItem(item);
-            H.GetPlayerScore(H.MainPlayer.Id).money -= GetItemPrice(item);
+            H.MainPlayerScore.money -= GetItemPrice(item);
         }
     }
 }

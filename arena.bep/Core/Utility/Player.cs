@@ -17,8 +17,6 @@ namespace ifp.arena.bep.Core
         // Applies a permanent painkiller at the start of the raid
         public static void ApplyPainkiller()
         {
-            if (!H.isInRaid()) return;
-
             var healthController = H.MainPlayer.ActiveHealthController;
             Type painkillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
 
@@ -48,6 +46,7 @@ namespace ifp.arena.bep.Core
             return weapons;
         }
 
+        // almost deprecated given we're refactoring to have preset bullets for each gun
         public static void RegisterBullet(Weapon weapon)
         {
             MagazineItemClass magazine = weapon.GetCurrentMagazine();
@@ -75,7 +74,8 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        // Replenish all equipped weapons and armor
+        // FIKA DOES NOT SYNC DURABILITY REPAIRS
+        // Though I think it does sync equipment changes from client automatically
         public static void Replenish(Player player, bool shouldReloadGun = true)
         {
             Slot tacticalVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
@@ -99,6 +99,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
+        
         public static void ReplenishVestMagazines(Slot vest, Weapon weapon)
         {
             if (vest != null && vest.ContainedItem is CompoundItem vestCompound)

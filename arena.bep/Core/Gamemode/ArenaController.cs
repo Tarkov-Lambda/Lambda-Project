@@ -79,6 +79,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public static class EventBus
     {
         public static Action<MatchState> OnEnter;
+        // We do not have OnUpdate action because clients don't run the update loop 
         public static Action<MatchState> OnEnd;
         public static Action<BombState> OnBombStateChange;
         public static Action<PlayerKilledPacket> OnPlayerKill;
@@ -389,7 +390,7 @@ namespace ifp.arena.bep.Core.Gamemode
             Rect header = new Rect(panel.x, panel.y, panel.width, 40f);
             GUI.Label(header, "BUY MENU", _buyHeaderStyle);
 
-            var myScore = H.MainPlayer != null ? H.GetPlayerScore(H.MainPlayer.Id) : null;
+            var myScore = H.MainPlayer != null ? H.MainPlayerScore : null;
             int money = myScore?.money ?? 0;
             GUI.Label(new Rect(panel.x + 12f, panel.y + 42f, panel.width - 24f, 22f), $"${money}", _buyRowStyle);
             GUI.Label(new Rect(panel.x + 12f, panel.y + 62f, panel.width - 24f, 18f), "(B to close)", _rowStyle);

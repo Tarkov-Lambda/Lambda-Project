@@ -38,30 +38,75 @@ namespace ifp.arena.bep.Core
             // slot.AddWithoutRestrictions(newItem);
         }
 
+        public static void RemovePlates(Player player)
+        {
+            
+        }
+
+
         public static void GiveItem(Item item, Player player)
         {
-            EquipmentSlot slotType = item is PistolItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
-            
-            var slot = player.Equipment.GetSlot(slotType);
-            if (slot.ContainedItem != null)
+            var slotTypes = GetAppropriateSlot(item, player);
+            foreach (var slotType in slotTypes)
             {
-                slot.RemoveItemWithoutRestrictions();
+                var slot = player.Equipment.GetSlot(slotType);
+                if (slot.ContainedItem != null)
+                {
+                    slot.RemoveItemWithoutRestrictions();
+                }
+
+                slot.AddWithoutRestrictions(item);
             }
 
-            slot.AddWithoutRestrictions(item);
         }
 
-        public static void PreloadItemAssets(Item item)
+        public static EquipmentSlot[] GetAppropriateSlot(Item item, Player player)
         {
-            var resourceKey = item.Template;
+            EquipmentSlot[] slots = [];
+            if (item is Weapon)
+            {
+                if (item is PistolItemClass)
+                {
+                    slots.AddItem(EquipmentSlot.Holster);
+                }
+                else
+                {
+                    slots.AddItem(EquipmentSlot.FirstPrimaryWeapon);
+                }
+            }
+            else if (item is ArmorPlateItemClass)
+            {
+                CompoundItem armor = GetPlateHolder(player);
+            }
+            else if (item is MagazineItemClass)
+            {
 
+            }
+
+            return slots;
         }
 
-        public static void SpawnAndEquip(string templateId, EquipmentSlot slotType)
+        public static CompoundItem GetPlateHolder(Player player)
         {
-            SpawnAndEquip(H.MainPlayer, templateId, slotType);
+
+            CompoundItem tacRig = Preset.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
+            CompoundItem armor = Preset.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+
+            if (armor != null)
+            {
+                return armor;
+            }
+            if (tacRig != null && tacRig is ArmorItemClass)
+            {
+                return tacRig;
+            }
+
+            return null;
         }
 
+        /// <summary>
+        /// spawn and equip a specific player (we have to know the template id first)
+        /// </summary>
         public static void SpawnAndEquip(Player player, string templateId, EquipmentSlot slotType)
         {
             if (TryCreateItem(templateId, out Item item))
@@ -85,6 +130,7 @@ namespace ifp.arena.bep.Core
                     return equipmentTemplate.Equipment;
                 }
             }
+            
 
             return null;
         }

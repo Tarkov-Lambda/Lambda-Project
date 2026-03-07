@@ -51,7 +51,7 @@ namespace ifp.arena.bep.networking
             {
                 killerId = killerId,
                 victimId = H.MainPlayer.Id,
-                assistId = 1,
+                assistId = 12312345, // idk how to make this yet tbh
                 isHeadshot = isHeadshot,
                 weaponId = H.GetPlayer(killerId).HandsController.Item.Id,
             };

@@ -108,7 +108,7 @@ namespace ifp.arena.bep.networking.Base
 
         private bool IsUnauthorized(int id)
         {
-            return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(H.MainPlayer.Id).isAdmin;
+            return authority == PacketAuthority.ServerOnly && !H.MainPlayerScore.isAdmin;
         }
 
         protected void RequestSend(T packet)
@@ -130,7 +130,6 @@ namespace ifp.arena.bep.networking.Base
 
         private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
         {
-            // We assume that the client does not try to 
             if (!TryPassServerRateLimit(packet, netPeer))
                 return;
 

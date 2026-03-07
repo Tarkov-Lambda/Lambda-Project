@@ -102,7 +102,7 @@ namespace ifp.arena.bep.Core.Audio
                 return;
             }
 
-            var myScore = H.GetPlayerScore(H.MainPlayer.Id);
+            var myScore = H.MainPlayerScore;
             if (myScore != null && myScore.faction == payload.winner)
                 H.PlayMusic(MusicEvent.WonRound);
             else
