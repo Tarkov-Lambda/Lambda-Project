@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
@@ -26,7 +27,10 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedWarmup : IGameState
     {
         public MatchState StateType => MatchState.Warmup;
-        public void OnEnter() { }
+        public void OnEnter()
+        {
+            foreach (var p in H.Arena.session.scoreboard.Values) p.money = EconomyConstants.MAX_MONEY;
+        }
 
         public MatchState? OnUpdate()
         {

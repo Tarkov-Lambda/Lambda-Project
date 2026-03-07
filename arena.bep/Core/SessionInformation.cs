@@ -129,8 +129,11 @@ namespace ifp.arena.bep.GameTypes
         public bool isAlive = true;
 
         public bool isReady = false;
-        public bool isAdmin = false;
+
         public string musicKit = "valve_cs2_01";
+
+        public int ping = 0;
+        public bool isAdmin = false;
 
         public PlayerScore(int id)
         {

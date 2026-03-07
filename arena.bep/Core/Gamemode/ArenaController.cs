@@ -263,7 +263,6 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
-
     public class GameModeTicker : MonoBehaviour
     {
         private GUIStyle _headerStyle, _rowStyle, _timerStyle, _scoreBigStyle;
@@ -312,7 +311,7 @@ namespace ifp.arena.bep.Core.Gamemode
             // Only process toggle once per-frame in Update() (OnGUI can be called multiple times)
             if (game == null || game.session == null) return;
 
-            bool isBuyTime = game.session.roundState == MatchState.RoundPrepare;
+            bool isBuyTime = game.session.roundState is MatchState.Warmup or MatchState.WarmupEnd or MatchState.RoundPrepare;
             if (!isBuyTime)
             {
                 _showBuyMenu = false;

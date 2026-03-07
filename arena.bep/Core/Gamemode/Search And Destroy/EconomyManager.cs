@@ -55,9 +55,10 @@ namespace ifp.arena.bep.Core.Economy
             EventBus.OnEnter -= HandleStateChange;
         }
 
+        // this is bad and needs to be managed by ArenaController or SND
         private void HandleStateChange(MatchState state)
         {
-            if (state == MatchState.Warmup || state == MatchState.SideSwap)
+            if (state == MatchState.WarmupEnd || state == MatchState.SideSwap)
             {
                 ResetEconomy();
             }
