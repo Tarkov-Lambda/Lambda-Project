@@ -24,24 +24,19 @@ namespace ifp.arena.bep.networking
         {
             writer.Put(playerId);
 
-            // Handle null arrays gracefully
             if (flatItems == null)
             {
                 writer.Put(0);
                 return;
             }
 
-            // 1. Write the array length
             writer.Put(flatItems.Length);
 
-            // 2. Iterate and write each item
             foreach (var item in flatItems)
             {
-                // Serialize MongoIDs
                 writer.Put(item._id.ToString());
                 writer.Put(item._tpl.ToString());
 
-                // Serialize nullable parentId
                 bool hasParent = item.parentId.HasValue;
                 writer.Put(hasParent);
                 if (hasParent)
@@ -49,7 +44,6 @@ namespace ifp.arena.bep.networking
                     writer.Put(item.parentId.Value.ToString());
                 }
 
-                // Serialize slotId
                 bool hasSlot = !string.IsNullOrEmpty(item.slotId);
                 writer.Put(hasSlot);
                 if (hasSlot)
@@ -57,8 +51,6 @@ namespace ifp.arena.bep.networking
                     writer.Put(item.slotId);
                 }
 
-                // Serialize location (GClass846)
-                // We use JSON here because location descriptors can change and have arbitrary properties (x, y, r, isSearched)
                 bool hasLocation = item.location != null;
                 writer.Put(hasLocation);
                 if (hasLocation)
@@ -66,8 +58,6 @@ namespace ifp.arena.bep.networking
                     writer.Put(JsonConvert.SerializeObject(item.location));
                 }
 
-                // Serialize upd (GClass846)
-                // We use JSON here because Upd is deeply polymorphic. Manual serialization would break every EFT update.
                 bool hasUpd = item.upd != null;
                 writer.Put(hasUpd);
                 if (hasUpd)
@@ -81,7 +71,6 @@ namespace ifp.arena.bep.networking
         {
             playerId = reader.GetInt();
 
-            // 1. Read the array length
             int itemsCount = reader.GetInt();
             if (itemsCount == 0)
             {
@@ -89,35 +78,29 @@ namespace ifp.arena.bep.networking
                 return;
             }
 
-            // 2. Iterate and read each item
             flatItems = new FlatItemsDataClass[itemsCount];
             for (int i = 0; i < itemsCount; i++)
             {
                 var item = new FlatItemsDataClass();
 
-                // Deserialize MongoIDs (using EFT's native constructor that accepts strings)
                 item._id = new MongoID(reader.GetString());
                 item._tpl = new MongoID(reader.GetString());
 
-                // Deserialize parentId
                 if (reader.GetBool())
                 {
                     item.parentId = new MongoID(reader.GetString());
                 }
 
-                // Deserialize slotId
                 if (reader.GetBool())
                 {
                     item.slotId = reader.GetString();
                 }
 
-                // Deserialize location (GClass846)
                 if (reader.GetBool())
                 {
                     item.location = JsonConvert.DeserializeObject<GClass846>(reader.GetString());
                 }
 
-                // Deserialize upd (GClass846)
                 if (reader.GetBool())
                 {
                     item.upd = JsonConvert.DeserializeObject<GClass846>(reader.GetString());
@@ -172,6 +155,16 @@ namespace ifp.arena.bep.networking
             }
         }
 
+        public override bool ServerValidation(ref SpawnItemPacket packet, NetPeer netPeer)
+        {
+            return false;
+        }
+
+        public override void WhenRejected(SpawnItemPacket packet, NetPeer peer)
+        {
+            H.Log("Rejected");
+        }
+
         private async Task LoadBundlesAndSpawnAsync(Item rootItem, int playerId)
         {
             // 1. Gather all required Asset Bundles (Prefabs) for the root item AND all its nested children
@@ -202,7 +195,7 @@ namespace ifp.arena.bep.networking
 
             // --> OPTION A: Give it directly to the player's inventory
             // Uncomment this if you want it to appear in their stash/hands
-            PresetUtils.GiveItem(rootItem, H.GetPlayer(playerId)); 
+            PresetUtils.GiveItem(rootItem, H.GetPlayer(playerId));
         }
     }
 }

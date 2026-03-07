@@ -1,15 +1,11 @@
 ﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.Patches.Tarkov;
 using System;
-using System.Reflection;
-using DeliveryMethod = Fika.Core.Networking.LiteNetLib.DeliveryMethod;
 
 namespace ifp.arena.bep.networking.Base
 {
@@ -17,6 +13,22 @@ namespace ifp.arena.bep.networking.Base
     {
         Both,       // Anyone can send/receive
         ServerOnly  // Only Server can send. Clients only receive.
+    }
+
+    public struct RejectedPacket<T> : INetSerializable where T : INetSerializable, new()
+    {
+        public T Payload;
+
+        public void Serialize(NetDataWriter writer)
+        {
+            Payload.Serialize(writer);
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            Payload = new T();
+            Payload.Deserialize(reader);
+        }
     }
 
     public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
@@ -36,6 +48,16 @@ namespace ifp.arena.bep.networking.Base
             RegisterPacket(H.GameWorld);
         }
 
+        private NetPacketProcessor GetPacketProcessor()
+        {
+            var manager = H.FikaNet;
+            if (manager == null) return null;
+
+            var field = AccessTools.Field(manager.GetType(), "_packetProcessor");
+
+            return field?.GetValue(manager) as NetPacketProcessor;
+        }
+
         public void RegisterPacket(GameWorld gameWorld)
         {
             if (H.isInRaid())
@@ -44,10 +66,12 @@ namespace ifp.arena.bep.networking.Base
                 if (FikaBackendUtils.IsServer)
                 {
                     H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
+                    H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { });
                 }
                 else
                 {
-                    H.FikaNet.RegisterPacket<T, NetPeer>(WhenApproved);
+                    H.FikaNet.RegisterPacket<T, NetPeer>(WhenClientReceivesPacket);
+                    H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>(WhenClientReceivesRejection);
                 }
             }
         }
@@ -58,20 +82,11 @@ namespace ifp.arena.bep.networking.Base
 
             try
             {
-                var manager = H.FikaNet;
-
-                if (manager == null || manager.Equals(null))
-                    return;
-
-                var field = AccessTools.Field(manager.GetType(), "_packetProcessor");
-                if (field == null)
-                    return;
-
-                var processor = field.GetValue(manager) as NetPacketProcessor;
-                if (processor == null)
-                    return;
+                var processor = GetPacketProcessor();
+                if (processor == null) return;
 
                 processor.RemoveSubscription<T>();
+                processor.RemoveSubscription<RejectedPacket<T>>();
             }
             catch (Exception ex)
             {
@@ -85,18 +100,12 @@ namespace ifp.arena.bep.networking.Base
             Release(this);
         }
 
-        // EXPLANATION:
-        // Server Send -> Server RequestSend -> Server Broadcast Packet -> Server/All Clients OnReceive (Server at no ping, All Clients at ping)
-        // Local Client Send -> Local Client RequestSend -> Server BroadcastAndReceive -> Server ServerValidation -> Server Broadcast Packet -> Server/All Clients OnReceive
         protected void RequestSend(T packet)
         {
             if (H.Arena != null && H.GameWorld is HideoutGameWorld) return;
 
-            // Save traffic
             if (authority == PacketAuthority.ServerOnly && FikaBackendUtils.IsClient)
-            {
                 return;
-            }
 
             H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
 
@@ -118,25 +127,36 @@ namespace ifp.arena.bep.networking.Base
                 return;
             }
 
-            // Does two things at once and I'm not sure if I like the way it works
-            // It validates and optionally modifies the packet, and then returns a bool to decide whether the packet is valid
-            // note that this function only runs when the server has received a packet from a client
             bool validPacket = ServerValidation(ref packet, netPeer);
-            if (!validPacket) return;
+            if (!validPacket)
+            {
+                var processor = GetPacketProcessor();
+                if (processor != null)
+                {
+                    var rejected = new RejectedPacket<T> { Payload = packet };
+                    H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
+                }
+                return;
+            }
 
-            // Most client->server packets are broadcast back out to all clients.
-            // time sync packets between client and server need it, so
             if (ShouldBroadcastClientPacket(packet))
             {
                 H.FikaNet.SendData(ref packet, deliveryMethod, true);
             }
 
-            // We might want to add artificial lag here if the server is not headless.
             WhenApproved(packet, netPeer);
         }
 
-        // Override to prevent the server from re-broadcasting a client -> server packet to other clients.
-        // Default behavior matches existing implementation (broadcast everything).
+        private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
+        {
+            WhenApproved(packet, netPeer);
+        }
+
+        private void WhenClientReceivesRejection(RejectedPacket<T> rejectedPacket, NetPeer netPeer)
+        {
+            WhenRejected(rejectedPacket.Payload, netPeer);
+        }
+
         protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
 
         public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
@@ -144,18 +164,11 @@ namespace ifp.arena.bep.networking.Base
             return true;
         }
 
-
-        // If we are a client, we can predict what's going to happen
-        // This is an optional method if the user is doing an action that's supposed to feel instant
-        // Of course, if the server does reject it (which I haven't implemented yet), each packet will need undo logic.
         public virtual void ClientPrediction(T packet) { }
 
-        // If the server approves the packet, everyone receives it here.
-        // Server applies this via BroadcastAndReceive (instantly)
-        // Local client receives its own packet at ping time
         public abstract void WhenApproved(T packet, NetPeer netPeer);
 
-        // If the server rejects the packet, the original client will receive this.
-        public virtual void WhenRejected(T packet) { }
+        // This will now successfully trigger when the server rejects it!
+        public virtual void WhenRejected(T packet, NetPeer netPeer) { }
     }
 }

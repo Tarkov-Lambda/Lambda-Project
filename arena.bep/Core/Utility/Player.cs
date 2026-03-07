@@ -51,7 +51,10 @@ namespace ifp.arena.bep.Core
         public static void RegisterBullet(Weapon weapon)
         {
             MagazineItemClass magazine = weapon.GetCurrentMagazine();
+            if (magazine?.Cartridges?.Items == null || magazine.Cartridges.Items.Count() == 0)
+                return;
             AmmoItemClass ammo = magazine.GetBulletAtPosition(0);
+
 
             Patch_FirearmController_InitiateShot.AmmoRegistry[weapon] = new MagAndAmmo
             {
@@ -113,7 +116,9 @@ namespace ifp.arena.bep.Core
         public static void ReplenishGun(Weapon weapon, AmmoItemClass ammo)
         {
             var magazine = weapon.GetCurrentMagazine();
-
+            if (magazine?.Cartridges?.Items == null || magazine.Cartridges.Items.Count() == 0)
+                return;
+                
             if (magazine != null)
             {
                 ReplenishMagazine(magazine, ammo);
