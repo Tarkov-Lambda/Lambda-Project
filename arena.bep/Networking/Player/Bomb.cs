@@ -74,6 +74,8 @@ namespace ifp.arena.bep.networking
 
             if (packet.state == BombState.Planted)
             {
+                //  ..literally pizdec().Invoke().Where((x) => x.jopa == x.pisya).FirstOrDefault();
+
                 H.Arena.LastObjectivePlayerId = packet.playerId;
             }
 
@@ -83,6 +85,8 @@ namespace ifp.arena.bep.networking
                 if (packet.playerId > 0)
                     H.Arena.LastObjectivePlayerId = packet.playerId;
             }
+
+            Singleton<ArenaController>.Instance.SetBombVisuals(packet);
 
             EventBus.OnBombStateChange(packet.state);
         }

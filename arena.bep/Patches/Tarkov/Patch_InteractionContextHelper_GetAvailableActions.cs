@@ -93,9 +93,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             Item[] playerInventory = player.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
 
-            string targetTemplateId = "57347da92459774491567cf5"; // tushonka (large)
-
-            Item resultItem = playerInventory.FirstOrDefault((Item nextItem) => nextItem.TemplateId == targetTemplateId);
+            Item resultItem = playerInventory.FirstOrDefault((Item nextItem) => nextItem.TemplateId == SnDModeRules.bombTemplateId);
 
             return resultItem;
         }

@@ -12,6 +12,7 @@ using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Systems.Effects;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode
@@ -116,6 +117,7 @@ namespace ifp.arena.bep.Core.Gamemode
         private GameObject _tickerObject;
         public GameObject _musicObject;
 
+        private GameObject bombVisuals;
 
         public ArenaController()
         {
@@ -220,6 +222,36 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 _currentState.OnEnter();
                 EventBus.OnEnter?.Invoke(_currentState.StateType);
+            }
+        }
+
+        public void SetBombVisuals(BombStatePacket bombStatePacket)
+        {
+            if (bombVisuals == null)
+            {
+                Singleton<ItemFactoryClass>.Instance.ItemTemplates.TryGetValue(SnDModeRules.bombTemplateId, out ItemTemplate itemTemplate);
+                bombVisuals = Singleton<PoolManagerClass>.Instance.method_2(itemTemplate.Prefab, default);
+            }
+
+            if (bombStatePacket.state == BombState.Planted)
+                bombVisuals.transform.position = bombStatePacket.position;
+
+            switch (bombStatePacket.state)
+            {
+                case BombState.Defusing:
+                case BombState.Defused:
+                case BombState.Planted:
+                    bombVisuals.SetActive(true);
+                    break;
+                default:
+                    bombVisuals.SetActive(false);
+                    break;
+            }
+
+            if (bombStatePacket.state == BombState.Exploded)
+            {
+                Vector3 explosionCenter = bombVisuals.transform.position;
+                Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 3f);
             }
         }
 
@@ -330,7 +362,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 });
             }
 
-            Item tushonka = PresetUtils.CreateItem("57347da92459774491567cf5");
+            Item tushonka = PresetUtils.CreateItem(SnDModeRules.bombTemplateId);
 
             _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(),price = 2 });
 

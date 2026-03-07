@@ -79,6 +79,8 @@ namespace ifp.arena.bep.Core.Gamemode
         public static float platingTime = 4.5f;
         public static float defusingTime = 5f;
 
+        public static string bombTemplateId = "57347da92459774491567cf5";
+
         public override IGameState CreateState(MatchState state) => state switch
         {
             MatchState.None => new SharedNone(),
