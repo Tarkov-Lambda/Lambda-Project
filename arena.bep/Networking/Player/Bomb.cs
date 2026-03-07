@@ -9,6 +9,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
 using System.Linq;
+using UnityEngine;
 
 namespace ifp.arena.bep.networking
 {
@@ -16,12 +17,14 @@ namespace ifp.arena.bep.networking
     {
         public int playerId;
         public BombState state;
+        public Vector3 position;
         public double timestamp;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(playerId);
             writer.Put((int)state);
+            writer.Put(position);
             writer.Put(timestamp);
         }
 
@@ -29,6 +32,7 @@ namespace ifp.arena.bep.networking
         {
             playerId = reader.GetInt();
             state = (BombState)reader.GetInt();
+            position = reader.GetVector3();
             timestamp = reader.GetDouble();
         }
 
@@ -40,15 +44,13 @@ namespace ifp.arena.bep.networking
 
     public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
-        private const float PlantDuration = 7.0f;
-        private const float DefuseDuration = 7.0f;
-
-        public void Send(int playerId, BombState state)
+        public void Send(Player player, BombState state, Vector3 position)
         {
             var packet = new BombStatePacket
             {
-                playerId = playerId,
+                playerId = player.Id,
                 state = state,
+                position = position,
                 timestamp = NetworkTime.ServerNowSeconds
             };
 

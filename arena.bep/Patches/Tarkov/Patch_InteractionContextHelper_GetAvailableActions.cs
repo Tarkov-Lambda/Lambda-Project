@@ -17,6 +17,9 @@ using EFT.InventoryLogic;
 using System.Linq;
 using ifp.arena.bep.Core.Gamemode;
 using Comfort.Common;
+using ifp.arena.bep.networking;
+using UnityEngine;
+using ifp.arena.bep.Core;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
@@ -34,15 +37,13 @@ namespace ifp.arena.bep.Patches.Tarkov
             if (plantZone == null)
                 return true;
 
-            Plugin.Logger.LogInfo("ENTERED BOMBA ZONE");
-
             AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
 
-            Item bomb = FindBombItemInPlayer(owner.Player);
+            Player player = owner.Player;
+
+            Item bomb = FindBombItemInPlayer(player);
             if (bomb == null)
                 return false;
-
-            Plugin.Logger.LogInfo("FOUND BOMBA IN PLAYER INVENTOYR");
 
             float plantingTime = SnDModeRules.platingTime;
 
@@ -53,6 +54,8 @@ namespace ifp.arena.bep.Patches.Tarkov
                 {
                     if (owner.Player.CurrentState is IdleStateClass)
                     {
+                        Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planting, GetBombPlantPosition(player));
+
                         owner.ShowObjectivesPanel("Planting {0:F1}", plantingTime);
                         owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, (bool successful) =>
                         {
@@ -60,12 +63,15 @@ namespace ifp.arena.bep.Patches.Tarkov
                             owner.CloseObjectivesPanel();
                             if (!successful)
                             {
+                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.None, GetBombPlantPosition(player));
                                 return;
                             }
                             owner.Player.InventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Remove(bomb, owner.Player.InventoryController, simulate: true), delegate (IResult discardResult)
                             {
                                 if (discardResult.Succeed)
                                 {
+                                    Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planted, GetBombPlantPosition(player));
+
                                     owner.ClearInteractionState();
                                 }
                             });
@@ -92,6 +98,17 @@ namespace ifp.arena.bep.Patches.Tarkov
             Item resultItem = playerInventory.FirstOrDefault((Item nextItem) => nextItem.TemplateId == targetTemplateId);
 
             return resultItem;
+        }
+
+
+        static Vector3 GetBombPlantPosition(Player player)
+        {
+            if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 1 << 18))
+            {
+                return hit.point;
+            }
+
+            return player.Position;
         }
     }
 }
