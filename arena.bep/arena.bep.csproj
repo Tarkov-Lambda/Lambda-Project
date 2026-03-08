@@ -6,10 +6,12 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);SPT_4_0</DefineConstants>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+    <PackageReference Include="MemoryPack" Version="1.21.4" />
     <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.23.0" PrivateAssets="all" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
@@ -72,12 +74,16 @@
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
-      <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <DependenciesToCopy Include="$(OutputPath)\MemoryPack.Core.dll" />
+      <DependenciesToCopy Include="$(OutputPath)\System.Collections.Immutable.dll" />
+
       <Bundles Include="../bundles/*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy SourceFiles="@(DependenciesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
     <Copy SourceFiles="@(Bundles)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
   </Target>
 </Project>
