@@ -1,22 +1,22 @@
 ﻿using Fika.Core.Main.Components;
+using Fika.Core.Main.Players;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-
 namespace ifp.arena.bep.Patches.Fika
 {
-    internal class Patch_FikaHealthBar_Create : ModulePatch
+    internal class Patch_FikaHealthBar_Awake : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(FikaHealthBar), nameof(FikaHealthBar.Create));
+            return AccessTools.Method(typeof(FikaHealthBar), "CreateHealthBar");
         }
 
         [PatchPrefix]
-        static bool Prefix(ref FikaHealthBar __result)
+        static bool Prefix(FikaHealthBar __instance)
         {
-            __result = null;
+            UnityEngine.Object.Destroy(__instance);
             return false;
         }
     }

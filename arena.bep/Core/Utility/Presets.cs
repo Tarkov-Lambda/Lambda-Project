@@ -1,20 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
-using Cysharp.Threading.Tasks.Triggers;
-using Diz.Resources;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
-using Fika.Core.Networking.Packets.Debug;
 using HarmonyLib;
-using ifp.arena.bep.networking;
-
 
 //
 using SearchableGrid = GClass3117;
 //
-
 
 namespace ifp.arena.bep.Core
 {

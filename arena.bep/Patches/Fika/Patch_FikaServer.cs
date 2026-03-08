@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches.Fika
+namespace ifp.arena.bep.Patches
 {
     internal sealed class Patch_OnCommonPlayerPacketReceived : ModulePatch
     {

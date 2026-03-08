@@ -5,7 +5,7 @@ using ifp.arena.bep.Core;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches.Fika
+namespace ifp.arena.bep.Patches
 {
     public class Patch_ApplyShot : ModulePatch
     {

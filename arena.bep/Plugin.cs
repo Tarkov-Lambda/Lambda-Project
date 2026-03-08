@@ -63,7 +63,7 @@ namespace ifp.arena.bep
             _disposables.Add(instance);
         }
 
-        async void Start()
+        void Start()
         {
             Logger = base.Logger;
             Logger.LogInfo("Load");
@@ -85,6 +85,7 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());
 
             RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
+            RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());

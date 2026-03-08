@@ -30,10 +30,6 @@ namespace ifp.arena.bep.Core
 
             foreach (var slotType in places.slots)
             {
-                // InteractionsHandlerClass.QuickFindAppropriatePlace(slot, item, H.MainPlayer.InventoryController, false);
-
-                // InteractionsHandlerClass.EquipItemInSlot(slot, item, H.MainPlayer.InventoryController, false);
-
                 var slot = H.MainPlayer.Equipment.GetSlot(slotType);
 
                 if (slot.ContainedItem != null)
@@ -42,15 +38,11 @@ namespace ifp.arena.bep.Core
                 }
 
                 slot.AddWithoutRestrictions(item);
-                // InteractionsHandlerClass.EquipItemInSlot(slot, item, H.MainPlayer.InventoryController, false);
-                
-                // var asd = InteractionsHandlerClass.EquipItemInSlot(slot, item, H.MainPlayer.InventoryController, true);
             }
 
-            H.Notify(item.LocalizedName());
+            // H.Notify(item.LocalizedName());
 
             Singleton<SpawnItemPacketHandler>.Instance.Send(item);
-
         }
 
         public static Item CreateItemFromTemplateId(string templateId)
@@ -82,7 +74,6 @@ namespace ifp.arena.bep.Core
 
                 slot.AddWithoutRestrictions(item);
             }
-
 
             // H.Notify(player.Equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem.LocalizedName());
         }

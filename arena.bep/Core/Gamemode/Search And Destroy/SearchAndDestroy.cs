@@ -97,16 +97,6 @@ namespace ifp.arena.bep.Core.Gamemode
             MatchState.MatchEnd => new SharedFinish(),
             _ => null
         };
-
-        public override void DrawTopBar(ArenaController game, Rect bounds, GUIStyle header, GUIStyle scoreBig, GUIStyle timer)
-        {
-            GUI.Label(new Rect(bounds.x, bounds.y, 100, bounds.height - 20), "T", header);
-            GUI.Label(new Rect(bounds.x, bounds.y + 15, 100, bounds.height), H.Arena.session.factionWins.GetValueOrDefault(Faction.T, 0).ToString(), scoreBig);
-            GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y, 100, bounds.height - 20), "CT", header);
-            GUI.Label(new Rect(bounds.x + bounds.width - 100, bounds.y + 15, 100, bounds.height), H.Arena.session.factionWins.GetValueOrDefault(Faction.CT, 0).ToString(), scoreBig);
-            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 50, 5, 100, bounds.height), FormatTime(H.Arena.StateTimer), timer);
-            GUI.Label(new Rect(bounds.x + bounds.width / 2f - 75, 40, 150, 20), H.Arena.session.roundState.ToString().ToUpper(), header);
-        }
     }
 
 }

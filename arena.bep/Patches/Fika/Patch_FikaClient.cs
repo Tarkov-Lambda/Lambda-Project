@@ -8,7 +8,7 @@ using SPT.Reflection.Patching;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches.Fika
+namespace ifp.arena.bep.Patches
 {
     internal class Patch_FikaClient_OnCommonPlayerPacketReceived : ModulePatch
     {

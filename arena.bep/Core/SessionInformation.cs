@@ -88,7 +88,7 @@ namespace ifp.arena.bep.GameTypes
                 }
             }
         }
-//
+
         public void ResetRoundScopeFields()
         {
             if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)

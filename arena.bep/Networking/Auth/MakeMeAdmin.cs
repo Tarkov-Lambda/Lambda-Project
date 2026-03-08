@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Comfort.Common;
 using EFT;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -16,7 +17,8 @@ namespace ifp.arena.bep.networking
     {
         Request,    // Client -> Server
         Challenge,  // Server -> Client
-        Verify      // Client -> Server
+        Verify,     // Client -> Server
+        Success     // Server -> Client (Confirmation)
     }
 
     public struct AdminAuthPacket : INetSerializable
@@ -56,6 +58,12 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
+            if (FikaBackendUtils.IsServer)
+            {
+                H.MainPlayerScore.isAdmin = true;
+                return;
+            }
+
             var packet = new AdminAuthPacket
             {
                 Step = AdminAuthStep.Request,
@@ -70,7 +78,7 @@ namespace ifp.arena.bep.networking
             {
                 case AdminAuthStep.Request:
                     HandleLoginRequest(netPeer);
-                    return false; // Return false to stop "WhenApproved" from firing yet
+                    return true;
 
                 case AdminAuthStep.Verify:
                     return HandleVerification(packet.Payload, netPeer);
@@ -82,10 +90,8 @@ namespace ifp.arena.bep.networking
 
         public override void WhenApproved(AdminAuthPacket packet, NetPeer netPeer)
         {
-            // CASE 1: Client Logic (Received Challenge from Server)
             if (packet.Step == AdminAuthStep.Challenge)
             {
-
                 if (string.IsNullOrEmpty(Plugin.Password.Value)) return;
 
                 string responseHash = ComputeHash(Plugin.Password.Value, packet.Payload);
@@ -101,12 +107,19 @@ namespace ifp.arena.bep.networking
             else if (packet.Step == AdminAuthStep.Verify)
             {
                 MakePeerAdmin(netPeer);
+
+                var successPacket = new AdminAuthPacket { Step = AdminAuthStep.Success };
+                H.FikaNet.SendDataToPeer(ref successPacket, deliveryMethod, netPeer);
+            }
+            else if (packet.Step == AdminAuthStep.Success)
+            {
+                H.MainPlayerScore.isAdmin = true;
             }
         }
 
         public override void WhenRejected(AdminAuthPacket packet, NetPeer netPeer)
         {
-            H.Notify("Rejected");
+            // H.Notify("Rejected");
         }
 
         private void HandleLoginRequest(NetPeer peer)
@@ -124,7 +137,6 @@ namespace ifp.arena.bep.networking
                 Payload = nonce
             };
 
-            // Send only to the specific peer (Server -> Client)
             H.FikaNet.SendDataToPeer(ref challengePacket, deliveryMethod, peer);
         }
 
@@ -152,7 +164,6 @@ namespace ifp.arena.bep.networking
             if (player != null)
             {
                 H.GetPlayerScore(peer.Id).isAdmin = true;
-                H.Notify($"{player.name} logged in as Admin.");
             }
         }
 
