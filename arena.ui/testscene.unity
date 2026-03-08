@@ -659,6 +659,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4035502661642304978, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -27.4
+      objectReference: {fileID: 0}
     - target: {fileID: 4483353885836065445, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
       propertyPath: m_Name
       value: ArenaMatchUI
@@ -1375,10 +1379,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: serializedShader
-      value: 
-      objectReference: {fileID: 4800000, guid: 20ffe76c2439c403aabdd25bd94bf011, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

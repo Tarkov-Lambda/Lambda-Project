@@ -665,7 +665,7 @@ GameObject:
   - component: {fileID: 3954110953651813027}
   - component: {fileID: 1890623899733143769}
   - component: {fileID: 3743921909398671708}
-  - component: {fileID: 5852730771996677832}
+  - component: {fileID: 89375637768895003}
   m_Layer: 5
   m_Name: krug
   m_TagString: Untagged
@@ -689,7 +689,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 317.01, y: -35.85}
+  m_AnchoredPosition: {x: 317.01, y: -25.3}
   m_SizeDelta: {x: 366.536, y: 374.112}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3954110953651813027
@@ -750,7 +750,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &5852730771996677832
+--- !u!114 &89375637768895003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -763,21 +763,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serializedShader: {fileID: 4800000, guid: e1b48dc831eb147e9886c049033213bf, type: 3}
-  m_EffectFactor: 0.491
-  m_Width: 0.53
-  m_Softness: 1
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
-  m_ColorMode: 1
-  m_TransitionTexture: {fileID: 2800000, guid: 2c43de10b0f97fb4ebcdf6bb5ca24efa, type: 3}
+  m_EffectFactor: 0.649
+  m_Width: 0.5
+  m_Softness: 0.5
+  m_Color: {r: 0, g: 0.25, b: 1, a: 1}
+  m_ColorMode: 2
+  m_TransitionTexture: {fileID: 2800000, guid: 3e04c247fb2604af186173fce0bc62de, type: 3}
   m_EffectArea: 0
   m_KeepAspectRatio: 0
-  m_Player:
-    play: 0
-    initialPlayDelay: 0
-    duration: 1
-    loop: 0
-    loopDelay: 0
-    updateMode: 0
   m_Reverse: 0
 --- !u!1 &7772582500807413334
 GameObject:
@@ -838,7 +831,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: b62413a599d9d854999944319c19b986, type: 2}
-  m_Color: {r: 1, g: 0, b: 0.021260738, a: 1}
+  m_Color: {r: 0.4037736, g: 0.3249317, b: 0.26131007, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

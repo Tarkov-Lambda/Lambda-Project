@@ -55,10 +55,6 @@ namespace Coffee.UIEffects
         [Tooltip("Disable the graphic's raycast target on hidden.")] [SerializeField]
         bool m_PassRayOnHidden;
 
-        [Header("Effect Player")] [SerializeField]
-        EffectPlayer m_Player;
-
-
         /// <summary>
         /// Effect factor between 0(no effect) and 1(complete effect).
         /// </summary>
@@ -192,30 +188,6 @@ namespace Coffee.UIEffects
             set { m_PassRayOnHidden = value; }
         }
 
-        public EffectPlayer effectPlayer
-        {
-            get { return m_Player ?? (m_Player = new EffectPlayer()); }
-        }
-
-        /// <summary>
-        /// Show transition.
-        /// </summary>
-        public void Show(bool reset = true)
-        {
-            effectPlayer.loop = false;
-            effectPlayer.Play(reset, f => effectFactor = f);
-        }
-
-        /// <summary>
-        /// Hide transition.
-        /// </summary>
-        public void Hide(bool reset = true)
-        {
-            effectPlayer.loop = false;
-            effectPlayer.Play(reset, f => effectFactor = 1 - f);
-        }
-
-
         public override Hash128 GetMaterialHash(Material material)
         {
             if (!isActiveAndEnabled || !material || !material.shader)
@@ -274,25 +246,6 @@ namespace Coffee.UIEffects
                 );
                 vh.SetUIVertex(vertex, i);
             }
-        }
-
-        /// <summary>
-        /// This function is called when the object becomes enabled and active.
-        /// </summary>
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            effectPlayer.OnEnable(null);
-            effectPlayer.loop = false;
-        }
-
-        /// <summary>
-        /// This function is called when the behaviour becomes disabled () or inactive.
-        /// </summary>
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            effectPlayer.OnDisable();
         }
 
         protected override void SetEffectParamsDirty()

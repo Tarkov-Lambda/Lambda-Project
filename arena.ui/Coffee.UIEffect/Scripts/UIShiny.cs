@@ -40,8 +40,6 @@ namespace Coffee.UIEffects
         [Header("Advanced Option")] [Tooltip("The area for effect.")] [SerializeField]
         protected EffectArea m_EffectArea;
 
-        [SerializeField] EffectPlayer m_Player;
-
         /// <summary>
         /// Effect factor between 0(start) and 1(end).
         /// </summary>
@@ -153,30 +151,6 @@ namespace Coffee.UIEffects
             get { return s_ParamTex; }
         }
 
-        public EffectPlayer effectPlayer
-        {
-            get { return m_Player ?? (m_Player = new EffectPlayer()); }
-        }
-
-        /// <summary>
-        /// This function is called when the object becomes enabled and active.
-        /// </summary>
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            effectPlayer.OnEnable(f => effectFactor = f);
-        }
-
-        /// <summary>
-        /// This function is called when the behaviour becomes disabled () or inactive.
-        /// </summary>
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            effectPlayer.OnDisable();
-        }
-
-
         public override Hash128 GetMaterialHash(Material material)
         {
             if (!isActiveAndEnabled || !material || !material.shader)
@@ -231,22 +205,6 @@ namespace Coffee.UIEffects
 
                 vh.SetUIVertex(vertex, i);
             }
-        }
-
-        /// <summary>
-        /// Play effect.
-        /// </summary>
-        public void Play(bool reset = true)
-        {
-            effectPlayer.Play(reset);
-        }
-
-        /// <summary>
-        /// Stop effect.
-        /// </summary>
-        public void Stop(bool reset = true)
-        {
-            effectPlayer.Stop(reset);
         }
 
         protected override void SetEffectParamsDirty()

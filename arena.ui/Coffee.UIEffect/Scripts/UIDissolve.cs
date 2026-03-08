@@ -52,9 +52,6 @@ namespace Coffee.UIEffects
         [Tooltip("Keep effect aspect ratio.")] [SerializeField]
         bool m_KeepAspectRatio;
 
-        [Header("Effect Player")] [SerializeField]
-        EffectPlayer m_Player;
-
         [Tooltip("Reverse the dissolve effect.")] [FormerlySerializedAs("m_ReverseAnimation")] [SerializeField]
         bool m_Reverse = false;
 
@@ -196,11 +193,6 @@ namespace Coffee.UIEffects
             get { return s_ParamTex; }
         }
 
-        public EffectPlayer effectPlayer
-        {
-            get { return m_Player ?? (m_Player = new EffectPlayer()); }
-        }
-
         public override Hash128 GetMaterialHash(Material material)
         {
             if (!isActiveAndEnabled || !material || !material.shader)
@@ -288,32 +280,5 @@ namespace Coffee.UIEffects
                 SetVerticesDirty();
         }
 
-        /// <summary>
-        /// Play effect.
-        /// </summary>
-        public void Play(bool reset = true)
-        {
-            effectPlayer.Play(reset);
-        }
-
-        /// <summary>
-        /// Stop effect.
-        /// </summary>
-        public void Stop(bool reset = true)
-        {
-            effectPlayer.Stop(reset);
-        }
-
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            effectPlayer.OnEnable((f) => effectFactor = m_Reverse ? 1f - f : f);
-        }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-            effectPlayer.OnDisable();
-        }
     }
 }
