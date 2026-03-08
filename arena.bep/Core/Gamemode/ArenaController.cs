@@ -260,6 +260,17 @@ namespace ifp.arena.bep.Core.Gamemode
             }
         }
 
+        public void Award(Faction w, RoundWinReason reason)
+        {
+            if (!H.Session.factionWins.ContainsKey(w))
+                H.Session.factionWins[w] = 0;
+            H.Session.factionWins[w]++;
+
+            int mvpId = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
+
+            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, winner = w, roundWinReason = reason };
+        }
+
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
@@ -366,7 +377,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 });
             }
 
-            Item tushonka = PresetUtils.CreateItem(SnDModeRules.bombTemplateId);
+            Item tushonka = PresetUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
 
             _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(), price = 2 });
 
@@ -421,7 +432,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
                     if (GUI.Button(new Rect(0, y, innerWidth, 26f), label))
                     {
-                        PresetUtils.SpawnItem(entry.item);
+                        Purchasing.BuyItem(entry.item);
                     }
 
                     GUI.enabled = prevEnabled;

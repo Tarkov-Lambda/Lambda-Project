@@ -39,13 +39,13 @@ namespace ifp.arena.bep.Core.Gamemode
                     price = 800;
                     break;
                 case AssaultRifleItemClass:
-                    price = 3000;
+                    price = 800;
                     break;
                 case MarksmanRifleItemClass:
                     price = 2500;
                     break;
                 case SniperRifleItemClass:
-                    price = 3000;
+                    price = 800;
                     break;
             }
             return price;
@@ -58,7 +58,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public static void BuyItem(Item item)
         {
-            PresetUtils.SpawnItem(item);
+            PresetUtils.GiveItem(item, H.MainPlayer);
             H.MainPlayerScore.money -= GetItemPrice(item);
         }
     }

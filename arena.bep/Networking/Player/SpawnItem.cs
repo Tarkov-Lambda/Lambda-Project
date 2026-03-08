@@ -171,8 +171,6 @@ namespace ifp.arena.bep.networking
 
             if (prefabsToLoad.Count > 0)
             {
-                // Plugin.Logger.LogInfo($"Loading {prefabsToLoad.Count} bundles for {rootItem.Name.Localized()}...");
-
                 await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(
                     PoolManagerClass.PoolsCategory.Raid,
                     PoolManagerClass.AssemblyType.Local, // Standard for local generation
@@ -183,9 +181,9 @@ namespace ifp.arena.bep.networking
                 );
             }
 
-            // H.Log($"Bundles loaded successfully! Processing spawn for Player ID: {playerId}");
+            H.Notify(rootItem.LocalizedName());
 
-            PresetUtils.GiveItem(rootItem, H.GetPlayer(playerId));
+            PresetUtils.SyncGiveItem(rootItem, H.GetPlayer(playerId));
         }
     }
 }

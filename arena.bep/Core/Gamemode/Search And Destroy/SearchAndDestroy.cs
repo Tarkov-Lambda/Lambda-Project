@@ -1,5 +1,7 @@
-﻿using Fika.Core.Main.Utils;
+﻿using Comfort.Common;
+using Fika.Core.Main.Utils;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.networking;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
@@ -17,9 +19,9 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (!FikaBackendUtils.IsServer) return null;
             Faction? winner = CheckWipe();
-            if (winner.HasValue) { Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
+            if (winner.HasValue) { H.Arena.Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
             if (H.Session.bombState == BombState.Planted) return MatchState.RoundPlanted;
-            if (H.Arena.StateTimer <= 0) { Award(Faction.CT, RoundWinReason.Timeout); return MatchState.RoundEnd; }
+            if (H.Arena.StateTimer <= 0) { H.Arena.Award(Faction.CT, RoundWinReason.Timeout); return MatchState.RoundEnd; }
             return null;
         }
         public void OnExit() { }
@@ -31,18 +33,6 @@ namespace ifp.arena.bep.Core.Gamemode
             foreach (var f in factions) if (!alive.ContainsKey(f) || alive[f] == 0) return factions.FirstOrDefault(o => o != f);
             return null;
         }
-
-        private void Award(Faction w, RoundWinReason reason)
-        {
-            if (!H.Session.factionWins.ContainsKey(w))
-                H.Session.factionWins[w] = 0;
-            H.Session.factionWins[w]++;
-
-            int mvpId = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
-
-
-            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, winner = w, roundWinReason = reason };
-        }
     }
 
     public class SnDPlanted : IGameState
@@ -52,23 +42,33 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
-            if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT)) { AwardExploded(Faction.T); return MatchState.RoundEnd; }
-            if (H.Arena.StateTimer <= 0) { AwardExploded(Faction.T); return MatchState.RoundEnd; }
+
+            // If all CT are dead before timer runs out
+            if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))
+            {
+                H.Arena.Award(Faction.T, RoundWinReason.Elimination);
+                return MatchState.RoundEnd;
+            }
+
+            if (H.Session.bombState == BombState.Defused)
+            {
+                H.Arena.Award(Faction.CT, RoundWinReason.Objective);
+                return MatchState.RoundEnd;
+            }
+
+            if (H.Arena.StateTimer <= 0)
+            {
+                H.Arena.Award(Faction.T, RoundWinReason.Objective);
+                Vector3 ASD = new Vector3(0f,0f,0f);
+                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Exploded, ASD);
+                return MatchState.RoundEnd;
+            }
+
             return null;
         }
-        public void OnExit() { }
-
-        private void AwardExploded(Faction w)
+        public void OnExit()
         {
-            if (!H.Session.factionWins.ContainsKey(w))
-                H.Session.factionWins[w] = 0;
-            H.Session.factionWins[w]++;
 
-            int mvpId = MvpCalculator.CalculateRoundMvp(w, RoundWinReason.Objective, BombState.Exploded, H.Arena.LastObjectivePlayerId);
-            if (mvpId > 0 && H.Scoreboard.TryGetValue(mvpId, out var ps) && ps != null)
-                ps.mvps++;
-
-            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, winner = w, roundWinReason = RoundWinReason.Objective };
         }
     }
 
@@ -79,7 +79,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public static float platingTime = 4.5f;
         public static float defusingTime = 5f;
 
-        public static string bombTemplateId = "57347da92459774491567cf5";
+        public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
 
         public override IGameState CreateState(MatchState state) => state switch
         {

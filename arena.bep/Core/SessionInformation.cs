@@ -62,7 +62,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
-            {MatchState.RoundPlanted, 45},
+            {MatchState.RoundPlanted, 5},
             {MatchState.SideSwap, 10},
             {MatchState.MatchEnd, 15}
         };
@@ -88,7 +88,7 @@ namespace ifp.arena.bep.GameTypes
                 }
             }
         }
-
+//
         public void ResetRoundScopeFields()
         {
             if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
@@ -107,6 +107,8 @@ namespace ifp.arena.bep.GameTypes
         public bool IsControllerPartiallyLocked()
         {
             if (H.GameWorld is HideoutGameWorld) return false;
+            return false;
+
             if (roundState == MatchState.RoundPrepare || roundState == MatchState.Pause) return true;
             if (!H.MainPlayerScore.isAlive) return true;
 

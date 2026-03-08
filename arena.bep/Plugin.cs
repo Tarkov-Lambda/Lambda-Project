@@ -67,7 +67,7 @@ namespace ifp.arena.bep
             Logger.LogInfo("Load");
             InitConfiguration();
 
-            // PATCHES
+            // TARKOV
             RegisterPatch(new Patch_Gameworld_OnGameStarted());
             RegisterPatch(new Patch_Gameworld_OnDispose());
 
@@ -77,17 +77,21 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_CanJump());
             // RegisterPatch(new Patch_CanPressTrigger());
             RegisterPatch(new Patch_ApplyShot());
+
             RegisterPatch(new Patch_ApplyDamage());
 
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());
 
-            RegisterPatch(new Patch_method_10());
+            RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());
 
             RegisterPacket<AssetBundleHandler>();
             RegisterPacket<RagdollCreator>();
+
+            // FIKA
+            RegisterPatch(new Patch_FikaClient_OnCommonPlayerPacketReceived());
 
             // NETWORK
             RegisterPacket<PlayerKilledPacketHandler>();

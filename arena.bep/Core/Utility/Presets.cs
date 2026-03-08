@@ -1,20 +1,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
+using Cysharp.Threading.Tasks.Triggers;
 using Diz.Resources;
 using EFT;
 using EFT.InventoryLogic;
+using EFT.UI;
 using Fika.Core.Networking.Packets.Debug;
 using HarmonyLib;
 using ifp.arena.bep.networking;
+
+
+//
+using SearchableGrid = GClass3117;
+//
+
 
 namespace ifp.arena.bep.Core
 {
     public static class PresetUtils
     {
         public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
-        // public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
-
 
         public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
         public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
@@ -23,33 +29,21 @@ namespace ifp.arena.bep.Core
         public static IEnumerable<WeaponBuildClass> Templates => WeaponBuilds.Dictionary_0.Values;
         public static InventoryEquipment Preset => GetDefaultPreset();
 
-        public static void SpawnItem(Item item)
+        public static void GiveItem(Item templateItem, Player player)
         {
-            // var presetGun = GetCustomTemplate(item);
+            var item = CloneItem(templateItem);
+            if (item == null) return;
 
-            Singleton<SpawnItemPacketHandler>.Instance.Send(item);
+            var places = GetAppropriateSlot(item, H.MainPlayer);
 
-            // var slot = H.MainPlayer.Equipment.GetSlot(slotType);
-            // if (slot.ContainedItem != null)
-            // {
-            //     slot.RemoveItemWithoutRestrictions();
-            // }
-
-            // slot.AddWithoutRestrictions(newItem);
-        }
-
-        public static void RemovePlates(Player player)
-        {
-            
-        }
-
-
-        public static void GiveItem(Item item, Player player)
-        {
-            var slotTypes = GetAppropriateSlot(item, player);
-            foreach (var slotType in slotTypes)
+            if (places.itemAddress != null)
             {
-                var slot = player.Equipment.GetSlot(slotType);
+                places.itemAddress.AddWithoutRestrictions(item);
+            }
+
+            foreach (var slotType in places.slots)
+            {
+                var slot = H.MainPlayer.Equipment.GetSlot(slotType);
                 if (slot.ContainedItem != null)
                 {
                     slot.RemoveItemWithoutRestrictions();
@@ -58,34 +52,95 @@ namespace ifp.arena.bep.Core
                 slot.AddWithoutRestrictions(item);
             }
 
+            H.Notify(item.LocalizedName());
+
+            Singleton<SpawnItemPacketHandler>.Instance.Send(item);
         }
 
-        public static EquipmentSlot[] GetAppropriateSlot(Item item, Player player)
+        public static Item CreateItemFromTemplateId(string templateId)
         {
-            EquipmentSlot[] slots = [];
-            if (item is Weapon)
+            return ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+        }
+
+        public static Item CloneItem(Item templateItem)
+        {
+            return GClass3380.CloneItem(templateItem);
+        }
+
+        public static void SyncGiveItem(Item item, Player player)
+        {
+            var places = GetAppropriateSlot(item, player);
+
+            if (places.itemAddress != null)
             {
-                if (item is PistolItemClass)
+                places.itemAddress.AddWithoutRestrictions(item);
+            }
+
+            foreach (var slotType in places.slots)
+            {
+                var slot = player.PlayerBody.Equipment.GetSlot(slotType);
+                if (slot.ContainedItem != null)
                 {
-                    slots.AddItem(EquipmentSlot.Holster);
+                    slot.RemoveItemWithoutRestrictions();
                 }
-                else
-                {
-                    slots.AddItem(EquipmentSlot.FirstPrimaryWeapon);
-                }
+
+                slot.AddWithoutRestrictions(item);
+            }
+
+
+            // H.Notify(player.Equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem.LocalizedName());
+        }
+
+        // refactor-later core
+        public struct Places
+        {
+            public List<EquipmentSlot> slots;
+            public ItemAddress itemAddress;
+        }
+
+        public static Places GetAppropriateSlot(Item item, Player player)
+        {
+            Places places = new Places
+            {
+                slots = new List<EquipmentSlot>()
+            };
+
+            if (item is PistolItemClass)
+            {
+                places.slots.Add(EquipmentSlot.Holster);
+            }
+            else if (item is AssaultRifleItemClass or MarksmanRifleItemClass or SmgItemClass)
+            {
+                places.slots.Add(EquipmentSlot.FirstPrimaryWeapon);
+            }
+            else if (item is BackpackItemClass)
+            {
+                places.slots.Add(EquipmentSlot.Backpack);
             }
             else if (item is ArmorPlateItemClass)
             {
                 CompoundItem armor = GetPlateHolder(player);
             }
-            else if (item is MagazineItemClass)
+            else if (item is FoodItemClass)
             {
+                var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
 
+                if (vest != null)
+                {
+                    foreach (var container in vest.Containers)
+                    {
+                        if (container is SearchableGrid &&
+                            container.TryFindLocationForItem(item, out ItemAddress location))
+                        {
+                            places.itemAddress = location;
+                            break;
+                        }
+                    }
+                }
             }
 
-            return slots;
+            return places;
         }
-
         public static CompoundItem GetPlateHolder(Player player)
         {
 
@@ -104,9 +159,6 @@ namespace ifp.arena.bep.Core
             return null;
         }
 
-        /// <summary>
-        /// spawn and equip a specific player (we have to know the template id first)
-        /// </summary>
         public static void SpawnAndEquip(Player player, string templateId, EquipmentSlot slotType)
         {
             if (TryCreateItem(templateId, out Item item))
@@ -130,7 +182,6 @@ namespace ifp.arena.bep.Core
                     return equipmentTemplate.Equipment;
                 }
             }
-            
 
             return null;
         }
@@ -144,6 +195,7 @@ namespace ifp.arena.bep.Core
             });
         }
 
+        // This shit needs to get the fuck outta here
         public static bool CanEnterRaid(out string[] reasons)
         {
             reasons = [];
@@ -169,19 +221,10 @@ namespace ifp.arena.bep.Core
             return true;
         }
 
-
         public static bool TryCreateItem(string templateId, out Item newItem)
         {
-            newItem = null;
-
             newItem = ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
             return newItem != null;
-        }
-
-        public static Item CreateItem(string templateId)
-        {
-            TryCreateItem(templateId, out Item newItem);
-            return newItem;
         }
     }
 }

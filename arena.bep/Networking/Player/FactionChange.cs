@@ -49,7 +49,10 @@ namespace ifp.arena.bep.networking
 
         public override void WhenApproved(FactionChangePacket packet, NetPeer peer)
         {
-            H.Scoreboard[packet.id].faction = packet.faction;
+            if (H.Scoreboard[packet.id] != null)
+            {
+                H.Scoreboard[packet.id].faction = packet.faction;
+            }
         }
     }
 }
