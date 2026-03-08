@@ -128,7 +128,7 @@ namespace ifp.arena.bep.networking
             var packet = new SpawnItemPacket
             {
                 playerId = H.MainPlayer.Id,
-                flatItems = PresetUtils.ItemFactory.TreeToFlatItems(item)
+                flatItems = ItemsUtils.ItemFactory.TreeToFlatItems(item)
             };
 
             RequestSend(packet);
@@ -139,7 +139,7 @@ namespace ifp.arena.bep.networking
         {
             if (packet.flatItems == null || packet.flatItems.Length == 0) return;
 
-            var itemStruct = PresetUtils.ItemFactory.FlatItemsToTree(packet.flatItems);
+            var itemStruct = ItemsUtils.ItemFactory.FlatItemsToTree(packet.flatItems);
             Item rootItem = null;
 
             foreach (var flatItem in packet.flatItems)
@@ -183,7 +183,7 @@ namespace ifp.arena.bep.networking
 
             H.Notify(rootItem.LocalizedName());
 
-            PresetUtils.SyncGiveItem(rootItem, H.GetPlayer(playerId));
+            ItemsUtils.SyncGiveItem(rootItem, H.GetPlayer(playerId));
         }
     }
 }

@@ -59,8 +59,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (H.Arena.StateTimer <= 0)
             {
                 H.Arena.Award(Faction.T, RoundWinReason.Objective);
-                Vector3 ASD = new Vector3(0f,0f,0f);
-                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Exploded, ASD);
+                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Exploded, Vector3.zero);
                 return MatchState.RoundEnd;
             }
 

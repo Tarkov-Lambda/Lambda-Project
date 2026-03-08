@@ -91,10 +91,10 @@ namespace ifp.arena.bep.Core.Economy
             AddMoney(killerScore, reward);
         }
 
-        private int GetWeaponReward(Weapon weapon)
+        private int GetWeaponReward(Item weapon)
         {
             if (weapon is KnifeItemClass) return 1500;
-            if (weapon is SniperRifleItemClass) return 100; // Snipers (approx)
+            if (weapon is SniperRifleItemClass) return 100; // For TRG
             if (weapon is ShotgunItemClass) return 900;
             if (weapon is SmgItemClass) return 600; // SMGs
 

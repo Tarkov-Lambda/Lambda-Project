@@ -177,12 +177,10 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (session == null || _currentState == null) return;
 
-            // Unified Timer Logic (Works for both Server and Client)
             // On Server: Start + Duration - Now ~= Duration (since Start is Now)
             // On Client: Start + Duration - Now = Remaining Time accurately synced
             StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
-            // Only Server runs the logic loop
             if (FikaBackendUtils.IsServer)
             {
                 MatchState? nextState = _currentState.OnUpdate();
@@ -193,6 +191,7 @@ namespace ifp.arena.bep.Core.Gamemode
             }
         }
 
+        // Server sends this
         public void ChangeState(MatchState newStateType)
         {
             RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
@@ -201,6 +200,7 @@ namespace ifp.arena.bep.Core.Gamemode
             Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Session.StateTimerConfig[newStateType], roundEndData);
         }
 
+        // Everyone runs this when the match state packet is approved
         public void TransitionToState(MatchStateSyncPacket packet)
         {
             if (_currentState != null)
@@ -377,7 +377,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 });
             }
 
-            Item tushonka = PresetUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+            Item tushonka = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
 
             _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(), price = 2 });
 

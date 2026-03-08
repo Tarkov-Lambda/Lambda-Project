@@ -5,6 +5,7 @@ using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using SPT.Reflection.Patching;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Fika
@@ -21,7 +22,6 @@ namespace ifp.arena.bep.Patches.Fika
         static bool Prefix(CoopHandler ____coopHandler, CommonPlayerPacket packet)
         {
             if (!Plugin.Active.Value) return true;
-            H.Log(packet.Type.ToString());
 
             // if (____coopHandler.Players.TryGetValue(packet.NetId, out var playerToApply))
             // {
