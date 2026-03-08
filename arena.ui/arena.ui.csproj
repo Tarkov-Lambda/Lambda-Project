@@ -5,7 +5,7 @@
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-    <DefineConstants>$(DefineConstants);SPT_4_0</DefineConstants>
+    <DefineConstants>$(DefineConstants);EFT_RUNTIME</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,59 +14,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll">
       <Private>False</Private>
     </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\core\BepInEx.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.Unity.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Newtonsoft.Json.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="$(SPTPath)\BepInEx\plugins\int\*.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="..\deps\*.dll">
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Unity.TextMeshPro.dll">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      <!-- <FilesToCopy Include="$(OutputPath)\*.dll" /> -->
-      <Deps Include=".\deps\*.dll" />
-      <App Include=".\app\*" />
-      <OneJSBundle Include="..\bundles\onejs" />
+      <FilesToCopy Include="$(OutputPath)\*.dll" />
     </ItemGroup>
 
-    <!-- <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
-    <Copy SourceFiles="@(Deps)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
-    <Copy SourceFiles="@(App)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\ui" />
-
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
 </Project>

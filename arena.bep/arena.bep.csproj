@@ -55,9 +55,6 @@
     <Reference Include="..\deps\*.dll">
       <Private>False</Private>
     </Reference>
-    <Reference Include="..\arena.ui\deps\*.dll">
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
