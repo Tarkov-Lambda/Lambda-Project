@@ -9,5 +9,8 @@ namespace arena.ui
     {
         [SerializeField] private TMP_Text textTimer;
         [SerializeField] private RectTransform containerCategories;
+
+        [SerializeField] private ShopCategory prefabShopCategory;
+        [SerializeField] private ShopItem prefabShopItem;
     }
 }
