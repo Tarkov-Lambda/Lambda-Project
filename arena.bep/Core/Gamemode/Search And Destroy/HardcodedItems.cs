@@ -25,7 +25,7 @@ namespace ifp.arena.bep.Core.Economy
                     },
                     new ShopItem
                     {
-                        bsgId = "5b40e1525acfc4771e1c6611", // Helmet
+                        bsgId = "5b40e1525acfc4771e1c6611", // Helmet - ULACH
                         price = 350
                     },
                     new ShopItem
@@ -78,7 +78,7 @@ namespace ifp.arena.bep.Core.Economy
                     {
                         bsgId = "633ec6ee025b096d320a3b15", // RSH12B
                         ammoId = "5cadf6eeae921500134b2799", // PS12B
-                        price = 400,
+                        price = 500,
                     },
                     new ShopItem
                     {
@@ -88,17 +88,10 @@ namespace ifp.arena.bep.Core.Economy
                     },
                 ]
             });
-
             buyCategories.Add(new BuyCategory
             {
                 name = "Mid-Tier",
                 items = [
-                    new ShopItem
-                    {
-                        bsgId = "5926bb2186f7744b1c6c6e60", // MP5
-                        ammoId = "5c925fa22e221601da359b7b", // AP 6.3
-                        price = 1500,
-                    },
                     new ShopItem
                     {
                         bsgId = "5fc3e272f8b6a877a729eac5", // UMP
@@ -107,31 +100,125 @@ namespace ifp.arena.bep.Core.Economy
                     },
                     new ShopItem
                     {
+                        bsgId = "5926bb2186f7744b1c6c6e60", // MP5
+                        ammoId = "5c925fa22e221601da359b7b", // AP 6.3
+                        price = 1200,
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "628a60ae6b1d481ff772e9c8", // RD-704
+                        ammoId = "5656d7c34bdc2d9d198b4587", // PS
+                        price = 1500,
+                        faction = Faction.T
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "5c488a752e221602b412af63", // MDR
+                        ammoId = "5c488a752e221602b412af63", // SOST
+                        price = 1500,
+                        faction = Faction.CT
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "5e00903ae9dc277128008b87", // MP9
+                        ammoId = "5c925fa22e221601da359b7b", // SOST
+                        price = 1700,
+                    },
+                    new ShopItem
+                    {
                         bsgId = "57c44b372459772d2b39b8ce", // AS VAL
-                        ammoId = ,
-                        price = 200,
+                        ammoId = "57a0dfb82459774d3078b56c", // SP-5
+                        price = 1800,
+                    },
+                ]
+            });
+            buyCategories.Add(new BuyCategory
+            {
+                name = "Rifles",
+                items = [
+                    new ShopItem
+                    {
+                        bsgId = "5a367e5dc4a282000e49738f", // RSASS
+                        ammoId = "5e023e53d4353e3302577c4c", // BCP
+                        price = 1800,
+                        faction = Faction.T
                     },
                     new ShopItem
                     {
-                        bsgId = ,
-                        ammoId = ,
-                        price = 200,
+                        bsgId = "5a367e5dc4a282000e49738f", // SR-25
+                        ammoId = "5e023e53d4353e3302577c4c", // BCP
+                        price = 2050,
+                        faction = Faction.CT
                     },
                     new ShopItem
                     {
-                        bsgId = ,
-                        ammoId = ,
-                        price = 200,
+                        bsgId = "6499849fc93611967b034949", // AK-12
+                        ammoId = "61962b617c6c7b169525f168", // 7N40
+                        price = 2700,
+                        faction =  Faction.T
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "5447a9cd4bdc2dbd208b4567", // M4A1
+                        ammoId = "657024ecc5d7d4cb4d07856d", // M856A1
+                        price = 3100,
+                        faction =  Faction.CT
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "5b0bbe4e5acfc40dc528a72d", // SA58
+                        ammoId = "5e023e53d4353e3302577c4c", // M80
+                        price = 3000,
+                        faction = Faction.T
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "606587252535c57a13424cfd", // Mutant
+                        ammoId = "59e0d99486f7744a32234762", // BP
+                        price = 3300,
+                        faction = Faction.CT
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "65290f395ae2ae97b80fdf2d", // SPEAR
+                        ammoId = "6529243824cbe3c74a05e5c1", // Hybrid
+                        price = 4000,
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "673cab3e03c6a20581028bc1", // TRG
+                        ammoId = "6489848173c462723909a14b", // AP
+                        price = 4750,
                     }
                 ]
             });
             buyCategories.Add(new BuyCategory
             {
-
-            });
-            buyCategories.Add(new BuyCategory
-            {
-
+                name = "Utility",
+                items = [
+                    new ShopItem
+                    {
+                        bsgId = "619256e5f8af2c1a4e1f5d92", // Flashbang
+                        price = 200,
+                        maxQuantity = 2,
+                        maxBuy = 2
+                        // faction = Faction.CT
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "617aa4dd8166f034d57de9c5", // Smoke
+                        price = 300,
+                        maxQuantity = 3,
+                        maxBuy = 1
+                    },
+                    new ShopItem
+                    {
+                        bsgId = "66dae7cbeb28f0f96809f325", // V40
+                        price = 300,
+                        maxQuantity = 2,
+                        maxBuy = 1
+                    },
+                ]
             });
         }
     }
@@ -150,5 +237,7 @@ namespace ifp.arena.bep.Core.Economy
         public string ammoId;
         public int price;
         public Faction faction; // Only shown for this faction
+        public int maxQuantity; // Maximum amount on person (Grenades)
+        public int maxBuy; // Maximum round buy amount (Grenades)
     }
 }
