@@ -75,7 +75,7 @@ namespace ifp.arena.bep.Core
         }
 
         // FIKA DOES NOT SYNC DURABILITY REPAIRS
-        // Though I think it does sync equipment changes from client automatically
+        // Though I think it does sync equipment changes from client automatically (player still has to manually invoke RaiseEvents)
         public static void Replenish(Player player, bool shouldReloadGun = true)
         {
             Slot tacticalVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
@@ -98,7 +98,6 @@ namespace ifp.arena.bep.Core
                 }
             }
         }
-
         
         public static void ReplenishVestMagazines(Slot vest, Weapon weapon)
         {

@@ -20,7 +20,7 @@ namespace ifp.arena.bep.Core.Economy
                 items = [
                     new ShopItem
                     {
-                        bsgId = "656fa8d700d62bcd2e024084", // Kevlar - Locust Tier 5
+                        bsgId = "655746010177119f4a097ff7", // Kevlar - SAPI level 3+ Ceramic
                         price = 650
                     },
                     new ShopItem
@@ -30,7 +30,7 @@ namespace ifp.arena.bep.Core.Economy
                     },
                     new ShopItem
                     {
-                        bsgId = "544fb5454bdc2df8738b456a", // Defuse Kit
+                        bsgId = "544fb5454bdc2df8738b456a", // Defuse Kit - Multitool
                         price = 400,
                         faction = Faction.CT
                     },
@@ -121,7 +121,7 @@ namespace ifp.arena.bep.Core.Economy
                     new ShopItem
                     {
                         bsgId = "5e00903ae9dc277128008b87", // MP9
-                        ammoId = "5c925fa22e221601da359b7b", // SOST
+                        ammoId = "5c925fa22e221601da359b7b", // AP 6.3
                         price = 1700,
                     },
                     new ShopItem
@@ -181,7 +181,7 @@ namespace ifp.arena.bep.Core.Economy
                     new ShopItem
                     {
                         bsgId = "65290f395ae2ae97b80fdf2d", // SPEAR
-                        ammoId = "6529243824cbe3c74a05e5c1", // Hybrid
+                        ammoId = "6529302b8c26af6326029fb7", // SIG FMJ
                         price = 4000,
                     },
                     new ShopItem

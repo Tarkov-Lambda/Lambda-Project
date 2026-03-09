@@ -19,7 +19,6 @@ namespace ifp.arena.bep.GameTypes
         Warmup,
         WarmupEnd,
 
-
         // Shared
         Pause, // Can only be invoked when in RoundPrepare
         RoundPrepare,
@@ -42,7 +41,7 @@ namespace ifp.arena.bep.GameTypes
         public BombState bombState = BombState.None;
 
         public GameModes currentGameMode = GameModes.SND;
-        public string mapName = "gold_dust2";
+        public string mapName = "a";
 
         public int mvpId;
 
@@ -51,7 +50,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.None, 0},
             {MatchState.Warmup, 1},
             {MatchState.WarmupEnd, 1},
-            {MatchState.Pause, 1},
+            {MatchState.Pause, 45},
             {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},

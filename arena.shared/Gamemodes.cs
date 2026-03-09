@@ -11,9 +11,8 @@ namespace ifp.arena.shared
 
     public enum Faction
     {
-        CT,
-        T,
         None, // FFA
-        Lobby
+        CT,
+        T
     }
 }

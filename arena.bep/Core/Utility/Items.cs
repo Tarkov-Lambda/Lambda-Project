@@ -58,6 +58,7 @@ namespace ifp.arena.bep.Core
             if (places.itemAddress != null)
             {
                 places.itemAddress.AddWithoutRestrictions(item);
+                RefreshItemInventory(item, player, places.itemAddress);
             }
 
             foreach (var slotType in places.slots)
@@ -68,9 +69,19 @@ namespace ifp.arena.bep.Core
                     slot.RemoveItemWithoutRestrictions();
                 }
                 slot.AddWithoutRestrictions(item);
-            }
 
-            // H.Notify(player.Equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem.LocalizedName());
+                var address = player.Equipment.GetSlot(slotType).CreateItemAddress();
+                RefreshItemInventory(item, player, address);
+            }
+        }
+
+        // When we add without restrictions, the player body model will not update by default
+        // requiring the player to invoke RaiseEvents by swapping a weapon for example
+        // here, we bypass that and directly call our own raise event
+        public static void RefreshItemInventory(Item item, Player player, ItemAddress itemAddress)
+        {
+            GEventArgs2 refreshArg = new GEventArgs2(item, itemAddress, CommandStatus.Succeed, player.Equipment.Owner);
+            player.InventoryController.RaiseAddEvent(refreshArg);
         }
 
         // refactor-later core
@@ -103,7 +114,7 @@ namespace ifp.arena.bep.Core
             {
                 CompoundItem armor = GetPlateHolder(player);
             }
-            else if (item is FoodItemClass)
+            else if (item is MagazineItemClass or MedicalItemClass or ThrowWeapItemClass)
             {
                 var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
 

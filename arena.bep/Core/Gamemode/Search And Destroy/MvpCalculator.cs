@@ -11,7 +11,7 @@ namespace ifp.arena.bep.Core.Gamemode
     {
         public static int CalculateRoundMvp(Faction winner, RoundWinReason winReason, BombState objectiveBombState, int objectivePlayerId, System.Random rng = null)
         {
-            if (winner is Faction.None or Faction.Lobby) return -1;
+            if (winner is Faction.None) return -1;
 
             rng ??= new Random();
 
