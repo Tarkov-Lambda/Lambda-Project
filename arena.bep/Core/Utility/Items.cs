@@ -31,16 +31,12 @@ namespace ifp.arena.bep.Core
             foreach (var slotType in places.slots)
             {
                 var slot = H.MainPlayer.Equipment.GetSlot(slotType);
-
                 if (slot.ContainedItem != null)
                 {
                     slot.RemoveItemWithoutRestrictions();
                 }
-
                 slot.AddWithoutRestrictions(item);
             }
-
-            // H.Notify(item.LocalizedName());
 
             Singleton<SpawnItemPacketHandler>.Instance.Send(item);
         }
@@ -71,7 +67,6 @@ namespace ifp.arena.bep.Core
                 {
                     slot.RemoveItemWithoutRestrictions();
                 }
-
                 slot.AddWithoutRestrictions(item);
             }
 

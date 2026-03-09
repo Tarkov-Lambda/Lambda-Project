@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Comfort.Common;
 using EFT;
-using EFT.Interactive;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -11,8 +10,6 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.Base.RateLimiting;
 using Newtonsoft.Json;
-using UnityEngine;
-using static ItemFactoryClass;
 
 namespace ifp.arena.bep.networking
 {
@@ -181,7 +178,7 @@ namespace ifp.arena.bep.networking
                 );
             }
 
-            H.Notify(rootItem.LocalizedName());
+            // H.Notify(rootItem.LocalizedName());
 
             ItemsUtils.SyncGiveItem(rootItem, H.GetPlayer(playerId));
         }

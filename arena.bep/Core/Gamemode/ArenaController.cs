@@ -59,7 +59,6 @@ namespace ifp.arena.bep.Core.Gamemode
         public float StateTimer;
         public double ServerPhaseStartSeconds, PhaseDurationSeconds;
 
-
         // This here is absolute bullshit
         public RoundActionPhaseEnd? PendingRoundActionEnd;
         public RoundActionPhaseEnd? LastRoundActionEnd;
@@ -189,7 +188,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (bombVisuals == null)
             {
                 Singleton<ItemFactoryClass>.Instance.ItemTemplates.TryGetValue(SnDModeRules.bombTemplateId, out ItemTemplate itemTemplate);
-                bombVisuals = Singleton<PoolManagerClass>.Instance.method_2(itemTemplate.Prefab, default);
+                bombVisuals = Singleton<PoolManagerClass>.Instance.method_2(itemTemplate.Prefab, default); // Retrieve GameObject Mesh
             }
 
             if (bombStatePacket.state == BombState.Planted)
@@ -210,7 +209,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (bombStatePacket.state == BombState.Exploded)
             {
                 Vector3 explosionCenter = bombVisuals.transform.position;
-                Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 3f);
+                Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
             }
         }
 
@@ -230,14 +229,6 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class GameModeTicker : MonoBehaviour
     {
-        private GUIStyle _headerStyle, _rowStyle, _timerStyle, _scoreBigStyle;
-        private GUIStyle _mvpStyle;
-        private GUIStyle _buyHeaderStyle, _buyRowStyle;
-        private Texture2D _darkBackground, _rowHighlight;
-        private bool _stylesInitialized = false;
-
-        private bool _showBuyMenu;
-        private Vector2 _buyScroll;
         private List<BuyMenuEntry> _buyEntries;
         private float _nextBuyRefreshTime;
 
