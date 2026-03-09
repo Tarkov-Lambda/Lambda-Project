@@ -138,14 +138,14 @@ namespace ifp.arena.bep.Core.Economy
                 items = [
                     new ShopItem
                     {
-                        bsgId = "5a367e5dc4a282000e49738f", // SR-25
+                        bsgId = "5a367e5dc4a282000e49738f", // RSASS
                         ammoId = "5e023e53d4353e3302577c4c", // BCP
-                        price = 2100,
+                        price = 1800,
                         faction = Faction.T
                     },
                     new ShopItem
                     {
-                        bsgId = "5a367e5dc4a282000e49738f", // RSASS
+                        bsgId = "5a367e5dc4a282000e49738f", // SR-25
                         ammoId = "5e023e53d4353e3302577c4c", // BCP
                         price = 2050,
                         faction = Faction.CT
@@ -168,14 +168,14 @@ namespace ifp.arena.bep.Core.Economy
                     {
                         bsgId = "5b0bbe4e5acfc40dc528a72d", // SA58
                         ammoId = "5e023e53d4353e3302577c4c", // M80
-                        price = 3300,
+                        price = 3000,
                         faction = Faction.T
                     },
                     new ShopItem
                     {
-                        bsgId = "5b0bbe4e5acfc40dc528a72d", // Mutant
+                        bsgId = "606587252535c57a13424cfd", // Mutant
                         ammoId = "59e0d99486f7744a32234762", // BP
-                        price = 3000,
+                        price = 3300,
                         faction = Faction.CT
                     },
                     new ShopItem
