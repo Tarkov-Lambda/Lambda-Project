@@ -1,6 +1,7 @@
 using arena.ui;
 using Comfort.Common;
 using EFT.UI;
+using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Patches.Tarkov.UI;
@@ -12,6 +13,8 @@ namespace ifp.arena.bep.Core.UI
     public class UIManager : Singleton<UIManager>, IDisposable
     {
         ArenaMatchUI matchUIController;
+
+        Shop shop;
 
         public UIManager()
         {
@@ -34,7 +37,19 @@ namespace ifp.arena.bep.Core.UI
 
             matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
 
-            commonUI.EftBattleUIScreen.gameObject.SetActive(true);
+            //commonUI.EftBattleUIScreen.gameObject.SetActive(true);
+
+            GameObject prefabShopUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
+
+            ItemsPanel itemsPanel = AccessTools.Field(typeof(InventoryScreen), "_itemsPanel").GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
+            Transform shopParent = (AccessTools.Field(typeof(ItemsPanel), "_simpleStashPanel").GetValue(itemsPanel) as SimpleStashPanel).transform.parent;
+
+            shop = GameObject.Instantiate(prefabShopUI, shopParent).GetComponent<Shop>();
+            RectTransform shopRectTransform = shop.transform as RectTransform;
+            shopRectTransform.anchorMin = new Vector2(0, 0);
+            shopRectTransform.anchorMax = new Vector2(1, 1);
+            shopRectTransform.offsetMin = new Vector2(0, 0);
+            shopRectTransform.offsetMax = new Vector2(0, 0);
 
             AhhhhWire();
         }
@@ -53,7 +68,7 @@ namespace ifp.arena.bep.Core.UI
         void Refresh()
         {
             int scoreCT = H.Session.factionWins[shared.Faction.CT];
-            int scoreT = H.Session.factionWins[shared.Faction.CT];
+            int scoreT = H.Session.factionWins[shared.Faction.T];
 
             matchUIController.TopBar.SetScores(scoreCT, scoreT);
         }
@@ -66,6 +81,9 @@ namespace ifp.arena.bep.Core.UI
 
             if (matchUIController != null)
                 GameObject.Destroy(matchUIController.gameObject);
+
+            if (shop != null)
+                GameObject.Destroy(shop.gameObject);
 
             Release(this);
         }
