@@ -1,5 +1,7 @@
 using Comfort.Common;
+using Fika.Core.Main.GameMode;
 using Fika.Core.Main.Utils;
+using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -54,12 +56,13 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
+            
             var packet = new PlayersPingPacket
             {
                 scores = H.Scoreboard.Select(kvp => new PlayerPingData
                 {
                     playerId = kvp.Key,
-                    ping = 0,
+                    ping = GetNetManager().GetPeerById(kvp.Key).Ping,
                 }).ToArray()
             };
 
@@ -68,7 +71,6 @@ namespace ifp.arena.bep.networking
 
         public override void WhenApproved(PlayersPingPacket packet, NetPeer peer)
         {
-            if (FikaBackendUtils.IsServer) return;
             foreach (var syncScore in packet.scores)
             {
                 if (H.Scoreboard.TryGetValue(syncScore.playerId, out var playerScore))

@@ -52,14 +52,24 @@ namespace ifp.arena.bep.networking.Base
             RegisterPacket(H.GameWorld);
         }
 
-        private NetPacketProcessor GetPacketProcessor()
+        public NetPacketProcessor GetPacketProcessor()
         {
             var manager = H.FikaNet;
             if (manager == null) return null;
 
-            var field = AccessTools.Field(manager.GetType(), "_packetProcessor");
+            var field = AccessTools.Field(H.FikaNet.GetType(), "_packetProcessor");
 
             return field?.GetValue(manager) as NetPacketProcessor;
+        }
+
+        public NetManager GetNetManager()
+        {
+            var manager = H.FikaNet;
+            if (manager == null) return null;
+
+            var field = AccessTools.Field(H.FikaNet.GetType(), "_netServer");
+
+            return field?.GetValue(manager) as NetManager;
         }
 
         public void RegisterPacket(GameWorld gameWorld)
