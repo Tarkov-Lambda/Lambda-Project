@@ -58,7 +58,7 @@ namespace ifp.arena.bep.Core.Dying
             PlayerCameraController playerCameraController = mainPlayer.GetComponent<PlayerCameraController>();
             fakeCorpse.SetAttachedCamera(playerCameraController.Camera);
             playerCameraController.enabled = false;
-            UniTask.Delay(2000).ContinueWith(() =>
+            UniTask.Delay(4000).ContinueWith(() =>
             { 
                 playerCameraController.enabled = true;
 

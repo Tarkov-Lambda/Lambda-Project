@@ -2,12 +2,10 @@
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
-using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
@@ -98,12 +96,6 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-            _musicObject = new GameObject("ArenaMusicKit");
-            _musicObject.AddComponent<MusicManager>();
-            _musicObject.AddComponent<MusicEventRouter>();
-            _musicObject.transform.SetParent(H.MainPlayer.PlayerBody.transform, false);
-
-            H.PlayMusic(MusicEvent.DeathCam);
 
             PlayerUtils.ApplyPainkiller();
             PlayerUtils.RegisterAllBullets();

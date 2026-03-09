@@ -7,7 +7,6 @@ using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking;
-using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
@@ -47,7 +46,7 @@ namespace ifp.arena.bep.Core
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
 
         // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
-        public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());
+        // public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());
 
         // bro thinks he's the main character
         public static Player GetMainPlayer()

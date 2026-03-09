@@ -1,4 +1,6 @@
-﻿using EFT;
+﻿using System;
+using Cysharp.Threading.Tasks;
+using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -71,15 +73,30 @@ namespace ifp.arena.bep.networking
                 H.Scoreboard[packet.victimId].Kill();
             }
 
-            // Player position interpolation mitigation
-            Player victim = H.GetPlayer(packet.victimId);
-            if (victim != null && victim != H.MainPlayer)
-            {
-                // H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
-            }
+            Plugin.Logger.LogInfo(DateTime.UtcNow.Millisecond.ToString());
+            Plugin.Logger.LogInfo($"main player died");
+
+            // Whenever player teleports
+            // Player interpolation simply causes them to fly away
+            // We have to slightly delay, and then brute force change player position
+            FakeTeleport(packet);
 
             // H.Notify(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString());
             EventBus.OnPlayerKill(packet);
+        }
+
+        private void FakeTeleport(PlayerKilledPacket packet)
+        {
+            UniTask.Delay(25).ContinueWith(() =>
+            {
+                Player victim = H.GetPlayer(packet.victimId);
+                if (victim != null && victim != H.MainPlayer)
+                {
+                    H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
+                }
+            });
+
+
         }
     }
 }

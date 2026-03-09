@@ -1,21 +1,12 @@
-﻿using Comfort.Common;
-using EFT;
-using EFT.Hideout;
+﻿using EFT;
 using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Core.Audio;
-using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 namespace ifp.arena.bep.GameTypes
 {
@@ -64,7 +55,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
-            {MatchState.RoundPlanted, 5},
+            {MatchState.RoundPlanted, 45},
             {MatchState.SideSwap, 10},
             {MatchState.MatchEnd, 15}
         };

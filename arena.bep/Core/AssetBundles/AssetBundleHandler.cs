@@ -38,7 +38,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
             string fullPath = Path.Combine(pathToBundlesDir, name);
             if (!File.Exists(fullPath))
             {
-                Debug.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
+                H.Log($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
                 return null;
             }
 
@@ -51,7 +51,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
                 if (bundle == null)
                 {
-                    Debug.LogError($"[AssetBundleHandler] Failed to load AssetBundle '{name}'.");
+                    H.Log($"[AssetBundleHandler] Failed to load AssetBundle '{name}'.");
 
                     // Clean up the dictionary so we don't permanently cache a null failure
                     loadedAssetBundles.Remove(fullPath);
@@ -102,7 +102,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
         public void Report(float value)
         {
             CurrentProgress = value;
-            // Optional: Debug.Log($"Loading Progress: {value * 100}%");
+            // Optional: H.Log($"Loading Progress: {value * 100}%");
         }
     }
 }

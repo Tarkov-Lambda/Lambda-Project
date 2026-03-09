@@ -220,12 +220,12 @@ namespace ifp.arena.bep.Core
             health.RestoreFullHealth();
         }
 
-        public static async Task CloseEyes(bool playAudio = true, bool openAfter = true, int delay = 2000)
+        public static async Task CloseEyes(bool playAudio = true, bool openAfter = true, int delay = 4000)
         {
             DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
             deathFade.enabled = true;
 
-            await Task.Delay(250);
+            await Task.Delay(500);
             deathFade.EnableEffect();
 
             if (playAudio)
