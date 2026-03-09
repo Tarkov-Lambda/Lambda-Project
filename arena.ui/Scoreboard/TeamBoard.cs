@@ -1,11 +1,10 @@
-using arena.ui.Scoreboard;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace arena.ui
+namespace arena.ui.scoreboard
 {
     public class TeamBoard : MonoBehaviour
     {

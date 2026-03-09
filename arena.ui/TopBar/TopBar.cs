@@ -6,16 +6,13 @@ namespace arena.ui
 {
     public class TopBar : MonoBehaviour
     {
-        // Start is called before the first frame update
-        void Start()
-        {
-        
-        }
+        [SerializeField] private TopBarTeamScore teamScoreLeft;
+        [SerializeField] private TopBarTeamScore teamScoreRight;
 
-        // Update is called once per frame
-        void Update()
+        public void SetScores(int left, int right)
         {
-        
+            teamScoreLeft.Set(left);
+            teamScoreRight.Set(right);
         }
     }
 }

@@ -54,6 +54,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7538191d47cebc43ada809eea897a4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <TopBar>k__BackingField: {fileID: 2464746340007364799}
+  <Scoreboard>k__BackingField: {fileID: 5537748777448993221}
 --- !u!222 &2879903786698279541
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3181,6 +3183,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 357c84583ce36ba45b5d0b1b85f5990b, type: 3}
+--- !u!114 &5537748777448993221 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7241981471262886121, guid: 357c84583ce36ba45b5d0b1b85f5990b, type: 3}
+  m_PrefabInstance: {fileID: 2907820039676016940}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a5b7d896b77a44f92cfb305f814d9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7272697357763758694 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5528002918454195018, guid: 357c84583ce36ba45b5d0b1b85f5990b, type: 3}
@@ -3355,6 +3368,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 42064de8e34937b458f0ad00c23ab126, type: 3}
+--- !u!114 &2464746340007364799 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1508627736136866250, guid: 42064de8e34937b458f0ad00c23ab126, type: 3}
+  m_PrefabInstance: {fileID: 3952807326727541109}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef46711903435ca48b9d380d091df16f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &8923970533995379825 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5549418501031128324, guid: 42064de8e34937b458f0ad00c23ab126, type: 3}
