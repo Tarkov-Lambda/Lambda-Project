@@ -71,7 +71,7 @@ namespace ifp.arena.bep.Core.Economy
 
             foreach (var p in H.Scoreboard.Values)
             {
-                p.money = EconomyConstants.START_MONEY;
+                p.SetMoney(EconomyConstants.START_MONEY);
             }
         }
 
@@ -190,11 +190,7 @@ namespace ifp.arena.bep.Core.Economy
         // Helper to cap money
         private void AddMoney(PlayerScore p, int amount)
         {
-            p.money += amount;
-            if (p.money > EconomyConstants.MAX_MONEY) p.money = EconomyConstants.MAX_MONEY;
-            if (p.money < 0) p.money = 0;
-            if (p.player == H.MainPlayer)
-                EventBus.OnSelfMoneyAdded?.Invoke(amount);
+            p.AddMoney(amount);
         }
     }
 }

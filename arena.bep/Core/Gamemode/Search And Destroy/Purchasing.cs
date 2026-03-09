@@ -59,7 +59,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public static void BuyItem(Item item)
         {
             ItemsUtils.GiveItem(item, H.MainPlayer);
-            H.MainPlayerScore.money -= GetItemPrice(item);
+            H.MainPlayerScore.SpendMoney(GetItemPrice(item));
         }
     }
 }

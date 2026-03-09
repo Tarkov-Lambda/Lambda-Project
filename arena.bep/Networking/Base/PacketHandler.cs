@@ -108,7 +108,7 @@ namespace ifp.arena.bep.networking.Base
 
         private bool IsUnauthorized(int id)
         {
-            return authority == PacketAuthority.ServerOnly && !H.MainPlayerScore.isAdmin;
+            return authority == PacketAuthority.ServerOnly && !H.MainPlayerScore.IsAdmin;
         }
 
         protected void RequestSend(T packet)

@@ -63,18 +63,12 @@ namespace ifp.arena.bep.networking
         {
             if (H.Scoreboard[packet.killerId] != null)
             {
-                H.Scoreboard[packet.killerId].kills++;
-                H.Scoreboard[packet.killerId].headshots++;
+                H.Scoreboard[packet.killerId].AddFrag(false);
             }
 
             if (H.Scoreboard[packet.victimId] != null)
             {
-                H.Scoreboard[packet.victimId].deaths++;
-            }
-
-            if (H.Session.currentGameMode == GameModes.SND)
-            {
-                H.Scoreboard[packet.victimId].isAlive = false;
+                H.Scoreboard[packet.victimId].Kill();
             }
 
             // Player position interpolation mitigation

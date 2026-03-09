@@ -63,7 +63,7 @@ namespace ifp.arena.bep.networking
             var playerScore = H.GetPlayerScore(packet.id);
             if (playerScore != null)
             {
-                playerScore.isReady = packet.isReady;
+                playerScore.isMapReady = packet.isReady;
             }
             else
             {

@@ -29,13 +29,16 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.Warmup;
         public void OnEnter()
         {
-            foreach (var p in H.Arena.session.scoreboard.Values) p.money = EconomyConstants.MAX_MONEY;
+            foreach (var p in H.Arena.session.scoreboard.Values)
+            {
+                p.SetMoney(EconomyConstants.MAX_MONEY);
+            }
         }
 
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
-            if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.isReady))
+            if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.isMapReady))
                 return MatchState.WarmupEnd;
             return null;
         }
@@ -74,7 +77,10 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.RoundPrepare;
         public void OnEnter()
         {
-            foreach (var p in H.Arena.session.scoreboard.Values) p.isAlive = true;
+            foreach (var p in H.Arena.session.scoreboard.Values)
+            {
+                p.Spawn();
+            }
             if (H.GameWorld?.MainPlayer != null)
             {
                 Teleporter.Teleport(H.GameWorld.MainPlayer);

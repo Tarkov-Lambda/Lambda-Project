@@ -7,6 +7,8 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Audio;
 using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Core.Economy;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
@@ -98,7 +100,7 @@ namespace ifp.arena.bep.GameTypes
             {
                 if (scoreboard.ContainsKey(p.Id))
                 {
-                    scoreboard[p.Id].Reset();
+                    scoreboard[p.Id].RoundReset();
                 }
             }
         }
@@ -118,35 +120,55 @@ namespace ifp.arena.bep.GameTypes
 
     public class PlayerScore
     {
+        public readonly Player player;
+
         public Faction faction = Faction.None;
-        public Player player;
 
         // Round scope
-        public int mvps = 0;
-        public int kills = 0;
-        public int headshots = 0;
-        public int assists = 0;
-        public int deaths = 0;
-        public int money = 8000;
-        public bool isAlive = true;
+        public int kills { get; private set; }
+        public int headshots { get; private set; }
+        public int assists { get; private set; }
+        public int deaths { get; private set; }
+        public int mvps { get; private set; }
 
-        public bool isReady = false;
+        public bool isAlive { get; private set; }
+        public int money { get; private set; } = 8000;
 
+        // meta gaming (previously known as facebook gaming)
         public string musicKit = "valve_cs2_01";
 
-        public int ping = 0;
-        public bool isAdmin = false;
+        public bool isMapReady;
+        public int ping;
+        public bool IsAdmin;
 
         public PlayerScore(int id)
         {
             player = H.GetPlayer(id);
             if (FikaBackendUtils.IsServer && H.MainPlayer.Id == id)
             {
-                isAdmin = true;
+                IsAdmin = true;
             }
         }
 
-        public void Reset()
+        public void AddFrag(bool isHeadshot)
+        {
+            kills++;
+            if (isHeadshot)
+                headshots++;
+        }
+
+        public void Kill()
+        {
+            deaths++;
+            isAlive = false;
+        }
+
+        public void Spawn()
+        {
+            isAlive = true;
+        }
+
+        public void RoundReset()
         {
             mvps = 0;
             kills = 0;
@@ -156,9 +178,40 @@ namespace ifp.arena.bep.GameTypes
             isAlive = true;
         }
 
-        public void AwardMoney(int addedMoney)
+        public void Sync(PlayerScoreSyncData packet)
         {
-            money += addedMoney;
+            faction = (Faction)packet.faction;
+            mvps = packet.mvps;
+            kills = packet.kills;
+            headshots = packet.headshots;
+            assists = packet.assists;
+            deaths = packet.deaths;
+            money = packet.money;
+            isAlive = packet.isAlive;
+            isMapReady = packet.isReady;
+            musicKit = packet.musicKit;
+        }
+
+        public void AddMoney(int amount)
+        {
+            money += amount;
+
+            money = Math.Clamp(money, 0, EconomyConstants.MAX_MONEY);
+
+            if (player == H.MainPlayer)
+                EventBus.OnSelfMoneyAdded?.Invoke(amount);
+        }
+
+        public void SpendMoney(int amount)
+        {
+            money -= amount;
+            if (money < 0)
+                money = 0;
+        }
+
+        public void SetMoney(int newMoney)
+        {
+            money = newMoney;
         }
     }
 

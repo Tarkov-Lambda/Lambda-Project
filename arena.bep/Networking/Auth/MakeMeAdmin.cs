@@ -60,7 +60,7 @@ namespace ifp.arena.bep.networking
         {
             if (FikaBackendUtils.IsServer)
             {
-                H.MainPlayerScore.isAdmin = true;
+                H.MainPlayerScore.IsAdmin = true;
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace ifp.arena.bep.networking
             }
             else if (packet.Step == AdminAuthStep.Success)
             {
-                H.MainPlayerScore.isAdmin = true;
+                H.MainPlayerScore.IsAdmin = true;
             }
         }
 
@@ -163,7 +163,7 @@ namespace ifp.arena.bep.networking
             var player = H.GetPlayer(peer.Id);
             if (player != null)
             {
-                H.GetPlayerScore(peer.Id).isAdmin = true;
+                H.GetPlayerScore(peer.Id).IsAdmin = true;
             }
         }
 

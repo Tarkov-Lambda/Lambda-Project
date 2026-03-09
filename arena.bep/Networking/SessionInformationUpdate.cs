@@ -91,7 +91,7 @@ namespace ifp.arena.bep.networking
                     deaths = kvp.Value.deaths,
                     money = kvp.Value.money,
                     isAlive = kvp.Value.isAlive,
-                    isReady = kvp.Value.isReady,
+                    isReady = kvp.Value.isMapReady,
                     musicKit = kvp.Value.musicKit
                 }).ToArray()
             };
@@ -119,37 +119,11 @@ namespace ifp.arena.bep.networking
                 }
             }
 
-            foreach (var syncScore in packet.scores)
+            foreach (PlayerScoreSyncData syncScore in packet.scores)
             {
-                if (session.scoreboard.TryGetValue(syncScore.playerId, out var playerScore))
-                {
-                    playerScore.faction = (Faction)syncScore.faction;
-                    playerScore.mvps = syncScore.mvps;
-                    playerScore.kills = syncScore.kills;
-                    playerScore.headshots = syncScore.headshots;
-                    playerScore.assists = syncScore.assists;
-                    playerScore.deaths = syncScore.deaths;
-                    playerScore.money = syncScore.money;
-                    playerScore.isAlive = syncScore.isAlive;
-                    playerScore.isReady = syncScore.isReady;
-                    playerScore.musicKit = syncScore.musicKit;
-                }
-                else
-                {
-                    session.scoreboard[syncScore.playerId] = new PlayerScore(syncScore.playerId)
-                    {
-                        faction = (Faction)syncScore.faction,
-                        mvps = syncScore.mvps,
-                        kills = syncScore.kills,
-                        headshots = syncScore.headshots,
-                        assists = syncScore.assists,
-                        deaths = syncScore.deaths,
-                        money = syncScore.money,
-                        isAlive = syncScore.isAlive,
-                        isReady = syncScore.isReady,
-                        musicKit = syncScore.musicKit
-                    };
-                }
+                if (!session.scoreboard.ContainsKey(syncScore.playerId))
+                    session.scoreboard[syncScore.playerId] = new PlayerScore(syncScore.playerId);
+                session.scoreboard[syncScore.playerId].Sync(syncScore);
             }
         }
     }
