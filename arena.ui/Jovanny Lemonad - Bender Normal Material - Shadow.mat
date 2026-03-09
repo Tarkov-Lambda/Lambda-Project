@@ -7,12 +7,12 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Jovanny Lemonad - Bender Normal Material - GLOW
+  m_Name: Jovanny Lemonad - Bender Normal Material - Shadow
   m_Shader: {fileID: 4800000, guid: 68e6db2ebdc24f95958faec2be5558d6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - GLOW_ON
+  - UNDERLAY_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -91,9 +91,9 @@ Material:
     - _StencilWriteMask: 255
     - _TextureHeight: 1024
     - _TextureWidth: 1024
-    - _UnderlayDilate: 0.276
+    - _UnderlayDilate: 0.24
     - _UnderlayOffsetX: 0
-    - _UnderlayOffsetY: 0.176
+    - _UnderlayOffsetY: 0
     - _UnderlaySoftness: 0.127
     - _VertexOffsetX: 0
     - _VertexOffsetY: 0
@@ -110,5 +110,5 @@ Material:
     - _ReflectFaceColor: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectOutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 0, g: 0, b: 0, a: 1}
-    - _UnderlayColor: {r: 0.2905661, g: 0.2905661, b: 0.2905661, a: 1}
+    - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.52156866}
   m_BuildTextureStacks: []
