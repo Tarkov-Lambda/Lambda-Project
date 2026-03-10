@@ -8,11 +8,14 @@ using EFT.InventoryLogic;
 using System;
 using Newtonsoft.Json;
 using HarmonyLib;
+using System.IO;
 
 namespace ifp.arena.bep.Core.Economy
 {
     public static class BuyMenu
     {
+        public static string EconomyDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "Economy.json");
+
         public static List<BuyCategory> buyCategories = new();
 
         public static bool TryGetItemData(string bsgId, out ShopItem itemData)
@@ -34,12 +37,12 @@ namespace ifp.arena.bep.Core.Economy
 
         public static void LoadItems(string json)
         {
-            buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json); ;
+            buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
         }
 
         static BuyMenu()
         {
-            // LoadItems();
+            LoadItems(File.ReadAllText(EconomyDataPath));
         }
     }
 }
