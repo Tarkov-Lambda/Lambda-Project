@@ -17,6 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".\configs\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include=".\deps\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
       <Private>False</Private>
     </Reference>
@@ -76,15 +85,26 @@
     <ItemGroup>
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
-      <DependenciesToCopy Include="$(OutputPath)\MemoryPack.Core.dll" />
-      <DependenciesToCopy Include="$(OutputPath)\System.Collections.Immutable.dll" />
+      <Dependencies Include="$(OutputPath)\MemoryPack.Core.dll" />
+      <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
+
+      <DebugDependencies Include="../deps/ScriptEngine.dll" />
+
+      <Configs Include="../configs/*.cfg" />
+      <JSON Include="../configs/*.json" />
 
       <Bundles Include="../bundles/*" />
     </ItemGroup>
 
+
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
-    <Copy SourceFiles="@(DependenciesToCopy)"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
+    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
     <Copy SourceFiles="@(Bundles)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
+
+    <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\" />
+
+    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
+    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
+
   </Target>
 </Project>

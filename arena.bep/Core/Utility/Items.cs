@@ -56,7 +56,6 @@ namespace ifp.arena.bep.Core
 
                 player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
             }
-
             if (item is Weapon weapon)
             {
                 if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
@@ -107,21 +106,15 @@ namespace ifp.arena.bep.Core
             }
             else if (item is ArmorPlateItemClass)
             {
-                H.Log("ASD");
                 CompoundItem armor = GetPlateHolder(player);
-                H.Dump(armor);
-                H.Log("ASD");
 
                 foreach (var slot in armor.AllSlots)
                 {
-                    H.Dump(slot);
-                    H.Dump(slot);
+                    // H.Dump(slot);
                     foreach (var childItem in slot.Items)
                     {
-
                         if (childItem is ArmoredEquipmentItemClass plate)
                         {
-                            H.Dump(plate);
                             H.Dump(plate);
                             // armor.Repairable.Durability = armor.Repairable.MaxDurability;
                         }
@@ -156,17 +149,17 @@ namespace ifp.arena.bep.Core
 
         public static CompoundItem GetPlateHolder(Player player)
         {
-            CompoundItem tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
-            CompoundItem armor = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
-
-            if (armor != null)
-            {
-                return armor;
-            }
-            if (tacRig != null && tacRig is ArmorItemClass)
+            VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
+            // ArmorItemClass armor = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
+            // H.Dump(tacRig);
+            if (tacRig != null && tacRig.Slots.Count() > 0)
             {
                 return tacRig;
             }
+            // else if (armor != null)
+            // {
+            //     return armor;
+            // }
 
             return null;
         }

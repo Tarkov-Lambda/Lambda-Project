@@ -9,7 +9,7 @@ namespace ifp.arena.shared
     public struct BuyCategory
     {
         public string name;
-        public ShopItem[] items;
+        public List<ShopItem> items;
     }
 
     public struct ShopItem

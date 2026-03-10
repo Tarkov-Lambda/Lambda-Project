@@ -46,7 +46,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             // }
 
             LastReceivedDamageInfo = damageInfo;
-            H.Dump(damageInfo);
+            // H.Dump(damageInfo);
             return true;
         }
     }
