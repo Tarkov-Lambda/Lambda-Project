@@ -7,6 +7,7 @@ using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov.UI;
+using ifp.arena.shared;
 using System;
 using UnityEngine;
 
@@ -69,7 +70,7 @@ namespace ifp.arena.bep.Core.UI
             if (itemInfoProvider == null)
             {
                 itemInfoProvider = new BSGItemInfoProvider();
-                shop.SetAssortment(BuyMenu.buyCategories, itemInfoProvider);
+                shop.SetAssortment(BuyMenu.buyCategories, itemInfoProvider, Purchasing.BuyItem);
             }
 
             shop.SetFaction(H.MainPlayerScore.faction);

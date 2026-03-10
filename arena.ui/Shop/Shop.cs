@@ -21,7 +21,7 @@ namespace arena.ui
 
         Dictionary<ShopItem, ShopItemButton> assortment;
 
-        public void SetAssortment(List<BuyCategory> shelves, IItemInfoProvider itemInfoProvider)
+        public void SetAssortment(List<BuyCategory> shelves, IItemInfoProvider itemInfoProvider, Action<ShopItem> onRequest)
         {
             foreach (Transform child in containerCategories)
             {
@@ -43,6 +43,8 @@ namespace arena.ui
                 {
                     ShopItemButton shopItemButton = Instantiate(prefabShopItem.gameObject, newShelf.container).GetComponent<ShopItemButton>();
                     shopItemButton.Set(product, itemInfoProvider);
+
+                    shopItemButton.OnClick += () => onRequest?.Invoke(product);
 
                     assortment.Add(product, shopItemButton);
                 }
@@ -66,6 +68,11 @@ namespace arena.ui
 
         public void SetCurrentMoneyBalance(int money)
         {
+            foreach (var kvp in assortment)
+            {
+                kvp.Value.SetInteractable(kvp.Key.price <= money);
+            }
+
             textMoney.text = MoneyFormat.FormatMoney(money);
         }
     }

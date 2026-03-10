@@ -18,11 +18,12 @@ namespace ifp.arena.bep.Core.UI
 
         public string FullName(string bsgId)
         {
+            if (string.IsNullOrEmpty(bsgId))
+                return "empty id";
             try
             {
                 MongoID mongoId = new MongoID(bsgId);
                 return mongoId.LocalizedName();
-
             }
             catch (Exception ex)
             {

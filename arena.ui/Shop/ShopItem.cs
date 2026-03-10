@@ -44,5 +44,10 @@ namespace arena.ui
             icon.sprite = sprite;
             icon.SetNativeSize();
         }
+
+        public void SetInteractable(bool interactable)
+        {
+            mainButton.interactable = interactable;
+        }
     }
 }

@@ -56,8 +56,11 @@ namespace ifp.arena.bep.Core.Gamemode
             return H.MainPlayerScore.money >= GetItemPrice(item);
         }
 
-        public static void BuyItem(Item item)
+        public static void BuyItem(ShopItem request)
         {
+            // delai
+
+            Item item = null;
             ItemsUtils.GiveItem(item, H.MainPlayer);
             H.MainPlayerScore.SpendMoney(GetItemPrice(item));
         }
