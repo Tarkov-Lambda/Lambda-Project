@@ -57,6 +57,8 @@ namespace ifp.arena.bep.Core.Gamemode
         public float StateTimer;
         public double ServerPhaseStartSeconds, PhaseDurationSeconds;
 
+        public event Action OnUpdateTick;
+
         // This here is absolute bullshit
         public RoundActionPhaseEnd? PendingRoundActionEnd;
         public RoundActionPhaseEnd? LastRoundActionEnd;
@@ -134,6 +136,8 @@ namespace ifp.arena.bep.Core.Gamemode
                     ChangeState(nextState.Value);
                 }
             }
+
+            OnUpdateTick?.Invoke();
         }
 
         // Server sends this

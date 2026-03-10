@@ -41,8 +41,6 @@ namespace ifp.arena.bep.Core.UI
 
             matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
 
-            //commonUI.EftBattleUIScreen.gameObject.SetActive(true);
-
             GameObject prefabShopUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
 
             ItemsPanel itemsPanel = AccessTools.Field(typeof(InventoryScreen), "_itemsPanel").GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
@@ -62,6 +60,8 @@ namespace ifp.arena.bep.Core.UI
         {
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnPlayerKill += OnPlayerKill;
+
+            H.Arena.OnUpdateTick += () => matchUIController.TopBar.SetTime(H.Arena.StateTimer);
 
         }
 

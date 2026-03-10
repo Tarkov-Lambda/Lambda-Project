@@ -1,5 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
+using TMPro;
 using UnityEngine;
 
 namespace arena.ui
@@ -9,10 +9,24 @@ namespace arena.ui
         [SerializeField] private TopBarTeamScore teamScoreLeft;
         [SerializeField] private TopBarTeamScore teamScoreRight;
 
+        [SerializeField] private TMP_Text textTimer;
+
         public void SetScores(int left, int right)
         {
             teamScoreLeft.Set(left);
             teamScoreRight.Set(right);
+        }
+
+        public void SetTime(float seconds)
+        {
+            textTimer.text = FormatTime(seconds);
+        }
+
+        string FormatTime(float seconds)
+        {
+            if (seconds < 0) seconds = 0;
+            TimeSpan t = TimeSpan.FromSeconds(seconds);
+            return $"{t.Minutes:D2}:{t.Seconds:D2}";
         }
     }
 }
