@@ -93,7 +93,14 @@ namespace ifp.arena.bep.Core.Gamemode
             H.Arena.LastObjectiveBombState = BombState.None;
         }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
-        public void OnExit() { }
+        public void OnExit()
+        {
+
+            // int currentRound = H.Session.factionWins.Values.Sum();
+            // int maxRounds = SnDModeRules.maxRoundsToWin * 2 - 1;
+            // double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
+            // Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
+        }
     }
 
     public class SharedEnd : IGameState
@@ -132,7 +139,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
             return null;
         }
-        public void OnExit() { }
+        public void OnExit()
+        {
+            // over here
+        }
     }
 
     public class SharedSideSwap : IGameState

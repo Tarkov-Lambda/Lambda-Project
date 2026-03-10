@@ -60,6 +60,26 @@ namespace ifp.arena.bep.Core
 
                 player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
             }
+
+            if (item is Weapon weapon)
+            {
+                if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                {
+                    PlayerUtils.ReplenishGun(weapon, ammo);
+                    PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
+                }
+                weapon.Components.All((component) =>
+                {
+                    H.Notify(component.GetType().ToString());
+                    return true;
+                });
+                FireModeComponent firemode = weapon.Components.Find(component => component is FireModeComponent) as FireModeComponent;
+                if (firemode != null && firemode.AvailableEFireModes.Contains(Weapon.EFireMode.fullauto))
+                {
+                    firemode.FireMode = Weapon.EFireMode.fullauto;
+                }
+
+            }
         }
 
         // refactor-later core

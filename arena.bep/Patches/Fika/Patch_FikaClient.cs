@@ -17,12 +17,12 @@ namespace ifp.arena.bep.Patches
             return AccessTools.Method(typeof(FikaClient), "OnCommonPlayerPacketReceived");
         }
 
-        
+
         [PatchPrefix]
         static bool Prefix(CoopHandler ____coopHandler, CommonPlayerPacket packet)
         {
             if (!Plugin.Active.Value) return true;
-
+            H.Notify(packet.SubPacket.ToString());
             // if (____coopHandler.Players.TryGetValue(packet.NetId, out var playerToApply))
             // {
             //     if (packet.Type == ECommonSubPacketType.Damage)

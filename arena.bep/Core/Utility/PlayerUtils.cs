@@ -80,8 +80,6 @@ namespace ifp.arena.bep.Core
         // Though I think it does sync equipment changes from client automatically (player still has to manually invoke RaiseEvents)
         public static void Replenish(Player player, bool shouldReloadGun = true)
         {
-            Slot tacticalVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
-
             foreach (var slot in player.Equipment.AllSlots)
             {
                 foreach (var item in slot.Items)
@@ -91,16 +89,14 @@ namespace ifp.arena.bep.Core
                     if (item is Weapon weapon)
                     {
 
-                        if (BuyMenu.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
+                        if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
                         {
-                            AmmoItemClass ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
                             if (shouldReloadGun)
                             {
                                 ReplenishGun(weapon, ammo);
                             }
 
-                            ReplenishVestMagazines(tacticalVest, weapon, ammo, player);
-
+                            ReplenishVestMagazines(weapon, ammo, player);
                         }
 
                     }
@@ -110,8 +106,10 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        public static void ReplenishVestMagazines(Slot vest, Weapon weapon, AmmoItemClass ammo, Player player)
+        public static void ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
         {
+            Slot vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
+
             if (vest?.ContainedItem is not CompoundItem vestCompound)
                 return;
 

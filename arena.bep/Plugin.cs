@@ -77,7 +77,7 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_CanWalk());
             RegisterPatch(new Patch_CanJump());
-            // RegisterPatch(new Patch_CanPressTrigger());
+            RegisterPatch(new Patch_CanPressTrigger());
             RegisterPatch(new Patch_ApplyShot());
 
             RegisterPatch(new Patch_ApplyDamage());
@@ -103,7 +103,6 @@ namespace ifp.arena.bep
             RegisterPacket<PlayerKilledPacketHandler>();
             RegisterPacket<FactionChangePacketHandler>();
             RegisterPacket<SpawnItemPacketHandler>();
-
 
             RegisterPacket<SessionInfoPacketHandler>();
             RegisterPacket<BombStatePacketHandler>();

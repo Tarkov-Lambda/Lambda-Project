@@ -25,13 +25,13 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(ClientFirearmController), nameof(ClientFirearmController.CanPressTrigger));
+            return AccessTools.PropertyGetter(typeof(ClientFirearmController), nameof(ClientFirearmController.IsTriggerPressed));
         }
 
         [PatchPrefix]
         static bool Prefix(ref bool __result)
         {
-            if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
+            if (H.Session.IsControllerPartiallyLocked())
             {
                 __result = false;
                 return false;

@@ -7,7 +7,10 @@ using HarmonyLib;
 
 // --------------------------------------------- //
 using SearchableGrid = GClass3117;
-using EquipmentBuildClass = GClass3953; // Assumption
+using EquipmentBuildClass = GClass3953;
+using ifp.arena.bep.Core.Economy;
+using ifp.arena.shared;
+using ifp.arena.bep.Core.UI; // Assumption
 // --------------------------------------------- //
 
 
@@ -44,6 +47,19 @@ namespace ifp.arena.bep.Core
                 return build.Item.TemplateId == bsgId;
             });
         }
+
+
+        public static bool TryGetGunAmmo(Weapon weapon, out AmmoItemClass ammo)
+        {
+            if (BuyMenu.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
+            {
+                ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
+                return true;
+            }
+            ammo = null;
+            return false;
+        }
+
 
         // This shit needs to get the fuck outta here
         public static bool CanEnterRaid(out string[] reasons)

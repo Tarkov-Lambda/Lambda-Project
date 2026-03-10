@@ -30,6 +30,9 @@
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\ItemComponent.Types.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll">
       <Private>False</Private>
     </Reference>
@@ -80,7 +83,8 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
-    <Copy SourceFiles="@(DependenciesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
+    <Copy SourceFiles="@(DependenciesToCopy)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
     <Copy SourceFiles="@(Bundles)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
   </Target>
 </Project>
