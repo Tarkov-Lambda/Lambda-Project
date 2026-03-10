@@ -58,7 +58,7 @@ namespace ifp.arena.bep.Core
         public static Player GetPlayer(int playerId)
         {
             if (!isInRaid()) return null;
-            return GameWorld.AllAlivePlayersList.FirstOrDefault(p => p.Id == playerId); ;
+            return H.AllPlayers.FirstOrDefault(p => p.Id == playerId);
         }
 
         public static PlayerScore GetPlayerScore(int playerId)

@@ -62,8 +62,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             // delai
             Item item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(request.bsgId);
-            H.Notify(item.LocalizedName());
-            ItemsUtils.ClientGiveItem(item, H.MainPlayer);
+            ItemsUtils.ClientRequestGiveItem(item);
             H.MainPlayerScore.SpendMoney(request.price);
         }
     }

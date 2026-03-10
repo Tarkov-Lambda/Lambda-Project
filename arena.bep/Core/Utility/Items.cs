@@ -14,6 +14,7 @@ using ItemExtensions = GClass3380;
 using AddItemEventArgs = GEventArgs2;
 using RefreshItemEventArgs = GEventArgs18;
 using RemoveItemEventArgs = GEventArgs3;
+using Fika.Core.Main.Players;
 // --------------------------------------------- //
 
 namespace ifp.arena.bep.Core
@@ -32,7 +33,7 @@ namespace ifp.arena.bep.Core
             return ItemExtensions.CloneItem(templateItem);
         }
 
-        public static void ClientGiveItem(Item templateItem, Player player)
+        public static void ClientRequestGiveItem(Item templateItem)
         {
             var item = CloneItem(templateItem);
             if (item == null) return;
@@ -40,14 +41,13 @@ namespace ifp.arena.bep.Core
             Singleton<SpawnItemPacketHandler>.Instance.Send(item);
         }
 
-        public static void SyncGiveItem(Item item, Player player)
+        public static void WhenApprovedGiveItem(Item item, Player player)
         {
             var places = GetAppropriateSlot(item, player);
 
             if (places.itemAddress != null)
             {
-                places.itemAddress.AddWithoutRestrictions(item);
-                RefreshItemInventory(item, player);
+                player.InventoryController.AddAndRaiseEvents(item, places.itemAddress);
             }
 
             foreach (var slotType in places.slots)
@@ -55,45 +55,11 @@ namespace ifp.arena.bep.Core
                 var slot = player.Equipment.GetSlot(slotType);
                 if (slot.ContainedItem != null)
                 {
-                    var oldItem = slot.ContainedItem;
-                    var oldAddress = oldItem.CurrentAddress;
-
                     slot.RemoveItemWithoutRestrictions();
-                    RemoveItemInventory(oldItem, oldAddress, player);
                 }
 
-                slot.AddWithoutRestrictions(item);
-                RefreshItemInventory(item, player);
+                player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
             }
-        }
-
-        public static Action<GEventArgs2> GetAddAction(Player player)
-        {
-            var field = AccessTools.Field(player.InventoryController.GetType(), "_packetProcessor");
-
-            return field?.GetValue(player.InventoryController) as Action<GEventArgs2>;
-        }
-
-        public static async void RefreshItemInventory(Item item, Player player)
-        {
-            AddItemEventArgs addArg = new AddItemEventArgs(item, item.CurrentAddress, CommandStatus.Succeed, player.InventoryController);
-            player.InventoryController.RaiseAddEvent(addArg);
-
-            // player.InventoryController.method_0(addArg);
-
-            // Action<GEventArgs2> action = GetAddAction(player);
-            // action(addArg);
-
-            // await UniTask.Delay(300);
-            // RefreshItemEventArgs refreshArg = new RefreshItemEventArgs(item, player.InventoryController, refreshIcon: true, checkMagazine: true);
-            // player.InventoryController.RaiseEvent(refreshArg);
-
-        }
-
-        public static void RemoveItemInventory(Item oldItem, ItemAddress oldAddress, Player player)
-        {
-            RemoveItemEventArgs removeArg = new RemoveItemEventArgs(oldItem, oldAddress, CommandStatus.Succeed, player.InventoryController);
-            player.InventoryController.RaiseRemoveEvent(removeArg);
         }
 
         // refactor-later core
@@ -128,6 +94,12 @@ namespace ifp.arena.bep.Core
             else if (item is ArmorPlateItemClass)
             {
                 CompoundItem armor = GetPlateHolder(player);
+                foreach (var slot in armor.AllSlots)
+                {
+                    // H.Notify(slot.LocalizedName());
+                }
+                // places.slots.Add(armor.Slots.); // front plate
+                // places.slots.Add(armor.Slots.); // back plate
             }
             else if (item is HeadwearItemClass)
             {
@@ -155,7 +127,6 @@ namespace ifp.arena.bep.Core
 
         public static CompoundItem GetPlateHolder(Player player)
         {
-
             CompoundItem tacRig = PresetUtils.Preset.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
             CompoundItem armor = PresetUtils.Preset.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
 

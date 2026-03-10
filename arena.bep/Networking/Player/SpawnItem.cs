@@ -179,7 +179,7 @@ namespace ifp.arena.bep.networking
                 );
             }
 
-            ItemsUtils.SyncGiveItem(rootItem, H.GetPlayer(playerId));
+            ItemsUtils.WhenApprovedGiveItem(rootItem, H.GetPlayer(playerId));
         }
     }
 }
