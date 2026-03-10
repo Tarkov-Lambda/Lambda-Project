@@ -4,18 +4,14 @@ using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using ifp.arena.bep.networking;
-using Cysharp.Threading.Tasks;
 using System.Linq;
 using System;
 
-// --------------------------------------------- //
 using SearchableGrid = GClass3117;
 using ItemExtensions = GClass3380;
 using AddItemEventArgs = GEventArgs2;
 using RefreshItemEventArgs = GEventArgs18;
 using RemoveItemEventArgs = GEventArgs3;
-using Fika.Core.Main.Players;
-// --------------------------------------------- //
 
 namespace ifp.arena.bep.Core
 {
@@ -55,7 +51,7 @@ namespace ifp.arena.bep.Core
                 var slot = player.Equipment.GetSlot(slotType);
                 if (slot.ContainedItem != null)
                 {
-                    slot.RemoveItemWithoutRestrictions();
+                    slot.RemoveItem();
                 }
 
                 player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
@@ -68,11 +64,7 @@ namespace ifp.arena.bep.Core
                     PlayerUtils.ReplenishGun(weapon, ammo);
                     PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
                 }
-                weapon.Components.All((component) =>
-                {
-                    H.Notify(component.GetType().ToString());
-                    return true;
-                });
+
                 FireModeComponent firemode = weapon.Components.Find(component => component is FireModeComponent) as FireModeComponent;
                 if (firemode != null && firemode.AvailableEFireModes.Contains(Weapon.EFireMode.fullauto))
                 {
@@ -96,6 +88,8 @@ namespace ifp.arena.bep.Core
                 slots = new List<EquipmentSlot>()
             };
 
+            H.Dump(item);
+
             if (item is Weapon)
             {
                 if (item is PistolItemClass)
@@ -113,13 +107,28 @@ namespace ifp.arena.bep.Core
             }
             else if (item is ArmorPlateItemClass)
             {
+                H.Log("ASD");
                 CompoundItem armor = GetPlateHolder(player);
+                H.Dump(armor);
+                H.Log("ASD");
+
                 foreach (var slot in armor.AllSlots)
                 {
-                    // H.Notify(slot.LocalizedName());
+                    H.Dump(slot);
+                    H.Dump(slot);
+                    foreach (var childItem in slot.Items)
+                    {
+
+                        if (childItem is ArmoredEquipmentItemClass plate)
+                        {
+                            H.Dump(plate);
+                            H.Dump(plate);
+                            // armor.Repairable.Durability = armor.Repairable.MaxDurability;
+                        }
+                        // places.slots.Add(armor.Slots.); // front plate
+                        // places.slots.Add(armor.Slots.); // back plate
+                    }
                 }
-                // places.slots.Add(armor.Slots.); // front plate
-                // places.slots.Add(armor.Slots.); // back plate
             }
             else if (item is HeadwearItemClass)
             {
@@ -147,8 +156,8 @@ namespace ifp.arena.bep.Core
 
         public static CompoundItem GetPlateHolder(Player player)
         {
-            CompoundItem tacRig = PresetUtils.Preset.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
-            CompoundItem armor = PresetUtils.Preset.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+            CompoundItem tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+            CompoundItem armor = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
 
             if (armor != null)
             {

@@ -4,19 +4,19 @@ using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches.Fika
+namespace ifp.arena.bep.Patches
 {
     internal class Patch_FikaHealthBar_Awake : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(FikaHealthBar), "CreateHealthBar");
+            return AccessTools.PropertyGetter(typeof(Fika.Core.FikaConfig), nameof(Fika.Core.FikaConfig.UseNamePlates));
         }
 
         [PatchPrefix]
-        static bool Prefix(FikaHealthBar __instance)
+        static bool Prefix(ref bool __result)
         {
-            UnityEngine.Object.Destroy(__instance);
+            __result = false;
             return false;
         }
     }

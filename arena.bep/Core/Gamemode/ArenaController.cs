@@ -100,7 +100,6 @@ namespace ifp.arena.bep.Core.Gamemode
 
 
             PlayerUtils.ApplyPainkiller();
-            PlayerUtils.RegisterAllBullets();
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
             H.Notify("Plugin Reloaded");

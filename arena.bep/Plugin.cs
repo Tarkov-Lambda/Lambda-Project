@@ -16,7 +16,6 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches;
-using ifp.arena.bep.Patches.Fika;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
@@ -78,14 +77,15 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_CanWalk());
             RegisterPatch(new Patch_CanJump());
             RegisterPatch(new Patch_CanPressTrigger());
-            RegisterPatch(new Patch_ApplyShot());
+            // RegisterPatch(new Patch_ApplyShot());
 
             RegisterPatch(new Patch_ApplyDamage());
 
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());
 
+
             RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
-            RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
+            // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());

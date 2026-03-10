@@ -118,6 +118,9 @@ namespace ifp.arena.bep.Core.Economy
 
         private void HandleRoundEndEconomy(RoundActionPhaseEnd result)
         {
+            if (result.winner == Faction.None)
+                return;
+
             Faction winner = result.winner;
             Faction loser = winner == Faction.CT ? Faction.T : Faction.CT;
 

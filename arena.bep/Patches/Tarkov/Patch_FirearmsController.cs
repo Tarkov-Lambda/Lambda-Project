@@ -36,7 +36,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 __result = false;
                 return false;
             }
-
+            
             return true;
         }
     }

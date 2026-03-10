@@ -25,6 +25,13 @@ namespace ifp.arena.bep.Core
         public static IEnumerable<WeaponBuildClass> Templates => WeaponBuilds.Dictionary_0.Values;
         public static InventoryEquipment Preset => GetDefaultPreset();
 
+        /// <summary>Resets main player equipment to a starting gun, and no armor</summary>
+        public static void ResetEquipment()
+        {
+            
+            // H.MainPlayer.InventoryController.RemoveActiveEvent();
+        }
+
         // Retrieves first custom hideout preset
         public static InventoryEquipment GetDefaultPreset()
         {

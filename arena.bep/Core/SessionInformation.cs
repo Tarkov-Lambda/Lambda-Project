@@ -125,7 +125,7 @@ namespace ifp.arena.bep.GameTypes
         public int money { get; private set; } = 8000;
 
         // meta gaming (previously known as facebook gaming)
-        public string musicKit = "valve_cs2_01";
+        public string musicKit = "";
 
         public bool isMapReady;
         public int ping;

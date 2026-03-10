@@ -51,26 +51,6 @@ namespace ifp.arena.bep.networking.Base
             RegisterPacket(H.GameWorld);
         }
 
-        public NetPacketProcessor GetPacketProcessor()
-        {
-            var manager = H.FikaNet;
-            if (manager == null) return null;
-
-            var field = AccessTools.Field(H.FikaNet.GetType(), "_packetProcessor");
-
-            return field?.GetValue(manager) as NetPacketProcessor;
-        }
-
-        public NetManager GetNetManager()
-        {
-            var manager = H.FikaNet;
-            if (manager == null) return null;
-
-            var field = AccessTools.Field(H.FikaNet.GetType(), "_netServer");
-
-            return field?.GetValue(manager) as NetManager;
-        }
-
         public void RegisterPacket(GameWorld gameWorld)
         {
             if (H.isInRaid())
@@ -97,11 +77,10 @@ namespace ifp.arena.bep.networking.Base
             {
                 _serverRateLimiter.Clear();
 
-                var processor = GetPacketProcessor();
-                if (processor == null) return;
+                if (H.NetPacketProcessor == null) return;
 
-                processor.RemoveSubscription<T>();
-                processor.RemoveSubscription<RejectedPacket<T>>();
+                H.NetPacketProcessor.RemoveSubscription<T>();
+                H.NetPacketProcessor.RemoveSubscription<RejectedPacket<T>>();
             }
             catch (Exception ex)
             {
@@ -152,8 +131,7 @@ namespace ifp.arena.bep.networking.Base
             bool validPacket = ServerValidation(ref packet, netPeer);
             if (!validPacket)
             {
-                var processor = GetPacketProcessor();
-                if (processor != null)
+                if (H.NetPacketProcessor != null)
                 {
                     var rejected = new RejectedPacket<T> { Payload = packet };
                     H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
@@ -215,8 +193,7 @@ namespace ifp.arena.bep.networking.Base
                         if (!canSendReject)
                             return false;
 
-                        var processor = GetPacketProcessor();
-                        if (processor == null)
+                        if (H.NetPacketProcessor == null)
                             return false;
 
                         var rejected = new RejectedPacket<T> { Payload = packet };

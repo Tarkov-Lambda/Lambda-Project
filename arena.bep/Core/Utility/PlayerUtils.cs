@@ -49,33 +49,6 @@ namespace ifp.arena.bep.Core
             return weapons;
         }
 
-        // almost deprecated given we're refactoring to have preset bullets for each gun
-        public static void RegisterBullet(Weapon weapon)
-        {
-            // MagazineItemClass magazine = weapon.GetCurrentMagazine();
-            // if (magazine?.Cartridges?.Items == null || magazine.Cartridges.Items.Count() == 0)
-            //     return;
-            // AmmoItemClass ammo = magazine.GetBulletAtPosition(0);
-
-
-            // Patch_FirearmController_InitiateShot.AmmoRegistry[weapon] = new MagAndAmmo
-            // {
-            //     magazine = magazine,
-            //     ammo = ammo
-            // };
-        }
-
-        public static void RegisterAllBullets()
-        {
-            foreach (Player player in H.AllPlayers)
-            {
-                foreach (Weapon weapon in GetAllWeapons(player))
-                {
-                    RegisterBullet(weapon);
-                }
-            }
-        }
-
         // FIKA DOES NOT SYNC DURABILITY REPAIRS
         // Though I think it does sync equipment changes from client automatically (player still has to manually invoke RaiseEvents)
         public static void Replenish(Player player, bool shouldReloadGun = true)
@@ -113,6 +86,9 @@ namespace ifp.arena.bep.Core
             if (vest?.ContainedItem is not CompoundItem vestCompound)
                 return;
 
+            string weaponMagTemplate = weapon.GetCurrentMagazine()?.TemplateId;
+            if (weaponMagTemplate == null)
+                return;
 
             List<MagazineItemClass> mags = new();
 
@@ -120,7 +96,7 @@ namespace ifp.arena.bep.Core
             {
                 foreach (var item in grid.Items)
                 {
-                    if (item is MagazineItemClass mag)
+                    if (item is MagazineItemClass mag && mag.TemplateId == weaponMagTemplate)
                         mags.Add(mag);
                 }
             }
@@ -130,27 +106,20 @@ namespace ifp.arena.bep.Core
                 ReplenishMagazine(mag, ammo);
             }
 
-
             int missing = 3 - mags.Count;
             if (missing <= 0)
                 return;
 
-            string magTemplate = weapon.GetCurrentMagazine()?.TemplateId;
-            if (magTemplate == null)
-                return;
-
             for (int i = 0; i < missing; i++)
             {
-                if (!TryCreateItem(magTemplate, out Item newItem))
+                if (!TryCreateItem(weaponMagTemplate, out Item newItem))
                     continue;
 
                 if (newItem is not MagazineItemClass newMag)
                     continue;
 
-                // fill mag
                 ReplenishMagazine(newMag, ammo);
 
-                // find free slot in vest grids
                 foreach (var grid in vestCompound.Grids)
                 {
                     if (grid.TryFindLocationForItem(newMag, out ItemAddress location))
@@ -161,12 +130,7 @@ namespace ifp.arena.bep.Core
                 }
             }
         }
-
-        public static MagazineItemClass GetGunMag(Weapon weapon)
-        {
-            return weapon.GetCurrentMagazine();
-        }
-
+        
         public static void ReplenishGun(Weapon weapon, AmmoItemClass ammo)
         {
             var magazine = weapon.GetCurrentMagazine();
@@ -234,8 +198,7 @@ namespace ifp.arena.bep.Core
                 weapon.Repairable.Durability = 100;
                 weapon.MalfState.LastShotOverheat = 0f;
             }
-
-            if (item is CompoundItem compoundItem)
+            else if (item is CompoundItem compoundItem)
             {
                 foreach (var slot in compoundItem.AllSlots)
                 {
@@ -271,15 +234,15 @@ namespace ifp.arena.bep.Core
             health.RestoreFullHealth();
         }
 
-        public static async Task CloseEyes(bool playAudio = true, bool openAfter = true, int delay = 4500)
+        public static async Task CloseEyes(bool playDeathAudio = true, bool openAfter = true, int closeDelay = 750, int openDelay = 4500)
         {
             DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
             deathFade.enabled = true;
 
-            await Task.Delay(750);
+            await Task.Delay(closeDelay);
             deathFade.EnableEffect();
 
-            if (playAudio)
+            if (playDeathAudio)
             {
                 var resourceRequest = Resources.LoadAsync<UISoundsWrapper>("Audio/UISoundsWrapper");
                 var soundsWrapper = (UISoundsWrapper)resourceRequest.asset;
@@ -291,7 +254,7 @@ namespace ifp.arena.bep.Core
 
             if (openAfter)
             {
-                await Task.Delay(delay);
+                await Task.Delay(openDelay);
                 OpenEyes();
             }
         }

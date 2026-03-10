@@ -1,15 +1,33 @@
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking;
+using Fika.Core.Networking.LiteNetLib;
+using Fika.Core.Networking.LiteNetLib.Utils;
+using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
+using System.Runtime.CompilerServices;
+
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    sealed class CallerArgumentExpressionAttribute : Attribute
+    {
+        public string ParameterName { get; }
+
+        public CallerArgumentExpressionAttribute(string parameterName)
+        {
+            ParameterName = parameterName;
+        }
+    }
+}
 
 namespace ifp.arena.bep.Core
 {
@@ -17,10 +35,13 @@ namespace ifp.arena.bep.Core
     public static class H
     {
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-        public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
         public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();
         public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
+
+        public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
+        public static NetPacketProcessor NetPacketProcessor => GetPacketProcessor();
+        public static NetManager NetManager => GetNetManager();
 
         public static ArenaController Arena => Singleton<ArenaController>.Instance;
         public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
@@ -83,6 +104,51 @@ namespace ifp.arena.bep.Core
         public static bool isInRaid()
         {
             return GameWorld != null && GameWorld is not HideoutGameWorld;
+        }
+
+
+        public static NetPacketProcessor GetPacketProcessor()
+        {
+            var manager = FikaNet;
+            if (manager == null) return null;
+
+            var field = AccessTools.Field(FikaNet.GetType(), "_packetProcessor");
+
+            return field?.GetValue(manager) as NetPacketProcessor;
+        }
+
+        public static NetManager GetNetManager()
+        {
+            var manager = H.FikaNet;
+            if (manager == null) return null;
+
+            var field = AccessTools.Field(H.FikaNet.GetType(), "_netServer");
+
+            return field?.GetValue(manager) as NetManager;
+        }
+
+
+        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null)
+        {
+            if (obj == null) return;
+
+            var type = obj.GetType();
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            var sb = new StringBuilder();
+            sb.Append(msg).Append("\n");
+            sb.Append(name).Append(" : ").Append(type.Name).Append("\n{ ");
+
+            foreach (var f in fields)
+            {
+                var value = f.GetValue(obj);
+                sb.Append("\n   ");
+                sb.Append(f.Name).Append("=").Append(value).Append(",");
+            }
+
+            sb.Append("\n}");
+
+            H.Log(sb.ToString());
         }
     }
 }
