@@ -51,7 +51,7 @@ namespace ifp.arena.bep.Core
                 var slot = player.Equipment.GetSlot(slotType);
                 if (slot.ContainedItem != null)
                 {
-                    slot.RemoveItem();
+                    slot.RemoveItemWithoutRestrictions();
                 }
 
                 player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
