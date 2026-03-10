@@ -88,13 +88,17 @@ namespace ifp.arena.bep
             // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
-            RegisterPatch(new Patch_FirearmController_InitiateShot());
+            // RegisterPatch(new Patch_FirearmController_InitiateShot());
 
-            RegisterPatch(new Patch_GClass2963_Spawn());
-            RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());
+            // ANIMATIONS
+            // RegisterPatch(new Patch_GClass2963_Spawn());
+            // RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());
 
-            RegisterPatch(new Patch_FirearmController_Spawn());
-            RegisterPatch(new Patch_FirearmController_Drop());
+            // RegisterPatch(new Patch_FirearmController_Spawn());
+            // RegisterPatch(new Patch_FirearmController_Drop());
+
+            // RegisterPatch(new Patch_FirearmController_InitiateOperation());
+            // ANIMATIONS END
 
             // RegisterPatch(new Patch_GClass2963_Unspawn());
 

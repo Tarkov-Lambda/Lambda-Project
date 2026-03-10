@@ -29,6 +29,11 @@ namespace ifp.arena.bep.Core.Economy
                         itemData = item;
                         return true;
                     }
+                    else if (item.ammoId == bsgId)
+                    {
+                        itemData = item;
+                        return true;
+                    }
                 }
             }
             itemData = new ShopItem();

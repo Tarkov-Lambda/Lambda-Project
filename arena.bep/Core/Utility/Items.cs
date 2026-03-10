@@ -12,6 +12,7 @@ using ItemExtensions = GClass3380;
 using AddItemEventArgs = GEventArgs2;
 using RefreshItemEventArgs = GEventArgs18;
 using RemoveItemEventArgs = GEventArgs3;
+using Cysharp.Threading.Tasks;
 
 namespace ifp.arena.bep.Core
 {
@@ -29,10 +30,38 @@ namespace ifp.arena.bep.Core
             return ItemExtensions.CloneItem(templateItem);
         }
 
-        public static void ClientRequestGiveItem(Item templateItem)
+
+        public static async UniTask ClientRequestGiveItem(Item templateItem)
         {
             var item = CloneItem(templateItem);
             if (item == null) return;
+
+            if (item is Weapon)
+            {
+                Slot gunSlot = H.MainPlayer.Inventory.Equipment.GetSlot(EquipmentSlot.FirstPrimaryWeapon);
+                Weapon existingWeapon = gunSlot.ContainedItem as Weapon;
+
+                if (existingWeapon != null)
+                {
+                    // if the gun slot we are about to replace is equipped
+                    // unequip and discard the weapon
+                    if (H.MainPlayer.HandsController.Item.CurrentAddress == existingWeapon.CurrentAddress)
+                    {
+                        // H.MainPlayer.HandsController.DropWeapon();
+                        var asdas = H.MainPlayer.InventoryController.TryThrowItem(existingWeapon);
+                        H.Dump(asdas);
+                        await UniTask.Delay(1500);
+                        // GStruct153 throwOperation = InteractionsHandlerClass.Throw(existingWeapon, H.MainPlayer.InventoryController, false);
+
+                        // _ = H.MainPlayer.InventoryController.TryRunNetworkTransaction(throwOperation, null);
+
+                        // RemoveItemEventArgs removeItemEventSucceed = new RemoveItemEventArgs(existingWeapon, existingWeapon.CurrentAddress, CommandStatus.Succeed, H.MainPlayer.InventoryController);
+                        // H.MainPlayer.InventoryController.RaiseRemoveEvent(removeItemEventSucceed);
+                    }
+
+
+                }
+            }
 
             Singleton<SpawnItemPacketHandler>.Instance.Send(item);
         }

@@ -86,5 +86,27 @@ namespace ifp.arena.bep.Patches.Tarkov
             return true;
         }
     }
+
+    public class Patch_FirearmController_InitiateOperation : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            // 1. Find the method
+            MethodInfo openMethod = AccessTools.Method(typeof(EFT.Player.FirearmController), "InitiateOperation");
+
+            // 2. Lock it to the specific animation class you want to intercept
+            // Replace 'GClass2949' with the actual class you want to hook
+            MethodInfo closedMethod = openMethod.MakeGenericMethod(typeof(GClass2949));
+
+            return closedMethod;
+        }
+
+        [PatchPostfix]
+        static void Postfix(object __result)
+        {
+            // Do whatever you want here when this specific animation starts
+            H.Dump(__result);
+        }
+    }
 }
 

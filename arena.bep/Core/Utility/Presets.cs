@@ -59,15 +59,17 @@ namespace ifp.arena.bep.Core
         public static bool TryGetGunAmmo(Weapon weapon, out AmmoItemClass ammo)
         {
             if (BuyMenu.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
-            {
+            {  
+
                 ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
                 return true;
             }
+
             ammo = null;
             return false;
         }
 
-
+ 
         // This shit needs to get the fuck outta here
         public static bool CanEnterRaid(out string[] reasons)
         {
