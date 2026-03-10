@@ -91,6 +91,7 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_FirearmController_InitiateShot());
 
             RegisterPatch(new Patch_CommonUI_Awake());
+            RegisterPatch(new Patch_ItemsTabController_Show());
 
             RegisterPacket<AssetBundleHandler>();
             RegisterPacket<RagdollCreator>();

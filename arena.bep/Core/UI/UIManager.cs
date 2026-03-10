@@ -1,5 +1,6 @@
 using arena.ui;
 using Comfort.Common;
+using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -23,6 +24,7 @@ namespace ifp.arena.bep.Core.UI
         public UIManager()
         {
             Patch_CommonUI_Awake.OnAwake += LoadUI;
+            Patch_ItemsTabController_Show.OnShow += OnItemsTabShow;
 
             if (Singleton<CommonUI>.Instantiated)
                 LoadUI(Singleton<CommonUI>.Instance);
@@ -94,9 +96,17 @@ namespace ifp.arena.bep.Core.UI
             shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
         }
 
+        void OnItemsTabShow(CompoundItem lootItem)
+        {
+            if (shop == null) return;
+
+            shop.gameObject.SetActive(lootItem == null);
+        }
+
         public void Dispose()
         {
             Patch_CommonUI_Awake.OnAwake -= LoadUI;
+            Patch_ItemsTabController_Show.OnShow -= OnItemsTabShow;
 
             EventBus.OnEnter -= OnMatchStateEnter;
 
