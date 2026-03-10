@@ -34,6 +34,12 @@ namespace ifp.arena.bep.Core.Economy
                         price = 400,
                         faction = Faction.CT
                     },
+                    new ShopItem
+                    {
+                        bsgId = "628bc7fb408e2b2e9c0801b1", // Bomb - Mystery Ranch NICE COMM 3 BVS frame system (Coyote)
+                        price = 0,
+                        faction = Faction.T
+                    },
                 ]
             });
             buyCategories.Add(new BuyCategory

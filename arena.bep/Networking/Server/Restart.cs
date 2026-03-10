@@ -75,8 +75,8 @@ namespace ifp.arena.bep.networking
 
         public override async void WhenApproved(RestartPacket packet, NetPeer peer)
         {
-            _ = PlayerUtils.CloseEyes(false, true);
-            await Task.Delay(500);
+            // _ = PlayerUtils.CloseEyes(false, true);
+            // await Task.Delay(500);
             Player player = H.GetMainPlayer();
             if (player != null)
             {

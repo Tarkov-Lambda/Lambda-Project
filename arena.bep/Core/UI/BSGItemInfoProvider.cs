@@ -12,10 +12,8 @@ using ItemIcon = GClass929;
 
 namespace ifp.arena.bep.Core.UI
 {
-    internal class BSGItemInfoProvider : IItemInfoProvider, IDisposable
+    internal class BSGItemInfoProvider : IItemInfoProvider
     {
-        Dictionary<string, Item> cacheImmutableItems = new Dictionary<string, Item>();
-
         public string FullName(string bsgId)
         {
             if (string.IsNullOrEmpty(bsgId))
@@ -52,7 +50,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void RequestIcon(string bsgId, Action<Sprite> onRendered)
         {
-            Item immutableItem = GetImmutableItem(bsgId);
+            Item immutableItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(bsgId);
 
             ItemIcon itemIcon = ItemViewFactory.LoadItemIcon(immutableItem);
             if (itemIcon.Sprite != null)
@@ -62,30 +60,6 @@ namespace ifp.arena.bep.Core.UI
             }
             
             itemIcon.Changed.Bind(() => onRendered?.Invoke(itemIcon.Sprite));
-        }
-
-        private Item GetImmutableItem(string bsgId)
-        {
-            if (cacheImmutableItems.ContainsKey(bsgId))
-                return cacheImmutableItems[bsgId];
-
-            var weaponBuild = PresetUtils.GetCustomTemplate(bsgId);
-            if (weaponBuild != null)
-                return weaponBuild.Item;
-
-            Item newImmutableItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), bsgId, null);
-            cacheImmutableItems.Add(bsgId, newImmutableItem);
-            return newImmutableItem;
-        }
-
-        public void Dispose()
-        {
-            foreach (var item in cacheImmutableItems)
-            {
-                // ???
-            }
-
-            cacheImmutableItems.Clear();
         }
     }
 }

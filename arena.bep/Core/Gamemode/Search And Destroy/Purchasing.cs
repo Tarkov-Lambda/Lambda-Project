@@ -1,5 +1,7 @@
+using Comfort.Common;
 using EFT.InventoryLogic;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
 using System;
@@ -51,18 +53,18 @@ namespace ifp.arena.bep.Core.Gamemode
             return price;
         }
 
-        public static bool CanAfford(Item item)
+        public static bool CanAfford(ShopItem request)
         {
-            return H.MainPlayerScore.money >= GetItemPrice(item);
+            return H.MainPlayerScore.money >= request.price;
         }
 
         public static void BuyItem(ShopItem request)
         {
             // delai
-
-            Item item = null;
-            ItemsUtils.GiveItem(item, H.MainPlayer);
-            H.MainPlayerScore.SpendMoney(GetItemPrice(item));
+            Item item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(request.bsgId);
+            H.Notify(item.LocalizedName());
+            ItemsUtils.ClientGiveItem(item, H.MainPlayer);
+            H.MainPlayerScore.SpendMoney(request.price);
         }
     }
 }

@@ -88,8 +88,8 @@ namespace ifp.arena.bep.Core.UI
 
         void Refresh()
         {
-            int scoreCT = H.Session.factionWins[shared.Faction.CT];
-            int scoreT = H.Session.factionWins[shared.Faction.T];
+            int scoreCT = H.Session.factionWins[Faction.CT];
+            int scoreT = H.Session.factionWins[Faction.T];
 
             matchUIController.TopBar.SetScores(scoreCT, scoreT);
 
@@ -115,8 +115,6 @@ namespace ifp.arena.bep.Core.UI
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);
-
-            itemInfoProvider.Dispose();
 
             Release(this);
         }

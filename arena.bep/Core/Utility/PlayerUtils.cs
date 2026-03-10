@@ -68,7 +68,6 @@ namespace ifp.arena.bep.Core
             {
                 foreach (Weapon weapon in GetAllWeapons(player))
                 {
-                    H.Notify(weapon.ShortName.ToString());
                     RegisterBullet(weapon);
                 }
             }
@@ -219,12 +218,12 @@ namespace ifp.arena.bep.Core
             health.RestoreFullHealth();
         }
 
-        public static async Task CloseEyes(bool playAudio = true, bool openAfter = true, int delay = 4000)
+        public static async Task CloseEyes(bool playAudio = true, bool openAfter = true, int delay = 4500)
         {
             DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
             deathFade.enabled = true;
 
-            await Task.Delay(500);
+            await Task.Delay(750);
             deathFade.EnableEffect();
 
             if (playAudio)

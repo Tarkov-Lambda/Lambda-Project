@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.LiteNetLib;
@@ -159,7 +160,7 @@ namespace ifp.arena.bep.networking
             }
         }
 
-        private async Task LoadBundlesAndSpawnAsync(Item rootItem, int playerId)
+        private async UniTask LoadBundlesAndSpawnAsync(Item rootItem, int playerId)
         {
             var prefabsToLoad = rootItem.GetAllItems()
                 .Select(i => i.Template.Prefab)
@@ -177,8 +178,6 @@ namespace ifp.arena.bep.networking
                     default(CancellationToken)           // Cancellation token
                 );
             }
-
-            // H.Notify(rootItem.LocalizedName());
 
             ItemsUtils.SyncGiveItem(rootItem, H.GetPlayer(playerId));
         }

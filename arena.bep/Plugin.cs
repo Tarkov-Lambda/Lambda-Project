@@ -97,7 +97,7 @@ namespace ifp.arena.bep
             RegisterPacket<RagdollCreator>();
 
             // FIKA
-            RegisterPatch(new Patch_FikaClient_OnCommonPlayerPacketReceived());
+            // RegisterPatch(new Patch_FikaClient_OnCommonPlayerPacketReceived());
 
             // NETWORK
             RegisterPacket<PlayerKilledPacketHandler>();
@@ -117,10 +117,9 @@ namespace ifp.arena.bep
             RegisterPacket<TimeSyncResponsePacketHandler>();
             RegisterPacket<PausePacketHandler>();
 
-
-
             RegisterPacket<ArenaController>();
 
+            RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
         }
 
