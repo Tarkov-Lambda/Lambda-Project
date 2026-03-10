@@ -76,13 +76,13 @@ namespace ifp.arena.bep.Core.Economy
                     },
                     new ShopItem
                     {
-                        bsgId = "633ec6ee025b096d320a3b15", // RSH12B
+                        bsgId = "633ec7c2a6918cb895019c6c", // Rsh-12
                         ammoId = "5cadf6eeae921500134b2799", // PS12B
                         price = 500,
                     },
                     new ShopItem
                     {
-                        bsgId = "669fa3d876116c89840b1217", // Deagle
+                        bsgId = "669fa39b48fc9f8db6035a0c", // Deagle
                         ammoId = "668fe62ac62660a5d8071446", // .50 AE FMJ
                         price = 700,
                     },

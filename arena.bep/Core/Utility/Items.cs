@@ -5,10 +5,11 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using ifp.arena.bep.networking;
 
-//
+// --------------------------------------------- //
 using SearchableGrid = GClass3117;
-//
-
+using ItemExtensions = GClass3380;
+using AddItemEventArgs = GEventArgs2;
+// --------------------------------------------- //
 
 namespace ifp.arena.bep.Core
 {
@@ -46,9 +47,9 @@ namespace ifp.arena.bep.Core
             return ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
         }
 
-        public static Item CloneItem(Item templateItem)
+        private static Item CloneItem(Item templateItem)
         {
-            return GClass3380.CloneItem(templateItem);
+            return ItemExtensions.CloneItem(templateItem);
         }
 
         public static void SyncGiveItem(Item item, Player player)
@@ -80,7 +81,7 @@ namespace ifp.arena.bep.Core
         // here, we bypass that and directly call our own raise event
         public static void RefreshItemInventory(Item item, Player player, ItemAddress itemAddress)
         {
-            GEventArgs2 refreshArg = new GEventArgs2(item, itemAddress, CommandStatus.Succeed, player.Equipment.Owner);
+            AddItemEventArgs refreshArg = new AddItemEventArgs(item, itemAddress, CommandStatus.Succeed, player.Equipment.Owner);
             player.InventoryController.RaiseAddEvent(refreshArg);
         }
 
@@ -122,8 +123,7 @@ namespace ifp.arena.bep.Core
                 {
                     foreach (var container in vest.Containers)
                     {
-                        if (container is SearchableGrid &&
-                            container.TryFindLocationForItem(item, out ItemAddress location))
+                        if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
                         {
                             places.itemAddress = location;
                             break;
@@ -134,6 +134,7 @@ namespace ifp.arena.bep.Core
 
             return places;
         }
+
         public static CompoundItem GetPlateHolder(Player player)
         {
 

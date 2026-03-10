@@ -5,9 +5,11 @@ using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 
-//
+// --------------------------------------------- //
 using SearchableGrid = GClass3117;
-//
+using EquipmentBuildClass = GClass3953; // Assumption
+// --------------------------------------------- //
+
 
 namespace ifp.arena.bep.Core
 {
@@ -16,14 +18,14 @@ namespace ifp.arena.bep.Core
         public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
         public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
 
-        public static IEnumerable<GClass3953> Builds => EquipmentBuilds.EquipmentBuilds.Values;
+        public static IEnumerable<EquipmentBuildClass> Builds => EquipmentBuilds.EquipmentBuilds.Values;
         public static IEnumerable<WeaponBuildClass> Templates => WeaponBuilds.Dictionary_0.Values;
         public static InventoryEquipment Preset => GetDefaultPreset();
 
         // Retrieves first custom hideout preset
         public static InventoryEquipment GetDefaultPreset()
         {
-            foreach (GClass3953 equipmentTemplate in Builds.ToArray())
+            foreach (EquipmentBuildClass equipmentTemplate in Builds.ToArray())
             {
                 if (equipmentTemplate.BuildType == EFT.Builds.EEquipmentBuildType.Custom)
                 {

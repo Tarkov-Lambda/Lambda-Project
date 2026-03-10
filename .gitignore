@@ -11,3 +11,4 @@ obj/
 .stfolder
 
 audio/*
+arena.audio/content/*
