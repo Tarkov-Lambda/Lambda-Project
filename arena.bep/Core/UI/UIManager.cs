@@ -1,5 +1,6 @@
 using arena.ui;
 using Comfort.Common;
+using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
@@ -7,6 +8,7 @@ using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
+using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
 using System;
@@ -21,13 +23,24 @@ namespace ifp.arena.bep.Core.UI
         Shop shop;
         BSGItemInfoProvider itemInfoProvider;
 
+        InventoryHotkeyListener inventoryHotkeyListener;
+
         public UIManager()
         {
             Patch_CommonUI_Awake.OnAwake += LoadUI;
             Patch_ItemsTabController_Show.OnShow += OnItemsTabShow;
+            Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
 
             if (Singleton<CommonUI>.Instantiated)
                 LoadUI(Singleton<CommonUI>.Instance);
+
+            if (Singleton<GameWorld>.Instantiated)
+                AddInventoryHotkeyInterceptor(Singleton<GameWorld>.Instance);
+        }
+
+        private void AddInventoryHotkeyInterceptor(GameWorld gameWorld)
+        {
+            inventoryHotkeyListener = gameWorld.MainPlayer.GetOrAddComponent<InventoryHotkeyListener>();
         }
 
         async void LoadUI(CommonUI commonUI)
@@ -107,6 +120,7 @@ namespace ifp.arena.bep.Core.UI
         {
             Patch_CommonUI_Awake.OnAwake -= LoadUI;
             Patch_ItemsTabController_Show.OnShow -= OnItemsTabShow;
+            Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
             EventBus.OnEnter -= OnMatchStateEnter;
 
@@ -115,6 +129,9 @@ namespace ifp.arena.bep.Core.UI
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);
+
+            if (inventoryHotkeyListener != null)
+                Component.Destroy(inventoryHotkeyListener);
 
             Release(this);
         }
