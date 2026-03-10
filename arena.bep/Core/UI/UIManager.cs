@@ -3,7 +3,9 @@ using Comfort.Common;
 using EFT.UI;
 using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using System;
 using UnityEngine;
@@ -15,6 +17,7 @@ namespace ifp.arena.bep.Core.UI
         ArenaMatchUI matchUIController;
 
         Shop shop;
+        BSGItemInfoProvider itemInfoProvider;
 
         public UIManager()
         {
@@ -57,10 +60,25 @@ namespace ifp.arena.bep.Core.UI
         void AhhhhWire()
         {
             EventBus.OnEnter += OnMatchStateEnter;
+            EventBus.OnPlayerKill += OnPlayerKill;
 
         }
 
         void OnMatchStateEnter(GameTypes.MatchState matchState)
+        {
+            if (itemInfoProvider == null)
+            {
+                itemInfoProvider = new BSGItemInfoProvider();
+                shop.SetAssortment(BuyMenu.buyCategories, itemInfoProvider);
+            }
+
+            shop.SetFaction(H.MainPlayerScore.faction);
+            shop.SetInteractable(matchState == GameTypes.MatchState.RoundPrepare);
+
+            Refresh();
+        }
+
+        void OnPlayerKill(PlayerKilledPacket killPacket)
         {
             Refresh();
         }
@@ -71,6 +89,8 @@ namespace ifp.arena.bep.Core.UI
             int scoreT = H.Session.factionWins[shared.Faction.T];
 
             matchUIController.TopBar.SetScores(scoreCT, scoreT);
+
+            shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
         }
 
         public void Dispose()
@@ -84,6 +104,8 @@ namespace ifp.arena.bep.Core.UI
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);
+
+            itemInfoProvider.Dispose();
 
             Release(this);
         }

@@ -715,7 +715,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6331642110861447148
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1601,6 +1601,7 @@ MonoBehaviour:
   textSubtext: {fileID: 4017549558023773130}
   textPrice: {fileID: 1103406689063002964}
   icon: {fileID: 3144010508772030038}
+  mainButton: {fileID: 1444781477991632133}
 --- !u!222 &4250296694322588925
 CanvasRenderer:
   m_ObjectHideFlags: 0

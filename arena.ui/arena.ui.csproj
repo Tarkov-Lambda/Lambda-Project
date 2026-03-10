@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll">
       <Private>False</Private>
     </Reference>
