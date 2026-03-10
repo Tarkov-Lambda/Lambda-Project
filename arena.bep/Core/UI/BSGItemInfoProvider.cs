@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-using IconsHash = GClass928;
+using ItemIcon = GClass929;
 
 namespace ifp.arena.bep.Core.UI
 {
@@ -49,11 +49,18 @@ namespace ifp.arena.bep.Core.UI
             return "epop";
         }
 
-        public Sprite Icon(string bsgId)
+        public void RequestIcon(string bsgId, Action<Sprite> onRendered)
         {
             Item immutableItem = GetImmutableItem(bsgId);
 
-            return ItemViewFactory.LoadItemIcon(immutableItem).Sprite;
+            ItemIcon itemIcon = ItemViewFactory.LoadItemIcon(immutableItem);
+            if (itemIcon.Sprite != null)
+            {
+                onRendered?.Invoke(itemIcon.Sprite);
+                return;
+            }
+            
+            itemIcon.Changed.Bind(() => onRendered?.Invoke(itemIcon.Sprite));
         }
 
         private Item GetImmutableItem(string bsgId)

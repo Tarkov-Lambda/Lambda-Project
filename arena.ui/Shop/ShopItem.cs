@@ -35,7 +35,14 @@ namespace arena.ui
             textName.text = itemInfoProvider.ShortName(shopItem.bsgId);
             textSubtext.text = string.IsNullOrEmpty(shopItem.ammoId) ? string.Empty : itemInfoProvider.ShortName(shopItem.ammoId);
             textPrice.text = MoneyFormat.FormatMoney(shopItem.price);
-            icon.sprite = itemInfoProvider.Icon(shopItem.bsgId);
+
+            itemInfoProvider.RequestIcon(shopItem.bsgId, SetIconSprite);
+        }
+
+        void SetIconSprite(Sprite sprite)
+        {
+            icon.sprite = sprite;
+            icon.SetNativeSize();
         }
     }
 }

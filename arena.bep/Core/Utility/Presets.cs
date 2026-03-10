@@ -37,11 +37,11 @@ namespace ifp.arena.bep.Core
         }
 
         // Fetch a build that exists in the user's gun builds (defaults to stock preset)
-        public static WeaponBuildClass GetCustomTemplate(string templateId)
+        public static WeaponBuildClass GetCustomTemplate(string bsgId)
         {
             return Templates.FirstOrDefault((build) =>
             {
-                return build.Item.Id == templateId;
+                return build.Item.TemplateId == bsgId;
             });
         }
 

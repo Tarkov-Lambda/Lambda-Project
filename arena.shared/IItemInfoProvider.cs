@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ifp.arena.shared
 {
@@ -12,6 +13,6 @@ namespace ifp.arena.shared
         string FullName(string bsgId);
         string ShortName(string bsgId);
 
-        Sprite Icon(string bsgId);
+        void RequestIcon(string bsgId, Action<Sprite> callback);
     }
 }
