@@ -21,26 +21,6 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
-    public class Patch_CanPressTrigger : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(ClientFirearmController), nameof(ClientFirearmController.IsTriggerPressed));
-        }
-
-        [PatchPrefix]
-        static bool Prefix(ref bool __result)
-        {
-            if (H.Session.IsControllerPartiallyLocked())
-            {
-                __result = false;
-                return false;
-            }
-            
-            return true;
-        }
-    }
-
     public struct MagAndAmmo
     {
         public MagazineItemClass magazine;
@@ -69,7 +49,41 @@ namespace ifp.arena.bep.Patches.Tarkov
                 magazine = weap.GetCurrentMagazine(),
                 ammo = ammo
             };
+        }
+    }
 
+
+    public class Patch_FirearmController_Drop : ModulePatch
+    {
+        private const float DropAnimationSpeed = 3f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Drop));
+        }
+
+        [PatchPrefix]
+        static bool Prefix(ref float animationSpeed, Action callback, bool fastDrop, Item nextControllerItem)
+        {
+            animationSpeed = DropAnimationSpeed;
+            return true;
+        }
+    }
+
+    public class Patch_FirearmController_Spawn : ModulePatch
+    {
+        private const float DropAnimationSpeed = 3f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Spawn));
+        }
+
+        [PatchPrefix]
+        static bool Prefix(ref float animationSpeed, Action callback)
+        {
+            animationSpeed = DropAnimationSpeed;
+            return true;
         }
     }
 }

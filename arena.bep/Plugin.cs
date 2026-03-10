@@ -90,6 +90,14 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
             RegisterPatch(new Patch_FirearmController_InitiateShot());
 
+            RegisterPatch(new Patch_GClass2963_Spawn());
+            RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());
+
+            RegisterPatch(new Patch_FirearmController_Spawn());
+            RegisterPatch(new Patch_FirearmController_Drop());
+
+            // RegisterPatch(new Patch_GClass2963_Unspawn());
+
             RegisterPatch(new Patch_CommonUI_Awake());
             RegisterPatch(new Patch_ItemsTabController_Show());
 
