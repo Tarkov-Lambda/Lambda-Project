@@ -75,6 +75,8 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             _lastKillTime = now;
 
+            if (!H.MainPlayerScore.isAlive) return false;
+
             // Delayed double healing to make sure every negative effect is fixed
             _ = PlayerUtils.FixMe();
             Singleton<ReplenishPacketHandler>.Instance.Send();
