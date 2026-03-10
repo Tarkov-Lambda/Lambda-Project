@@ -47,7 +47,6 @@ namespace ifp.arena.bep.networking.Base
 
             H.OnGameStarted += RegisterPacket;
             H.OnGameDispose += UnregisterPacket;
-
             // Hot-reload
             RegisterPacket(H.GameWorld);
         }

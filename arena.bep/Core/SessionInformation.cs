@@ -51,7 +51,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.Warmup, 40},
             {MatchState.WarmupEnd, 1},
             {MatchState.Pause, 45},
-            {MatchState.RoundPrepare, 105},
+            {MatchState.RoundPrepare, 15},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},
@@ -99,7 +99,7 @@ namespace ifp.arena.bep.GameTypes
         public bool IsControllerPartiallyLocked()
         {
             if (H.GameWorld is HideoutGameWorld) return false;
-            return false;
+            // return false;
 
             if (roundState == MatchState.RoundPrepare || roundState == MatchState.Pause) return true;
             if (!H.MainPlayerScore.isAlive) return true;

@@ -7,7 +7,10 @@ using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
+using ifp.arena.bep.Core.Economy;
+using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.Patches.Tarkov;
+using ifp.arena.shared;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core
@@ -49,17 +52,17 @@ namespace ifp.arena.bep.Core
         // almost deprecated given we're refactoring to have preset bullets for each gun
         public static void RegisterBullet(Weapon weapon)
         {
-            MagazineItemClass magazine = weapon.GetCurrentMagazine();
-            if (magazine?.Cartridges?.Items == null || magazine.Cartridges.Items.Count() == 0)
-                return;
-            AmmoItemClass ammo = magazine.GetBulletAtPosition(0);
+            // MagazineItemClass magazine = weapon.GetCurrentMagazine();
+            // if (magazine?.Cartridges?.Items == null || magazine.Cartridges.Items.Count() == 0)
+            //     return;
+            // AmmoItemClass ammo = magazine.GetBulletAtPosition(0);
 
 
-            Patch_FirearmController_InitiateShot.AmmoRegistry[weapon] = new MagAndAmmo
-            {
-                magazine = magazine,
-                ammo = ammo
-            };
+            // Patch_FirearmController_InitiateShot.AmmoRegistry[weapon] = new MagAndAmmo
+            // {
+            //     magazine = magazine,
+            //     ammo = ammo
+            // };
         }
 
         public static void RegisterAllBullets()
@@ -87,41 +90,92 @@ namespace ifp.arena.bep.Core
 
                     if (item is Weapon weapon)
                     {
-                        if (shouldReloadGun)
+
+                        if (BuyMenu.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
                         {
-                            ReplenishGun(weapon, H.AmmoRegistry[weapon].ammo);
+                            AmmoItemClass ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
+                            if (shouldReloadGun)
+                            {
+                                ReplenishGun(weapon, ammo);
+                            }
+
+                            ReplenishVestMagazines(tacticalVest, weapon, ammo, player);
+
                         }
 
-                        ReplenishVestMagazines(tacticalVest, weapon);
+                    }
+
+
+                }
+            }
+        }
+
+        public static void ReplenishVestMagazines(Slot vest, Weapon weapon, AmmoItemClass ammo, Player player)
+        {
+            if (vest?.ContainedItem is not CompoundItem vestCompound)
+                return;
+
+
+            List<MagazineItemClass> mags = new();
+
+            foreach (var grid in vestCompound.Grids)
+            {
+                foreach (var item in grid.Items)
+                {
+                    if (item is MagazineItemClass mag)
+                        mags.Add(mag);
+                }
+            }
+
+            foreach (var mag in mags)
+            {
+                ReplenishMagazine(mag, ammo);
+            }
+
+
+            int missing = 3 - mags.Count;
+            if (missing <= 0)
+                return;
+
+            string magTemplate = weapon.GetCurrentMagazine()?.TemplateId;
+            if (magTemplate == null)
+                return;
+
+            for (int i = 0; i < missing; i++)
+            {
+                if (!TryCreateItem(magTemplate, out Item newItem))
+                    continue;
+
+                if (newItem is not MagazineItemClass newMag)
+                    continue;
+
+                // fill mag
+                ReplenishMagazine(newMag, ammo);
+
+                // find free slot in vest grids
+                foreach (var grid in vestCompound.Grids)
+                {
+                    if (grid.TryFindLocationForItem(newMag, out ItemAddress location))
+                    {
+                        ItemsUtils.WhenApprovedGiveItem(newMag, player);
+                        break;
                     }
                 }
             }
         }
-        
-        public static void ReplenishVestMagazines(Slot vest, Weapon weapon)
+
+        public static MagazineItemClass GetGunMag(Weapon weapon)
         {
-            if (vest != null && vest.ContainedItem is CompoundItem vestCompound)
-            {
-                foreach (var grid in vestCompound.Grids)
-                {
-                    if (grid.Items.FirstOrDefault() is MagazineItemClass magazine)
-                    {
-                        ReplenishMagazine(magazine, H.AmmoRegistry[weapon].ammo);
-                    }
-                }
-            }
+            return weapon.GetCurrentMagazine();
         }
 
         public static void ReplenishGun(Weapon weapon, AmmoItemClass ammo)
         {
             var magazine = weapon.GetCurrentMagazine();
-            if (magazine?.Cartridges?.Items == null || magazine.Cartridges.Items.Count() == 0)
-                return;
-                
+
             if (magazine != null)
             {
                 ReplenishMagazine(magazine, ammo);
-                return;
             }
 
             foreach (var chamber in weapon.Chambers)
@@ -180,6 +234,7 @@ namespace ifp.arena.bep.Core
             if (item is Weapon weapon)
             {
                 weapon.Repairable.Durability = 100;
+                weapon.MalfState.LastShotOverheat = 0f;
             }
 
             if (item is CompoundItem compoundItem)
@@ -201,7 +256,7 @@ namespace ifp.arena.bep.Core
         public static async Task FixMe()
         {
             var health = H.MainPlayer.ActiveHealthController;
-            Replenish(H.MainPlayer);
+            Replenish(H.MainPlayer, true);
 
             health.ChangeHydration(100f);
             health.ChangeEnergy(100f);
@@ -214,7 +269,7 @@ namespace ifp.arena.bep.Core
                 health.RemoveNegativeEffects(bodyPart);
             }
 
-            Replenish(H.MainPlayer);
+            // Replenish(H.MainPlayer);
             health.RestoreFullHealth();
         }
 

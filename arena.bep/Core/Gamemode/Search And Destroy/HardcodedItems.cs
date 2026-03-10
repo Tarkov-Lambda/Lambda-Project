@@ -12,6 +12,24 @@ namespace ifp.arena.bep.Core.Economy
     public static class BuyMenu
     {
         public static List<BuyCategory> buyCategories = new();
+
+        public static bool TryGetItemData(string bsgId, out ShopItem itemData)
+        {
+            foreach (var category in buyCategories)
+            {
+                foreach (var item in category.items)
+                {
+                    if (item.bsgId == bsgId)
+                    {
+                        itemData = item;
+                        return true;
+                    }
+                }
+            }
+            itemData = new ShopItem();
+            return false;
+        }
+
         static BuyMenu()
         {
             buyCategories.Add(new BuyCategory
