@@ -17,6 +17,7 @@ namespace ifp.arena.bep.Core.UI
 
         private float keyDownBeginTimestamp = 0f;
         private bool wasKeyDownPrevFrame = false;
+        private bool waitingForKeyReleaseAfterInventoryClose = false;
 
         private const float MAX_TAP_TIME = 0.250f;
 
@@ -33,12 +34,24 @@ namespace ifp.arena.bep.Core.UI
         {
             if (playerOwner.Player.IsInventoryOpened)
             {
-                keyDownBeginTimestamp = 0; // fake timestamp
-                wasKeyDownPrevFrame = true;
+                waitingForKeyReleaseAfterInventoryClose = true;
+                sentHoldBegin = false;
                 return;
             }
 
             bool isDownThisFrame = CheckInventoryKeysDown();
+
+            if (waitingForKeyReleaseAfterInventoryClose)
+            {
+                if (isDownThisFrame)
+                    return;
+
+                waitingForKeyReleaseAfterInventoryClose = false;
+                wasKeyDownPrevFrame = false;
+                keyDownBeginTimestamp = 0f;
+                sentHoldBegin = false;
+                return;
+            }
 
             if (isDownThisFrame)
             {
