@@ -2,6 +2,7 @@
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
+using ifp.arena.bep;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
@@ -96,6 +97,7 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
+            _tickerObject.AddComponent<TracerOverlay>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
 

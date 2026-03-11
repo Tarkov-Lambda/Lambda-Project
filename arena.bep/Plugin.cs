@@ -139,7 +139,7 @@ namespace ifp.arena.bep
             RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
 
-            // _disposables.Add(new DynamicClassTracer(typeof(Player.FirearmController)));
+            _disposables.Add(new DynamicClassTracer(typeof(Player.FirearmController)));
         }
 
         private void InitConfiguration()
