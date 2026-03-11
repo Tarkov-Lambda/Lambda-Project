@@ -64,6 +64,8 @@ namespace ifp.arena.bep.Core.Gamemode
             Item item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(request.bsgId);
             ItemsUtils.ClientRequestGiveItem(item);
             H.MainPlayerScore.SpendMoney(request.price);
+
+            Singleton<EFT.UI.GUISounds>.Instance.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
         }
     }
 }

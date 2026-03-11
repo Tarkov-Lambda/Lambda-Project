@@ -6,6 +6,8 @@ using HarmonyLib;
 using ifp.arena.bep.networking;
 using System.Linq;
 using System;
+using EFT.UI;
+using UnityEngine;
 
 using SearchableGrid = GClass3117;
 using ItemExtensions = GClass3380;
@@ -99,6 +101,15 @@ namespace ifp.arena.bep.Core
                     firemode.FireMode = Weapon.EFireMode.fullauto;
                 }
 
+            }
+
+            if (player.IsYourPlayer)
+            {
+                AudioClip itemClip = Singleton<GUISounds>.Instance.GetItemClip(item.ItemSound, EInventorySoundType.drop);
+                if (itemClip != null)
+                {
+                    Singleton<GUISounds>.Instance.PlaySound(itemClip);
+                }
             }
         }
 
