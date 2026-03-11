@@ -74,38 +74,37 @@ namespace ifp.arena.bep
             InitConfiguration();
 
             // TARKOV
-            RegisterPatch(new Patch_Gameworld_OnGameStarted());
-            RegisterPatch(new Patch_Gameworld_OnDispose());
+            RegisterPatch(new Patch_Gameworld_OnGameStarted()); // Hooks
+            RegisterPatch(new Patch_Gameworld_OnDispose()); // Hooks
 
-            RegisterPatch(new Patch_Kill());
+            RegisterPatch(new Patch_Kill()); // Bypass Dying entirely
 
-            RegisterPatch(new Patch_CanWalk());
-            RegisterPatch(new Patch_CanJump());
-            RegisterPatch(new Patch_CanPressTrigger());
+            RegisterPatch(new Patch_CanWalk()); // For controller locking
+            RegisterPatch(new Patch_CanJump()); // For controller locking
+            RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
             // RegisterPatch(new Patch_ApplyShot());
 
             RegisterPatch(new Patch_ApplyDamage());
+            RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
 
-            RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());
+            RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Planting/Defusing
 
 
             RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
             // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
-            RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());
+            RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon()); // Other players see you inspecting hands
             // RegisterPatch(new Patch_FirearmController_InitiateShot());
 
-            // ANIMATIONS
+
+            //--------------- ANIMATIONS --------------- //
             // RegisterPatch(new Patch_GClass2963_Spawn());
-            RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());
-
+            RegisterPatch(new Patch_BaseGrenadeHandsController_Drop()); // Instant Grenade Unequip
             // RegisterPatch(new Patch_FirearmController_Spawn());
-            RegisterPatch(new Patch_FirearmController_Drop());
-
+            RegisterPatch(new Patch_FirearmController_Drop()); // Instant Weapon Unequip
             // RegisterPatch(new Patch_FirearmController_InitiateOperation());
-            // ANIMATIONS END
+            //------------------------------------------ //
 
-            // RegisterPatch(new Patch_GClass2963_Unspawn());
 
             RegisterPatch(new Patch_CommonUI_Awake());
             RegisterPatch(new Patch_ItemsTabController_Show());
