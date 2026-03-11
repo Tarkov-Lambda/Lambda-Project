@@ -167,6 +167,19 @@ namespace ifp.arena.bep.networking
                 .Where(p => p != null && !string.IsNullOrEmpty(p.path))
                 .ToList();
 
+            // We also gotta load the ammo asset bundle
+            foreach (var item in rootItem.GetAllItems())
+            {
+                if (item is Weapon weapon && PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                {
+                    var ammoPrefab = ammo.Template.Prefab;
+                    if (ammoPrefab != null && !string.IsNullOrEmpty(ammoPrefab.path))
+                    {
+                        prefabsToLoad.Add(ammoPrefab);
+                    }
+                }
+            }
+
             if (prefabsToLoad.Count > 0)
             {
                 await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(
