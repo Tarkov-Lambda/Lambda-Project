@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
@@ -91,11 +92,16 @@ namespace ifp.arena.bep.Core.Gamemode
 
             H.Arena.LastObjectivePlayerId = -1;
             H.Arena.LastObjectiveBombState = BombState.None;
+
+            ItemsUtils.ForceRemoveSlot(EquipmentSlot.Backpack);
         }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
         public void OnExit()
         {
-
+            if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SnDModeRules)
+            {
+                Singleton<BombAssignmentPacketHandler>.Instance.Send();
+            }
             // int currentRound = H.Session.factionWins.Values.Sum();
             // int maxRounds = SnDModeRules.maxRoundsToWin * 2 - 1;
             // double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
@@ -141,7 +147,6 @@ namespace ifp.arena.bep.Core.Gamemode
         }
         public void OnExit()
         {
-            // over here
         }
     }
 

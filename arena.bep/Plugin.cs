@@ -53,6 +53,8 @@ namespace ifp.arena.bep
         private ConfigEntry<KeyboardShortcut> DeathKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
 
+        private GameObject TracerOverlay;
+
         private readonly List<ModulePatch> _patches = new();
         private readonly List<IDisposable> _disposables = new();
 
@@ -125,6 +127,7 @@ namespace ifp.arena.bep
 
             RegisterPacket<SessionInfoPacketHandler>();
             RegisterPacket<BombStatePacketHandler>();
+            RegisterPacket<BombAssignmentPacketHandler>();
             RegisterPacket<MatchStateSyncPacketHandler>();
             RegisterPacket<RestartPacketHandler>();
             RegisterPacket<AssetLoadStatePacketHandler>();
@@ -140,7 +143,12 @@ namespace ifp.arena.bep
             RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
 
-            _disposables.Add(new DynamicClassTracer(typeof(Player.FirearmController.GClass2037)));
+            _disposables.Add(new DynamicClassTracer(typeof(InteractionsHandlerClass)));
+
+            TracerOverlay = new GameObject("Arena Gamesession");
+            TracerOverlay.AddComponent<TracerOverlay>();
+            DontDestroyOnLoad(TracerOverlay);
+
         }
 
         private void InitConfiguration()
@@ -173,6 +181,7 @@ namespace ifp.arena.bep
         void OnDestroy()
         {
             Logger.LogInfo("Unload");
+            UnityEngine.Object.Destroy(TracerOverlay);
 
             if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
             {

@@ -7,6 +7,7 @@ using ifp.arena.bep.networking;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ifp.arena.bep.GameTypes
 {
@@ -106,6 +107,17 @@ namespace ifp.arena.bep.GameTypes
             if (!H.MainPlayerScore.isAlive) return true;
 
             return false;
+        }
+
+        public List<Player> GetPlayersFromFaction(Faction faction)
+        {
+            if (!H.isInRaid())
+                return new();
+
+            return scoreboard.Values
+                .Where(s => s.faction == faction && s.player != null)
+                .Select(s => s.player)
+                .ToList();
         }
     }
 

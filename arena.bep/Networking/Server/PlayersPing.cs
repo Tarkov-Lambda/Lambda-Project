@@ -62,7 +62,7 @@ namespace ifp.arena.bep.networking
                 scores = H.Scoreboard.Select(kvp => new PlayerPingData
                 {
                     playerId = kvp.Key,
-                    ping = H.GetNetManager().GetPeerById(kvp.Key).Ping,
+                    ping = H.NetManager.GetPeerById(kvp.Key).Ping,
                 }).ToArray()
             };
 

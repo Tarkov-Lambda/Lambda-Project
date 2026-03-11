@@ -1,3 +1,10 @@
+using SearchableGrid = GClass3117;
+using ItemExtensions = GClass3380;
+using AddItemEventArgs = GEventArgs2;
+using RefreshItemEventArgs = GEventArgs18;
+using RemoveItemEventArgs = GEventArgs3;
+//---------------------------------------------------------------//
+
 using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
@@ -8,12 +15,6 @@ using System.Linq;
 using System;
 using EFT.UI;
 using UnityEngine;
-
-using SearchableGrid = GClass3117;
-using ItemExtensions = GClass3380;
-using AddItemEventArgs = GEventArgs2;
-using RefreshItemEventArgs = GEventArgs18;
-using RemoveItemEventArgs = GEventArgs3;
 using Cysharp.Threading.Tasks;
 
 namespace ifp.arena.bep.Core
@@ -35,40 +36,61 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
         {
-            var item = CloneItem(templateItem);
-            if (item == null) return false;
+            if (templateItem == null)
+                return false;
 
-            if (item is Weapon)
+            var places = GetAppropriateSlot(templateItem, H.MainPlayer);
+
+            var areAllSlotsFree = true;
+
+            // synchronous but whatever for now
+            foreach (var slot in places.slots)
             {
-                var places = GetAppropriateSlot(item, H.MainPlayer);
-                Slot gunSlot;
-
-                if (places.slots.Count > 0)
+                var isSlotFree = ForceRemoveSlot(slot);
+                if (!isSlotFree)
                 {
-                    gunSlot = H.MainPlayer.Inventory.Equipment.GetSlot(places.slots.First());
-                }
-                else
-                {
-                    H.Notify("Can't find a slot");
-                    return false;
-                }
-
-                Weapon existingWeapon = gunSlot.ContainedItem as Weapon;
-
-                if (existingWeapon != null)
-                {
-                    // if the gun slot we are about to replace is equipped
-                    // unequip and discard the weapon
-                    if (H.MainPlayer.HandsController.Item.CurrentAddress == existingWeapon.CurrentAddress)
-                    {
-                        var asdas = H.MainPlayer.InventoryController.TryThrowItem(existingWeapon);
-                        await UniTask.Delay(200);
-                    }
+                    areAllSlotsFree = false;
                 }
             }
 
-            Singleton<SpawnItemPacketHandler>.Instance.Send(item);
-            return true;
+            if (areAllSlotsFree)
+            {
+                await UniTask.Delay(300);
+                var item = CloneItem(templateItem);
+                Singleton<SpawnItemPacketHandler>.Instance.Send(item);
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        public static bool ForceRemoveSlot(EquipmentSlot equipmentSlot)
+        {
+            var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
+            var result = true;
+
+            if (slot.ContainedItem != null)
+            {
+                H.MainPlayer.InventoryController.TryRunNetworkTransaction(
+                    InteractionsHandlerClass.Remove(slot.ContainedItem, H.MainPlayer.InventoryController, simulate: true),
+                    delegate (IResult discardResult)
+                    {
+                        if (discardResult.Failed)
+                        {
+                            result = false;
+                        }
+                        else
+                        {
+                            result = true;
+                        }
+                        // callback?.Invoke(discardResult);
+                    });
+            }
+
+            // callback?.Invoke(null);
+            return result;
         }
 
         public static void WhenApprovedGiveItem(Item item, Player player)
@@ -154,7 +176,7 @@ namespace ifp.arena.bep.Core
                     // H.Dump(slot);
                     foreach (var childItem in slot.Items)
                     {
-                            H.Dump(childItem);
+                        H.Dump(childItem);
                         if (childItem is ArmoredEquipmentItemClass plate)
                         {
                             H.Dump(plate);
@@ -169,7 +191,7 @@ namespace ifp.arena.bep.Core
             {
                 places.slots.Add(EquipmentSlot.Headwear);
             }
-            else if (item is MagazineItemClass or MedicalItemClass or ThrowWeapItemClass)
+            else if (item is MagazineItemClass or MedicalItemClass or ThrowWeapItemClass or BarterItemItemClass or KeycardItemClass)
             {
                 var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
 

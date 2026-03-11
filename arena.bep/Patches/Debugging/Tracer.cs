@@ -8,26 +8,22 @@ using UnityEngine;
 
 namespace ifp.arena.bep
 {
-    // ── Per-invocation record ────────────────────────────────────────────────
-
     public struct TracedCallRecord
     {
-        public float    Timestamp;   // Time.realtimeSinceStartup at call time
+        public float Timestamp;   // Time.realtimeSinceStartup at call time
         public string[] Args;        // "paramName=value" for each argument
-        public string   Result;      // return value string, or "(void)"
+        public string Result;      // return value string, or "(void)"
     }
-
-    // ── Fixed-size ring buffer (thread-safe) ─────────────────────────────────
 
     public class CircularBuffer<T>
     {
-        private readonly T[]    _buf;
+        private readonly T[] _buf;
         private readonly object _lock = new object();
         private int _head;   // index where NEXT write goes
         private int _count;  // how many valid entries
 
         public int Capacity => _buf.Length;
-        public int Count    { get { lock (_lock) return _count; } }
+        public int Count { get { lock (_lock) return _count; } }
 
         public CircularBuffer(int capacity) => _buf = new T[capacity];
 
@@ -41,12 +37,12 @@ namespace ifp.arena.bep
             }
         }
 
-        /// Returns up to <paramref name="max"/> entries, most recent first.
+        /// Returns up to the max, most recent first.
         public T[] GetSnapshot(int max = int.MaxValue)
         {
             lock (_lock)
             {
-                int n    = Math.Min(_count, max);
+                int n = Math.Min(_count, max);
                 var snap = new T[n];
                 for (int i = 0; i < n; i++)
                 {
@@ -58,26 +54,23 @@ namespace ifp.arena.bep
         }
     }
 
-    // ── Per-method statistics + history ──────────────────────────────────────
 
     public class TracedMethodInfo
     {
         public string MethodName;
         public string TypeName;
-        public long   TotalCalls;
+        public long TotalCalls;
 
-        // Ring buffer: 20 slots is enough for both hot and cold display needs
+        // Ring buffer, max history
         public readonly CircularBuffer<TracedCallRecord> History = new CircularBuffer<TracedCallRecord>(20);
 
         // Rolling 1-second window for calls/sec
         private readonly Queue<float> _recentCallTimes = new Queue<float>();
-        private readonly object       _lock            = new object();
+        private readonly object _lock = new object();
         private float _lastRecordTime = float.MinValue;
 
-        public float LastCallTime    { get; private set; }
-        public float CallsPerSecond  { get; private set; }
-
-        // ── Call counting ────────────────────────────────────────────────────
+        public float LastCallTime { get; private set; }
+        public float CallsPerSecond { get; private set; }
 
         public void RecordCall()
         {
@@ -94,8 +87,6 @@ namespace ifp.arena.bep
                 CallsPerSecond = _recentCallTimes.Count;
             }
         }
-
-        // ── History recording ────────────────────────────────────────────────
 
         public void RecordHistory(object[] args, object result, MethodBase method)
         {
@@ -122,14 +113,14 @@ namespace ifp.arena.bep
             }
 
             // Result string
-            bool   isVoid    = method is MethodInfo mi && mi.ReturnType == typeof(void);
+            bool isVoid = method is MethodInfo mi && mi.ReturnType == typeof(void);
             string resultStr = isVoid ? "(void)" : SafeStr(result);
 
             History.Add(new TracedCallRecord
             {
                 Timestamp = now,
-                Args      = argStrings,
-                Result    = resultStr
+                Args = argStrings,
+                Result = resultStr
             });
         }
 
@@ -148,34 +139,26 @@ namespace ifp.arena.bep
         }
     }
 
-    // ── Dynamic class tracer ─────────────────────────────────────────────────
-
-    /// <summary>
-    /// Dynamically patches every method on a target type and records call
-    /// statistics + per-invocation history that TracerOverlay can display.
-    /// </summary>
     public class DynamicClassTracer : IDisposable
     {
         // Static stores — read by TracerOverlay from any component
-        public static readonly ConcurrentDictionary<string, TracedMethodInfo> TracedData
-            = new ConcurrentDictionary<string, TracedMethodInfo>();
+        public static readonly ConcurrentDictionary<string, TracedMethodInfo> TracedData = new ConcurrentDictionary<string, TracedMethodInfo>();
 
-        public static readonly ConcurrentDictionary<string, string> TracerLabels
-            = new ConcurrentDictionary<string, string>();
+        public static readonly ConcurrentDictionary<string, string> TracerLabels = new ConcurrentDictionary<string, string>();
 
         private readonly Harmony _harmony;
-        private readonly string  _harmonyId;
-        private readonly string  _typeName;
+        private readonly string _harmonyId;
+        private readonly string _typeName;
 
         public DynamicClassTracer(Type targetType)
         {
-            _typeName  = targetType.Name;
+            _typeName = targetType.Name;
             _harmonyId = $"com.ifp.respawn.tracer.{_typeName}";
-            _harmony   = new Harmony(_harmonyId);
+            _harmony = new Harmony(_harmonyId);
 
             TracerLabels[_typeName] = _typeName;
 
-            var harmonyPrefix  = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefix)));
+            var harmonyPrefix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefix)));
             var harmonyPostfix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfix)));
 
             var harmonyPostfixVoid = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoid)));
@@ -206,16 +189,14 @@ namespace ifp.arena.bep
             H.Log($"[TRACER] Unpatched all methods for {_harmonyId}");
         }
 
-        // ── Harmony patches ───────────────────────────────────────────────────
-
         private static void GenericPrefix(MethodBase __originalMethod)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
-            string key      = $"{typeName}.{__originalMethod.Name}";
+            string key = $"{typeName}.{__originalMethod.Name}";
 
             var info = TracedData.GetOrAdd(key, _ => new TracedMethodInfo
             {
-                TypeName   = typeName,
+                TypeName = typeName,
                 MethodName = __originalMethod.Name
             });
 
@@ -227,18 +208,17 @@ namespace ifp.arena.bep
         private static void GenericPostfix(MethodBase __originalMethod, object[] __args, object __result)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
-            string key      = $"{typeName}.{__originalMethod.Name}";
+            string key = $"{typeName}.{__originalMethod.Name}";
 
             if (TracedData.TryGetValue(key, out var info))
                 info.RecordHistory(__args, __result, __originalMethod);
         }
 
-        // Separate postfix for void methods — omitting __result avoids the
-        // "Cannot get result from void method" HarmonyX compile error.
+        // Separate postfix for void methods. omitting __result avoids harmony error
         private static void GenericPostfixVoid(MethodBase __originalMethod, object[] __args)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
-            string key      = $"{typeName}.{__originalMethod.Name}";
+            string key = $"{typeName}.{__originalMethod.Name}";
 
             if (TracedData.TryGetValue(key, out var info))
                 info.RecordHistory(__args, null, __originalMethod);

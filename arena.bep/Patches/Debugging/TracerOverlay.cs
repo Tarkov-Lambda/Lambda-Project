@@ -7,7 +7,6 @@ namespace ifp.arena.bep
 
     public class TracerOverlay : MonoBehaviour
     {
-        // ── Config ───────────────────────────────────────────────────────────
         private const KeyCode ToggleKey = KeyCode.F3;
         private const float FreqThreshold = 5f;
         private const float FlashDuration = 2f;
@@ -25,20 +24,19 @@ namespace ifp.arena.bep
         private const int HotDisplayCount = 5;    // last N throttled samples for hot methods
         private const int ColdDisplayCount = 20;   // last N calls for cold methods
 
-        // ── State ─────────────────────────────────────────────────────────
+
         private bool _visible;
         private Vector2 _scrollHot = Vector2.zero;
         private Vector2 _scrollCold = Vector2.zero;
         private Vector2 _scrollDetail = Vector2.zero;
-        private string _selectedKey = null;              // "TypeName.MethodName"
+        private string _selectedKey = null; // "TypeName.MethodName"
         private readonly HashSet<float> _expandedRecords = new HashSet<float>(); // record timestamps
-        private TracedCallRecord[] _frozenSnapshot = null;                 // non-null = display paused
+        private TracedCallRecord[] _frozenSnapshot = null; // non-null = display paused
 
         private List<TracedMethodInfo> _hotSnapshot = new();
         private List<TracedMethodInfo> _coldSnapshot = new();
         private float _nextSnapshotTime;
 
-        // ── GUIStyles ─────────────────────────────────────────────────────
         private GUIStyle _styleTitle;
         private GUIStyle _styleSection;
         private GUIStyle _styleRow;
@@ -54,8 +52,6 @@ namespace ifp.arena.bep
         private static readonly Color ColorNormal = new Color(0.92f, 0.92f, 0.92f);
         private static readonly Color ColorFlash = new Color(1.00f, 0.22f, 0.22f);
         private static readonly Color ColorSelected = new Color(0.35f, 0.65f, 1.00f);
-
-        // ── Unity ─────────────────────────────────────────────────────────
 
         private void Update()
         {
@@ -76,8 +72,6 @@ namespace ifp.arena.bep
             if (_selectedKey != null) DrawDetailPanel();
         }
 
-        // ── Snapshot ──────────────────────────────────────────────────────
-
         private void RefreshSnapshot()
         {
             _nextSnapshotTime = Time.realtimeSinceStartup + 0.25f;
@@ -96,8 +90,6 @@ namespace ifp.arena.bep
                 .OrderBy(m => m.MethodName)
                 .ToList();
         }
-
-        // ── Main panel ────────────────────────────────────────────────────
 
         private void DrawMainPanel()
         {
@@ -118,9 +110,7 @@ namespace ifp.arena.bep
             Rect titleR = new Rect(px, py, PanelWidth, TitleHeight);
             DrawBox(titleR, new Color(0.12f, 0.12f, 0.17f, 1f));
 
-            string types = DynamicClassTracer.TracerLabels.Count == 0
-                ? "no active tracers"
-                : string.Join(", ", DynamicClassTracer.TracerLabels.Values);
+            string types = DynamicClassTracer.TracerLabels.Count == 0 ? "no active tracers" : string.Join(", ", DynamicClassTracer.TracerLabels.Values);
             GUI.Label(Inset(titleR, 10, 0), $"🔍  TRACER  —  {types}", _styleTitle);
             GUI.Label(new Rect(titleR.xMax - 90, titleR.y, 82, TitleHeight), "F3 hide", _styleMuted);
 
@@ -131,23 +121,14 @@ namespace ifp.arena.bep
 
             float cur = bodyTop;
 
-            cur = DrawSection(px, cur, PanelWidth, hotBodyH,
-                $"HIGH FREQUENCY  (> {FreqThreshold:0} / sec)",
-                new Color(0.50f, 0.22f, 0.04f, 0.95f),
-                _hotSnapshot, ref _scrollHot);
+            cur = DrawSection(px, cur, PanelWidth, hotBodyH, $"HIGH FREQUENCY  (> {FreqThreshold:0} / sec)", new Color(0.50f, 0.22f, 0.04f, 0.95f), _hotSnapshot, ref _scrollHot);
 
             cur += SectionGap;
 
-            DrawSection(px, cur, PanelWidth, cldBodyH,
-                "MANUAL / EVENT",
-                new Color(0.06f, 0.22f, 0.42f, 0.95f),
-                _coldSnapshot, ref _scrollCold);
+            DrawSection(px, cur, PanelWidth, cldBodyH, "MANUAL / EVENT", new Color(0.06f, 0.22f, 0.42f, 0.95f), _coldSnapshot, ref _scrollCold);
         }
 
-        private float DrawSection(
-            float x, float y, float w, float bodyH,
-            string label, Color headerColor,
-            List<TracedMethodInfo> rows, ref Vector2 scroll)
+        private float DrawSection(float x, float y, float w, float bodyH, string label, Color headerColor, List<TracedMethodInfo> rows, ref Vector2 scroll)
         {
             Rect hdr = new Rect(x, y, w, HeaderHeight);
             DrawBox(hdr, headerColor);
@@ -181,11 +162,7 @@ namespace ifp.arena.bep
                 Rect row = new Rect(0, i * RowHeight, contentR.width, RowHeight);
 
                 // Background
-                Color bg = selected
-                    ? new Color(0.14f, 0.22f, 0.40f, 0.98f)
-                    : alt
-                        ? new Color(0.09f, 0.09f, 0.12f, 0.85f)
-                        : new Color(0.12f, 0.12f, 0.15f, 0.85f);
+                Color bg = selected ? new Color(0.14f, 0.22f, 0.40f, 0.98f) : alt ? new Color(0.09f, 0.09f, 0.12f, 0.85f) : new Color(0.12f, 0.12f, 0.15f, 0.85f);
                 DrawBox(row, bg);
 
                 // Invisible click-target
@@ -215,28 +192,22 @@ namespace ifp.arena.bep
                 Color nameColor = selected ? ColorSelected : Color.Lerp(ColorFlash, ColorNormal, t);
 
                 float nameW = row.width * 0.55f;
-                DrawColoredLabel(
-                    Inset(new Rect(row.x + 14, row.y, nameW - 14, RowHeight), 2, 0),
-                    info.MethodName, _styleRow, nameColor);
+                DrawColoredLabel(Inset(new Rect(row.x + 14, row.y, nameW - 14, RowHeight), 2, 0), info.MethodName, _styleRow, nameColor);
 
                 // calls/sec
                 float cpsX = row.x + nameW;
                 float cpsW = row.width * 0.20f;
-                string cpsStr = info.CallsPerSecond >= 1f ? $"{info.CallsPerSecond:0.0}/s"
-                              : info.CallsPerSecond > 0f ? "<1/s" : "0/s";
+                string cpsStr = info.CallsPerSecond >= 1f ? $"{info.CallsPerSecond:0.0}/s" : info.CallsPerSecond > 0f ? "<1/s" : "0/s";
                 GUI.Label(new Rect(cpsX, row.y, cpsW, RowHeight), cpsStr, _styleCps);
 
                 // total
                 float totX = cpsX + cpsW;
-                GUI.Label(new Rect(totX, row.y, row.width - nameW - cpsW, RowHeight),
-                    $"total: {info.TotalCalls:N0}", _styleMuted);
+                GUI.Label(new Rect(totX, row.y, row.width - nameW - cpsW, RowHeight), $"total: {info.TotalCalls:N0}", _styleMuted);
             }
 
             GUI.EndScrollView();
             return top + bodyH;
         }
-
-        // ── Detail panel ──────────────────────────────────────────────────
 
         private void DrawDetailPanel()
         {
@@ -260,32 +231,21 @@ namespace ifp.arena.bep
             DrawBox(new Rect(dx + 4, dy + 4, DetailWidth, dh), new Color(0, 0, 0, 0.30f));
             DrawBox(detailPanel, new Color(0.06f, 0.06f, 0.09f, 0.97f));
 
-            // ── Title bar ───────────────────────────────────────────────
             bool isHot = info.CallsPerSecond >= FreqThreshold;
             int showCount = isHot ? HotDisplayCount : ColdDisplayCount;
-            string subtitle = isHot
-                ? $"last {HotDisplayCount} samples  (≈0.1s apart)"
-                : $"last {ColdDisplayCount} calls";
+            string subtitle = isHot ? $"last {HotDisplayCount} samples  (≈0.1s apart)" : $"last {ColdDisplayCount} calls";
 
             Rect titleR = new Rect(dx, dy, DetailWidth, TitleHeight);
             DrawBox(titleR, new Color(0.10f, 0.16f, 0.28f, 1f));
             GUI.Label(Inset(titleR, 10, 0), $"📄  {info.MethodName}", _styleDetailTitle);
             GUI.Label(new Rect(titleR.xMax - 210, titleR.y, 202, TitleHeight), subtitle, _styleMuted);
 
-            // ── Hint bar ────────────────────────────────────────────────
             float hintY = dy + TitleHeight;
             Rect hintR = new Rect(dx, hintY, DetailWidth, RecordRowH);
             bool frozen = _frozenSnapshot != null;
-            DrawBox(hintR, frozen
-                ? new Color(0.22f, 0.16f, 0.04f, 1f)    // warm amber when frozen
-                : new Color(0.09f, 0.09f, 0.13f, 1f));
-            GUI.Label(Inset(hintR, 8, 0),
-                frozen
-                    ? "⏸  FROZEN  —  collapse all records to resume live"
-                    : "click a record to expand  ·  click again to collapse",
-                _styleDetailColHdr);
+            DrawBox(hintR, frozen ? new Color(0.22f, 0.16f, 0.04f, 1f) : new Color(0.09f, 0.09f, 0.13f, 1f));
+            GUI.Label(Inset(hintR, 8, 0), frozen ? "⏸  FROZEN  —  collapse all records to resume live" : "click a record to expand  ·  click again to collapse", _styleDetailColHdr);
 
-            // ── Records ──────────────────────────────────────────────────
             float bodyTop = hintY + RecordRowH;
             float bodyH = detailPanel.yMax - bodyTop;
 
@@ -314,8 +274,7 @@ namespace ifp.arena.bep
             if (records.Length == 0)
             {
                 DrawBox(new Rect(0, 0, contentR.width, RecordRowH), new Color(0.09f, 0.09f, 0.11f, 0.85f));
-                GUI.Label(Inset(new Rect(0, 0, contentR.width, RecordRowH), 14, 0),
-                    "no history yet — waiting for calls…", _styleMuted);
+                GUI.Label(Inset(new Rect(0, 0, contentR.width, RecordRowH), 14, 0), "no history yet — waiting for calls…", _styleMuted);
             }
             else
             {
@@ -332,14 +291,9 @@ namespace ifp.arena.bep
                     float ft = Mathf.Clamp01(age / FlashDuration);
                     Color valueCol = Color.Lerp(ColorFlash, ColorNormal, ft);
 
-                    string agoStr = age < 1f ? $"{age * 1000f:0}ms"
-                                  : age < 60f ? $"{age:0.0}s"
-                                  : "old";
+                    string agoStr = age < 1f ? $"{age * 1000f:0}ms" : age < 60f ? $"{age:0.0}s" : "old";
 
-                    // ── Record header row (always visible, clickable) ────
-                    Color headerBg = altBase
-                        ? new Color(0.09f, 0.09f, 0.13f, 0.92f)
-                        : new Color(0.12f, 0.12f, 0.17f, 0.92f);
+                    Color headerBg = altBase ? new Color(0.09f, 0.09f, 0.13f, 0.92f) : new Color(0.12f, 0.12f, 0.17f, 0.92f);
                     Rect headerRow = new Rect(0, curY, contentR.width, RecordRowH);
                     DrawBox(headerRow, headerBg);
 
@@ -364,13 +318,10 @@ namespace ifp.arena.bep
 
                     // Expand arrow
                     string arrow = expanded ? "▼" : "▶";
-                    DrawColoredLabel(new Rect(headerRow.x + 6, headerRow.y, 16, RecordRowH),
-                        arrow, _styleDetailAgo,
-                        expanded ? ColorSelected : new Color(0.42f, 0.44f, 0.50f));
+                    DrawColoredLabel(new Rect(headerRow.x + 6, headerRow.y, 16, RecordRowH), arrow, _styleDetailAgo, expanded ? ColorSelected : new Color(0.42f, 0.44f, 0.50f));
 
                     // Ago
-                    GUI.Label(new Rect(headerRow.x + 24, headerRow.y, 52, RecordRowH),
-                        agoStr, _styleDetailAgo);
+                    GUI.Label(new Rect(headerRow.x + 24, headerRow.y, 52, RecordRowH), agoStr, _styleDetailAgo);
 
                     if (!expanded)
                     {
@@ -379,17 +330,15 @@ namespace ifp.arena.bep
                         float resW = 100f;
                         float sumW = contentR.width - 80f - resW - 4f;
 
-                        string argSummary = argCount == 0 ? "(no args)"
-                            : string.Join(",  ", rec.Args);
-                        DrawColoredLabel(new Rect(sumX, headerRow.y, sumW, RecordRowH),
-                            argSummary, _styleDetailArg, valueCol);
-                        DrawColoredLabel(new Rect(contentR.width - resW, headerRow.y, resW, RecordRowH),
-                            rec.Result ?? "(void)", _styleDetailResult, valueCol);
+                        string argSummary = argCount == 0 ? "(no args)" : string.Join(",  ", rec.Args);
+
+                        DrawColoredLabel(new Rect(sumX, headerRow.y, sumW, RecordRowH), argSummary, _styleDetailArg, valueCol);
+
+                        DrawColoredLabel(new Rect(contentR.width - resW, headerRow.y, resW, RecordRowH), rec.Result ?? "(void)", _styleDetailResult, valueCol);
                     }
 
                     curY += RecordRowH;
 
-                    // ── Expanded sub-rows ────────────────────────────────
                     if (expanded)
                     {
                         const float indent = 28f;
@@ -466,8 +415,6 @@ namespace ifp.arena.bep
             GUI.EndScrollView();
         }
 
-        // ── Helpers ───────────────────────────────────────────────────────
-
         private static string MKey(TracedMethodInfo info) => $"{info.TypeName}.{info.MethodName}";
 
         private static void DrawColoredLabel(Rect r, string text, GUIStyle style, Color color)
@@ -486,10 +433,7 @@ namespace ifp.arena.bep
             GUI.color = prev;
         }
 
-        private static Rect Inset(Rect r, float px, float py) =>
-            new Rect(r.x + px, r.y + py, r.width - px * 2f, r.height - py * 2f);
-
-        // ── Style init ────────────────────────────────────────────────────
+        private static Rect Inset(Rect r, float px, float py) => new Rect(r.x + px, r.y + py, r.width - px * 2f, r.height - py * 2f);
 
         private void EnsureStyles()
         {

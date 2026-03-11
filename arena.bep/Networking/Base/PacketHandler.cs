@@ -99,21 +99,52 @@ namespace ifp.arena.bep.networking.Base
             return authority == PacketAuthority.ServerOnly && !H.MainPlayerScore.IsAdmin;
         }
 
-        protected void RequestSend(T packet)
+        // ENTRY POINT
+        // SERVER ONLY: If a peer is provided, we will not broadcast and only send it to that peer.
+        protected void RequestSend(T packet, NetPeer targetPeer = null)
         {
             if (!H.isInRaid()) return;
             if (IsUnauthorized(H.MainPlayer.Id)) return;
-
-            H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
-
-            if (FikaBackendUtils.IsServer)
+            if (targetPeer != null && FikaBackendUtils.IsClient)
             {
-                WhenApproved(packet, Singleton<NetPeer>.Instance);
+                H.Notify("A Client can not send a packet to a specific peer.");
+            }
+
+            if (targetPeer != null)
+            {
+                // Unicast — send only to the specified peer, do not handle locally
+                H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
             }
             else
             {
-                ClientPrediction(packet);
+                // Broadcast (original behavior)
+                H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
+
+                if (FikaBackendUtils.IsServer)
+                {
+                    WhenApproved(packet, Singleton<NetPeer>.Instance);
+                }
+                else
+                {
+                    ClientPrediction(packet);
+                }
             }
+        }
+
+        // 
+        protected void RequestSendToPlayer(T packet, int netId)
+        {
+            if (!H.isInRaid()) return;
+
+            if (netId == H.FikaNet.NetId)
+            {
+                // We are the target — execute locally
+                WhenApproved(packet, null);
+                return;
+            }
+
+            var peer = H.NetManager.GetPeerById(netId) as NetPeer;
+            RequestSend(packet, peer);
         }
 
         private void WhenServerReceivesPacket(T packet, NetPeer netPeer)

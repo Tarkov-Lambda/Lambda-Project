@@ -97,7 +97,6 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
             _tickerObject.AddComponent<TimeSyncTicker>();
-            _tickerObject.AddComponent<TracerOverlay>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
 
