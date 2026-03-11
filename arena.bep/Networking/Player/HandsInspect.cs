@@ -38,7 +38,6 @@ namespace ifp.arena.bep.networking
         public override void WhenApproved(HandsInspectPacket packet, NetPeer peer)
         {
             var player = H.GetPlayer(packet.id);
-
             if (player.IsYourPlayer) return;
 
             if (player.HandsController is EmptyHandsController emptyHands)

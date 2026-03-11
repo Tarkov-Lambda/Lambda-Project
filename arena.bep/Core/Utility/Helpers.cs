@@ -15,20 +15,6 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
 using System.Runtime.CompilerServices;
 
-namespace System.Runtime.CompilerServices
-{
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    sealed class CallerArgumentExpressionAttribute : Attribute
-    {
-        public string ParameterName { get; }
-
-        public CallerArgumentExpressionAttribute(string parameterName)
-        {
-            ParameterName = parameterName;
-        }
-    }
-}
-
 namespace ifp.arena.bep.Core
 {
     // Helper class for singleton refences & helper functions

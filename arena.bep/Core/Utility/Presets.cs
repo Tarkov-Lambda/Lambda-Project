@@ -60,7 +60,6 @@ namespace ifp.arena.bep.Core
         {
             if (BuyMenu.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
             {  
-
                 ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
                 return true;
             }

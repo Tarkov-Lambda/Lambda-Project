@@ -2,11 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
-using Cysharp.Threading.Tasks;
-using Dissonance;
 using EFT;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -15,18 +11,27 @@ using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
-using SPT.Reflection;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
 using UnityEngine;
-using static System.Collections.Specialized.BitVector32;
+
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    sealed class CallerArgumentExpressionAttribute : Attribute
+    {
+        public string ParameterName { get; }
+
+        public CallerArgumentExpressionAttribute(string parameterName)
+        {
+            ParameterName = parameterName;
+        }
+    }
+}
 
 namespace ifp.arena.bep
 {
@@ -92,10 +97,10 @@ namespace ifp.arena.bep
 
             // ANIMATIONS
             // RegisterPatch(new Patch_GClass2963_Spawn());
-            // RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());
+            RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());
 
             // RegisterPatch(new Patch_FirearmController_Spawn());
-            // RegisterPatch(new Patch_FirearmController_Drop());
+            RegisterPatch(new Patch_FirearmController_Drop());
 
             // RegisterPatch(new Patch_FirearmController_InitiateOperation());
             // ANIMATIONS END

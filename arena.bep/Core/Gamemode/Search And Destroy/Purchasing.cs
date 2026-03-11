@@ -58,14 +58,16 @@ namespace ifp.arena.bep.Core.Gamemode
             return H.MainPlayerScore.money >= request.price;
         }
 
-        public static void BuyItem(ShopItem request)
+        public static async void BuyItem(ShopItem request)
         {
             // delai
             Item item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(request.bsgId);
-            ItemsUtils.ClientRequestGiveItem(item);
-            H.MainPlayerScore.SpendMoney(request.price);
-
-            Singleton<EFT.UI.GUISounds>.Instance.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
+            bool isSuccessful = await ItemsUtils.ClientRequestGiveItem(item);
+            if (isSuccessful)
+            {
+                H.MainPlayerScore.SpendMoney(request.price);
+                Singleton<EFT.UI.GUISounds>.Instance.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
+            }
         }
     }
 }

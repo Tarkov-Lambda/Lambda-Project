@@ -10,7 +10,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_BaseGrenadeHandsController_Drop : ModulePatch
     {
-        private const float DropAnimationSpeed = 3f;
+        private const float DropAnimationSpeed = 1000f;
 
         protected override MethodBase GetTargetMethod()
         {

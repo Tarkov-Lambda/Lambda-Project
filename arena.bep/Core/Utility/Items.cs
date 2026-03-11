@@ -33,14 +33,26 @@ namespace ifp.arena.bep.Core
         }
 
 
-        public static async UniTask ClientRequestGiveItem(Item templateItem)
+        public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
         {
             var item = CloneItem(templateItem);
-            if (item == null) return;
+            if (item == null) return false;
 
             if (item is Weapon)
             {
-                Slot gunSlot = H.MainPlayer.Inventory.Equipment.GetSlot(EquipmentSlot.FirstPrimaryWeapon);
+                var places = GetAppropriateSlot(item, H.MainPlayer);
+                Slot gunSlot;
+
+                if (places.slots.Count > 0)
+                {
+                    gunSlot = H.MainPlayer.Inventory.Equipment.GetSlot(places.slots.First());
+                }
+                else
+                {
+                    H.Notify("Can't find a slot");
+                    return false;
+                }
+
                 Weapon existingWeapon = gunSlot.ContainedItem as Weapon;
 
                 if (existingWeapon != null)
@@ -49,23 +61,14 @@ namespace ifp.arena.bep.Core
                     // unequip and discard the weapon
                     if (H.MainPlayer.HandsController.Item.CurrentAddress == existingWeapon.CurrentAddress)
                     {
-                        // H.MainPlayer.HandsController.DropWeapon();
                         var asdas = H.MainPlayer.InventoryController.TryThrowItem(existingWeapon);
-                        H.Dump(asdas);
-                        await UniTask.Delay(1500);
-                        // GStruct153 throwOperation = InteractionsHandlerClass.Throw(existingWeapon, H.MainPlayer.InventoryController, false);
-
-                        // _ = H.MainPlayer.InventoryController.TryRunNetworkTransaction(throwOperation, null);
-
-                        // RemoveItemEventArgs removeItemEventSucceed = new RemoveItemEventArgs(existingWeapon, existingWeapon.CurrentAddress, CommandStatus.Succeed, H.MainPlayer.InventoryController);
-                        // H.MainPlayer.InventoryController.RaiseRemoveEvent(removeItemEventSucceed);
+                        await UniTask.Delay(200);
                     }
-
-
                 }
             }
 
             Singleton<SpawnItemPacketHandler>.Instance.Send(item);
+            return true;
         }
 
         public static void WhenApprovedGiveItem(Item item, Player player)
@@ -100,7 +103,6 @@ namespace ifp.arena.bep.Core
                 {
                     firemode.FireMode = Weapon.EFireMode.fullauto;
                 }
-
             }
 
             if (player.IsYourPlayer)
@@ -127,7 +129,6 @@ namespace ifp.arena.bep.Core
                 slots = new List<EquipmentSlot>()
             };
 
-            H.Dump(item);
 
             if (item is Weapon)
             {
@@ -153,6 +154,7 @@ namespace ifp.arena.bep.Core
                     // H.Dump(slot);
                     foreach (var childItem in slot.Items)
                     {
+                            H.Dump(childItem);
                         if (childItem is ArmoredEquipmentItemClass plate)
                         {
                             H.Dump(plate);
