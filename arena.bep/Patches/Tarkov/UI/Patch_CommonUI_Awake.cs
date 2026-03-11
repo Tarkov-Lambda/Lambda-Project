@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI
 {
-    internal class Patch_CommonUI_Awake : ModulePatch
+    public class Patch_CommonUI_Awake : ModulePatch
     {
         public static event Action<CommonUI> OnAwake;
 
