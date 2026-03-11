@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
-    internal class Patch_Gameworld_OnGameStarted : ModulePatch
+    public class Patch_Gameworld_OnGameStarted : ModulePatch
     {
         public static event Action<GameWorld> OnGameStarted;
 
@@ -29,7 +29,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
-    internal class Patch_Gameworld_OnDispose : ModulePatch
+    public class Patch_Gameworld_OnDispose : ModulePatch
     {
         public static event Action<GameWorld> OnDispose;
 

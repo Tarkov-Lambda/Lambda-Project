@@ -12,7 +12,7 @@ using ItemIcon = GClass929;
 
 namespace ifp.arena.bep.Core.UI
 {
-    internal class BSGItemInfoProvider : IItemInfoProvider
+    public class BSGItemInfoProvider : IItemInfoProvider
     {
         public string FullName(string bsgId)
         {

@@ -138,7 +138,7 @@ namespace ifp.arena.bep
             RegisterPacket<ArenaController>();
 
             RegisterPacket<ImmutableItemsCache>();
-            RegisterPacket<UIManager>();
+            RegisterPacket<UILoader>();
 
             _disposables.Add(new DynamicClassTracer(typeof(Player.FirearmController.GClass2037)));
         }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
@@ -14,10 +14,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\arena.bep\arena.bep.csproj" />
     <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll">
       <Private>False</Private>
     </Reference>
