@@ -104,6 +104,7 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_CommonUI_Awake());
             RegisterPatch(new Patch_ItemsTabController_Show());
+            RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());
 
             RegisterPacket<AssetBundleHandler>();
             RegisterPacket<RagdollCreator>();

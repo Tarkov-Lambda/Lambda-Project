@@ -9,5 +9,10 @@ namespace arena.ui
     {
         [field: SerializeField] public TopBar TopBar { get; private set; }
         [field: SerializeField] public Scoreboard Scoreboard { get; private set; }
+
+        public void ToggleScoreboard(bool show)
+        {
+            Scoreboard.gameObject.SetActive(show);
+        }
     }
 }
