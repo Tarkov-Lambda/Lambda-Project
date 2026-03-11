@@ -61,7 +61,7 @@ namespace ifp.arena.bep.Core
 
         public static Dictionary<Weapon, MagAndAmmo> AmmoRegistry => Patch_FirearmController_InitiateShot.AmmoRegistry;
 
-        public static void Notify(string msg) => NotificationManagerClass.DisplayMessageNotification(msg);
+        public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
         public static void NotifyLong(string msg) => NotificationManagerClass.DisplayMessageNotification(msg, EFT.Communications.ENotificationDurationType.Long);
 
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
