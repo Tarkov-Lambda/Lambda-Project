@@ -40,7 +40,9 @@ namespace ifp.arena.bep.Core.UI
 
         private void AddInventoryHotkeyInterceptor(GameWorld gameWorld)
         {
-            inventoryHotkeyListener = gameWorld.MainPlayer.GetOrAddComponent<InventoryHotkeyListener>();
+            inventoryHotkeyListener = gameWorld.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
+            inventoryHotkeyListener.OnHoldBegin += () => matchUIController.ToggleScoreboard(true);
+            inventoryHotkeyListener.OnHoldEnd += () => matchUIController.ToggleScoreboard(false);
         }
 
         async void LoadUI(CommonUI commonUI)

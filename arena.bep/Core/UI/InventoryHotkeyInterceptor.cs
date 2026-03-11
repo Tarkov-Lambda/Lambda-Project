@@ -15,10 +15,14 @@ namespace ifp.arena.bep.Core.UI
     {
         private EftGamePlayerOwner playerOwner;
 
-        private float keyDownTime = 0f;
-        private bool isKeyDown = false;
+        private float keyDownBeginTimestamp = 0f;
+        private bool wasKeyDownPrevFrame = false;
 
         private const float MAX_TAP_TIME = 0.250f;
+
+        private bool sentHoldBegin = false;
+        public event Action OnHoldBegin;
+        public event Action OnHoldEnd;
 
         void Awake()
         {
@@ -29,34 +33,56 @@ namespace ifp.arena.bep.Core.UI
         {
             if (playerOwner.Player.IsInventoryOpened)
             {
-                keyDownTime = 0;
-                isKeyDown = true;
+                keyDownBeginTimestamp = 0; // fake timestamp
+                wasKeyDownPrevFrame = true;
                 return;
             }
 
-            bool isCurrentlyDown = CheckInventoryKeysDown();
+            bool isDownThisFrame = CheckInventoryKeysDown();
 
-            if (isCurrentlyDown && !isKeyDown)
+            if (isDownThisFrame)
             {
-                isKeyDown = true;
-                keyDownTime = Time.time;
-            }
-            else if (!isCurrentlyDown && isKeyDown)
-            {
-                isKeyDown = false;
-                float heldTime = Time.time - keyDownTime;
-
-                if (heldTime <= MAX_TAP_TIME)
+                if (!wasKeyDownPrevFrame) // just pressed down
                 {
-                    // tupa copy of bsg logic
-                    if (playerOwner.Player.HealthController.IsAlive &&
-                        !GamePlayerOwner.IgnoreInputInNPCDialog &&
-                        !GamePlayerOwner.IgnoreInputWithKeepResetLook)
+                    wasKeyDownPrevFrame = true;
+                    keyDownBeginTimestamp = Time.time;
+                }
+
+                if (!sentHoldBegin)
+                {
+                    float heldTime = Time.time - keyDownBeginTimestamp;
+                    if (heldTime > MAX_TAP_TIME)
                     {
-                        Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
-                        playerOwner.TranslateInventoryScreenInput(ECommand.ToggleInventory);
+                        OnHoldBegin?.Invoke();
+                        sentHoldBegin = true;
                     }
                 }
+            }
+            else
+            {
+                if (wasKeyDownPrevFrame)
+                {
+                    wasKeyDownPrevFrame = false;
+                    float heldTime = Time.time - keyDownBeginTimestamp;
+
+                    if (heldTime <= MAX_TAP_TIME)
+                    {
+                        // tupa copy of bsg logic
+                        if (playerOwner.Player.HealthController.IsAlive &&
+                            !GamePlayerOwner.IgnoreInputInNPCDialog &&
+                            !GamePlayerOwner.IgnoreInputWithKeepResetLook)
+                        {
+                            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
+                            playerOwner.TranslateInventoryScreenInput(ECommand.ToggleInventory);
+                        }
+                    }
+                    else if (sentHoldBegin)
+                    {
+                        OnHoldEnd?.Invoke();
+                    }
+                }
+
+                sentHoldBegin = false;
             }
         }
 
