@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -137,6 +138,8 @@ namespace ifp.arena.bep
 
             RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
+
+            // _disposables.Add(new DynamicClassTracer(typeof(Player.FirearmController)));
         }
 
         private void InitConfiguration()
