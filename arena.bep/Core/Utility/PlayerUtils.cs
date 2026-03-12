@@ -85,7 +85,7 @@ namespace ifp.arena.bep.Core
 
             if (vest?.ContainedItem is not CompoundItem vestCompound)
                 return;
-            H.Dump(weapon.GetCurrentMagazine());
+
             string weaponMagTemplate = weapon.GetCurrentMagazine()?.TemplateId;
             if (weaponMagTemplate == null)
                 return;

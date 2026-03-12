@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
@@ -43,14 +44,21 @@ namespace ifp.arena.bep.Core.Gamemode
                 return MatchState.WarmupEnd;
             return null;
         }
-        public void OnExit() { }
+        public void OnExit()
+        {
+
+
+        }
     }
 
     // Triggers whenever a minimum warmup time has been reached and players have been loaded, or warmup full time has ended
     public class SharedWarmupEnd : IGameState
     {
         public MatchState StateType => MatchState.WarmupEnd;
-        public void OnEnter() { }
+        public void OnEnter()
+        {
+            
+        }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
         public void OnExit()
         {
@@ -93,14 +101,16 @@ namespace ifp.arena.bep.Core.Gamemode
             H.Arena.LastObjectivePlayerId = -1;
             H.Arena.LastObjectiveBombState = BombState.None;
 
-            ItemsUtils.ForceRemoveSlot(EquipmentSlot.Backpack);
+            ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack).Forget();
         }
+
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
+
         public void OnExit()
         {
             if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SnDModeRules)
             {
-                Singleton<BombAssignmentPacketHandler>.Instance.Send();
+                ItemsUtils.DelayAndGiveBombToAPlayer().Forget();
             }
             // int currentRound = H.Session.factionWins.Values.Sum();
             // int maxRounds = SnDModeRules.maxRoundsToWin * 2 - 1;

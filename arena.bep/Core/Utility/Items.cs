@@ -3,6 +3,7 @@ using ItemExtensions = GClass3380;
 using AddItemEventArgs = GEventArgs2;
 using RefreshItemEventArgs = GEventArgs18;
 using RemoveItemEventArgs = GEventArgs3;
+using OperationResult = GStruct153;
 //---------------------------------------------------------------//
 
 using System.Collections.Generic;
@@ -16,7 +17,22 @@ using System;
 using EFT.UI;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System.Security.Cryptography;
+using Diz.LanguageExtensions;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
+// This file is primarily used for dealing with allocating space in the player's inventory, sending spawn requests, and then spawning the objects.
+// ClientRequestGiveItem sees if it has everything needed on its end
+// if it's successful, it will request SpawnItem, which if approved will load bundles and then execute WhenApprovedGiveItem (on every client)
+// The current setup is as following:
+// Any primary weapon will drop whatever is in the first weapon slot
+// Any secondary weapon will do the same for holster
+// Anything like grenades, medical item, magazines find an address that they can go to in the rig
+// Helmet goes to headwear
+//
+// Here's where it gets slightly janky:
+// ArmorPlateItem
 namespace ifp.arena.bep.Core
 {
     public static class ItemsUtils
@@ -33,7 +49,6 @@ namespace ifp.arena.bep.Core
             return ItemExtensions.CloneItem(templateItem);
         }
 
-
         public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
         {
             if (templateItem == null)
@@ -44,12 +59,33 @@ namespace ifp.arena.bep.Core
             var areAllSlotsFree = true;
 
             // synchronous but whatever for now
-            foreach (var slot in places.slots)
+            foreach (var slotType in places.slotTypes)
             {
-                var isSlotFree = ForceRemoveSlot(slot);
-                if (!isSlotFree)
+                // very janky if condition considering we set GetAppropriateSlot to tacrig or armor for further logic, which needs a major rework
+                if (templateItem is not ArmorPlateItemClass)
                 {
-                    areAllSlotsFree = false;
+                    var slot = H.MainInventory.Equipment.GetSlot(slotType);
+                    if (slot.ContainedItem is not null)
+                    {
+                        var removalResult = false;
+                        if (templateItem is BackpackItemClass)
+                        {
+                            removalResult = await TryRemoveSlot(slotType);
+                        }
+                        else
+                        {
+                            GStruct156<bool> result = H.MainInventoryController.TryThrowItem(slot.ContainedItem);
+                            removalResult = result.Succeeded;
+                        }
+
+                        if (removalResult is false)
+                        {
+                            H.Notify("Failed to allocate slot space in the inventory.");
+                            return false;
+                        }
+
+                        await UniTask.Delay(300);
+                    }
                 }
             }
 
@@ -65,35 +101,39 @@ namespace ifp.arena.bep.Core
         }
 
 
-
-        public static bool ForceRemoveSlot(EquipmentSlot equipmentSlot)
+        public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot)
         {
             var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
-            var result = true;
+            if (slot.ContainedItem == null)
+                return true;
 
-            if (slot.ContainedItem != null)
+            OperationResult removalEvent = InteractionsHandlerClass.Remove(slot.ContainedItem, H.MainInventoryController, true);
+            if (removalEvent.Failed)
             {
-                H.MainPlayer.InventoryController.TryRunNetworkTransaction(
-                    InteractionsHandlerClass.Remove(slot.ContainedItem, H.MainPlayer.InventoryController, simulate: true),
-                    delegate (IResult discardResult)
-                    {
-                        if (discardResult.Failed)
-                        {
-                            result = false;
-                        }
-                        else
-                        {
-                            result = true;
-                        }
-                        // callback?.Invoke(discardResult);
-                    });
+                return false;
+            }
+            else
+            {
+                IResult transactionResult = await H.MainPlayer.InventoryController.TryRunNetworkTransaction(removalEvent);
+                H.Dump(transactionResult);
+                H.Dump(transactionResult.Error);
+                H.Dump(transactionResult.Succeed);
+                if (transactionResult.Failed)
+                {
+                    return false;
+                }
             }
 
-            // callback?.Invoke(null);
-            return result;
+            return true;
         }
 
-        public static void WhenApprovedGiveItem(Item item, Player player)
+        public static async UniTask DelayAndGiveBombToAPlayer()
+        {
+            await UniTask.Delay(50);
+            Singleton<BombAssignmentPacketHandler>.Instance.Send();
+        }
+
+        public static async void WhenApprovedGiveItem(Item item, Player player)
         {
             var places = GetAppropriateSlot(item, player);
 
@@ -102,16 +142,48 @@ namespace ifp.arena.bep.Core
                 player.InventoryController.AddAndRaiseEvents(item, places.itemAddress);
             }
 
-            foreach (var slotType in places.slots)
+            foreach (var slotType in places.slotTypes)
             {
-                var slot = player.Equipment.GetSlot(slotType);
-                if (slot.ContainedItem != null)
+                if (item is ArmorPlateItemClass)
                 {
-                    slot.RemoveItemWithoutRestrictions();
-                }
+                    CompoundItem armor = GetPlateHolder(player);
+                    foreach (ArmorHolderComponent armorHolder in armor.Components.Where(component => component is ArmorHolderComponent))
+                    {
+                        foreach (var slot in armorHolder.ArmorSlots)
+                        {
+                            if (slot.ContainedItem is null)
+                            {
+                                if (slot.CachedSlotName is "Front_plate" or "Back_plate")
+                                {
+                                    GStruct153 add = slot.AddWithoutRestrictions(item);
+                                    if (add.Succeeded)
+                                    {
+                                        var result = await player.InventoryController.TryRunNetworkTransaction(add);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        H.Dump(add);
+                                    }
+                                }
 
-                player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
+                                // RepairItem()
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var slot = player.Equipment.GetSlot(slotType);
+                    if (slot.ContainedItem != null)
+                    {
+                        slot.RemoveItemWithoutRestrictions();
+                    }
+
+                    player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
+                }
             }
+
             if (item is Weapon weapon)
             {
                 if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
@@ -135,20 +207,22 @@ namespace ifp.arena.bep.Core
                     Singleton<GUISounds>.Instance.PlaySound(itemClip);
                 }
             }
+
         }
 
         // refactor-later core
         public struct Places
         {
-            public List<EquipmentSlot> slots;
-            public ItemAddress itemAddress;
+            public List<EquipmentSlot> slotTypes; // For equipment
+            public ItemAddress itemAddress; // For singular stuff like mags or nades
         }
 
+        // Monolithic router of items (we kinda have to do this garbage in order to do stuff like instant armor plate equips)
         public static Places GetAppropriateSlot(Item item, Player player)
         {
             Places places = new Places
             {
-                slots = new List<EquipmentSlot>()
+                slotTypes = new List<EquipmentSlot>(),
             };
 
 
@@ -156,40 +230,35 @@ namespace ifp.arena.bep.Core
             {
                 if (item is PistolItemClass)
                 {
-                    places.slots.Add(EquipmentSlot.Holster);
+                    places.slotTypes.Add(EquipmentSlot.Holster);
                 }
                 else
                 {
-                    places.slots.Add(EquipmentSlot.FirstPrimaryWeapon);
+                    places.slotTypes.Add(EquipmentSlot.FirstPrimaryWeapon);
                 }
             }
             else if (item is BackpackItemClass)
             {
-                places.slots.Add(EquipmentSlot.Backpack);
+                places.slotTypes.Add(EquipmentSlot.Backpack);
             }
             else if (item is ArmorPlateItemClass)
             {
-                CompoundItem armor = GetPlateHolder(player);
-
-                foreach (var slot in armor.AllSlots)
+                VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
+                // ArmorItemClass armor = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
+                // && tacRig.Components.Count(c => c is ArmorHolderComponent) > 0
+                if (tacRig != null)
                 {
-                    // H.Dump(slot);
-                    foreach (var childItem in slot.Items)
-                    {
-                        H.Dump(childItem);
-                        if (childItem is ArmoredEquipmentItemClass plate)
-                        {
-                            H.Dump(plate);
-                            // armor.Repairable.Durability = armor.Repairable.MaxDurability;
-                        }
-                        // places.slots.Add(armor.Slots.); // front plate
-                        // places.slots.Add(armor.Slots.); // back plate
-                    }
+                    places.slotTypes.Add(EquipmentSlot.TacticalVest);
+
                 }
+                // else if (armor != null)
+                // {
+                //     places.slotTypes.Add(EquipmentSlot.ArmorVest);
+                // }
             }
             else if (item is HeadwearItemClass)
             {
-                places.slots.Add(EquipmentSlot.Headwear);
+                places.slotTypes.Add(EquipmentSlot.Headwear);
             }
             else if (item is MagazineItemClass or MedicalItemClass or ThrowWeapItemClass or BarterItemItemClass or KeycardItemClass)
             {
@@ -214,7 +283,7 @@ namespace ifp.arena.bep.Core
         public static CompoundItem GetPlateHolder(Player player)
         {
             VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
-            // ArmorItemClass armor = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
+            ArmorItemClass armor = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
             // H.Dump(tacRig);
             if (tacRig != null && tacRig.Slots.Count() > 0)
             {

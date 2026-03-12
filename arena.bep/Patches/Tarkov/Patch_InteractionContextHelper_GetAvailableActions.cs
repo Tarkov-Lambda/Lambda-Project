@@ -37,6 +37,11 @@ namespace ifp.arena.bep.Patches.Tarkov
             if (plantZone == null)
                 return true;
 
+            if (H.Session.roundState != GameTypes.MatchState.RoundAction)
+            {
+                return true;
+            }
+
             AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
 
             Player player = owner.Player;
@@ -57,7 +62,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                         Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planting, GetBombPlantPosition(player));
 
                         owner.ShowObjectivesPanel("Planting {0:F1}", plantingTime);
-                        owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, (bool successful) =>
+                        owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, async (bool successful) =>
                         {
                             owner.Player.vmethod_6(bomb.TemplateId, itemTrigger.Id, successful);
                             owner.CloseObjectivesPanel();
@@ -66,15 +71,10 @@ namespace ifp.arena.bep.Patches.Tarkov
                                 Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.None, GetBombPlantPosition(player));
                                 return;
                             }
-                            owner.Player.InventoryController.TryRunNetworkTransaction(InteractionsHandlerClass.Remove(bomb, owner.Player.InventoryController, simulate: true), delegate (IResult discardResult)
-                            {
-                                if (discardResult.Succeed)
-                                {
-                                    Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planted, GetBombPlantPosition(player));
 
-                                    owner.ClearInteractionState();
-                                }
-                            });
+                            // await ItemsUtils.ForceRemoveSlotAsync(EquipmentSlot.Backpack);
+                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planted, GetBombPlantPosition(player));
+                            owner.ClearInteractionState();
                         });
                     }
                     else

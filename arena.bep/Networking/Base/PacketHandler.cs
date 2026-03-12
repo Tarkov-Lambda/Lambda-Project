@@ -105,10 +105,6 @@ namespace ifp.arena.bep.networking.Base
         {
             if (!H.isInRaid()) return;
             if (IsUnauthorized(H.MainPlayer.Id)) return;
-            if (targetPeer != null && FikaBackendUtils.IsClient)
-            {
-                H.Notify("A Client can not send a packet to a specific peer.");
-            }
 
             if (targetPeer != null)
             {

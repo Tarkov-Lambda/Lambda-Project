@@ -32,24 +32,31 @@ namespace ifp.arena.bep.networking
 
     }
 
-    public class BombAssignmentPacketHandler : PacketHandler<BombStatePacket>
+    public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
     {
         public BombAssignmentPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
         public void Send()
         {
-            var packet = new BombStatePacket
+            if (H.Session.GetPlayersFromFaction(shared.Faction.T).Count > 0)
             {
-                playerId = H.Session.GetPlayersFromFaction(shared.Faction.T).RandomElement().Id,
-            };
-            RequestSendToPlayer(packet, packet.playerId);
+                var randomTerrorist = H.Session.GetPlayersFromFaction(shared.Faction.T).RandomElement();
+
+                var packet = new BombAssignmentPacket
+                {
+                    playerId = randomTerrorist.Id,
+                };
+
+                RequestSendToPlayer(packet, packet.playerId);
+            }
         }
 
         // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful
-        public override void WhenApproved(BombStatePacket packet, NetPeer peer)
+        public override void WhenApproved(BombAssignmentPacket packet, NetPeer peer)
         {
             Item BombBackpack = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
             _ = ItemsUtils.ClientRequestGiveItem(BombBackpack);
+            // H.Notify("You now have the bomb");
         }
     }
 }

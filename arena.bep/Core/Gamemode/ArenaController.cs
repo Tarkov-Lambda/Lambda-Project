@@ -39,6 +39,8 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
         public static Action<int> OnSelfMoneyAdded;
+
+        public static Action OnItemBuy;
     }
 
     public struct RoundActionPhaseEnd

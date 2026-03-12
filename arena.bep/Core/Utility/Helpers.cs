@@ -22,6 +22,9 @@ namespace ifp.arena.bep.Core
     {
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
         public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
+        public static Inventory MainInventory => isInRaid() ? MainPlayer.Inventory : null;
+        public static InventoryController MainInventoryController => isInRaid() ? MainPlayer.InventoryController : null;
+
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();
         public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
 
@@ -44,8 +47,6 @@ namespace ifp.arena.bep.Core
             add => Patch_Gameworld_OnDispose.OnDispose += value;
             remove => Patch_Gameworld_OnDispose.OnDispose -= value;
         }
-
-        public static Dictionary<Weapon, MagAndAmmo> AmmoRegistry => Patch_FirearmController_InitiateShot.AmmoRegistry;
 
         public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
         public static void NotifyLong(string msg) => NotificationManagerClass.DisplayMessageNotification(msg, EFT.Communications.ENotificationDurationType.Long);
