@@ -71,8 +71,10 @@ namespace ifp.arena.bep.Patches.Tarkov
                                 Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.None, GetBombPlantPosition(player));
                                 return;
                             }
-
-                            await ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack);
+                            
+                            await ItemsUtils.TryThrowSlot(EquipmentSlot.Backpack, false);
+                            // await ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack, false);
+                            // H.MainInventoryController.TryThrowItem(slot.ContainedItem);
                             Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planted, GetBombPlantPosition(player));
                             owner.ClearInteractionState();
                         });

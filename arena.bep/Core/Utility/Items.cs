@@ -71,8 +71,8 @@ namespace ifp.arena.bep.Core
                 if (slot.ContainedItem is not null)
                 {
                     bool removed;
-                    if (templateItem is BackpackItemClass)
-                        removed = await TryRemoveSlot(placement.Slot);
+                    if (templateItem is BackpackItemClass) // Backpack is only the bomb
+                        removed = await TryRemoveSlot(placement.Slot, true);
                     else
                     {
                         GStruct156<bool> result = H.MainInventoryController.TryThrowItem(slot.ContainedItem);
@@ -96,14 +96,16 @@ namespace ifp.arena.bep.Core
 
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
-        public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot)
+        public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
         {
             var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
-            if (slot.ContainedItem == null)
-                return true;
+            if (slot.ContainedItem == null) return true;
 
-            await UniTask.WaitUntil(() => !H.MainPlayer.MovementContext.CanWalk);
-            await UniTask.Delay(200);
+            if (waitUntilStationary)
+            {
+                await UniTask.WaitUntil(() => !H.MainPlayer.MovementContext.CanWalk);
+                await UniTask.Delay(200);
+            }
 
             return await TryRemoveItem(slot.ContainedItem, H.MainPlayer);
         }
@@ -111,9 +113,8 @@ namespace ifp.arena.bep.Core
         /// <summary>Removes any item from a player's inventory via a network transaction.</summary>
         public static async UniTask<bool> TryRemoveItem(Item item, Player player)
         {
-            var removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
-            if (removalEvent.Failed)
-                return false;
+            OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
+            if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
             return !result.Failed;
@@ -130,11 +131,35 @@ namespace ifp.arena.bep.Core
                 PlayEquipSound(item);
         }
 
+        public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
+        {
+            var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
+            if (slot.ContainedItem == null) return true;
+
+            if (waitUntilStationary)
+            {
+                await UniTask.WaitUntil(() => !H.MainPlayer.MovementContext.CanWalk);
+                await UniTask.Delay(200);
+            }
+
+            return await TryThrowItem(slot.ContainedItem, H.MainPlayer);
+        }
+
+
+        public static async UniTask<bool> TryThrowItem(Item item, Player player)
+        {
+            OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
+            if (removalEvent.Failed) return false;
+
+            IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
+            return !result.Failed;
+        }
+
         private static async UniTask PlaceItem(Item item, Player player, ItemPlacement placement)
         {
             switch (placement.Kind)
             {
-                case PlacementKind.VestAddress:
+                case PlacementKind.VestAddress: // if we have an address, it means the space is free.
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 

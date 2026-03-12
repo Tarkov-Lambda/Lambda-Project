@@ -107,7 +107,7 @@ namespace ifp.arena.bep.Core.Gamemode
             H.Arena.LastObjectivePlayerId = -1;
             H.Arena.LastObjectiveBombState = BombState.None;
 
-            ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack).Forget();
+            ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack, true).Forget();
         }
 
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

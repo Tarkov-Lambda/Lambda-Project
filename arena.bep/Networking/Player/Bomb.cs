@@ -53,6 +53,7 @@ namespace ifp.arena.bep.networking
                 position = position,
                 timestamp = NetworkTime.ServerNowSeconds
             };
+            H.Notify(state);
 
             RequestSend(packet);
         }
@@ -64,7 +65,7 @@ namespace ifp.arena.bep.networking
             // {
             //     return false;
             // }
-            
+
             return base.ServerValidation(ref packet, peer);
         }
 
@@ -78,6 +79,7 @@ namespace ifp.arena.bep.networking
 
                 H.Arena.LastObjectivePlayerId = packet.playerId;
             }
+            H.Notify(packet.state);
 
             if (packet.state is BombState.Defused or BombState.Exploded)
             {
