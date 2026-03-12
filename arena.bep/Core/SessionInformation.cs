@@ -99,7 +99,6 @@ namespace ifp.arena.bep.GameTypes
         // Locking out the player from shooting/jumping/moving
         public bool IsControllerPartiallyLocked()
         {
-            return false;
             if (H.GameWorld is HideoutGameWorld) return false;
             // return false;
 
