@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using ifp.arena.shared;
 
 namespace arena.ui
 {
@@ -10,6 +11,14 @@ namespace arena.ui
         [SerializeField] private TopBarTeamScore teamScoreRight;
 
         [SerializeField] private TMP_Text textTimer;
+
+        [SerializeField] private FactionColors factionColors;
+
+        void OnEnable()
+        {
+            teamScoreLeft.Color = factionColors.Get(Faction.CT);
+            teamScoreRight.Color = factionColors.Get(Faction.T);
+        }
 
         public void SetScores(int left, int right)
         {

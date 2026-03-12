@@ -7,11 +7,15 @@ using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
+using ifp.arena.shared.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.UI
@@ -59,6 +63,7 @@ namespace ifp.arena.bep.Core.UI
             GameObject prefabMatchUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/ArenaMatchUI.prefab");
 
             matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
+            matchUIController.ToggleScoreboard(false);
 
             GameObject prefabShopUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
 
@@ -110,7 +115,33 @@ namespace ifp.arena.bep.Core.UI
 
             matchUIController.TopBar.SetScores(scoreCT, scoreT);
 
+            matchUIController.Scoreboard.SetPlayers(GetAllPlayersStats(), H.Session.factionWins);
+
             shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
+        }
+
+        PlayerStats[] GetAllPlayersStats()
+        {
+            List<PlayerStats> playerStats = new List<PlayerStats>();
+            foreach (var kvp in H.Scoreboard)
+            {
+                int id = kvp.Key;
+                PlayerScore playerScore = kvp.Value;
+
+                playerStats.Add(new PlayerStats
+                {
+                    Id = id,
+                    Faction = playerScore.faction,
+                    Name = playerScore.player.name,
+                    Kills = playerScore.kills,
+                    Deaths = playerScore.deaths,
+                    Assists = playerScore.assists,
+                    Ping = playerScore.ping 
+                });
+                H.Notify($"added player {playerStats[0].Name}");
+            }
+
+            return playerStats.ToArray();
         }
 
         void OnInventoryScreenOpen(CompoundItem containerLooting)

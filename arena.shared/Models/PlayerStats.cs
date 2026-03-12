@@ -1,0 +1,18 @@
+﻿namespace ifp.arena.shared.Models
+{
+    public struct PlayerStats
+    {
+        public int Id;
+        public Faction Faction;
+        public string Name;
+        public int Kills;
+        public int Deaths;
+        public int Assists;
+        public int Ping;
+
+        public override string ToString()
+        {
+            return $"{Id} {Name} {Faction} {Kills}";
+        }
+    }
+}

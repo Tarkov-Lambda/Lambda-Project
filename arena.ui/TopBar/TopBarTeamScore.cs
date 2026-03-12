@@ -12,17 +12,29 @@ namespace arena.ui
 
         [SerializeField] private Graphic[] coloredGraphics;
 
-        public Color color;
+        [SerializeField] private Color color;
 
-        private void OnValidate()
+        public Color Color
         {
-            foreach (var graphic in coloredGraphics)
+            get => color;
+            set
             {
-                if (graphic == null)
-                    continue;
-                graphic.color = color;
+                color = value;
+                foreach (var graphic in coloredGraphics)
+                {
+                    if (graphic == null)
+                        continue;
+                    graphic.color = color;
+                }
             }
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            Color = color;
+        }
+#endif
 
         public void Set(int score)
         {
