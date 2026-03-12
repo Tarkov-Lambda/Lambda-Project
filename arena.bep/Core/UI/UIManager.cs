@@ -18,6 +18,8 @@ namespace ifp.arena.bep.Core.UI
 {
     public class UIManager : Singleton<UIManager>, IDisposable
     {
+        AssetBundle uibundle;
+
         ArenaMatchUI matchUIController;
 
         Shop shop;
@@ -28,7 +30,7 @@ namespace ifp.arena.bep.Core.UI
         public UIManager()
         {
             Patch_CommonUI_Awake.OnAwake += LoadUI;
-            Patch_ItemsTabController_Show.OnShow += OnItemsTabShow;
+            Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
             Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
 
             if (Singleton<CommonUI>.Instantiated)
@@ -47,7 +49,7 @@ namespace ifp.arena.bep.Core.UI
 
         async void LoadUI(CommonUI commonUI)
         {
-            AssetBundle uibundle = await Singleton<AssetBundleHandler>.Instance.LoadAssetBundle("arenaui");
+            uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(AssetBundleHandler.pathToBundlesDir, "arenaui"));
 
             foreach (var item in uibundle.GetAllAssetNames())
             {
@@ -111,17 +113,17 @@ namespace ifp.arena.bep.Core.UI
             shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
         }
 
-        void OnItemsTabShow(CompoundItem lootItem)
+        void OnInventoryScreenOpen(CompoundItem containerLooting)
         {
             if (shop == null) return;
 
-            shop.gameObject.SetActive(lootItem == null);
+            shop.gameObject.SetActive(containerLooting == null);
         }
 
         public void Dispose()
         {
             Patch_CommonUI_Awake.OnAwake -= LoadUI;
-            Patch_ItemsTabController_Show.OnShow -= OnItemsTabShow;
+            Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
             Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
             EventBus.OnEnter -= OnMatchStateEnter;
@@ -134,6 +136,8 @@ namespace ifp.arena.bep.Core.UI
 
             if (inventoryHotkeyListener != null)
                 Component.Destroy(inventoryHotkeyListener);
+
+            uibundle.Unload(unloadAllLoadedObjects: false);
 
             Release(this);
         }

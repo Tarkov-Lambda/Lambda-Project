@@ -10,7 +10,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 {
     public class AssetBundleHandler : Singleton<AssetBundleHandler>, IDisposable
     {
-        private readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
+        public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
         private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
 
         public async UniTask LoadMap(string mapName)

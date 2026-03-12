@@ -10,6 +10,7 @@ namespace ifp.arena.shared
 {
     public class SpawnPoints : MonoBehaviour
     {
+        [SerializeField]
         public Faction faction;
     }
 }
