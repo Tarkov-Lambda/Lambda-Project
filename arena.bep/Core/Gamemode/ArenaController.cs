@@ -76,6 +76,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public GameObject _musicObject;
 
         private GameObject bombVisuals;
+        public Vector3 BombPlantedPosition { get; private set; }
 
         public ArenaController()
         {
@@ -196,7 +197,10 @@ namespace ifp.arena.bep.Core.Gamemode
             }
 
             if (bombStatePacket.state == BombState.Planted)
+            {
+                BombPlantedPosition = bombStatePacket.position;
                 bombVisuals.transform.position = bombStatePacket.position;
+            }
 
             switch (bombStatePacket.state)
             {
