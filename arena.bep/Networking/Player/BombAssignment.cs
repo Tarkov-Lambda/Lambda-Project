@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking;
@@ -49,6 +50,12 @@ namespace ifp.arena.bep.networking
 
                 RequestSendToPlayer(packet, packet.playerId);
             }
+        }
+
+        public async UniTaskVoid SendDelayed(int delayMs = 50)
+        {
+            await UniTask.Delay(delayMs);
+            Send();
         }
 
         // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful

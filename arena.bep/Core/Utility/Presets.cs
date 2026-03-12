@@ -28,7 +28,6 @@ namespace ifp.arena.bep.Core
         /// <summary>Resets main player equipment to a starting gun, and no armor</summary>
         public static void ResetEquipment()
         {
-            
             // H.MainPlayer.InventoryController.RemoveActiveEvent();
         }
 

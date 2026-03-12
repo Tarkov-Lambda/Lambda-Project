@@ -72,7 +72,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                                 return;
                             }
 
-                            // await ItemsUtils.ForceRemoveSlotAsync(EquipmentSlot.Backpack);
+                            await ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack);
                             Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, GameTypes.BombState.Planted, GetBombPlantPosition(player));
                             owner.ClearInteractionState();
                         });

@@ -110,7 +110,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SnDModeRules)
             {
-                ItemsUtils.DelayAndGiveBombToAPlayer().Forget();
+                Singleton<BombAssignmentPacketHandler>.Instance.SendDelayed().Forget();
             }
             // int currentRound = H.Session.factionWins.Values.Sum();
             // int maxRounds = SnDModeRules.maxRoundsToWin * 2 - 1;

@@ -112,7 +112,7 @@ namespace ifp.arena.bep.Core
 
             for (int i = 0; i < missing; i++)
             {
-                if (!TryCreateItem(weaponMagTemplate, out Item newItem))
+                if (!ItemsUtils.TryCreateItem(weaponMagTemplate, out Item newItem))
                     continue;
 
                 if (newItem is not MagazineItemClass newMag)
@@ -142,7 +142,7 @@ namespace ifp.arena.bep.Core
 
             foreach (var chamber in weapon.Chambers)
             {
-                if (chamber.ContainedItem == null && TryCreateItem(ammo.TemplateId, out Item newItem))
+                if (chamber.ContainedItem == null && ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
                 {
                     chamber.AddWithoutRestrictions(newItem);
                 }
@@ -156,7 +156,7 @@ namespace ifp.arena.bep.Core
             {
                 foreach (var camora in cylinder.Camoras)
                 {
-                    if (camora.ContainedItem == null && TryCreateItem(ammo.TemplateId, out Item newItem))
+                    if (camora.ContainedItem == null && ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
                     {
                         camora.AddWithoutRestrictions(newItem);
                     }
@@ -172,23 +172,12 @@ namespace ifp.arena.bep.Core
                 {
                     topAmmoItem.StackObjectsCount = Math.Min(topAmmoItem.Template.StackMaxSize, magazine.MaxCount);
                 }
-                else if (TryCreateItem(ammo.TemplateId, out Item newItem))
+                else if (ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
                 {
                     newItem.StackObjectsCount = magazine.MaxCount;
                     magazine.Cartridges.Add(newItem, simulate: false);
                 }
             }
-        }
-
-        private static bool TryCreateItem(string templateId, out Item newItem)
-        {
-            newItem = null;
-
-            if (!Singleton<ItemFactoryClass>.Instantiated || !Singleton<ItemFactoryClass>.Instance.ItemTemplates.ContainsKey(templateId))
-                return false;
-
-            newItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
-            return newItem != null;
         }
 
         private static void RepairItem(Item item)
