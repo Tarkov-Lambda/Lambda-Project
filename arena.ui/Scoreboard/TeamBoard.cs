@@ -14,5 +14,10 @@ namespace arena.ui.scoreboard
         [SerializeField] private RectTransform containerPlayers;
 
         [SerializeField] private Graphic[] coloredGraphicsKeepAlpha;
+
+        public void Set()
+        {
+
+        }
     }
 }

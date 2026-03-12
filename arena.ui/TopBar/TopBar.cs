@@ -19,7 +19,9 @@ namespace arena.ui
 
         public void SetTime(float seconds)
         {
-            textTimer.text = FormatTime(seconds);
+            if (textTimer == null)
+                return;
+            textTimer.text = $"<mspace=21>{FormatTime(seconds)}</mspace>";
         }
 
         string FormatTime(float seconds)

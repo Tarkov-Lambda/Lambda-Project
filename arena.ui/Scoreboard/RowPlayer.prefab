@@ -328,7 +328,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.23137255}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.64705884}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -376,6 +376,7 @@ GameObject:
   - component: {fileID: 3003113021785565788}
   - component: {fileID: 7971851368980001918}
   - component: {fileID: 5120199069234546112}
+  - component: {fileID: 8090356826158424364}
   m_Layer: 0
   m_Name: RowPlayer
   m_TagString: Untagged
@@ -396,17 +397,17 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5359371471090597820}
+  - {fileID: 7105373401671703559}
   - {fileID: 3078510424601375860}
   - {fileID: 5940075050619797072}
   - {fileID: 5886334080130544508}
   - {fileID: 3533526267358388469}
-  - {fileID: 7105373401671703559}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 900, y: 50}
+  m_SizeDelta: {x: 600, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7971851368980001918
 MonoBehaviour:
@@ -425,6 +426,7 @@ MonoBehaviour:
   textDeaths: {fileID: 7887700850248605664}
   textAssists: {fileID: 4592914259488616229}
   textPing: {fileID: 5579549886948306945}
+  bg: {fileID: 1731696568174521912}
 --- !u!114 &5120199069234546112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -451,6 +453,26 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &8090356826158424364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3685329738424322623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: -1
+  m_PreferredHeight: 40
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &6244083905314236984
 GameObject:
   m_ObjectHideFlags: 0
