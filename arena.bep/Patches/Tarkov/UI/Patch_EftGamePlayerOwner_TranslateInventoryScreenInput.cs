@@ -5,6 +5,7 @@ using EFT;
 using EFT.InputSystem;
 using HarmonyLib;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.UI;
 using SPT.Reflection.Patching;
 using UnityEngine;
@@ -26,7 +27,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
         {
             if (command == ECommand.ToggleInventory)
             {
-                if (AllowOpenInventory && H.MainPlayerScore.isAlive)
+                if (AllowOpenInventory && H.MainPlayerScore.isAlive && !InventoryResetter.IsResetting)
                 {
                     AllowOpenInventory = false;
                     return true;

@@ -3,6 +3,7 @@ using ItemExtensions = GClass3380;
 using OperationResult = GStruct153;
 //---------------------------------------------------------------//
 
+using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
 using EFT;
@@ -96,7 +97,7 @@ namespace ifp.arena.bep.Core
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot)
-        {   
+        {
             var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
             if (slot.ContainedItem == null)
                 return true;
@@ -104,23 +105,18 @@ namespace ifp.arena.bep.Core
             await UniTask.WaitUntil(() => !H.MainPlayer.MovementContext.CanWalk);
             await UniTask.Delay(200);
 
-            OperationResult removalEvent = InteractionsHandlerClass.Remove(slot.ContainedItem, H.MainInventoryController, true);
-            H.Dump(removalEvent);
-            H.Dump(removalEvent.Succeeded);
-            H.Dump(removalEvent.Failed);
-            H.Dump(removalEvent.Error);
-            H.Dump(removalEvent.Error_0);
+            return await TryRemoveItem(slot.ContainedItem, H.MainPlayer);
+        }
 
+        /// <summary>Removes any item from a player's inventory via a network transaction.</summary>
+        public static async UniTask<bool> TryRemoveItem(Item item, Player player)
+        {
+            var removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
             if (removalEvent.Failed)
                 return false;
 
-            IResult transactionResult = await H.MainPlayer.InventoryController.TryRunNetworkTransaction(removalEvent);
-            H.Dump(transactionResult);
-            H.Dump(transactionResult.Succeed);
-            H.Dump(transactionResult.Failed);
-            H.Dump(transactionResult.Error);
-
-            return !transactionResult.Failed;
+            IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
+            return !result.Failed;
         }
 
         public static async void WhenApprovedGiveItem(Item item, Player player)
@@ -244,6 +240,26 @@ namespace ifp.arena.bep.Core
             if (tacRig != null && tacRig.Slots.Any())
                 return tacRig;
             return null;
+        }
+
+        /// <summary>Returns all items currently occupying Front_plate / Back_plate slots in the player's rig.</summary>
+        public static IEnumerable<Item> GetArmorPlates(Player player)
+        {
+            var plateHolder = GetPlateHolder(player);
+            if (plateHolder == null)
+                yield break;
+
+            foreach (var component in plateHolder.Components)
+            {
+                if (component is not ArmorHolderComponent armorHolder)
+                    continue;
+
+                foreach (var slot in armorHolder.ArmorSlots)
+                {
+                    if (slot.ContainedItem != null && slot.CachedSlotName is "Front_plate" or "Back_plate")
+                        yield return slot.ContainedItem;
+                }
+            }
         }
 
         public static void SpawnAndEquip(Player player, string templateId, EquipmentSlot slotType)

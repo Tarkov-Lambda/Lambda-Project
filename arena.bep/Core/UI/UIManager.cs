@@ -132,7 +132,7 @@ namespace ifp.arena.bep.Core.UI
                 {
                     Id = id,
                     Faction = playerScore.faction,
-                    Name = playerScore.player.name,
+                    Name = playerScore.player.Profile.Nickname,
                     Kills = playerScore.kills,
                     Deaths = playerScore.deaths,
                     Assists = playerScore.assists,
