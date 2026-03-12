@@ -10,7 +10,7 @@ using ItemsTabController = EFT.UI.ItemsPanel.GClass3802;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI
 {
-    public class Patch_ItemsTabController_Show : ModulePatch
+    internal class Patch_ItemsTabController_Show : ModulePatch
     {
         public static event Action<CompoundItem> OnShow;
 

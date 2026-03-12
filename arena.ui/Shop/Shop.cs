@@ -6,16 +6,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-#if EFT_RUNTIME
-using EFT.InventoryLogic;
-using ifp.arena.bep.Patches.Tarkov.UI;
-using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.UI;
-using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.Core.Economy;
-#endif
-
 namespace arena.ui
 {
     public class Shop : MonoBehaviour
@@ -31,7 +21,7 @@ namespace arena.ui
 
         Dictionary<ShopItem, ShopItemButton> assortment;
 
-        void SetAssortment(List<BuyCategory> shelves, IItemInfoProvider itemInfoProvider, Action<ShopItem> onRequest)
+        public void SetAssortment(List<BuyCategory> shelves, IItemInfoProvider itemInfoProvider, Action<ShopItem> onRequest)
         {
             foreach (Transform child in containerCategories)
             {
@@ -61,7 +51,7 @@ namespace arena.ui
             }
         }
 
-        void SetFaction(Faction faction)
+        public void SetFaction(Faction faction)
         {
             foreach (var kvp in assortment)
             {
@@ -71,12 +61,12 @@ namespace arena.ui
             }
         }
 
-        void SetInteractable(bool interactable)
+        public void SetInteractable(bool interactable)
         {
             canvasGroup.interactable = interactable;
         }
 
-        void SetCurrentMoneyBalance(int money)
+        public void SetCurrentMoneyBalance(int money)
         {
             foreach (var kvp in assortment)
             {
@@ -85,45 +75,5 @@ namespace arena.ui
 
             textMoney.text = MoneyFormat.FormatMoney(money);
         }
-
-#if EFT_RUNTIME
-
-        BSGItemInfoProvider itemInfoProvider;
-
-        void Awake()
-        {
-            Patch_ItemsTabController_Show.OnShow += OnInventoryOpen;
-
-            EventBus.OnEnter += OnMatchStateEnter;
-        }
-
-        void OnDestroy()
-        {
-            Patch_ItemsTabController_Show.OnShow -= OnInventoryOpen;
-
-            EventBus.OnEnter -= OnMatchStateEnter;
-        }
-
-        void OnMatchStateEnter(MatchState matchState)
-        {
-            if (itemInfoProvider == null)
-            {
-                itemInfoProvider = new BSGItemInfoProvider();
-                SetAssortment(BuyMenu.buyCategories, itemInfoProvider, Purchasing.BuyItem);
-            }
-
-            SetFaction(H.MainPlayerScore.faction);
-            SetInteractable(matchState == MatchState.RoundPrepare);
-            SetCurrentMoneyBalance(H.MainPlayerScore.money);
-        }
-
-        void OnInventoryOpen(CompoundItem lootingContainer)
-        {
-            foreach (Transform child in transform)
-            {
-                child.gameObject.SetActive(lootingContainer == null);
-            }
-        }
-#endif
     }
 }

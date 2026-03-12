@@ -75,6 +75,10 @@
     <ProjectReference Include="..\arena.shared\arena.shared.csproj">
       <Private>False</Private>
     </ProjectReference>
+
+    <ProjectReference Include="..\arena.ui\arena.ui.csproj">
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
