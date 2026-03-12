@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.CameraControl;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep;
@@ -185,8 +186,13 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (bombVisuals == null)
             {
-                Singleton<ItemFactoryClass>.Instance.ItemTemplates.TryGetValue(SnDModeRules.bombTemplateId, out ItemTemplate itemTemplate);
-                bombVisuals = Singleton<PoolManagerClass>.Instance.method_2(itemTemplate.Prefab, default); // Retrieve GameObject Mesh
+                // Use CreateLootPrefab so DressItem.EnableLoot(true) is called, which enables
+                // the world-space mesh renderers. Calling method_2 (raw pool pop) skips that
+                // step and leaves the mesh invisible even when the GameObject is active.
+                Item bombItem = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+                bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
+                bombVisuals.SetActive(false);
+                UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
             }
 
             if (bombStatePacket.state == BombState.Planted)

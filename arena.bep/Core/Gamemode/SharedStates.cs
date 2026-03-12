@@ -103,9 +103,13 @@ namespace ifp.arena.bep.Core.Gamemode
             }
 
             H.Session.ResetRoundScopeFields();
+            H.Session.bombState = BombState.None;
 
             H.Arena.LastObjectivePlayerId = -1;
             H.Arena.LastObjectiveBombState = BombState.None;
+
+            // Hide any leftover bomb visual from the previous round
+            Singleton<ArenaController>.Instance.SetBombVisuals(new BombStatePacket { state = BombState.None });
 
             ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack, true).Forget();
         }
