@@ -87,7 +87,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
-                _ = PlayerUtils.CloseEyes();
+                _ = PlayerUtils.CloseEyes(true, false);
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)

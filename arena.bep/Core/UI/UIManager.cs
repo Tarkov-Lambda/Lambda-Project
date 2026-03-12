@@ -138,7 +138,6 @@ namespace ifp.arena.bep.Core.UI
                     Assists = playerScore.assists,
                     Ping = playerScore.ping 
                 });
-                H.Notify($"added player {playerStats[0].Name}");
             }
 
             return playerStats.ToArray();

@@ -57,12 +57,13 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.WarmupEnd;
         public void OnEnter()
         {
-            
+
         }
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
         public void OnExit()
         {
             H.Session.InitializeScoreBoard();
+            InventoryResetter.ResetInventory();
         }
     }
 
@@ -86,6 +87,11 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.RoundPrepare;
         public void OnEnter()
         {
+            if (!H.MainPlayerScore.isAlive)
+            {
+                InventoryResetter.ResetInventory();
+                PlayerUtils.OpenEyes();
+            }
             foreach (var p in H.Arena.session.scoreboard.Values)
             {
                 p.Spawn();

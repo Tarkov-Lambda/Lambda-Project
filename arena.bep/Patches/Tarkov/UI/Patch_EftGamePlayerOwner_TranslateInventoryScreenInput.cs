@@ -26,7 +26,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
         {
             if (command == ECommand.ToggleInventory)
             {
-                if (AllowOpenInventory)
+                if (AllowOpenInventory && H.MainPlayerScore.isAlive)
                 {
                     AllowOpenInventory = false;
                     return true;
