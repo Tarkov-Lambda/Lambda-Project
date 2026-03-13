@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.CameraControl;
 using EFT.InventoryLogic;
@@ -113,6 +114,18 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
+
+            // Preloading bomb asset
+            InitBombVisualsAsync().Forget();
+        }
+
+        private async UniTaskVoid InitBombVisualsAsync()
+        {
+            Item bombItem = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+            await ItemsUtils.LoadBundlesForItem(bombItem);
+            bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
+            bombVisuals.SetActive(false);
+            UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
         }
 
         public void EndSession(GameWorld gameWorld)
@@ -185,17 +198,6 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void SetBombVisuals(BombStatePacket bombStatePacket)
         {
-            if (bombVisuals == null)
-            {
-                // Use CreateLootPrefab so DressItem.EnableLoot(true) is called, which enables
-                // the world-space mesh renderers. Calling method_2 (raw pool pop) skips that
-                // step and leaves the mesh invisible even when the GameObject is active.
-                Item bombItem = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
-                bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
-                bombVisuals.SetActive(false);
-                UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
-            }
-
             if (bombStatePacket.state == BombState.Planted)
             {
                 BombPlantedPosition = bombStatePacket.position;
@@ -235,71 +237,12 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
+    // legacy ig will remove later
     public class GameModeTicker : MonoBehaviour
     {
-        private List<BuyMenuEntry> _buyEntries;
-        private float _nextBuyRefreshTime;
-
-        private class BuyMenuEntry
-        {
-            public string name;
-            public Item item;
-            public int price;
-
-        }
-
-        private void RefreshBuyEntries(bool force)
-        {
-            if (!force && Time.unscaledTime < _nextBuyRefreshTime)
-                return;
-
-            _nextBuyRefreshTime = Time.unscaledTime + 1.0f; // refresh at most once a second
-
-            _buyEntries = new List<BuyMenuEntry>();
-
-            if (!Singleton<ItemFactoryClass>.Instantiated)
-                return;
-
-            // Dedup by weapon template id (you mentioned multiple builds may exist per gun)
-            var builds = PresetUtils.Templates
-                .Where(b => b?.Item != null)
-                .GroupBy(b => b.Item.TemplateId)
-                .Select(g => g.First());
-
-            foreach (var b in builds)
-            {
-                var item = b.Item;
-                if (item == null) continue;
-
-                int price = Purchasing.GetItemPrice(item);
-                if (price <= 0) continue;
-
-                string name = !string.IsNullOrWhiteSpace(b.HandbookName)
-                    ? b.HandbookName
-                    : !string.IsNullOrWhiteSpace(item.ShortName)
-                        ? item.ShortName
-                        : item.Name;
-
-                _buyEntries.Add(new BuyMenuEntry
-                {
-                    name = name,
-                    item = item,
-                    price = price
-                });
-            }
-
-            Item tushonka = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
-
-            _buyEntries.Add(new BuyMenuEntry { item = tushonka, name = tushonka.LocalizedName(), price = 2 });
-
-            _buyEntries = _buyEntries.OrderBy(e => e.price).ThenBy(e => e.name).ToList();
-        }
-
         private void Update()
         {
-            if (Singleton<ArenaController>.Instantiated)
-                Singleton<ArenaController>.Instance.Update();
-
+            Singleton<ArenaController>.Instance.Update();
         }
     }
 }

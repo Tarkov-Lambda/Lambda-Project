@@ -5,6 +5,7 @@ using OperationResult = GStruct153;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -63,6 +64,37 @@ namespace ifp.arena.bep.Core
                 return false;
             newItem = ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
             return newItem != null;
+        }
+
+        public static async UniTask LoadBundlesForItem(Item item)
+        {
+            var prefabsToLoad = item.GetAllItems()
+                .Select(i => i.Template.Prefab)
+                .Where(p => p != null && !string.IsNullOrEmpty(p.path))
+                .ToList();
+
+            // Also include the ammo bundle for any weapons in the item tree.
+            foreach (var subItem in item.GetAllItems())
+            {
+                if (subItem is Weapon weapon && PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                {
+                    var ammoPrefab = ammo.Template.Prefab;
+                    if (ammoPrefab != null && !string.IsNullOrEmpty(ammoPrefab.path))
+                        prefabsToLoad.Add(ammoPrefab);
+                }
+            }
+
+            if (prefabsToLoad.Count > 0)
+            {
+                await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(
+                    PoolManagerClass.PoolsCategory.Raid,
+                    PoolManagerClass.AssemblyType.Local,
+                    prefabsToLoad,
+                    JobPriorityClass.Immediate,
+                    null,
+                    default(CancellationToken)
+                );
+            }
         }
 
         public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)

@@ -1,9 +1,5 @@
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -162,36 +158,7 @@ namespace ifp.arena.bep.networking
 
         private async UniTask LoadBundlesAndSpawnAsync(Item rootItem, int playerId)
         {
-            var prefabsToLoad = rootItem.GetAllItems()
-                .Select(i => i.Template.Prefab)
-                .Where(p => p != null && !string.IsNullOrEmpty(p.path))
-                .ToList();
-
-            // We also gotta load the ammo asset bundle
-            foreach (var item in rootItem.GetAllItems())
-            {
-                if (item is Weapon weapon && PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
-                {
-                    var ammoPrefab = ammo.Template.Prefab;
-                    if (ammoPrefab != null && !string.IsNullOrEmpty(ammoPrefab.path))
-                    {
-                        prefabsToLoad.Add(ammoPrefab);
-                    }
-                }
-            }
-
-            if (prefabsToLoad.Count > 0)
-            {
-                await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(
-                    PoolManagerClass.PoolsCategory.Raid,
-                    PoolManagerClass.AssemblyType.Local, // Standard for local generation
-                    prefabsToLoad,                       // ICollection<ResourceKey>
-                    JobPriorityClass.Immediate,          // GDelegate62 (Yield logic)
-                    null,                                // IProgress callback (null is fine)
-                    default(CancellationToken)           // Cancellation token
-                );
-            }
-            // H.Notify(H.GetPlayer(playerId).Profile.Nickname);
+            await ItemsUtils.LoadBundlesForItem(rootItem);
             ItemsUtils.WhenApprovedGiveItem(rootItem, H.GetPlayer(playerId));
         }
     }
