@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -108,6 +111,11 @@ namespace ifp.arena.bep.networking
 
     public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     {
+        // Tail of the sequential async chain per player.
+        // New work is appended so items are placed one-at-a-time per player,
+        // preventing concurrent WhenApproved calls from racing over the same slot.
+        private readonly Dictionary<int, UniTask> _chains = new();
+
         protected override RateLimitConfig ServerRateLimit => new(
             enabled: true,
             refillPerSecond: 1,
@@ -152,14 +160,34 @@ namespace ifp.arena.bep.networking
 
             if (rootItem != null)
             {
-                _ = LoadBundlesAndSpawnAsync(rootItem, packet.playerId);
+                int playerId = packet.playerId;
+                Item captured = rootItem;
+
+                // Get the existing chain tail for this player, or start fresh
+                UniTask prev = _chains.TryGetValue(playerId, out var existing)
+                    ? existing
+                    : UniTask.CompletedTask;
+
+                // Append our work sequentially; each step waits for the previous to finish
+                _chains[playerId] = prev.ContinueWith(async () =>
+                {
+                    try
+                    {
+                        await ItemsUtils.LoadBundlesForItem(captured);
+                        await ItemsUtils.WhenApprovedGiveItem(captured, H.GetPlayer(playerId));
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.Logger.LogWarning($"[SpawnItem] Chain step failed for player {playerId}: {ex.Message}");
+                    }
+                });
             }
         }
 
-        private async UniTask LoadBundlesAndSpawnAsync(Item rootItem, int playerId)
+        public new void Dispose()
         {
-            await ItemsUtils.LoadBundlesForItem(rootItem);
-            ItemsUtils.WhenApprovedGiveItem(rootItem, H.GetPlayer(playerId));
+            _chains.Clear();
+            base.Dispose();
         }
     }
 }

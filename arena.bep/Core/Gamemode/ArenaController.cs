@@ -96,8 +96,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void StartSession(GameWorld gameWorld)
         {
-
             if (H.GameWorld is HideoutGameWorld) return;
+
+            // Reset the inventory operation lock so each session starts with a clean slate
+            ItemsUtils.ResetInventoryLock();
 
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
@@ -129,6 +131,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void EndSession(GameWorld gameWorld)
         {
+            // Cancel any in-flight ClientRequestGiveItem calls so they don't touch
+            // inventory after the session has been torn down
+            ItemsUtils.ResetInventoryLock();
+
             if (_tickerObject != null)
             {
                 UnityEngine.Object.Destroy(_tickerObject);

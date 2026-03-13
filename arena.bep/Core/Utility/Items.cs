@@ -14,8 +14,6 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
-using HarmonyLib;
-using Fika.Core.Main.GameMode;
 
 // Item flow summary:
 //   ClientRequestGiveItem  – client checks it can make room, then sends SpawnItemPacket
@@ -29,7 +27,7 @@ namespace ifp.arena.bep.Core
     public readonly struct ItemPlacement
     {
         public readonly PlacementKind Kind;
-        public readonly EquipmentSlot Slot;        // valid when Kind == EquipmentSlot
+        public readonly EquipmentSlot Slot;         // valid when Kind == EquipmentSlot
         public readonly ItemAddress Address;        // valid when Kind == VestAddress
         public readonly CompoundItem PlateHolder;   // valid when Kind == ArmorPlate
 
@@ -49,13 +47,27 @@ namespace ifp.arena.bep.Core
 
     public static class ItemsUtils
     {
+        // Serializes concurrent ClientRequestGiveItem calls so the slot-check and the
+        // resulting SpawnItemPacket.Send() are always atomic with respect to each other.
+        // A fresh instance is created each session via ResetInventoryLock().
+        private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
+        private static CancellationTokenSource _sessionCts = new CancellationTokenSource();
+
+        // Call on game start AND game dispose so the lock and cancellation token are always fresh.
+        public static void ResetInventoryLock()
+        {
+            _sessionCts.Cancel();
+            _sessionCts.Dispose();
+            _sessionCts = new CancellationTokenSource();
+            // Replace rather than reset to handle the edge case where a caller is still
+            // holding the semaphore when a raid ends.
+            _giveItemLock = new SemaphoreSlim(1, 1);
+        }
+
         public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
 
         public static Item CreateItemFromTemplateId(string templateId) => ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
-        // Slot ID belonging to a plate holder component
-        // future is afraid of me
-        public static string[] OverridableSlots = [];
 
         public static bool TryCreateItem(string templateId, out Item newItem)
         {
@@ -102,41 +114,57 @@ namespace ifp.arena.bep.Core
             if (templateItem == null)
                 return false;
 
-            var placement = GetItemPlacement(templateItem, H.MainPlayer);
-
-            if (placement.Kind == PlacementKind.EquipmentSlot)
+            // if another call is already in progress, wait for it to finish
+            // before we check or mutate any slot state.
+            try
             {
-                var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
-                if (slot.ContainedItem is not null)
-                {
-                    bool removed;
-                    if (templateItem is BackpackItemClass) // Backpack is only the bomb
-                        removed = await TryRemoveSlot(placement.Slot, H.MainPlayer);
-                    else
-                    {
-                        if (templateItem is Weapon)
-                        {
-                            removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
-
-                        }
-                        else
-                        {
-                            removed = await TryThrowSlot(placement.Slot, H.MainPlayer);
-                        }
-                    }
-
-                    if (!removed)
-                    {
-                        H.Notify("Failed to allocate slot space in the inventory.");
-                        return false;
-                    }
-                    // await UniTask.Delay(300);
-                }
+                await _giveItemLock.WaitAsync(_sessionCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return false; // Session ended while waiting — bail out cleanly
             }
 
-            await UniTask.Delay(200);
-            Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
-            return true;
+            try
+            {
+                var placement = GetItemPlacement(templateItem, H.MainPlayer);
+
+                if (placement.Kind == PlacementKind.EquipmentSlot)
+                {
+                    var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
+                    if (slot.ContainedItem is not null)
+                    {
+                        bool removed;
+                        if (templateItem is BackpackItemClass) // Backpack is only the bomb
+                            removed = await TryRemoveSlot(placement.Slot, H.MainPlayer);
+                        else
+                        {
+                            if (templateItem is Weapon)
+                                removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
+                            else
+                                removed = await TryThrowSlot(placement.Slot, H.MainPlayer);
+                        }
+
+                        if (!removed)
+                        {
+                            H.Notify("Failed to allocate slot space in the inventory.");
+                            return false;
+                        }
+                    }
+                }
+
+                await UniTask.Delay(50, cancellationToken: _sessionCts.Token);
+                Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
+            finally
+            {
+                _giveItemLock.Release();
+            }
         }
 
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
@@ -183,6 +211,7 @@ namespace ifp.arena.bep.Core
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
+            H.Dump(removalEvent);
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
@@ -200,13 +229,11 @@ namespace ifp.arena.bep.Core
 
             if (removed && oldMagTemplateId != null)
             {
-                var vest = player.Inventory.Equipment
-                    .GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+                var vest = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
 
                 if (vest != null)
                 {
-                    var magsToThrow = vest.Grids
-                        .SelectMany(g => g.Items)
+                    var magsToThrow = vest.Grids.SelectMany(g => g.Items)
                         .OfType<MagazineItemClass>()
                         .Where(m => m.TemplateId == oldMagTemplateId)
                         .ToList();
@@ -219,7 +246,7 @@ namespace ifp.arena.bep.Core
             return removed;
         }
 
-        public static async void WhenApprovedGiveItem(Item item, Player player)
+        public static async UniTask WhenApprovedGiveItem(Item item, Player player)
         {
             await PlaceItem(item, player, GetItemPlacement(item, player));
             // H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
@@ -355,7 +382,7 @@ namespace ifp.arena.bep.Core
                 }
             }
 
-            // Fallback: try any grid (also the only path for non-1x1 items).
+            // Default, try any grid.
             foreach (var container in vest.Containers)
             {
                 if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
@@ -375,7 +402,6 @@ namespace ifp.arena.bep.Core
             return null;
         }
 
-        /// <summary>Returns all items currently occupying Front_plate / Back_plate slots in the player's rig.</summary>
         public static IEnumerable<Item> GetArmorPlates(Player player)
         {
             var plateHolder = GetPlateHolder(player);
@@ -394,16 +420,6 @@ namespace ifp.arena.bep.Core
                         yield return slot.ContainedItem;
                     }
                 }
-            }
-        }
-
-        public static void SpawnAndEquip(Player player, string templateId, EquipmentSlot slotType)
-        {
-            if (TryCreateItem(templateId, out Item item))
-            {
-                var slot = player.Equipment.GetSlot(slotType);
-                slot.RemoveItemWithoutRestrictions();
-                slot.AddWithoutRestrictions(item);
             }
         }
     }

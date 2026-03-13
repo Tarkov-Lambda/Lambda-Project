@@ -53,7 +53,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.WarmupEnd, 1},
             {MatchState.Pause, 45},
             {MatchState.RoundPrepare, 15},
-            {MatchState.RoundAction, 115},
+            {MatchState.RoundAction, 5},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},
             {MatchState.SideSwap, 10},
@@ -134,7 +134,7 @@ namespace ifp.arena.bep.GameTypes
         public int mvps { get; private set; }
 
         public bool isAlive { get; private set; }
-        public int money { get; private set; } = 8000;
+        public int money { get; private set; } = 0;
 
         // meta gaming (previously known as facebook gaming)
         public string musicKit = "";
