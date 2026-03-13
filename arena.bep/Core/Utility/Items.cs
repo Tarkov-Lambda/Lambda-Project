@@ -14,6 +14,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using HarmonyLib;
+using Fika.Core.Main.GameMode;
 
 // Item flow summary:
 //   ClientRequestGiveItem  – client checks it can make room, then sends SpawnItemPacket
@@ -78,10 +79,18 @@ namespace ifp.arena.bep.Core
                 {
                     bool removed;
                     if (templateItem is BackpackItemClass) // Backpack is only the bomb
-                        removed = await TryRemoveSlot(placement.Slot, H.MainPlayer, true);
+                        removed = await TryRemoveSlot(placement.Slot, H.MainPlayer);
                     else
                     {
-                        removed = await TryThrowSlot(placement.Slot, H.MainPlayer);
+                        if (templateItem is Weapon)
+                        {
+                            removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
+
+                        }
+                        else
+                        {
+                            removed = await TryThrowSlot(placement.Slot, H.MainPlayer);
+                        }
                     }
 
                     if (!removed)
@@ -89,12 +98,11 @@ namespace ifp.arena.bep.Core
                         H.Notify("Failed to allocate slot space in the inventory.");
                         return false;
                     }
-
-                    await UniTask.Delay(300);
+                    // await UniTask.Delay(300);
                 }
             }
 
-            await UniTask.Delay(300);
+            await UniTask.Delay(200);
             Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
             return true;
         }
@@ -147,6 +155,36 @@ namespace ifp.arena.bep.Core
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
             return !result.Failed;
+        }
+
+        public static async UniTask<bool> TryThrowWeaponAndMags(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+        {
+            var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
+            if (slot.ContainedItem == null) return true;
+
+            // Capture the mag template before the weapon is thrown.
+            string oldMagTemplateId = slot.ContainedItem is Weapon oldWeapon ? oldWeapon.GetCurrentMagazine()?.TemplateId : null;
+            bool removed = await TryThrowSlot(equipmentSlot, player, waitUntilStationary);
+
+            if (removed && oldMagTemplateId != null)
+            {
+                var vest = player.Inventory.Equipment
+                    .GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+
+                if (vest != null)
+                {
+                    var magsToThrow = vest.Grids
+                        .SelectMany(g => g.Items)
+                        .OfType<MagazineItemClass>()
+                        .Where(m => m.TemplateId == oldMagTemplateId)
+                        .ToList();
+
+                    foreach (var mag in magsToThrow)
+                        await TryThrowItem(mag, player);
+                }
+            }
+
+            return removed;
         }
 
         public static async void WhenApprovedGiveItem(Item item, Player player)
@@ -270,6 +308,22 @@ namespace ifp.arena.bep.Core
             var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
             if (vest == null) return ItemPlacement.None;
 
+            bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
+
+            // For 1x1 items, prefer placing them in a 1x1 grid first.
+            if (isOneByOne)
+            {
+                foreach (var container in vest.Containers)
+                {
+                    if (container is SearchableGrid grid && grid.GridWidth == 1 && grid.GridHeight == 1
+                        && container.TryFindLocationForItem(item, out ItemAddress location))
+                    {
+                        return ItemPlacement.ForAddress(location);
+                    }
+                }
+            }
+
+            // Fallback: try any grid (also the only path for non-1x1 items).
             foreach (var container in vest.Containers)
             {
                 if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))

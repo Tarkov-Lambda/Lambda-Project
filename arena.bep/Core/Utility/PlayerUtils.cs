@@ -121,19 +121,7 @@ namespace ifp.arena.bep.Core
 
                 ReplenishMagazine(newMag, ammo);
 
-                // Check there's actually room before broadcasting, so we don't send
-                // a SpawnItemPacket for a mag that has nowhere to land.
-                bool hasRoom = false;
-                foreach (var grid in vestCompound.Grids)
-                {
-                    if (grid.TryFindLocationForItem(newMag, out _))
-                    {
-                        hasRoom = true;
-                        break;
-                    }
-                }
-
-                if (!hasRoom)
+                if (ItemsUtils.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
                     continue;
 
                 Singleton<SpawnItemPacketHandler>.Instance.Send(newMag);
