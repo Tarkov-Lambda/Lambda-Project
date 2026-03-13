@@ -158,25 +158,96 @@ namespace ifp.arena.bep
 
             TracerLabels[_typeName] = _typeName;
 
-            var harmonyPrefix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefix)));
-            var harmonyPostfix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfix)));
+            // Standard path (no ref/out params) — postfix uses __args safely
+            var harmonyPrefix         = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefix)));
+            var harmonyPostfix        = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfix)));
+            var harmonyPostfixVoid    = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoid)));
 
-            var harmonyPostfixVoid = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoid)));
+            // Ref-safe path (has ref/out params) — args captured in prefix; postfix omits __args
+            // to prevent Harmony's copy-back from overwriting the ref results the original method wrote.
+            var harmonyCapturePrefix       = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefixCapture)));
+            var harmonyPostfixRefSafe      = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixRefSafe)));
+            var harmonyPostfixVoidRefSafe  = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoidRefSafe)));
 
             foreach (var method in AccessTools.GetDeclaredMethods(targetType))
             {
                 if (method.IsGenericMethodDefinition) continue;
                 try
                 {
-                    bool isVoid = method.ReturnType == typeof(void);
-                    _harmony.Patch(method, prefix: harmonyPrefix, postfix: isVoid ? harmonyPostfixVoid : harmonyPostfix);
-                    H.Log($"[TRACER] Patched {_typeName}.{method.Name}");
+                    bool isVoid   = method.ReturnType == typeof(void);
+                    bool hasRefOut = System.Linq.Enumerable.Any(method.GetParameters(), p => p.ParameterType.IsByRef);
+
+                    HarmonyMethod prefix  = hasRefOut ? harmonyCapturePrefix    : harmonyPrefix;
+                    HarmonyMethod postfix = hasRefOut ? (isVoid ? harmonyPostfixVoidRefSafe : harmonyPostfixRefSafe)
+                                                      : (isVoid ? harmonyPostfixVoid        : harmonyPostfix);
+
+                    _harmony.Patch(method, prefix: prefix, postfix: postfix);
+                    H.Log($"[TRACER] Patched {_typeName}.{method.Name}{(hasRefOut ? " (ref-safe)" : "")}");
                 }
                 catch (Exception ex)
                 {
                     H.Log($"[TRACER] Failed to patch {_typeName}.{method.Name}: {ex.Message}");
                 }
             }
+        }
+
+        // ── Ref-safe tracing infrastructure ──────────────────────────────────────
+        // Methods that have ref/out parameters must NOT use object[] __args in their
+        // postfix: Harmony copies the __args array back over the ref parameters after
+        // the postfix runs, which would overwrite any modifications the original method
+        // made (e.g. zeroing out the motion vector in ApplyGravity).
+        //
+        // Instead we capture a clone of the arguments in a second prefix and store it
+        // on a per-thread stack so the ref-safe postfix can read them without __args.
+
+        [ThreadStatic]
+        private static Stack<object[]> _refArgStack;
+
+        // Prefix for methods that have ref/out params: records the call count AND
+        // pushes a clone of the argument values onto the thread-local stack.
+        private static void GenericPrefixCapture(MethodBase __originalMethod, object[] __args)
+        {
+            string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
+            string key = $"{typeName}.{__originalMethod.Name}";
+
+            var info = TracedData.GetOrAdd(key, _ => new TracedMethodInfo
+            {
+                TypeName = typeName,
+                MethodName = __originalMethod.Name
+            });
+            info.RecordCall();
+
+            // Clone the arg values before the original method can mutate any ref params.
+            if (_refArgStack == null) _refArgStack = new Stack<object[]>();
+            int len = __args?.Length ?? 0;
+            var snapshot = new object[len];
+            for (int i = 0; i < len; i++)
+                snapshot[i] = __args[i];
+            _refArgStack.Push(snapshot);
+        }
+
+        // Postfix for non-void methods with ref/out params.
+        // Deliberately omits object[] __args to prevent Harmony's copy-back.
+        private static void GenericPostfixRefSafe(MethodBase __originalMethod, object __result)
+        {
+            string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
+            string key = $"{typeName}.{__originalMethod.Name}";
+
+            object[] args = (_refArgStack != null && _refArgStack.Count > 0) ? _refArgStack.Pop() : null;
+            if (TracedData.TryGetValue(key, out var info))
+                info.RecordHistory(args, __result, __originalMethod);
+        }
+
+        // Postfix for void methods with ref/out params.
+        // Deliberately omits object[] __args to prevent Harmony's copy-back.
+        private static void GenericPostfixVoidRefSafe(MethodBase __originalMethod)
+        {
+            string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
+            string key = $"{typeName}.{__originalMethod.Name}";
+
+            object[] args = (_refArgStack != null && _refArgStack.Count > 0) ? _refArgStack.Pop() : null;
+            if (TracedData.TryGetValue(key, out var info))
+                info.RecordHistory(args, null, __originalMethod);
         }
 
         public void Dispose()

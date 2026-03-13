@@ -140,7 +140,7 @@ namespace ifp.arena.bep
             RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
 
-            // _disposables.Add(new DynamicClassTracer(typeof(TraderControllerClass)));
+            _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
 
             TracerOverlay = new GameObject("Arena Gamesession");
             TracerOverlay.AddComponent<TracerOverlay>();
