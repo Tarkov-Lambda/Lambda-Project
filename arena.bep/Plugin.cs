@@ -3,8 +3,6 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
-using EFT.InventoryLogic;
-using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -92,11 +90,6 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
 
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Planting/Defusing
-
-            // DO NOT EVER REGISTER THESE PATCHES ON START //
-            // RegisterPatch(new Patch_Slot_Locked());
-            // RegisterPatch(new Patch_GClass3125_CanAcceptRaid()); 
-            //------------------------------------------ //
 
             RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
             // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors

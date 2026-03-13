@@ -104,7 +104,6 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject.AddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-
             PlayerUtils.ApplyPainkiller();
             //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
 
@@ -237,7 +236,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
-    // legacy ig will remove later
+    // legacy ig will refactor later
     public class GameModeTicker : MonoBehaviour
     {
         private void Update()
