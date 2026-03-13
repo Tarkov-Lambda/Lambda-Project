@@ -224,6 +224,12 @@ namespace ifp.arena.bep.Core.Gamemode
             if (bombStatePacket.state == BombState.Exploded)
             {
                 Vector3 explosionCenter = bombVisuals.transform.position;
+                float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
+                H.Log(distance.ToString());
+                if(distance <= 25f)
+                {
+                    H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);
+                }
                 Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
             }
         }
