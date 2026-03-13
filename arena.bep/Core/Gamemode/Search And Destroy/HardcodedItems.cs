@@ -1,6 +1,5 @@
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.shared;
 using ifp.arena.bep.networking; // Assuming PlayerKilledPacket is here
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +8,7 @@ using System;
 using Newtonsoft.Json;
 using HarmonyLib;
 using System.IO;
+using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.Core.Economy
 {

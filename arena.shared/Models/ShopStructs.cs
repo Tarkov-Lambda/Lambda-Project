@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ifp.arena.shared
+namespace ifp.arena.shared.Models
 {
     public struct BuyCategory
     {

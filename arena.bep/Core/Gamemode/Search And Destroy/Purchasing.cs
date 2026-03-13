@@ -3,7 +3,7 @@ using EFT.InventoryLogic;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.shared;
+using ifp.arena.shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

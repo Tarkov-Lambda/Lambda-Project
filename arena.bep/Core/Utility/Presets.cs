@@ -9,8 +9,8 @@ using HarmonyLib;
 using SearchableGrid = GClass3117;
 using EquipmentBuildClass = GClass3953;
 using ifp.arena.bep.Core.Economy;
-using ifp.arena.shared;
-using ifp.arena.bep.Core.UI; // Assumption
+using ifp.arena.bep.Core.UI;
+using ifp.arena.shared.Models; // Assumption
 // --------------------------------------------- //
 
 
