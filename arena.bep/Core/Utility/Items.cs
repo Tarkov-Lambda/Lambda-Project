@@ -72,11 +72,10 @@ namespace ifp.arena.bep.Core
                 {
                     bool removed;
                     if (templateItem is BackpackItemClass) // Backpack is only the bomb
-                        removed = await TryRemoveSlot(placement.Slot, true);
+                        removed = await TryRemoveSlot(placement.Slot, H.MainPlayer, true);
                     else
                     {
-                        GStruct156<bool> result = H.MainInventoryController.TryThrowItem(slot.ContainedItem);
-                        removed = result.Succeeded;
+                        removed = await TryThrowSlot(placement.Slot, H.MainPlayer);
                     }
 
                     if (!removed)
@@ -88,6 +87,10 @@ namespace ifp.arena.bep.Core
                     await UniTask.Delay(300);
                 }
             }
+            else if (placement.Kind == PlacementKind.ArmorPlate)
+            {
+                return false;
+            }
 
             await UniTask.Delay(300);
             Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
@@ -96,24 +99,52 @@ namespace ifp.arena.bep.Core
 
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
-        public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
+        public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
         {
-            var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
+            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
+            var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
             if (slot.ContainedItem == null) return true;
 
             if (waitUntilStationary)
             {
-                await UniTask.WaitUntil(() => !H.MainPlayer.MovementContext.CanWalk);
+                await UniTask.WaitUntil(() => !player.MovementContext.CanWalk);
                 await UniTask.Delay(200);
             }
 
-            return await TryRemoveItem(slot.ContainedItem, H.MainPlayer);
+            return await TryRemoveItem(slot.ContainedItem, player);
         }
 
         /// <summary>Removes any item from a player's inventory via a network transaction.</summary>
         public static async UniTask<bool> TryRemoveItem(Item item, Player player)
         {
+            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
             OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
+            if (removalEvent.Failed) return false;
+
+            IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
+            return !result.Failed;
+        }
+
+        public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+        {
+            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
+            var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
+            if (slot.ContainedItem == null) return true;
+
+            if (waitUntilStationary)
+            {
+                await UniTask.WaitUntil(() => !player.MovementContext.CanWalk);
+                await UniTask.Delay(200);
+            }
+
+            return await TryThrowItem(slot.ContainedItem, player);
+        }
+
+
+        public static async UniTask<bool> TryThrowItem(Item item, Player player)
+        {
+            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
+            OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
@@ -123,36 +154,11 @@ namespace ifp.arena.bep.Core
         public static async void WhenApprovedGiveItem(Item item, Player player)
         {
             await PlaceItem(item, player, GetItemPlacement(item, player));
+            H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
+            
+            if (item is Weapon weapon) SetupWeaponAfterEquip(weapon, player);
 
-            if (item is Weapon weapon)
-                SetupWeaponAfterEquip(weapon, player);
-
-            if (player.IsYourPlayer)
-                PlayEquipSound(item);
-        }
-
-        public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
-        {
-            var slot = H.MainPlayer.Inventory.Equipment.GetSlot(equipmentSlot);
-            if (slot.ContainedItem == null) return true;
-
-            if (waitUntilStationary)
-            {
-                await UniTask.WaitUntil(() => !H.MainPlayer.MovementContext.CanWalk);
-                await UniTask.Delay(200);
-            }
-
-            return await TryThrowItem(slot.ContainedItem, H.MainPlayer);
-        }
-
-
-        public static async UniTask<bool> TryThrowItem(Item item, Player player)
-        {
-            OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
-            if (removalEvent.Failed) return false;
-
-            IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
-            return !result.Failed;
+            if (player.IsYourPlayer) PlayEquipSound(item);
         }
 
         private static async UniTask PlaceItem(Item item, Player player, ItemPlacement placement)
@@ -165,7 +171,11 @@ namespace ifp.arena.bep.Core
 
                 case PlacementKind.EquipmentSlot:
                     var slot = player.Equipment.GetSlot(placement.Slot);
-                    slot.RemoveItemWithoutRestrictions();
+                    if (slot.ContainedItem is not null)
+                    {
+                        H.NotifyLong("TRYING TO ADD TO A SLOT THAT HAS NOT BEEN CLEARED");
+                    }
+                    // slot.RemoveItemWithoutRestrictions();
                     player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
                     break;
 
@@ -175,7 +185,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        private static async UniTask PlaceArmorPlate(Item item, Player player, CompoundItem plateHolder)
+        private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, CompoundItem plateHolder)
         {
             foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
             {
@@ -187,16 +197,28 @@ namespace ifp.arena.bep.Core
                     if (slot.CachedSlotName is not ("Front_plate" or "Back_plate"))
                         continue;
 
-                    var add = slot.AddWithoutRestrictions(item);
-                    if (add.Succeeded)
+
+                    OperationResult addEvent = slot.Add(item, true, true);
+                    if (addEvent.Failed) return false;
+
+                    IResult result = await player.InventoryController.TryRunNetworkTransaction(addEvent);
+                    if (result.Failed)
                     {
-                        await player.InventoryController.TryRunNetworkTransaction(add);
-                        return;
+                        H.NotifyLong(result.Error);
+                        return false;
                     }
 
-                    H.Dump(add);
+                    // var add = slot.Add(item, true, true);
+                    // if (add.Succeeded)
+                    // {
+                    //     await player.InventoryController.TryRunNetworkTransaction(add);
+                    //     return true;
+                    // }
+
+                    H.Dump(result);
                 }
             }
+            return true;
         }
 
         private static void SetupWeaponAfterEquip(Weapon weapon, Player player)
@@ -209,7 +231,9 @@ namespace ifp.arena.bep.Core
 
             var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
             if (firemode != null && firemode.AvailableEFireModes.Contains(Weapon.EFireMode.fullauto))
+            {
                 firemode.FireMode = Weapon.EFireMode.fullauto;
+            }
         }
 
         private static void PlayEquipSound(Item item)
@@ -247,15 +271,19 @@ namespace ifp.arena.bep.Core
         private static ItemPlacement ResolveVestAddress(Item item, Player player)
         {
             var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
-            if (vest == null)
-                return ItemPlacement.None;
+            if (vest == null) return ItemPlacement.None;
 
             foreach (var container in vest.Containers)
             {
                 if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
+                {
+                    H.NotifyLong("FOUND SPACE IN RIG");
+                    H.Dump(location);
                     return ItemPlacement.ForAddress(location);
+                }
             }
 
+            H.NotifyLong("FAILED TO RESOLVE ITEM ADDRESS");
             return ItemPlacement.None;
         }
 

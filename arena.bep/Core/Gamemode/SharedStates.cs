@@ -111,7 +111,7 @@ namespace ifp.arena.bep.Core.Gamemode
             // Hide any leftover bomb visual from the previous round
             Singleton<ArenaController>.Instance.SetBombVisuals(new BombStatePacket { state = BombState.None });
 
-            ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack, true).Forget();
+            ItemsUtils.TryRemoveSlot(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
         }
 
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

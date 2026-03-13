@@ -191,7 +191,7 @@ namespace ifp.arena.bep.networking
                     default(CancellationToken)           // Cancellation token
                 );
             }
-
+            H.Notify(H.GetPlayer(playerId).Profile.Nickname);
             ItemsUtils.WhenApprovedGiveItem(rootItem, H.GetPlayer(playerId));
         }
     }

@@ -62,6 +62,7 @@ namespace ifp.arena.bep.networking
         // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful
         public override void WhenApproved(BombAssignmentPacket packet, NetPeer peer)
         {
+            H.NotifyLong("GETTING BOMB");
             Item BombBackpack = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
             _ = ItemsUtils.ClientRequestGiveItem(BombBackpack);
             // H.Notify("You now have the bomb");

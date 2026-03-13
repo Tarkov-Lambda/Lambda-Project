@@ -73,7 +73,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
     public class SnDModeRules : GameModeRules
     {
-        public static int maxRoundsToWin = 3;
+        public static int maxRoundsToWin = 13;
 
         public static float platingTime = 4.5f;
         public static float defusingTime = 5f;
