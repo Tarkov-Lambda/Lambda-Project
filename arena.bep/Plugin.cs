@@ -93,6 +93,10 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Planting/Defusing
 
+            // DO NOT EVER REGISTER THESE PATCHES ON START //
+            // RegisterPatch(new Patch_Slot_Locked());
+            // RegisterPatch(new Patch_GClass3125_CanAcceptRaid()); 
+            //------------------------------------------ //
 
             RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
             // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
@@ -143,7 +147,7 @@ namespace ifp.arena.bep
             RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
 
-            // _disposables.Add(new DynamicClassTracer(typeof(ArenaController)));
+            // _disposables.Add(new DynamicClassTracer(typeof(TraderControllerClass)));
 
             TracerOverlay = new GameObject("Arena Gamesession");
             TracerOverlay.AddComponent<TracerOverlay>();

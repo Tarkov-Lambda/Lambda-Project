@@ -53,7 +53,7 @@ namespace ifp.arena.bep.networking
                 position = position,
                 timestamp = NetworkTime.ServerNowSeconds
             };
-            H.Notify(state);
+            // H.Notify(state);
 
             RequestSend(packet);
         }

@@ -12,6 +12,8 @@ using EFT.UI;
 using ifp.arena.bep.networking;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System;
+using HarmonyLib;
 
 // Item flow summary:
 //   ClientRequestGiveItem  – client checks it can make room, then sends SpawnItemPacket
@@ -48,6 +50,10 @@ namespace ifp.arena.bep.Core
         public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
 
         public static Item CreateItemFromTemplateId(string templateId) => ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+
+        // Slot ID belonging to a plate holder component
+        // future is afraid of me
+        public static string[] OverridableSlots = [];
 
         public static bool TryCreateItem(string templateId, out Item newItem)
         {
@@ -87,10 +93,6 @@ namespace ifp.arena.bep.Core
                     await UniTask.Delay(300);
                 }
             }
-            else if (placement.Kind == PlacementKind.ArmorPlate)
-            {
-                return false;
-            }
 
             await UniTask.Delay(300);
             Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
@@ -101,7 +103,6 @@ namespace ifp.arena.bep.Core
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
         {
-            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
             var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
             if (slot.ContainedItem == null) return true;
 
@@ -117,7 +118,6 @@ namespace ifp.arena.bep.Core
         /// <summary>Removes any item from a player's inventory via a network transaction.</summary>
         public static async UniTask<bool> TryRemoveItem(Item item, Player player)
         {
-            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
             OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
             if (removalEvent.Failed) return false;
 
@@ -127,7 +127,6 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
         {
-            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
             var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
             if (slot.ContainedItem == null) return true;
 
@@ -143,7 +142,6 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
-            if (player != H.MainPlayer) H.NotifyLong("WARNING REMOVING FROM THE WRONG PLAYER");
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
             if (removalEvent.Failed) return false;
 
@@ -154,8 +152,8 @@ namespace ifp.arena.bep.Core
         public static async void WhenApprovedGiveItem(Item item, Player player)
         {
             await PlaceItem(item, player, GetItemPlacement(item, player));
-            H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
-            
+            // H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
+
             if (item is Weapon weapon) SetupWeaponAfterEquip(weapon, player);
 
             if (player.IsYourPlayer) PlayEquipSound(item);
@@ -171,11 +169,6 @@ namespace ifp.arena.bep.Core
 
                 case PlacementKind.EquipmentSlot:
                     var slot = player.Equipment.GetSlot(placement.Slot);
-                    if (slot.ContainedItem is not null)
-                    {
-                        H.NotifyLong("TRYING TO ADD TO A SLOT THAT HAS NOT BEEN CLEARED");
-                    }
-                    // slot.RemoveItemWithoutRestrictions();
                     player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
                     break;
 
@@ -187,38 +180,39 @@ namespace ifp.arena.bep.Core
 
         private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, CompoundItem plateHolder)
         {
+            var plate = item as ArmorPlateItemClass;
             foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
             {
                 foreach (var slot in armorHolder.ArmorSlots)
                 {
                     if (slot.ContainedItem is not null)
                         continue;
-
-                    if (slot.CachedSlotName is not ("Front_plate" or "Back_plate"))
+                    if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
                         continue;
 
-
-                    OperationResult addEvent = slot.Add(item, true, true);
-                    if (addEvent.Failed) return false;
-
-                    IResult result = await player.InventoryController.TryRunNetworkTransaction(addEvent);
-                    if (result.Failed)
+                    var addResult = slot.AddWithoutRestrictions(plate);
+                    if (addResult.Failed)
                     {
-                        H.NotifyLong(result.Error);
+                        H.Dump(addResult);
                         return false;
                     }
 
-                    // var add = slot.Add(item, true, true);
-                    // if (add.Succeeded)
-                    // {
-                    //     await player.InventoryController.TryRunNetworkTransaction(add);
-                    //     return true;
-                    // }
+                    // This is an extremely manual way of adding armor (and probably very fragile)
+                    // however after spending an entire day throwing myself against the wall I must give up
+                    // whilst this plate is registered correctly whilst the player is shot at
+                    // the ui does not display any durability changes
+                    // this is very likely due to me missing an action invocation somewhere that happens
+                    // in the normal network transaction pipeline
+                    var address = plate.CurrentAddress;
+                    address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
+                    address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
+                    slot.ApplyContainedItem();
+                    player.OnArmorPointsChanged(plate.Armor, true);
 
-                    H.Dump(result);
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
 
         private static void SetupWeaponAfterEquip(Weapon weapon, Player player)
@@ -226,7 +220,10 @@ namespace ifp.arena.bep.Core
             if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
             {
                 PlayerUtils.ReplenishGun(weapon, ammo);
-                PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
+
+                // Only the local player's machine should create and broadcast vest magazines.
+                if (player.IsYourPlayer)
+                    PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
             }
 
             var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
@@ -277,13 +274,10 @@ namespace ifp.arena.bep.Core
             {
                 if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
                 {
-                    H.NotifyLong("FOUND SPACE IN RIG");
-                    H.Dump(location);
                     return ItemPlacement.ForAddress(location);
                 }
             }
 
-            H.NotifyLong("FAILED TO RESOLVE ITEM ADDRESS");
             return ItemPlacement.None;
         }
 
@@ -309,8 +303,10 @@ namespace ifp.arena.bep.Core
 
                 foreach (var slot in armorHolder.ArmorSlots)
                 {
-                    if (slot.ContainedItem != null && slot.CachedSlotName is "Front_plate" or "Back_plate")
+                    if (slot.ContainedItem != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+                    {
                         yield return slot.ContainedItem;
+                    }
                 }
             }
         }

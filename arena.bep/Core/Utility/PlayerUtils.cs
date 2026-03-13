@@ -9,6 +9,7 @@ using EFT.UI;
 using HarmonyLib;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
+using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using UnityEngine;
@@ -120,14 +121,22 @@ namespace ifp.arena.bep.Core
 
                 ReplenishMagazine(newMag, ammo);
 
+                // Check there's actually room before broadcasting, so we don't send
+                // a SpawnItemPacket for a mag that has nowhere to land.
+                bool hasRoom = false;
                 foreach (var grid in vestCompound.Grids)
                 {
-                    if (grid.TryFindLocationForItem(newMag, out ItemAddress location))
+                    if (grid.TryFindLocationForItem(newMag, out _))
                     {
-                        ItemsUtils.WhenApprovedGiveItem(newMag, player);
+                        hasRoom = true;
                         break;
                     }
                 }
+
+                if (!hasRoom)
+                    continue;
+
+                Singleton<SpawnItemPacketHandler>.Instance.Send(newMag);
             }
         }
 
