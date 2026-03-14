@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,6 +9,8 @@ namespace arena.ui
 {
     public class KillNotification : MonoBehaviour
     {
+        public RectTransform rectTransform => transform as RectTransform;
+
         [SerializeField] private TMP_Text leftText;
         [SerializeField] private Graphic leftColoredGraphic;
 
@@ -18,8 +21,12 @@ namespace arena.ui
         [SerializeField] private Image imageWeapon;
         [SerializeField] private Image imageHeadshot;
 
+        public float TimeShowing { get; private set; }
+
         public void Set(string left, Color colorLeft, string right, Color colorRight, Sprite weapon, bool isHeadshot)
         {
+            TimeShowing = 0f;
+
             leftText.text = left;
             leftColoredGraphic.color = colorLeft;
             rightText.text = right;
@@ -29,7 +36,12 @@ namespace arena.ui
 
             imageHeadshot.gameObject.SetActive(isHeadshot);
 
-            LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+        }
+
+        private void Update()
+        {
+            TimeShowing += Time.deltaTime;
         }
     }
 }
