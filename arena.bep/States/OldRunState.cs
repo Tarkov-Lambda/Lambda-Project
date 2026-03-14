@@ -4,16 +4,13 @@ using UnityEngine;
 
 namespace OldTarkovMovement.MovementStates
 {
-    // Token: 0x02000EDC RID: 3804
     public class OldRunState : RunStateClass
     {
-        // Token: 0x06005B94 RID: 23444 RVA: 0x000D9AC6 File Offset: 0x000D7CC6
         public OldRunState(MovementContext movementContext) : base(movementContext)
         {
             this.animationCurve_0 = EFTHardSettings.Instance.DIRECTION_CURVE;
         }
 
-        // Token: 0x06005B95 RID: 23445 RVA: 0x002858F4 File Offset: 0x00283AF4
         public override void Enter(bool isFromSameState)
         {
             base.Enter(isFromSameState);
@@ -30,14 +27,12 @@ namespace OldTarkovMovement.MovementStates
             this.bool_0 = false;
         }
 
-        // Token: 0x06005B96 RID: 23446 RVA: 0x000D9ADF File Offset: 0x000D7CDF
         public override void Exit(bool toSameState)
         {
             base.Exit(toSameState);
             this.bool_0 = true;
         }
 
-        // Token: 0x06005B97 RID: 23447 RVA: 0x00285978 File Offset: 0x00283B78
         public override void ManualAnimatorMoveUpdate(float deltaTime)
         {
             if (this.bool_0)
@@ -75,20 +70,17 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.TryVaulting();
         }
 
-        // Token: 0x06005B98 RID: 23448 RVA: 0x000D9AEF File Offset: 0x000D7CEF
         protected virtual bool HasNoInputForLongTime()
         {
             return this.int_0 > 10 /**EFTHardSettings.Instance.MAX_FRAMES_WITHOUT_INPUT*/ || this.int_0 > this.int_1;
         }
 
-        // Token: 0x06005B99 RID: 23449 RVA: 0x000D9B13 File Offset: 0x000D7D13
         protected virtual void UpdateRotationAndPosition(float deltaTime)
         {
             this.method_0(deltaTime);
             this.UpdatePosition(deltaTime);
         }
 
-        // Token: 0x06005B9A RID: 23450 RVA: 0x00285A70 File Offset: 0x00283C70
         private void method_0(float deltaTime)
         {
             base.UpdateRotationSpeed(deltaTime);
@@ -98,7 +90,6 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.ApplyRotation(Quaternion.AngleAxis(this.float_4, Vector3.up) * this.MovementContext.AnimatorDeltaRotation);
         }
 
-        // Token: 0x06005B9B RID: 23451 RVA: 0x00285B0C File Offset: 0x00283D0C
         protected virtual void UpdatePosition(float deltaTime)
         {
             Vector3 playerAnimatorDeltaPosition = this.MovementContext.PlayerAnimatorDeltaPosition;
@@ -112,7 +103,6 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x06005B9C RID: 23452 RVA: 0x00285B6C File Offset: 0x00283D6C
         private void method_1(float deltaTime)
         {
             if (Math.Abs(this.vector2_0.y) < 1E-45f && Math.Abs(this.vector2_0.x) < 1E-45f)
@@ -141,26 +131,22 @@ namespace OldTarkovMovement.MovementStates
             this.method_2(this.vector2_0, this.MovementContext.MovementDirection);
         }
 
-        // Token: 0x06005B9D RID: 23453 RVA: 0x00285C9C File Offset: 0x00283E9C
         protected void method_2(Vector2 inputDirection, Vector2 lerpedDirection)
         {
             EMovementDirection discreteDirection = GClass2076.ConvertToMovementDirection(inputDirection);
             this.MovementContext.PlayerAnimatorSetDiscreteDirection(discreteDirection);
         }
 
-        // Token: 0x06005B9E RID: 23454 RVA: 0x000D881F File Offset: 0x000D6A1F
         //public override void BlindFire(int b)
         //{
         //    this.MovementContext.SetBlindFire(b);
         //}
 
-        // Token: 0x06005B9F RID: 23455 RVA: 0x000D9B23 File Offset: 0x000D7D23
         public override void Move(Vector2 direction)
         {
             this.vector2_0 = direction;
         }
 
-        // Token: 0x06005BA0 RID: 23456 RVA: 0x00285CBC File Offset: 0x00283EBC
         public override void EnableSprint(bool enabled, bool isToggle = false)
         {
             if (!this.MovementContext.CanSprint)
@@ -182,7 +168,6 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x06005BA1 RID: 23457 RVA: 0x00280EAC File Offset: 0x0027F0AC
         public override void Jump()
         {
             if (this.MovementContext.PoseLevel > 0.6f && this.MovementContext.IsGrounded)
@@ -193,7 +178,6 @@ namespace OldTarkovMovement.MovementStates
             this.ChangePose(1f - this.MovementContext.PoseLevel);
         }
 
-        // Token: 0x06005BA2 RID: 23458 RVA: 0x000D9B2C File Offset: 0x000D7D2C
         public override void ChangePose(float poseDelta)
         {
             this.MovementContext.SetPoseLevel(this.MovementContext.PoseLevel + poseDelta, false);
@@ -203,49 +187,34 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x04005750 RID: 22352
         protected Vector2 vector2_0;
 
-        // Token: 0x04005751 RID: 22353
         protected AnimationCurve animationCurve_0;
 
-        // Token: 0x04005752 RID: 22354
         protected bool bool_0;
 
-        // Token: 0x04005753 RID: 22355
         private Vector2 vector2_1;
 
-        // Token: 0x04005754 RID: 22356
         private Vector2 vector2_2;
 
-        // Token: 0x04005755 RID: 22357
         private float float_0;
 
-        // Token: 0x04005756 RID: 22358
         private float float_1;
 
-        // Token: 0x04005757 RID: 22359
         private float float_2;
 
-        // Token: 0x04005758 RID: 22360
         private float float_3;
 
-        // Token: 0x04005759 RID: 22361
         private int int_0;
 
-        // Token: 0x0400575A RID: 22362
         private int int_1;
 
-        // Token: 0x0400575B RID: 22363
         private int int_2;
 
-        // Token: 0x0400575C RID: 22364
         private float float_4;
 
-        // Token: 0x0400575D RID: 22365
         private bool bool_1;
 
-        // Token: 0x0400575E RID: 22366
         private const float float_5 = 0.9f;
     }
 }
