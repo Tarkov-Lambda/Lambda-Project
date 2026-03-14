@@ -73,8 +73,7 @@ namespace ifp.arena.bep.networking
                 H.Scoreboard[packet.victimId].Kill();
             }
 
-            Plugin.Logger.LogInfo(DateTime.UtcNow.Millisecond.ToString());
-            Plugin.Logger.LogInfo($"main player died");
+            // Plugin.Logger.LogInfo($"main player died");
 
             // Whenever player teleports
             // Player interpolation simply causes them to fly away

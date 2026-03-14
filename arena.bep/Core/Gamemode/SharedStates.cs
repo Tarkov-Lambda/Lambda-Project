@@ -61,7 +61,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit()
         {
             H.Session.InitializeScoreBoard();
-            // InventoryResetter.ResetInventory();
+            InventoryResetter.ResetInventory();
         }
     }
 

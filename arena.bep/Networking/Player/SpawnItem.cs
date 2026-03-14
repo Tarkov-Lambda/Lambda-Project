@@ -118,8 +118,8 @@ namespace ifp.arena.bep.networking
 
         protected override RateLimitConfig ServerRateLimit => new(
             enabled: true,
-            refillPerSecond: 1,
-            burst: 10,
+            refillPerSecond: 5,
+            burst: 20,
             costPerPacket: 1,
             action: RateLimitAction.Reject,
             stateTtlSeconds: 60,

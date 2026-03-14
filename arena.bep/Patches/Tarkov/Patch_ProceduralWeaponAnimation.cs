@@ -36,12 +36,12 @@ namespace ifp.arena.bep.Patches.Tarkov
             float value = __instance.BlindfireBlender.Value;
             float num = Mathf.Abs(value);
 
+            float blindfireStrengthNew = 0f;
+
             if (num > 0f)
             {
                 // Calculate blindfire strength
-                float blindfireStrengthNew = (Mathf.Abs(__instance.Pitch) < 45f)
-                    ? 1f
-                    : ((90f - Mathf.Abs(__instance.Pitch)) / 45f);
+                blindfireStrengthNew = (Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f);
 
                 blindFireStrengthField.SetValue(__instance, blindfireStrengthNew);
 
@@ -73,7 +73,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             // Update hands container positions and rotation
             __instance.HandsContainer.HandsPosition.Zero =
                 __instance.PositionZeroSum +
-                __instance.Single_3 * position;
+                blindfireStrengthNew * position;
 
             __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum + rotation;
 
