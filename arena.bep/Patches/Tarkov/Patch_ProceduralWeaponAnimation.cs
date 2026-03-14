@@ -1,5 +1,6 @@
 ﻿using EFT;
 using EFT.Animations;
+using HarmonyLib;
 using ifp.arena.bep.Core;
 using SPT.Reflection.Patching;
 using System;
@@ -13,16 +14,15 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            // Replace with the target method's type and name
-            return typeof(ProceduralWeaponAnimation).GetMethod("ZeroAdjustments", BindingFlags.Public | BindingFlags.Instance);
+            return AccessTools.Method(typeof(ProceduralWeaponAnimation), "ZeroAdjustments");
         }
 
         [PatchPrefix]
         private static bool Prefix(ProceduralWeaponAnimation __instance)
         {
-            var blindFirePositionField = __instance.GetType().GetField("_blindFirePosition", BindingFlags.NonPublic | BindingFlags.Instance);
-            var blindFireRotationField = __instance.GetType().GetField("_blindFireRotation", BindingFlags.NonPublic | BindingFlags.Instance);
-            var blindFireStrengthField = __instance.GetType().GetField("_blindfireStrength", BindingFlags.NonPublic | BindingFlags.Instance);
+            var blindFirePositionField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_blindFirePosition");
+            var blindFireRotationField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_blindFireRotation");
+            var blindFireStrengthField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_blindfireStrength");
 
             if (blindFirePositionField == null || blindFireRotationField == null || blindFireStrengthField == null)
             {

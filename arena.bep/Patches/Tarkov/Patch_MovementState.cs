@@ -25,8 +25,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            // Target the base MovementState which drops the input by default
-            return typeof(MovementState).GetMethod("BlindFire", BindingFlags.Public | BindingFlags.Instance);
+            return AccessTools.Method(typeof(MovementState), "BlindFire");
         }
 
         [PatchPrefix]

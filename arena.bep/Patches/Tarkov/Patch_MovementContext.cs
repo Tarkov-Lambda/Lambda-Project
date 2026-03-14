@@ -62,7 +62,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MovementContext).GetMethod("PlayerAnimatorSetBlindFire", BindingFlags.Public | BindingFlags.Instance);
+            return AccessTools.Method(typeof(MovementContext), "PlayerAnimatorSetBlindFire");
         }
 
         [PatchPrefix]
@@ -76,17 +76,13 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MovementContext).GetMethod("SetBlindFire",
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                new Type[] { typeof(int) },
-                null);
+            return AccessTools.Method(typeof(MovementContext), "SetBlindFire", new Type[] { typeof(int) });
         }
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, int b)
         {
-            var playerField = typeof(MovementContext).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance);
+            var playerField = AccessTools.Field(typeof(MovementContext), "_player");
 
             if (playerField != null)
             {
@@ -107,40 +103,17 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
-    public class NostalgiaPatrolFixEnterPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => typeof(SprintStateClass).GetMethod(nameof(SprintStateClass.Enter), BindingFlags.Public | BindingFlags.Instance);
-
-        [PatchPostfix]
-        private static void PostFix(SprintStateClass __instance)
-        {
-            __instance.MovementContext.SetPatrol(true);
-        }
-    }
-
-    public class NostalgiaPatrolFixExitPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => typeof(SprintStateClass).GetMethod(nameof(SprintStateClass.Exit), BindingFlags.Public | BindingFlags.Instance);
-
-        [PatchPostfix]
-        private static void PostFix(SprintStateClass __instance)
-        {
-            __instance.MovementContext.SetPatrol(false);
-        }
-    }
-
     public class SmoothSpeedFix : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            // Replace with the target method's type and name
-            return typeof(MovementContext).GetMethod(nameof(MovementContext.ManualUpdate), BindingFlags.Public | BindingFlags.Instance);
+            return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
         }
 
         [PatchPostfix]
         private static void Prefix(MovementContext __instance, float deltaTime)
         {
-            var playerField = typeof(MovementContext).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance);
+            var playerField = AccessTools.Field(typeof(MovementContext), "_player");
 
             if (playerField != null)
             {
@@ -171,8 +144,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            // Replace with the target method's type and name
-            return typeof(MovementContext).GetMethod("SetAimingSlowdown", BindingFlags.Public | BindingFlags.Instance);
+            return AccessTools.Method(typeof(MovementContext), "SetAimingSlowdown");
         }
 
         [PatchPrefix]
@@ -180,7 +152,6 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             try
             {
-
                 return true;
             }
             catch (Exception ex)
@@ -195,14 +166,13 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         protected override MethodBase GetTargetMethod()
         {
-            // Replace with the target method's type and name
-            return typeof(MovementContext).GetMethod("GetNewState", BindingFlags.Public | BindingFlags.Instance);
+            return AccessTools.Method(typeof(MovementContext), "GetNewState");
         }
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, ref BaseMovementState __result, EPlayerState name, bool isAI = false)
         {
-            var IsForModern = true;
+            var IsForModern = false;
             try
             {
                 switch (name)
