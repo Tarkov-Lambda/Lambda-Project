@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
+using Fika.Core.Main.Utils;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Dying;
@@ -70,7 +71,11 @@ namespace ifp.arena.bep.Patches.Tarkov
             try
             {
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
+                // everyone else is handled in Patch_FikaServer_OnCommonPlayerPacketReceived
+                if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+                {
+                    Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
+                }
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
                 _ = PlayerUtils.CloseEyes(true, false);

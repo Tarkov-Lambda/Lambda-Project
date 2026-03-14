@@ -183,7 +183,7 @@ namespace ifp.arena.bep.Core
                 {
                     await UniTask.WaitUntil(() =>
                     player.MovementContext.CurrentState is IdleStateClass ||
-                    player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude <= 0f);
+                    player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
                 }
             }
 

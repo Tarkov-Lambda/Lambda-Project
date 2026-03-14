@@ -12,6 +12,7 @@ using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
+using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
@@ -127,7 +128,7 @@ namespace ifp.arena.bep
             RegisterPacket<RagdollCreator>();
 
             // FIKA
-            // RegisterPatch(new Patch_FikaClient_OnCommonPlayerPacketReceived());
+            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());
 
             // NETWORK
             RegisterPacket<PlayerKilledPacketHandler>();

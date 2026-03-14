@@ -1,8 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Main.Components;
-using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
@@ -11,87 +9,56 @@ using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace ifp.arena.bep.Patches
 {
-    internal sealed class Patch_OnCommonPlayerPacketReceived : ModulePatch
+    internal sealed class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     {
-        private static readonly AccessTools.FieldRef<FikaServer, CoopHandler> CoopHandlerRef =
-            AccessTools.FieldRefAccess<FikaServer, CoopHandler>("_coopHandler");
+        private static readonly AccessTools.FieldRef<FikaServer, CoopHandler> CoopHandlerRef = AccessTools.FieldRefAccess<FikaServer, CoopHandler>("_coopHandler");
 
-        protected override MethodBase GetTargetMethod()
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
+
+        // Remove the old prefix that returned false for damage — let it pass through.
+        // Fika applies damage to ObservedHealthController; Kill is patched out globally so nothing dies.
+
+        [PatchPostfix]
+        private static void Postfix(FikaServer __instance, CommonPlayerPacket packet, NetPeer peer)
         {
-            return AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(FikaServer __instance, CommonPlayerPacket packet, NetPeer peer)
-        {
-            // Only run this logic on the server runtime
-            if (!FikaBackendUtils.IsServer)
-                return true;
-
-            if (packet?.SubPacket == null)
-                return true;
-
-            if (packet.Type != ECommonSubPacketType.Damage)
-                return true;
-
-            if (packet.SubPacket is not DamagePacket damage)
-                return true;
+            if (packet.Type != ECommonSubPacketType.Damage) return;
+            if (packet.SubPacket is not DamagePacket damage) return;
 
             var coopHandler = CoopHandlerRef(__instance);
-            if (coopHandler?.Players == null)
-                return true;
+            int victimNetId = packet.NetId;
 
-            // DamagePacket.NetId is the VICTIM netId in Fika
-            if (!coopHandler.Players.TryGetValue(damage.NetId, out var victim) || victim == null)
-                return false;
+            if (!coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
 
+            // we handle the server owner player in the Patch_Kill
+            // kind of ass backwards, but it makes sense in my head rn
+            if (victim.IsYourPlayer) return;
 
-            var wasAlive = victim.HealthController?.IsAlive == true;
-
-            // Apply damage to the victim on the server.
+            // Instead of waiting for healthsync, we apply a damage packet directly on the server on a player that's not ours.
+            // I can't vouch as per how accurate this is going to be
+            // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
+            //
+            // The only catch can be if the client sends a healthsync of their regened health right after we send this packet
+            // shooter sends a packet of 60 damage to thorax of victim
+            // victim sends a sync packet saying they just healed, right after we just send them a damage packet.
+            // eventually the victim will be the source of truth when we healthsync, but just how serious is sync mismatch here given low ttk?
+            // although, at the end of the day the other player will eventually pick up all the damage packets and apply them, in worst case scenario dying themselves (right?)
             victim.HandleDamagePacket(damage);
 
-            var isAliveNow = victim.HealthController?.IsAlive == true;
+            if (H.Scoreboard[victim.Id].isAlive == false) return;
+            H.Log(victim.Profile.Nickname);
 
-            if (wasAlive && !isAliveNow)
+            // Check if head or chest is blacked out after this damage
+            var headHP = victim.ActiveHealthController.GetBodyPartHealth(EBodyPart.Head, false);
+            var chestHP = victim.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest, false);
+
+            if (headHP.AtMinimum || chestHP.AtMinimum)
             {
-
-                // Resolve killerId in terms of EFT.Player.Id (what your scoreboard lookup uses)
-                var killerId = 0;
-
-                try
-                {
-                    if (damage.ProfileId.HasValue)
-                    {
-                        // Mirrors FikaPlayer.HandleDamagePacket logic
-                        var killerBridge = H.GameWorld.GetAlivePlayerBridgeByProfileID(damage.ProfileId.Value);
-                        if (killerBridge?.iPlayer is Player killerPlayer)
-                        {
-                            killerId = killerPlayer.Id;
-                        }
-                        else if (killerBridge?.iPlayer is FikaPlayer killerFika)
-                        {
-                            killerId = killerFika.Id;
-                        }
-                    }
-                }
-                catch
-                {
-                    // fallback to 0
-                }
-
-                
-                
-                // Singleton<PlayerKilledPacketHandler>.Instance.Send(killerId, victim.Id, assistId, true);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(damage);
             }
-
-            return false;
         }
     }
 }
