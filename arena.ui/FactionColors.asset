@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: FactionColors
   m_EditorClassIdentifier: 
   ct: {r: 0.2, g: 0.4, b: 1, a: 1}
-  t: {r: 1, g: 0.3, b: 0.2, a: 1}
+  t: {r: 0.90188676, g: 0.24042803, b: 0.14804552, a: 1}
   none: {r: 0.5, g: 0.5, b: 0.5, a: 1}
