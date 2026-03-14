@@ -19,8 +19,10 @@ namespace ifp.arena.bep.Core.UI
             if (weaponBuild != null)
                 return weaponBuild.Item;
 
-            Item newImmutableItem = ItemsUtils.ItemFactory.CreateItem(MongoID.Generate(), bsgId, null);
-            cacheImmutableItems.Add(bsgId, newImmutableItem);
+            ItemsUtils.TryCreateItem(bsgId, out Item newImmutableItem);
+            if (newImmutableItem != null)
+                cacheImmutableItems.Add(bsgId, newImmutableItem);
+
             return newImmutableItem;
         }
 

@@ -14,6 +14,8 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class BSGItemInfoProvider : IItemInfoProvider
     {
+        Sprite emptySprite;
+
         public string FullName(string bsgId)
         {
             if (string.IsNullOrEmpty(bsgId))
@@ -51,6 +53,15 @@ namespace ifp.arena.bep.Core.UI
         public void RequestIcon(string bsgId, Action<Sprite> onRendered)
         {
             Item immutableItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(bsgId);
+
+            if (immutableItem == null)
+            {
+                Plugin.Logger.LogWarning($"error creating immutable item for template '{bsgId}'");
+                if (emptySprite == null)
+                    emptySprite = Sprite.Create(Texture2D.blackTexture, new Rect(0, 0, 1, 1), Vector2.zero, 100);
+                onRendered?.Invoke(emptySprite);
+                return;
+            }
 
             ItemIcon itemIcon = ItemViewFactory.LoadItemIcon(immutableItem);
             if (itemIcon.Sprite != null)

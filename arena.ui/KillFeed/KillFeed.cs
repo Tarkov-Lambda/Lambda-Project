@@ -1,3 +1,4 @@
+using ifp.arena.shared;
 using ifp.arena.shared.Models;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,7 +28,7 @@ namespace arena.ui.killfeed
             }
         }
 
-        public void Add(PlayerStats left, PlayerStats right, Sprite weapon, bool isHeadshot)
+        public void Add(string killerName, Faction killerFaction, string victimName, Faction victimFaction, Sprite weapon, bool isHeadshot)
         {
             KillNotification notif = SpawnOrGetFromPool();
             notif.gameObject.SetActive(true);
@@ -37,7 +38,7 @@ namespace arena.ui.killfeed
 
             notif.rectTransform.anchoredPosition = new Vector2(0, notif.rectTransform.sizeDelta.y + spacing);
 
-            notif.Set(left.Name, factionColors.Get(left.Faction), right.Name, factionColors.Get(right.Faction), weapon, isHeadshot);
+            notif.Set(killerName, factionColors.Get(killerFaction), victimName, factionColors.Get(victimFaction), weapon, isHeadshot);
             notif.SetAlpha(1f);
 
             currentlyShowing.Add(notif);

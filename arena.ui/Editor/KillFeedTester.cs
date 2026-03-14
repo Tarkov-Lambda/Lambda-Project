@@ -1,4 +1,5 @@
 using arena.ui.killfeed;
+using ifp.arena.shared;
 using ifp.arena.shared.Models;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,8 +10,10 @@ public class KillFeedTester : MonoBehaviour
     [SerializeField] private KillFeed killfeed;
     [SerializeField] private Sprite placeholdergun;
 
-    [SerializeField] private PlayerStats playerLeft;
-    [SerializeField] private PlayerStats playerRight;
+    [SerializeField] private string playerLeft;
+    [SerializeField] private Faction factionLeft;
+    [SerializeField] private Faction factionRight;
+    [SerializeField] private string playerRight;
 
     float t;
 
@@ -27,10 +30,8 @@ public class KillFeedTester : MonoBehaviour
         if (t > 0.5f)
         {
             counter++;
-            playerLeft.Name = $"player left {counter}";
-            playerRight.Name = $"player right {counter}";
             t = 0f;
-            killfeed.Add(playerLeft, playerRight, placeholdergun, Random.value > 0.9f);
+            killfeed.Add(playerLeft, factionLeft, playerRight, factionRight,  placeholdergun, Random.value > 0.9f);
         }
     }
 }

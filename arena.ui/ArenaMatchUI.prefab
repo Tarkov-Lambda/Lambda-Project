@@ -246,6 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <TopBar>k__BackingField: {fileID: 2464746340007364799}
   <Scoreboard>k__BackingField: {fileID: 5537748777448993221}
+  <KillFeed>k__BackingField: {fileID: 8227188002847479273}
 --- !u!222 &2879903786698279541
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5527,3 +5528,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4642950174179077309, guid: 3de066bb915b7074d85f37492174d025, type: 3}
   m_PrefabInstance: {fileID: 6607525570252681295}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8227188002847479273 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2998960404692788646, guid: 3de066bb915b7074d85f37492174d025, type: 3}
+  m_PrefabInstance: {fileID: 6607525570252681295}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a190df086533c940945a49279f9573a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

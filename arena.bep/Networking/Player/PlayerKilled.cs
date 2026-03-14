@@ -19,6 +19,25 @@ namespace ifp.arena.bep.networking
         public EBodyPartColliderType bodyPartCollider;
         public string weaponId;
 
+        public bool IsHeadshot
+        {
+            get
+            {
+                switch (bodyPartCollider)
+                {
+                    case EBodyPartColliderType.HeadCommon:
+                    case EBodyPartColliderType.BackHead:
+                    case EBodyPartColliderType.Jaw:
+                    case EBodyPartColliderType.Eyes:
+                    case EBodyPartColliderType.Ears:
+                    case EBodyPartColliderType.ParietalHead:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(killerId);
@@ -67,17 +86,9 @@ namespace ifp.arena.bep.networking
 
         public override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            bool isHeadshot = packet.bodyPartCollider
-            is EBodyPartColliderType.HeadCommon
-            or EBodyPartColliderType.BackHead
-            or EBodyPartColliderType.Jaw
-            or EBodyPartColliderType.Eyes
-            or EBodyPartColliderType.Ears
-            or EBodyPartColliderType.ParietalHead;
-
             if (H.Scoreboard[packet.killerId] != null)
             {
-                H.Scoreboard[packet.killerId].AddFrag(isHeadshot);
+                H.Scoreboard[packet.killerId].AddFrag(packet.IsHeadshot);
             }
 
             if (H.Scoreboard[packet.victimId] != null)

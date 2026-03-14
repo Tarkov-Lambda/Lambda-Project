@@ -105,7 +105,31 @@ namespace ifp.arena.bep.Core.UI
 
         void OnPlayerKill(PlayerKilledPacket killPacket)
         {
-            Refresh();
+            try
+            {
+                H.Scoreboard.TryGetValue(killPacket.killerId, out PlayerScore playerKiller);
+                H.Scoreboard.TryGetValue(killPacket.killerId, out PlayerScore playerVictim);
+
+                string leftName = playerKiller?.player.Profile.Nickname;
+                string rightName = playerVictim?.player.Profile.Nickname;
+
+                Faction leftFaction = playerKiller == null ? Faction.None : playerKiller.faction;
+                Faction rightFaction = playerVictim == null ? Faction.None : playerVictim.faction;
+
+                itemInfoProvider.RequestIcon(killPacket.weaponId, (weaponSprite) =>
+                {
+                    matchUIController.KillFeed.Add(
+                        leftName, leftFaction,
+                        rightName, rightFaction,
+                        weaponSprite, killPacket.IsHeadshot);
+                });
+
+                Refresh();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Logger.LogError(ex);
+            }
         }
 
         void Refresh()
