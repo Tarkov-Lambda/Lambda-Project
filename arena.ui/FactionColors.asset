@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49b7e86ac7e51014a8cc6dd0db5a4aa6, type: 3}
   m_Name: FactionColors
   m_EditorClassIdentifier: 
-  ct: {r: 0.2, g: 0.4, b: 1, a: 1}
-  t: {r: 0.90188676, g: 0.24042803, b: 0.14804552, a: 1}
+  ct: {r: 0.24313724, g: 0.59530115, b: 0.7647059, a: 1}
+  t: {r: 0.5396226, g: 0.17410465, b: 0.17921682, a: 1}
   none: {r: 0.5, g: 0.5, b: 0.5, a: 1}

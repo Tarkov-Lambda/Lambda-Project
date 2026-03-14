@@ -7,9 +7,11 @@ using UnityEngine.UI;
 
 namespace arena.ui
 {
+    [RequireComponent(typeof(CanvasGroup))]
     public class KillNotification : MonoBehaviour
     {
         public RectTransform rectTransform => transform as RectTransform;
+        private CanvasGroup canvasGroup;
 
         [SerializeField] private TMP_Text leftText;
         [SerializeField] private Graphic leftColoredGraphic;
@@ -22,6 +24,11 @@ namespace arena.ui
         [SerializeField] private Image imageHeadshot;
 
         public float ActivationTimeStamp { get; private set; }
+
+        private void Awake()
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+        }
 
         private void OnEnable()
         {
@@ -40,6 +47,11 @@ namespace arena.ui
             imageHeadshot.gameObject.SetActive(isHeadshot);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+        }
+
+        public void SetAlpha(float alpha)
+        {
+            canvasGroup.alpha = alpha;
         }
     }
 }

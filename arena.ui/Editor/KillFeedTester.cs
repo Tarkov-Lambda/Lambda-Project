@@ -16,9 +16,9 @@ public class KillFeedTester : MonoBehaviour
 
     int counter;
 
-    void Start()
+    void OnEnable()
     {
-        
+        t = 999;
     }
 
     void Update()

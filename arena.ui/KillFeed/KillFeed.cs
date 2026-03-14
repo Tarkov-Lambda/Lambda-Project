@@ -38,6 +38,7 @@ namespace arena.ui.killfeed
             notif.rectTransform.anchoredPosition = new Vector2(0, notif.rectTransform.sizeDelta.y + spacing);
 
             notif.Set(left.Name, factionColors.Get(left.Faction), right.Name, factionColors.Get(right.Faction), weapon, isHeadshot);
+            notif.SetAlpha(1f);
 
             currentlyShowing.Add(notif);
         }
@@ -51,6 +52,10 @@ namespace arena.ui.killfeed
                 Vector2 targetPos = new Vector2(0, offsetY);
                 notif.rectTransform.anchoredPosition = Vector2.Lerp(notif.rectTransform.anchoredPosition, targetPos, Time.deltaTime * 30f);
                 offsetY -= notif.rectTransform.sizeDelta.y + spacing;
+
+                float normalizedLifetime = ((Time.time - notif.ActivationTimeStamp) / killShowTime);
+                float targetAlpha = Mathf.Lerp(3f, 0f, normalizedLifetime);
+                notif.SetAlpha(targetAlpha);
             }
 
             if (currentlyShowing.Count > 0 && currentlyShowing[0].ActivationTimeStamp < Time.time - killShowTime)
