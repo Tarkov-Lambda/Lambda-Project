@@ -1,5 +1,6 @@
 ﻿namespace ifp.arena.shared.Models
 {
+    [System.Serializable]
     public struct PlayerStats
     {
         public int Id;
