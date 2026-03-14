@@ -48,6 +48,10 @@ namespace ifp.arena.bep.Core.Dying
             if (player == null || player.IsYourPlayer) return;
 
             CreateRagdollFromPlayer(player);
+            if (!player.IsYourPlayer)
+            {
+                player.Teleport(new Vector3());
+            }
         }
 
         public void CreateLocalPlayerRagdoll()
@@ -59,7 +63,7 @@ namespace ifp.arena.bep.Core.Dying
             fakeCorpse.SetAttachedCamera(playerCameraController.Camera);
             playerCameraController.enabled = false;
             UniTask.Delay(4000).ContinueWith(() =>
-            { 
+            {
                 playerCameraController.enabled = true;
 
                 if (fakeCorpse != null)
@@ -139,7 +143,7 @@ namespace ifp.arena.bep.Core.Dying
                 putToSleep
                 );
 
-            
+
             if (player.HandsController != null && player.HandsController.ControllerGameObject != null)
             {
                 GameObject fakePhysicalItem = CloneWithSpecificComponents(player.HandsController.ControllerGameObject,

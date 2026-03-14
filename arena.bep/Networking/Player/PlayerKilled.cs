@@ -125,21 +125,7 @@ namespace ifp.arena.bep.networking
                 H.Scoreboard[packet.victimId].Kill();
             }
 
-            FakeTeleport(packet);
-
             EventBus.OnPlayerKill(packet);
-        }
-
-        private void FakeTeleport(PlayerKilledPacket packet)
-        {
-            UniTask.Delay(25).ContinueWith(() =>
-            {
-                Player victim = H.GetPlayer(packet.victimId);
-                if (victim != null && victim != H.MainPlayer)
-                {
-                    H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
-                }
-            });
         }
     }
 }

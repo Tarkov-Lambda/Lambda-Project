@@ -19,9 +19,6 @@ namespace ifp.arena.bep.Patches
 
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
 
-        // Remove the old prefix that returned false for damage — let it pass through.
-        // Fika applies damage to ObservedHealthController; Kill is patched out globally so nothing dies.
-
         [PatchPostfix]
         private static void Postfix(FikaServer __instance, CommonPlayerPacket packet, NetPeer peer)
         {
