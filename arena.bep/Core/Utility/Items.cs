@@ -167,7 +167,6 @@ namespace ifp.arena.bep.Core
             }
         }
 
-//
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
@@ -179,6 +178,10 @@ namespace ifp.arena.bep.Core
             {
                 await UniTask.WaitUntil(() => !player.MovementContext.CanWalk);
                 await UniTask.Delay(200);
+                if (equipmentSlot == EquipmentSlot.Backpack)
+                {
+                    await UniTask.Delay(500); // backpack loves bugging out
+                }
             }
 
             return await TryRemoveItem(slot.ContainedItem, player);

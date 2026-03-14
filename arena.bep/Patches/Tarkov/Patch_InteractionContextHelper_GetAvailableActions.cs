@@ -26,10 +26,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     internal class Patch_InteractionContextHelper_GetAvailableActions : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.smethod_3));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.smethod_3));
 
         [PatchPrefix]
         private static bool PatchPrefix(ref ActionsReturnClass __result, GamePlayerOwner owner, PlaceItemTrigger itemTrigger)
@@ -87,7 +84,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                     }
                 });
             }
-            
+
             // ── No bomb + bomb is planted: defusing ──────────────────────────────────
             // Guard against T players defusing their own bomb. We allow Faction.None as
             // a fallback for clients whose faction sync hasn't arrived yet (they won't
