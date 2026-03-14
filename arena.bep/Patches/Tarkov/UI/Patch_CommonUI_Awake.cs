@@ -11,10 +11,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
     {
         public static event Action<CommonUI> OnAwake;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(CommonUI), nameof(CommonUI.Awake));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(CommonUI), nameof(CommonUI.Awake));
 
         [PatchPostfix]
         static void Postfix(CommonUI __instance)

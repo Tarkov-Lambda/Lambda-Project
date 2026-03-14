@@ -19,10 +19,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     public class Patch_AmmoItemClass_RicochetChance : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(AmmoItemClass), nameof(AmmoItemClass.RicochetChance));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(AmmoItemClass), nameof(AmmoItemClass.RicochetChance));
 
 
         [PatchPrefix]

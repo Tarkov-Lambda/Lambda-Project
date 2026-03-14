@@ -23,10 +23,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     // Allow Blind Fire whilst running
     public class Patch_MovementState_BlindFire : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementState), "BlindFire");
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementState), nameof(MovementState.BlindFire));
 
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, int b)

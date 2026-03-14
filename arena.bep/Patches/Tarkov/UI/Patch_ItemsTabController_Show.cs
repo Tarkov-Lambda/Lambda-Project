@@ -14,10 +14,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
     {
         public static event Action<CompoundItem> OnShow;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(ItemsTabController), nameof(ItemsTabController.Show));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemsTabController), nameof(ItemsTabController.Show));
 
         [PatchPostfix]
         static void Postfix(ItemsTabController __instance)

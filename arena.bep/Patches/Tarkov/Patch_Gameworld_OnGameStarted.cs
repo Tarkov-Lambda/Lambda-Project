@@ -12,16 +12,12 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         public static event Action<GameWorld> OnGameStarted;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(GameWorld), nameof(GameWorld.OnGameStarted));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.OnGameStarted));
 
-        
         [PatchPostfix]
         static void Postfix(GameWorld __instance)
         {
-            if(__instance is HideoutGameWorld) return;
+            if (__instance is HideoutGameWorld) return;
 
             // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
             NetworkTime.Reset();
@@ -33,16 +29,12 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         public static event Action<GameWorld> OnDispose;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(GameWorld), nameof(GameWorld.Dispose));
-        }
-
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.Dispose));
 
         [PatchPostfix]
         static void Postfix(GameWorld __instance)
         {
-            if(!H.isInRaid()) return;
+            if (!H.isInRaid()) return;
 
             // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
             NetworkTime.Reset();

@@ -21,13 +21,10 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     public class Patch_PlayerMove : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(EFT.Player), nameof(EFT.Player.Move));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.Move));
 
         [PatchPostfix]
-        static void Postfix(EFT.Player __instance, Vector2 direction)
+        static void Postfix(Player __instance, Vector2 direction)
         {
             // Only apply input snapping when walking/strafing, as sprinting 
             // uses a different forward-locked animation blend tree.
@@ -40,10 +37,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_MoveSideInertia : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.MoveSideInertia));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.MoveSideInertia));
 
         [PatchPostfix]
         static void Postfix(ref float __result)
@@ -54,10 +48,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_MoveDiagonalInertia : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.MoveDiagonalInertia));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.MoveDiagonalInertia));
 
         [PatchPostfix]
         static void Postfix(ref float __result)

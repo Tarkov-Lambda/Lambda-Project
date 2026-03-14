@@ -25,10 +25,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         private const float DropAnimationSpeed = 1000f;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Drop));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Drop));
 
         [PatchPrefix]
         static bool Prefix(ref float animationSpeed, Action callback, bool fastDrop, Item nextControllerItem)
@@ -42,11 +39,8 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         private const float DropAnimationSpeed = 3f;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Spawn));
-        }
-
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Spawn));
+        
         [PatchPrefix]
         static bool Prefix(ref float animationSpeed, Action callback)
         {

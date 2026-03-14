@@ -12,10 +12,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     // Do blindfire procedure manually
     public class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(ProceduralWeaponAnimation), "ZeroAdjustments");
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ZeroAdjustments));
 
         [PatchPrefix]
         private static bool Prefix(ProceduralWeaponAnimation __instance)

@@ -15,10 +15,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     internal class Patch_EmptyHandsController_ExamineWeapon : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(EmptyHandsController), nameof(EmptyHandsController.ExamineWeapon));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EmptyHandsController), nameof(EmptyHandsController.ExamineWeapon));
 
         [PatchPostfix]
         public static void Postfix(EmptyHandsController __instance)

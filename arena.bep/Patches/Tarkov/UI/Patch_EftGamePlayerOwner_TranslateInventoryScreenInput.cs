@@ -17,10 +17,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
     {
         public static bool AllowOpenInventory = false;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(EftGamePlayerOwner), nameof(EftGamePlayerOwner.TranslateInventoryScreenInput));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftGamePlayerOwner), nameof(EftGamePlayerOwner.TranslateInventoryScreenInput));
 
         [PatchPrefix]
         static bool Prefix(EftGamePlayerOwner __instance, ECommand command, ref bool __result)

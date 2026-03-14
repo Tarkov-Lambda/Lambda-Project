@@ -12,10 +12,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         private const float DropAnimationSpeed = 1000f;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player.BaseGrenadeHandsController), nameof(Player.BaseGrenadeHandsController.Drop));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.BaseGrenadeHandsController), nameof(Player.BaseGrenadeHandsController.Drop));
 
         [PatchPrefix]
         static bool Prefix(ref float animationSpeed, Action callback, bool fastDrop, Item nextControllerItem)

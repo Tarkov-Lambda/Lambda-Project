@@ -23,10 +23,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     public class Patch_CanPressTrigger : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(ClientFirearmController), nameof(ClientFirearmController.IsTriggerPressed));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ClientFirearmController), nameof(ClientFirearmController.IsTriggerPressed));
 
         [PatchPrefix]
         static bool Prefix(ref bool __result)

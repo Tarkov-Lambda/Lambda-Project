@@ -25,10 +25,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         public static DamageInfoStruct LastReceivedDamageInfo { get; private set; }
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
 
         [PatchPrefix]
         static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
@@ -46,10 +43,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         private static long _lastKillTime;
         private const int CooldownMs = 500;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
 
 
         [PatchPrefix]
