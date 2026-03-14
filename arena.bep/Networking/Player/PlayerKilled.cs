@@ -15,7 +15,8 @@ namespace ifp.arena.bep.networking
         public int killerId;
         public int victimId;
         public int assistId;
-        public bool isHeadshot;
+        public EDamageType damageType;
+        public EBodyPartColliderType bodyPartCollider;
         public string weaponId;
 
         public void Serialize(NetDataWriter writer)
@@ -23,7 +24,8 @@ namespace ifp.arena.bep.networking
             writer.Put(killerId);
             writer.Put(victimId);
             writer.Put(assistId);
-            writer.Put(isHeadshot);
+            writer.Put((int)damageType);
+            writer.Put((int)bodyPartCollider);
             writer.Put(weaponId);
         }
 
@@ -32,7 +34,8 @@ namespace ifp.arena.bep.networking
             killerId = reader.GetInt();
             victimId = reader.GetInt();
             assistId = reader.GetInt();
-            isHeadshot = reader.GetBool();
+            damageType = (EDamageType)reader.GetInt();
+            bodyPartCollider = (EBodyPartColliderType)reader.GetInt();
             weaponId = reader.GetString();
         }
 
@@ -47,20 +50,15 @@ namespace ifp.arena.bep.networking
         public void Send(DamageInfoStruct damage)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
-            bool isHeadshot = damage.BodyPartColliderType
-            is EBodyPartColliderType.HeadCommon
-            or EBodyPartColliderType.BackHead
-            or EBodyPartColliderType.Jaw
-            or EBodyPartColliderType.Eyes
-            or EBodyPartColliderType.Ears
-            or EBodyPartColliderType.ParietalHead;
+
 
             var packet = new PlayerKilledPacket
             {
                 killerId = killerId,
                 victimId = H.MainPlayer.Id,
                 assistId = 12312345, // idk how to make this yet tbh
-                isHeadshot = isHeadshot,
+                damageType = damage.DamageType,
+                bodyPartCollider = damage.BodyPartColliderType,
                 weaponId = H.GetPlayer(killerId).HandsController.Item.Id,
             };
 
@@ -69,9 +67,17 @@ namespace ifp.arena.bep.networking
 
         public override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
+            bool isHeadshot = packet.bodyPartCollider
+            is EBodyPartColliderType.HeadCommon
+            or EBodyPartColliderType.BackHead
+            or EBodyPartColliderType.Jaw
+            or EBodyPartColliderType.Eyes
+            or EBodyPartColliderType.Ears
+            or EBodyPartColliderType.ParietalHead;
+
             if (H.Scoreboard[packet.killerId] != null)
             {
-                H.Scoreboard[packet.killerId].AddFrag(false);
+                H.Scoreboard[packet.killerId].AddFrag(isHeadshot);
             }
 
             if (H.Scoreboard[packet.victimId] != null)

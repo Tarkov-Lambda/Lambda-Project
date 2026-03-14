@@ -93,8 +93,6 @@ namespace ifp.arena.bep
             RegisterPatch(new StateReplacer());
             RegisterPatch(new AimingSlowdownPatch());
 
-
-
             RegisterPatch(new Patch_CanWalk()); // For controller locking
             RegisterPatch(new Patch_CanJump()); // For controller locking
             RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
