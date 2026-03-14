@@ -1,27 +1,20 @@
-using Comfort.Common;
-using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
-using System.Linq;
+using MemoryPack;
 using static EFT.Player;
 
 namespace ifp.arena.bep.networking
 {
-    public struct HandsInspectPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct HandsInspectPacket : INetSerializable
     {
         public int id;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(id);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            id = reader.GetInt();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<HandsInspectPacket>(reader);
     }
 
     public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>

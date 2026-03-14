@@ -11,25 +11,19 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
-using System.Linq;
-using System.Net.Sockets;
+using MemoryPack;
 using System.Threading.Tasks;
 
 namespace ifp.arena.bep.networking
 {
-    public struct RestartPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct RestartPacket : INetSerializable
     {
         public string mapName;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(mapName);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            mapName = reader.GetString();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<RestartPacket>(reader);
     }
 
     // Either when game mode has finished, or admin requests it. scoreboard is fresh.
@@ -75,8 +69,6 @@ namespace ifp.arena.bep.networking
 
         public override async void WhenApproved(RestartPacket packet, NetPeer peer)
         {
-            // _ = PlayerUtils.CloseEyes(false, true);
-            // await Task.Delay(500);
             Player player = H.GetMainPlayer();
             if (player != null)
             {

@@ -1,61 +1,25 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading.Tasks;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking
 {
-    public struct MatchStateSyncPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct MatchStateSyncPacket : INetSerializable
     {
         public MatchState matchState;
         public double serverPhaseStartSeconds;
+        public RoundActionPhaseEnd? roundActionEnd;
 
-        public bool hasRoundActionEnd;
-        public RoundActionPhaseEnd roundActionEnd;
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put((int)matchState);
-            writer.Put(serverPhaseStartSeconds);
-
-            writer.Put(hasRoundActionEnd);
-            if (hasRoundActionEnd)
-            {
-                writer.Put(roundActionEnd.mvpId);
-                writer.Put((int)roundActionEnd.winner);
-                writer.Put((int)roundActionEnd.roundWinReason);
-            }
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            matchState = (MatchState)reader.GetInt();
-            serverPhaseStartSeconds = reader.GetDouble();
-
-            hasRoundActionEnd = reader.GetBool();
-            if (hasRoundActionEnd)
-            {
-                roundActionEnd = new RoundActionPhaseEnd
-                {
-                    mvpId = reader.GetInt(),
-                    winner = (Faction)reader.GetInt(),
-                    roundWinReason = (RoundWinReason)reader.GetInt()
-                };
-            }
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<MatchStateSyncPacket>(reader);
     }
 
     public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
@@ -68,8 +32,7 @@ namespace ifp.arena.bep.networking
             {
                 matchState = roundState,
                 serverPhaseStartSeconds = NetworkTime.ServerNowSeconds,
-                hasRoundActionEnd = roundActionEnd.HasValue,
-                roundActionEnd = roundActionEnd.GetValueOrDefault()
+                roundActionEnd = roundActionEnd
             };
             RequestSend(packet);
         }

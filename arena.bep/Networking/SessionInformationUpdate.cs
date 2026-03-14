@@ -39,22 +39,9 @@ namespace ifp.arena.bep.networking
         public Dictionary<int, int> factionWins;
         public PlayerScoreSyncData[] scores;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            byte[] bytes = MemoryPackSerializer.Serialize(this);
-            writer.Put(bytes.Length);
-            writer.Put(bytes);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            int length = reader.GetInt();
-
-            byte[] bytes = new byte[length];
-            reader.GetBytes(bytes, length);
-
-            this = MemoryPackSerializer.Deserialize<SessionInfoPacket>(bytes);
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionInfoPacket>(reader);
     }
 
     // This only runs explicitly, not on interval

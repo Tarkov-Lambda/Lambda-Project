@@ -1,71 +1,56 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
-using System.Linq;
+using MemoryPack;
 using UnityEngine;
 
 namespace ifp.arena.bep.networking
 {
-    public struct BombStatePacket : INetSerializable
+    [MemoryPackable]
+    public partial struct BombStatePacket : INetSerializable
     {
         public int playerId;
         public BombState state;
-        public Vector3 position;
+        // Vector3 is stored as three floats so MemoryPack can serialize it natively.
+        public float posX, posY, posZ;
         public double timestamp;
 
-        public void Serialize(NetDataWriter writer)
+        /// <summary>Convenience accessor — not serialized.</summary>
+        [MemoryPackIgnore]
+        public Vector3 position
         {
-            writer.Put(playerId);
-            writer.Put((int)state);
-            writer.Put(position);
-            writer.Put(timestamp);
+            get => new Vector3(posX, posY, posZ);
+            set { posX = value.x; posY = value.y; posZ = value.z; }
         }
 
-        public void Deserialize(NetDataReader reader)
-        {
-            playerId = reader.GetInt();
-            state = (BombState)reader.GetInt();
-            position = reader.GetVector3();
-            timestamp = reader.GetDouble();
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public override string ToString()
-        {
-            return $"{playerId} state: {state}";
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
+
+        public override string ToString() => $"{playerId} state: {state}";
     }
 
     public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
-        public void Send(Player player, BombState state, Vector3 position)
+        public void Send(EFT.Player player, BombState state, Vector3 position)
         {
             var packet = new BombStatePacket
             {
                 playerId = player.Id,
                 state = state,
-                position = position,
                 timestamp = NetworkTime.ServerNowSeconds
             };
-            // H.Notify(state);
+            packet.position = position;
 
             RequestSend(packet);
         }
 
         public override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
         {
-            // Only server is allowed to send these states
-            // if (packet.state is BombState.Planted or BombState.Defused or BombState.Exploded)
-            // {
-            //     return false;
-            // }
-
             return base.ServerValidation(ref packet, peer);
         }
 
@@ -75,8 +60,6 @@ namespace ifp.arena.bep.networking
 
             if (packet.state == BombState.Planted)
             {
-                //  ..literally pizdec().Invoke();
-
                 H.Arena.LastObjectivePlayerId = packet.playerId;
             }
             H.Notify(packet.state);
@@ -88,7 +71,7 @@ namespace ifp.arena.bep.networking
                     H.Arena.LastObjectivePlayerId = packet.playerId;
             }
 
-            Singleton<ArenaController>.Instance.SetBombVisuals(packet);
+            Comfort.Common.Singleton<ArenaController>.Instance.SetBombVisuals(packet);
 
             EventBus.OnBombStateChange(packet.state);
         }

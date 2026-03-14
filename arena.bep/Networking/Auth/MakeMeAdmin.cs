@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using Comfort.Common;
-using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.Base.RateLimiting;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking
 {
@@ -21,22 +20,15 @@ namespace ifp.arena.bep.networking
         Success     // Server -> Client (Confirmation)
     }
 
-    public struct AdminAuthPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct AdminAuthPacket : INetSerializable
     {
         public AdminAuthStep Step;
         public string Payload;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put((int)Step);
-            writer.Put(Payload ?? string.Empty);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            Step = (AdminAuthStep)reader.GetInt();
-            Payload = reader.GetString();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<AdminAuthPacket>(reader);
     }
 
     // Currently runs automatically, pretty wasteful

@@ -7,10 +7,12 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking
 {
-    public struct PlayerKilledPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct PlayerKilledPacket : INetSerializable
     {
         public int killerId;
         public int victimId;
@@ -19,6 +21,7 @@ namespace ifp.arena.bep.networking
         public EBodyPartColliderType bodyPartCollider;
         public string weaponId;
 
+        [MemoryPackIgnore]
         public bool IsHeadshot
         {
             get
@@ -38,30 +41,11 @@ namespace ifp.arena.bep.networking
             }
         }
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(killerId);
-            writer.Put(victimId);
-            writer.Put(assistId);
-            writer.Put((int)damageType);
-            writer.Put((int)bodyPartCollider);
-            writer.Put(weaponId);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            killerId = reader.GetInt();
-            victimId = reader.GetInt();
-            assistId = reader.GetInt();
-            damageType = (EDamageType)reader.GetInt();
-            bodyPartCollider = (EBodyPartColliderType)reader.GetInt();
-            weaponId = reader.GetString();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayerKilledPacket>(reader);
 
-        public override string ToString()
-        {
-            return $"{killerId} killed {victimId}";
-        }
+        public override string ToString() => $"{killerId} killed {victimId}";
     }
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
@@ -69,7 +53,6 @@ namespace ifp.arena.bep.networking
         public void Send(DamageInfoStruct damage)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
-
 
             var packet = new PlayerKilledPacket
             {
@@ -96,14 +79,8 @@ namespace ifp.arena.bep.networking
                 H.Scoreboard[packet.victimId].Kill();
             }
 
-            // Plugin.Logger.LogInfo($"main player died");
-
-            // Whenever player teleports
-            // Player interpolation simply causes them to fly away
-            // We have to slightly delay, and then brute force change player position
             FakeTeleport(packet);
 
-            // H.Notify(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString());
             EventBus.OnPlayerKill(packet);
         }
 
@@ -117,8 +94,6 @@ namespace ifp.arena.bep.networking
                     H.GetPlayer(packet.victimId).Position = new UnityEngine.Vector3();
                 }
             });
-
-
         }
     }
 }

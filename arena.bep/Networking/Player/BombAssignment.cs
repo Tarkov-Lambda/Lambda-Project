@@ -1,18 +1,11 @@
-﻿using Comfort.Common;
-using Cysharp.Threading.Tasks;
-using EFT;
+﻿using Cysharp.Threading.Tasks;
 using EFT.InventoryLogic;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
-using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
-using System.Linq;
-using UnityEngine;
 
 namespace ifp.arena.bep.networking
 {
@@ -21,16 +14,9 @@ namespace ifp.arena.bep.networking
     {
         public int playerId;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(playerId);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            playerId = reader.GetInt();
-        }
-
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombAssignmentPacket>(reader);
     }
 
     public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
@@ -39,9 +25,9 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            if (H.Session.GetPlayersFromFaction(shared.Faction.T).Count > 0)
+            if (H.Session.GetPlayersFromFaction(ifp.arena.shared.Faction.T).Count > 0)
             {
-                var randomTerrorist = H.Session.GetPlayersFromFaction(shared.Faction.T).RandomElement();
+                var randomTerrorist = H.Session.GetPlayersFromFaction(ifp.arena.shared.Faction.T).RandomElement();
 
                 var packet = new BombAssignmentPacket
                 {
@@ -64,7 +50,6 @@ namespace ifp.arena.bep.networking
         {
             Item BombBackpack = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
             _ = ItemsUtils.ClientRequestGiveItem(BombBackpack);
-            // H.Notify("You now have the bomb");
         }
     }
 }

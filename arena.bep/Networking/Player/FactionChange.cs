@@ -1,37 +1,23 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking
 {
-    public struct FactionChangePacket : INetSerializable
+    [MemoryPackable]
+    public partial struct FactionChangePacket : INetSerializable
     {
         public int id;
         public Faction faction;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(id);
-            writer.Put((int)faction);
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<FactionChangePacket>(reader);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            id = reader.GetInt();
-            faction = (Faction)reader.GetInt();
-        }
-
-        public override string ToString()
-        {
-            return $"{id} changed faction to {faction}";
-        }
+        public override string ToString() => $"{id} changed faction to {faction}";
     }
 
     public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>

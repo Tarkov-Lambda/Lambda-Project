@@ -1,28 +1,20 @@
-using Comfort.Common;
-using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking
 {
-    public struct BlindFirePacket : INetSerializable
+    [MemoryPackable]
+    public partial struct BlindFirePacket : INetSerializable
     {
         public int id;
         public int value; // -1 = side fire, 0 = none, 1 = over-top
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(id);
-            writer.Put(value);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            id = reader.GetInt();
-            value = reader.GetInt();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BlindFirePacket>(reader);
     }
 
     public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>

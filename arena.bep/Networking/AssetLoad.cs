@@ -6,36 +6,22 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
+using MemoryPack;
 using System;
 using System.Linq;
 
 namespace ifp.arena.bep.networking
 {
-    public struct AssetLoadStatePacket : INetSerializable
+    [MemoryPackable]
+    public partial struct AssetLoadStatePacket : INetSerializable
     {
         public int id;
         public bool isReady;
         public string msg;
 
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(id);
-            writer.Put(isReady);
-            writer.Put(msg);
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            id = reader.GetInt();
-            isReady = reader.GetBool();
-            msg = reader.GetString();
-        }
-
-        public override string ToString()
-        {
-            return $"{isReady}";
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<AssetLoadStatePacket>(reader);
     }
 
     public class AssetLoadStatePacketHandler : PacketHandler<AssetLoadStatePacket>

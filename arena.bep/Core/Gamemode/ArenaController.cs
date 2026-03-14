@@ -10,6 +10,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
+using MemoryPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +46,8 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action OnItemBuy;
     }
 
-    public struct RoundActionPhaseEnd
+    [MemoryPackable]
+    public partial struct RoundActionPhaseEnd
     {
         public int mvpId;
         public Faction winner;
@@ -183,10 +185,10 @@ namespace ifp.arena.bep.Core.Gamemode
             PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
             ServerPhaseStartSeconds = packet.serverPhaseStartSeconds;
 
-            if (packet.hasRoundActionEnd)
+            if (packet.roundActionEnd.HasValue)
             {
-                LastRoundActionEnd = packet.roundActionEnd;
-                EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd);
+                LastRoundActionEnd = packet.roundActionEnd.Value;
+                EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd.Value);
             }
 
             session.roundState = packet.matchState;

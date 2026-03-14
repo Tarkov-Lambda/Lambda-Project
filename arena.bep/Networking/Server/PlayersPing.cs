@@ -1,52 +1,27 @@
-using Comfort.Common;
-using Fika.Core.Main.GameMode;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
-using ifp.arena.shared;
-using System.Collections.Generic;
+using MemoryPack;
 using System.Linq;
 
 namespace ifp.arena.bep.networking
 {
-    public struct PlayerPingData
+    [MemoryPackable]
+    public partial struct PlayerPingData
     {
         public int playerId;
         public int ping;
     }
 
-    public struct PlayersPingPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct PlayersPingPacket : INetSerializable
     {
         public PlayerPingData[] scores;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            int length = scores?.Length ?? 0;
-            writer.Put(length);
-            for (int i = 0; i < length; i++)
-            {
-                writer.Put(scores[i].playerId);
-                writer.Put(scores[i].ping);
-            }
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            int length = reader.GetInt();
-            scores = new PlayerPingData[length];
-            for (int i = 0; i < length; i++)
-            {
-                scores[i] = new PlayerPingData
-                {
-                    playerId = reader.GetInt(),
-                    ping = reader.GetInt(),
-                };
-            }
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayersPingPacket>(reader);
     }
 
     // This runs on interval
@@ -56,7 +31,6 @@ namespace ifp.arena.bep.networking
 
         public void Send()
         {
-            
             var packet = new PlayersPingPacket
             {
                 scores = H.Scoreboard.Select(kvp => new PlayerPingData

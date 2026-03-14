@@ -2,27 +2,20 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking
 {
-    public struct ReplenishPacket : INetSerializable
+    [MemoryPackable]
+    public partial struct ReplenishPacket : INetSerializable
     {
         public int id;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(id);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            id = reader.GetInt();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<ReplenishPacket>(reader);
 
-        public override string ToString()
-        {
-            return $"{id}";
-        }
+        public override string ToString() => $"{id}";
     }
 
     public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>

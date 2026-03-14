@@ -1,34 +1,22 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
-using ifp.arena.shared;
+using MemoryPack;
 using System;
-using System.Linq;
 
 namespace ifp.arena.bep.networking
 {
-    public struct WeatherAndTimePacket : INetSerializable
+    [MemoryPackable]
+    public partial struct WeatherAndTimePacket : INetSerializable
     {
         public double minutesSinceMidnight;
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(minutesSinceMidnight);
-        }
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            minutesSinceMidnight = reader.GetDouble();
-        }
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<WeatherAndTimePacket>(reader);
 
-        public override string ToString()
-        {
-            return $"{minutesSinceMidnight}";
-        }
+        public override string ToString() => $"{minutesSinceMidnight}";
     }
 
     public class WeatherAndTimePacketHandler : PacketHandler<WeatherAndTimePacket>
