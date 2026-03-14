@@ -17,13 +17,11 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x060059F4 RID: 23028 RVA: 0x000D87AF File Offset: 0x000D69AF
         private static bool smethod_0(Vector2 direction)
         {
             return direction.x > 1E-05f || direction.y > 1E-05f || direction.x < -1E-05f || direction.y < -1E-05f;
         }
 
-        // Token: 0x060059F5 RID: 23029 RVA: 0x000D87E7 File Offset: 0x000D69E7
         public override void Exit(bool toSameState)
         {
             base.Exit(toSameState);
@@ -32,7 +30,6 @@ namespace OldTarkovMovement.MovementStates
             this.bool_0 = false;
         }
 
-        // Token: 0x060059F6 RID: 23030 RVA: 0x000D880A File Offset: 0x000D6A0A
         public override void Enter(bool isFromSameState)
         {
             base.Enter(isFromSameState);
@@ -46,7 +43,6 @@ namespace OldTarkovMovement.MovementStates
             gclass.Enter();
         }
 
-        // Token: 0x060059F7 RID: 23031 RVA: 0x000D881F File Offset: 0x000D6A1F
         public override void BlindFire(int b)
         {
             this.MovementContext.SetBlindFire(b);
@@ -60,7 +56,6 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.TryVaulting();
         }
 
-        // Token: 0x060059F8 RID: 23032 RVA: 0x000D882D File Offset: 0x000D6A2D
         public override void Pickup(bool enabled, [CanBeNull] Action action)
         {
             this.MovementContext.OverrideState(this.MovementContext.PickUpState);
@@ -79,14 +74,12 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.PlantAction = action;
         }
 
-        // Token: 0x060059FA RID: 23034 RVA: 0x000D882D File Offset: 0x000D6A2D
         public override void Examine(bool enabled, [CanBeNull] Action action)
         {
             this.MovementContext.OverrideState(this.MovementContext.PickUpState);
             this.MovementContext.PickupAction = action;
         }
 
-        // Token: 0x060059FB RID: 23035 RVA: 0x00280DD4 File Offset: 0x0027EFD4
         public override void Move(Vector2 direction)
         {
             if (OldIdleState.smethod_0(direction) && this.MovementContext.CanWalk)
@@ -123,7 +116,6 @@ namespace OldTarkovMovement.MovementStates
             this.NoJitteryRotation(deltaTime);
         }
 
-        // Token: 0x060059FC RID: 23036 RVA: 0x00280EAC File Offset: 0x0027F0AC
         public override void Jump()
         {
             if (this.MovementContext.PoseLevel > 0.6f && this.MovementContext.IsGrounded)
@@ -134,7 +126,6 @@ namespace OldTarkovMovement.MovementStates
             this.ChangePose(1f - this.MovementContext.PoseLevel);
         }
 
-        // Token: 0x060059FD RID: 23037 RVA: 0x000D8851 File Offset: 0x000D6A51
         public override void EnableSprint(bool enable, bool isToggle = false)
         {
             if (!isToggle)
@@ -143,19 +134,16 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x060059FE RID: 23038 RVA: 0x000D886D File Offset: 0x000D6A6D
         public override void EnableBreath(bool enable)
         {
             this.MovementContext.HoldBreath(enable);
         }
 
-        // Token: 0x060059FF RID: 23039 RVA: 0x000D887B File Offset: 0x000D6A7B
         public override void Kick()
         {
             this.MovementContext.PlayerAnimatorEnableKick(true);
         }
 
-        // Token: 0x06005A00 RID: 23040 RVA: 0x00280EFC File Offset: 0x0027F0FC
         public override void SetStep(int step)
         {
             if (Mathf.Abs(step) > 0)
@@ -199,13 +187,10 @@ namespace OldTarkovMovement.MovementStates
             gclass777_.ProcessAnimatorStep(deltaTime, this.Type);
         }
 
-        // Token: 0x04005683 RID: 22147
         private bool bool_0;
 
-        // Token: 0x04005684 RID: 22148
         private bool bool_1;
 
-        // Token: 0x04005685 RID: 22149
         private const float float_0 = 1E-05f;
 
         private GClass777 GClass777_0;

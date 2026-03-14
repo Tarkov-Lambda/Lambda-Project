@@ -4,16 +4,13 @@ using UnityEngine;
 
 namespace OldTarkovMovement.MovementStates
 {
-    // Token: 0x02000ED0 RID: 3792
     public class OldJumpState : JumpStateClass
     {
-        // Token: 0x06005A02 RID: 23042 RVA: 0x000D8889 File Offset: 0x000D6A89
         public OldJumpState(MovementContext movementContext) : base(movementContext)
         {
             this.StickToGround = false;
         }
 
-        // Token: 0x06005A03 RID: 23043 RVA: 0x00280F8C File Offset: 0x0027F18C
         public override void Enter(bool isFromSameState)
         {
             this.vector2_0 = Vector2.zero;
@@ -41,7 +38,6 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.SetTilt(0f, false);
         }
 
-        // Token: 0x06005A04 RID: 23044 RVA: 0x002811BC File Offset: 0x0027F3BC
         public override void Exit(bool toSameState)
         {
             base.Exit(toSameState);
@@ -53,7 +49,6 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.OnJumpEnd();
         }
 
-        // Token: 0x06005A05 RID: 23045 RVA: 0x00281210 File Offset: 0x0027F410
         public override void ManualAnimatorMoveUpdate(float deltaTime)
         {
             this.MovementContext.PlayerAnimatorEnableInert(this.vector2_0.magnitude > 0.1f);
@@ -125,7 +120,6 @@ namespace OldTarkovMovement.MovementStates
             this.ApplyMovementAndRotation(deltaTime);
         }
 
-        // Token: 0x06005A06 RID: 23046 RVA: 0x000D8899 File Offset: 0x000D6A99
         private void method_0()
         {
             this.MovementContext.PlayerAnimatorEnableJump(false);
@@ -133,7 +127,6 @@ namespace OldTarkovMovement.MovementStates
             this.ejumpState_0 = JumpStateClass.EJumpState.Bumbped;
         }
 
-        // Token: 0x06005A07 RID: 23047 RVA: 0x00281450 File Offset: 0x0027F650
         protected virtual void ApplyMovementAndRotation(float deltaTime)
         {
             Quaternion rotation = Quaternion.Lerp(this.MovementContext.TransformRotation, Quaternion.AngleAxis(this.MovementContext.Yaw, Vector3.up), EFTHardSettings.Instance.TRANSFORM_ROTATION_LERP_SPEED * deltaTime);
@@ -142,13 +135,11 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.PlayerAnimatorSetAimAngle(this.MovementContext.Pitch);
         }
 
-        // Token: 0x06005A08 RID: 23048 RVA: 0x000D88BA File Offset: 0x000D6ABA
         public override void EnableSprint(bool enable, bool isToggle = false)
         {
             this.bool_0 &= (enable && this.MovementContext.CanSprint);
         }
 
-        // Token: 0x06005A09 RID: 23049 RVA: 0x002814B8 File Offset: 0x0027F6B8
         private void method_1(float deltaTime)
         {
             float d = this.float_2 - this.float_3;
@@ -188,85 +179,59 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x06005A0A RID: 23050 RVA: 0x000D88DA File Offset: 0x000D6ADA
         public override void Move(Vector2 direction)
         {
             this.vector2_0 = direction;
         }
 
-        // Token: 0x06005A0B RID: 23051 RVA: 0x000A295B File Offset: 0x000A0B5B
         public override void SetTilt(float tilt)
         {
         }
 
-        // Token: 0x04005686 RID: 22150
         private Vector2 vector2_0;
 
-        // Token: 0x04005687 RID: 22151
         protected Vector3 vector3_0;
 
-        // Token: 0x04005688 RID: 22152
         private float float_0;
 
-        // Token: 0x04005689 RID: 22153
         private float float_1;
 
-        // Token: 0x0400568A RID: 22154
         protected Vector3 vector3_1;
 
-        // Token: 0x0400568B RID: 22155
         protected bool bool_0;
 
-        // Token: 0x0400568C RID: 22156
         private float float_2;
 
-        // Token: 0x0400568D RID: 22157
         private float float_3;
 
-        // Token: 0x0400568E RID: 22158
         protected JumpStateClass.EJumpState ejumpState_0;
 
-        // Token: 0x0400568F RID: 22159
         private float float_4;
 
-        // Token: 0x04005690 RID: 22160
         private float float_5 = 1f;
 
-        // Token: 0x04005691 RID: 22161
         private int int_0;
 
-        // Token: 0x04005692 RID: 22162
         private const float float_6 = 0.1f;
 
-        // Token: 0x04005693 RID: 22163
         private const int int_1 = 3;
 
-        // Token: 0x04005694 RID: 22164
         private LayerMask layerMask_0;
 
-        // Token: 0x04005695 RID: 22165
         private float float_7;
 
-        // Token: 0x04005696 RID: 22166
         private bool bool_1;
 
-        // Token: 0x04005697 RID: 22167
         private float float_8;
 
-        // Token: 0x04005698 RID: 22168
         private float float_9;
 
-        // Token: 0x04005699 RID: 22169
         private Vector3 vector3_2;
 
-        // Token: 0x02000ED1 RID: 3793
         protected enum EJumpState
         {
-            // Token: 0x0400569B RID: 22171
             PushingFromTheGround,
-            // Token: 0x0400569C RID: 22172
             Jump,
-            // Token: 0x0400569D RID: 22173
             Bumbped
         }
     }

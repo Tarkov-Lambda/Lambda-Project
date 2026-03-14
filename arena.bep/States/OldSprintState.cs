@@ -4,13 +4,11 @@ using UnityEngine;
 
 namespace OldTarkovMovement.MovementStates
 {
-    // Token: 0x02000EE9 RID: 3817
     public class OldSprintState : OldRunState
     {
         public OldSprintState(MovementContext movementContext) : base(movementContext)
         { }
 
-        // Token: 0x06005C15 RID: 23573 RVA: 0x00286E60 File Offset: 0x00285060
         public override void Enter(bool isFromSameState)
         {
             base.Enter(isFromSameState);
@@ -20,7 +18,6 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.SetPatrol(true);
         }
 
-        // Token: 0x06005C16 RID: 23574 RVA: 0x00286EBC File Offset: 0x002850BC
         public override void Exit(bool toSameState)
         {
             base.Exit(toSameState);
@@ -39,7 +36,6 @@ namespace OldTarkovMovement.MovementStates
             this.MovementContext.TryVaulting();
         }
 
-        // Token: 0x06005C17 RID: 23575 RVA: 0x00286F0C File Offset: 0x0028510C
         public override void ManualAnimatorMoveUpdate(float deltaTime)
         {
             if (this.bool_0)
@@ -73,18 +69,15 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x06005C18 RID: 23576 RVA: 0x000DA1F5 File Offset: 0x000D83F5
         public override void EnableSprint(bool enabled, bool isToggle = false)
         {
             this.MovementContext.EnableSprint(enabled && this.MovementContext.CanSprint);
         }
 
-        // Token: 0x06005C19 RID: 23577 RVA: 0x000A295B File Offset: 0x000A0B5B
         public override void SetTilt(float tilt)
         {
         }
 
-        // Token: 0x06005C1A RID: 23578 RVA: 0x000DA213 File Offset: 0x000D8413
         public override void ChangePose(float poseDelta)
         {
             if (poseDelta < 0f)
@@ -95,15 +88,12 @@ namespace OldTarkovMovement.MovementStates
             }
         }
 
-        // Token: 0x06005C1B RID: 23579 RVA: 0x000A295B File Offset: 0x000A0B5B
         public override void ChangeSpeed(float speedDelta)
         {
         }
 
-        // Token: 0x040057B9 RID: 22457
         private bool bool_2;
 
-        // Token: 0x040057BA RID: 22458
         private int int_3;
     }
 }
