@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep
 {
+    // unity legacy input patcher 
     internal static class InputBlockPatches
     {
         internal static void Apply(Harmony harmony)

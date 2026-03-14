@@ -16,11 +16,11 @@ namespace ifp.arena.bep
 
             Rect panel = new Rect(px, py, PanelWidth, ph);
 
-            // Shadow + background
+            // shadow + background
             DrawBox(new Rect(px + 4, py + 4, PanelWidth, ph), new Color(0, 0, 0, 0.30f));
             DrawBox(panel, new Color(0.07f, 0.07f, 0.09f, 0.97f));
 
-            // Title bar
+            // title bar
             Rect titleR = new Rect(px, py, PanelWidth, TitleHeight);
             DrawBox(titleR, new Color(0.12f, 0.12f, 0.17f, 1f));
 
@@ -136,11 +136,11 @@ namespace ifp.arena.bep
 
             Rect panel = new Rect(px, py, PropsPanelWidth, ph);
 
-            // Shadow + background
+            // shadow + background
             DrawBox(new Rect(px + 4, py + 4, PropsPanelWidth, ph), new Color(0, 0, 0, 0.30f));
             DrawBox(panel, new Color(0.07f, 0.07f, 0.09f, 0.97f));
 
-            // Title bar
+            // title bar
             Rect titleR = new Rect(px, py, PropsPanelWidth, TitleHeight);
             DrawBox(titleR, new Color(0.08f, 0.20f, 0.10f, 1f));
             GUI.Label(Inset(titleR, 10, 0), "📊  PROPERTIES  (live)", _styleTitle);
@@ -164,7 +164,7 @@ namespace ifp.arena.bep
             bool  multiType   = DynamicClassTracer.TracerLabels.Count > 1;
             float now         = Time.realtimeSinceStartup;
 
-            // Column widths
+            // column widths
             const float indent = 14f;
             const float typeW  = 108f;
             const float arrowW = 22f;
@@ -178,27 +178,27 @@ namespace ifp.arena.bep
                 bool alt      = i % 2 == 1;
                 Rect row      = new Rect(0, i * RowHeight, contentR.width, RowHeight);
 
-                // Background — green tint to distinguish from hot/cold
+                // background — green tint to distinguish from hot/cold
                 Color bg = selected
                     ? new Color(0.10f, 0.24f, 0.16f, 0.98f)
                     : alt ? new Color(0.08f, 0.11f, 0.09f, 0.85f)
                            : new Color(0.10f, 0.14f, 0.11f, 0.85f);
                 DrawBox(row, bg);
 
-                // Click to open detail panel (full call history)
+                // click to open detail panel (full call history)
                 if (GUI.Button(row, GUIContent.none, GUIStyle.none))
                     SelectMethod(info, selected);
 
-                // Selection arrow
+                // selection arrow
                 if (selected)
                     DrawColoredLabel(new Rect(row.x + 2, row.y, 12, RowHeight), "▶", _styleDetailAgo, ColorSelected);
 
-                // Flash — red immediately after a call, fading to normal over FlashDuration
+                // flash red immediately after a call, fading to normal over FlashDuration
                 float t = Mathf.Clamp01((now - info.LastCallTime) / FlashDuration);
 
                 float curX = indent;
 
-                // Optional type-name column (muted) when multiple tracers are active
+                // optional type name column (muted) when multiple tracers are active
                 if (multiType)
                 {
                     DrawColoredLabel(new Rect(curX, row.y, typeW, RowHeight),
@@ -206,7 +206,7 @@ namespace ifp.arena.bep
                     curX += typeW;
                 }
 
-                // Property name — strip "get_" prefix
+                // property name — strip "get_" prefix
                 string propName = info.MethodName.Length > 4
                     ? info.MethodName.Substring(4)
                     : info.MethodName;
@@ -219,12 +219,11 @@ namespace ifp.arena.bep
                 DrawColoredLabel(new Rect(curX, row.y, nameW, RowHeight), propName, _stylePropName, nameCol);
                 curX += nameW;
 
-                // Arrow separator
                 DrawColoredLabel(new Rect(curX, row.y, arrowW, RowHeight),
                     "→", _styleDetailColHdr, new Color(0.36f, 0.40f, 0.46f));
                 curX += arrowW;
 
-                // Latest getter return value — flashes on change
+                // latest getter return value — flashes on change
                 var    snap     = info.History.GetSnapshot(1);
                 string valueStr = snap.Length > 0 ? (snap[0].Result ?? "(void)") : "—";
                 Color  valCol   = Color.Lerp(ColorFlash, ColorPropVal, t);

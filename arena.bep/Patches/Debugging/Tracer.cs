@@ -37,7 +37,7 @@ namespace ifp.arena.bep
             }
         }
 
-        /// Returns up to the max, most recent first.
+        // Returns up to the max, most recent first.
         public T[] GetSnapshot(int max = int.MaxValue)
         {
             lock (_lock)
@@ -92,8 +92,7 @@ namespace ifp.arena.bep
         {
             float now = Time.realtimeSinceStartup;
 
-            // Throttle high-frequency methods: record at most ~10 entries/sec
-            // so the ring buffer covers a useful time window rather than filling instantly.
+            // throttle high frequency methods. record at most 10 entries / sec
             float minInterval;
             lock (_lock)
             {
@@ -102,7 +101,7 @@ namespace ifp.arena.bep
                 _lastRecordTime = now;
             }
 
-            // Build argument strings ("paramName=value")
+            // build argument strings ("paramName=value")
             ParameterInfo[] parameters = method.GetParameters();
             int argCount = args?.Length ?? 0;
             string[] argStrings = new string[argCount];
@@ -141,7 +140,6 @@ namespace ifp.arena.bep
 
     public class DynamicClassTracer : IDisposable
     {
-        // Static stores — read by TracerOverlay from any component
         public static readonly ConcurrentDictionary<string, TracedMethodInfo> TracedData = new ConcurrentDictionary<string, TracedMethodInfo>();
 
         public static readonly ConcurrentDictionary<string, string> TracerLabels = new ConcurrentDictionary<string, string>();
@@ -158,28 +156,28 @@ namespace ifp.arena.bep
 
             TracerLabels[_typeName] = _typeName;
 
-            // Standard path (no ref/out params) — postfix uses __args safely
-            var harmonyPrefix         = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefix)));
-            var harmonyPostfix        = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfix)));
-            var harmonyPostfixVoid    = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoid)));
+            // standard path (no ref/out params) postfix uses __args safely
+            var harmonyPrefix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefix)));
+            var harmonyPostfix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfix)));
+            var harmonyPostfixVoid = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoid)));
 
-            // Ref-safe path (has ref/out params) — args captured in prefix; postfix omits __args
-            // to prevent Harmony's copy-back from overwriting the ref results the original method wrote.
-            var harmonyCapturePrefix       = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefixCapture)));
-            var harmonyPostfixRefSafe      = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixRefSafe)));
-            var harmonyPostfixVoidRefSafe  = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoidRefSafe)));
+            // ref safe path (has ref/out params) args captured in prefix, postfix omits __args
+            // to prevent Harmony's copy back from overwriting the ref results the original method wrote.
+            var harmonyCapturePrefix = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPrefixCapture)));
+            var harmonyPostfixRefSafe = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixRefSafe)));
+            var harmonyPostfixVoidRefSafe = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoidRefSafe)));
 
             foreach (var method in AccessTools.GetDeclaredMethods(targetType))
             {
                 if (method.IsGenericMethodDefinition) continue;
                 try
                 {
-                    bool isVoid   = method.ReturnType == typeof(void);
+                    bool isVoid = method.ReturnType == typeof(void);
                     bool hasRefOut = System.Linq.Enumerable.Any(method.GetParameters(), p => p.ParameterType.IsByRef);
 
-                    HarmonyMethod prefix  = hasRefOut ? harmonyCapturePrefix    : harmonyPrefix;
+                    HarmonyMethod prefix = hasRefOut ? harmonyCapturePrefix : harmonyPrefix;
                     HarmonyMethod postfix = hasRefOut ? (isVoid ? harmonyPostfixVoidRefSafe : harmonyPostfixRefSafe)
-                                                      : (isVoid ? harmonyPostfixVoid        : harmonyPostfix);
+                                                      : (isVoid ? harmonyPostfixVoid : harmonyPostfix);
 
                     _harmony.Patch(method, prefix: prefix, postfix: postfix);
                     H.Log($"[TRACER] Patched {_typeName}.{method.Name}{(hasRefOut ? " (ref-safe)" : "")}");
@@ -191,20 +189,17 @@ namespace ifp.arena.bep
             }
         }
 
-        // ── Ref-safe tracing infrastructure ──────────────────────────────────────
-        // Methods that have ref/out parameters must NOT use object[] __args in their
-        // postfix: Harmony copies the __args array back over the ref parameters after
-        // the postfix runs, which would overwrite any modifications the original method
-        // made (e.g. zeroing out the motion vector in ApplyGravity).
-        //
-        // Instead we capture a clone of the arguments in a second prefix and store it
-        // on a per-thread stack so the ref-safe postfix can read them without __args.
-
+        // methods that have ref/out parameters must NOT use object[] __args in their
+        // postfix, harmony copies the __args array back over the ref parameters after
+        // the postfix runs, which would overwrite any modifications the original method made
+        // 
+        // instead we capture a clone of the arguments in a second prefix and store it
+        // on a per-thread stack so the ref safe postfix can read them without __args
         [ThreadStatic]
         private static Stack<object[]> _refArgStack;
 
-        // Prefix for methods that have ref/out params: records the call count AND
-        // pushes a clone of the argument values onto the thread-local stack.
+        // prefix for methods that have ref/out params: records the call count AND
+        // pushes a clone of the argument values onto the thread local stack.
         private static void GenericPrefixCapture(MethodBase __originalMethod, object[] __args)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
@@ -217,7 +212,7 @@ namespace ifp.arena.bep
             });
             info.RecordCall();
 
-            // Clone the arg values before the original method can mutate any ref params.
+            // clone the arg values before the original method can mutate any ref params.
             if (_refArgStack == null) _refArgStack = new Stack<object[]>();
             int len = __args?.Length ?? 0;
             var snapshot = new object[len];
@@ -226,8 +221,8 @@ namespace ifp.arena.bep
             _refArgStack.Push(snapshot);
         }
 
-        // Postfix for non-void methods with ref/out params.
-        // Deliberately omits object[] __args to prevent Harmony's copy-back.
+        // postfix for non-void methods with ref/out params.
+        // deliberately omits object[] __args to prevent Harmony's copy-back.
         private static void GenericPostfixRefSafe(MethodBase __originalMethod, object __result)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
@@ -238,8 +233,8 @@ namespace ifp.arena.bep
                 info.RecordHistory(args, __result, __originalMethod);
         }
 
-        // Postfix for void methods with ref/out params.
-        // Deliberately omits object[] __args to prevent Harmony's copy-back.
+        // postfix for void methods with ref/out params.
+        // deliberately omits object[] __args to prevent Harmony's copy-back.
         private static void GenericPostfixVoidRefSafe(MethodBase __originalMethod)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";
@@ -285,7 +280,7 @@ namespace ifp.arena.bep
                 info.RecordHistory(__args, __result, __originalMethod);
         }
 
-        // Separate postfix for void methods. omitting __result avoids harmony error
+        // separate postfix for void methods. omitting __result avoids harmony error
         private static void GenericPostfixVoid(MethodBase __originalMethod, object[] __args)
         {
             string typeName = __originalMethod.DeclaringType?.Name ?? "Unknown";

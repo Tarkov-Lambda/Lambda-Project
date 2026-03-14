@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "dotnet",
-			"task": "build",
+			"task": "build -c Debug",
 			"problemMatcher": [],
 			"label": "dotnet: build",
 			"group": {

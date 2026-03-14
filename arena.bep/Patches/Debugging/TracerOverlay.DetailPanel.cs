@@ -22,7 +22,7 @@ namespace ifp.arena.bep
 
             Rect detailPanel = new Rect(dx, dy, DetailWidth, dh);
 
-            // Shadow + background
+            // shadow + background
             DrawBox(new Rect(dx + 4, dy + 4, DetailWidth, dh), new Color(0, 0, 0, 0.30f));
             DrawBox(detailPanel, new Color(0.06f, 0.06f, 0.09f, 0.97f));
 
@@ -32,13 +32,13 @@ namespace ifp.arena.bep
                 ? $"last {HotDisplayCount} samples  (≈0.1s apart)"
                 : $"last {ColdDisplayCount} calls";
 
-            // Title bar
+            // title bar
             Rect titleR = new Rect(dx, dy, DetailWidth, TitleHeight);
             DrawBox(titleR, new Color(0.10f, 0.16f, 0.28f, 1f));
             GUI.Label(Inset(titleR, 10, 0), $"📄  {info.MethodName}", _styleDetailTitle);
             GUI.Label(new Rect(titleR.xMax - 210, titleR.y, 202, TitleHeight), subtitle, _styleMuted);
 
-            // Freeze hint bar
+            // freeze hint bar
             float hintY = dy + TitleHeight;
             Rect  hintR = new Rect(dx, hintY, DetailWidth, RecordRowH);
             bool  frozen = _frozenSnapshot != null;
@@ -56,7 +56,7 @@ namespace ifp.arena.bep
 
             var records = _frozenSnapshot ?? info.History.GetSnapshot(showCount);
 
-            // Dynamic content height — expanded records have extra sub-rows
+            // dynamic content height — expanded records have extra sub-rows
             float totalH = 0f;
             for (int i = 0; i < records.Length; i++)
             {
@@ -104,7 +104,7 @@ namespace ifp.arena.bep
                     Rect headerRow = new Rect(0, curY, contentR.width, RecordRowH);
                     DrawBox(headerRow, headerBg);
 
-                    // Expand / collapse on click
+                    // expand / collapse on click
                     if (GUI.Button(headerRow, GUIContent.none, GUIStyle.none))
                     {
                         if (expanded)
@@ -121,17 +121,17 @@ namespace ifp.arena.bep
                         }
                     }
 
-                    // Expand arrow
+                    // expand arrow
                     DrawColoredLabel(new Rect(headerRow.x + 6, headerRow.y, 16, RecordRowH),
                         expanded ? "▼" : "▶", _styleDetailAgo,
                         expanded ? ColorSelected : new Color(0.42f, 0.44f, 0.50f));
 
-                    // Age label
+                    // age
                     GUI.Label(new Rect(headerRow.x + 24, headerRow.y, 52, RecordRowH), agoStr, _styleDetailAgo);
 
                     if (!expanded)
                     {
-                        // Collapsed — single-line summary
+                        // collapsed single-line summary
                         const float resW = 100f;
                         float sumX = headerRow.x + 80f;
                         float sumW = contentR.width - 80f - resW - 4f;

@@ -25,7 +25,6 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit() { }
     }
 
-    // Sets when server says we are restarting
     public class SharedWarmup : IGameState
     {
         public MatchState StateType => MatchState.Warmup;
@@ -51,7 +50,6 @@ namespace ifp.arena.bep.Core.Gamemode
         }
     }
 
-    // Triggers whenever a minimum warmup time has been reached and players have been loaded, or warmup full time has ended
     public class SharedWarmupEnd : IGameState
     {
         public MatchState StateType => MatchState.WarmupEnd;
@@ -66,8 +64,7 @@ namespace ifp.arena.bep.Core.Gamemode
             // InventoryResetter.ResetInventory();
         }
     }
-//
-    // Sets when server says we are restarting
+
     public class SharedPause : IGameState
     {
         public MatchState StateType => MatchState.Warmup;

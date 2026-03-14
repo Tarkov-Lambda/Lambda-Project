@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -81,6 +82,32 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_Kill()); // Bypass Dying entirely
 
+            // RegisterPatch(new Patch_Inertia());
+            // RegisterPatch(new Patch_WalkInertia());
+            // RegisterPatch(new Patch_UpdateSprintInertia());
+            // RegisterPatch(new Patch_SprintBrakeInertia());
+            RegisterPatch(new Patch_WeightRelatedValuesUpdated());
+            RegisterPatch(new Patch_InstantAcceleration());
+            // RegisterPatch(new Patch_PlayerMove());
+            RegisterPatch(new Patch_MoveSideInertia());
+            RegisterPatch(new Patch_MoveDiagonalInertia());
+
+
+            // RegisterPatch(new Patch_DirectApplyMotion());
+            RegisterPatch(new Patch_DisablePlantState());
+
+            // RegisterPatch(new Patch_DisableAnimatorInertia());
+            RegisterPatch(new Patch_InstantSpeed());
+
+
+            RegisterPatch(new ProceduralBlindfire());
+            RegisterPatch(new DisableAnimatedBlindfirePatch());
+            RegisterPatch(new BlindfireWhileRunning());
+
+
+
+
+
             RegisterPatch(new Patch_CanWalk()); // For controller locking
             RegisterPatch(new Patch_CanJump()); // For controller locking
             RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
@@ -140,11 +167,12 @@ namespace ifp.arena.bep
             RegisterPacket<ImmutableItemsCache>();
             RegisterPacket<UIManager>();
 
-            _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
-
+#if (DEBUG)
+            // _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
             TracerOverlay = new GameObject("Arena Gamesession");
             TracerOverlay.AddComponent<TracerOverlay>();
             DontDestroyOnLoad(TracerOverlay);
+#endif
 
         }
 
