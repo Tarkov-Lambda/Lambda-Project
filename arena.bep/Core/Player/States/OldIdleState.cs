@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 
 // Token: 0x02000ECF RID: 3791
-namespace OldTarkovMovement.MovementStates
+namespace ifp.arena.bep.Core.MovementStates
 {
     public class OldIdleState : IdleStateClass
     {
@@ -106,14 +106,10 @@ namespace OldTarkovMovement.MovementStates
 
         public override void ManualAnimatorMoveUpdate(float deltaTime)
         {
-            // if (!Plugin.ModConfig.RemoveJitteryRotation)
-            // {
-            //     base.ManualAnimatorMoveUpdate(deltaTime);
-            //     return;
-            // }
-
-            //this.ProcessUpperbodyRotation(deltaTime);
-            this.NoJitteryRotation(deltaTime);
+            base.ManualAnimatorMoveUpdate(deltaTime);
+            return;
+            // this.ProcessUpperbodyRotation(deltaTime);
+            // this.NoJitteryRotation(deltaTime);
         }
 
         public override void Jump()

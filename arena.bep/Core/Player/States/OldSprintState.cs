@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace OldTarkovMovement.MovementStates
+namespace ifp.arena.bep.Core.MovementStates
 {
     public class OldSprintState : OldRunState
     {

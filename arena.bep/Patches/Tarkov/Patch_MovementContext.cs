@@ -10,7 +10,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
-using OldTarkovMovement.MovementStates;
+using ifp.arena.bep.Core.MovementStates;
 using SPT.Reflection.Patching;
 using System;
 using System.Linq;
@@ -70,18 +70,20 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, int b)
         {
+            
             var playerField = AccessTools.Field(typeof(MovementContext), "_player");
 
             if (playerField != null)
             {
                 Player player = playerField.GetValue(__instance) as Player;
+                
+                if(player.MovementContext.CurrentState is SprintStateClass) return true;
 
                 if (player != null && player.HandsController != null)
                 {
                     player.HandsController.BlindFire(b);
 
-                    if (player.IsYourPlayer)
-                        Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
+                    // if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
                 }
 
                 return false; // Skip the original method

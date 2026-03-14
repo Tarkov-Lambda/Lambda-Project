@@ -28,6 +28,8 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, int b)
         {
+            if (__instance.MovementContext.CurrentState is SprintStateClass) return true;
+
             // Force the input to go through to the MovementContext regardless of current movement state
             if (__instance.MovementContext != null)
             {

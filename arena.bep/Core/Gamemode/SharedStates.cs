@@ -62,6 +62,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             H.Session.InitializeScoreBoard();
             InventoryResetter.ResetInventory();
+            H.Session.ResetRoundScopeFields();
         }
     }
 
@@ -99,7 +100,6 @@ namespace ifp.arena.bep.Core.Gamemode
                 PlayerUtils.FixMe();
             }
 
-            H.Session.ResetRoundScopeFields();
             H.Session.bombState = BombState.None;
 
             H.Arena.LastObjectivePlayerId = -1;

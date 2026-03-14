@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace OldTarkovMovement.MovementStates
+namespace ifp.arena.bep.Core.MovementStates
 {
     // Token: 0x02000EE2 RID: 3810
     public class OldProneIdleState : ProneIdleStateClass

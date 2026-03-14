@@ -30,6 +30,8 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
+            // H.Dump(damageInfo);
+            // H.Dump(damageInfo.DamageType);
             if (damageInfo.DamageType is EDamageType.Bullet or EDamageType.Explosion)
             {
                 LastReceivedDamageInfo = damageInfo;

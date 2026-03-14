@@ -61,15 +61,15 @@ namespace ifp.arena.bep.networking
                 assistId = 12312345, // idk how to make this yet tbh
                 damageType = damage.DamageType,
                 bodyPartCollider = damage.BodyPartColliderType,
-                weaponId = H.GetPlayer(killerId).HandsController.Item.Id,
+                weaponId = H.GetPlayer(killerId).HandsController.Item.TemplateId,
             };
-
+            
             RequestSend(packet);
         }
 
         public override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            if (H.Scoreboard[packet.killerId] != null)
+            if (H.Scoreboard[packet.killerId] != null && packet.killerId != packet.victimId)
             {
                 H.Scoreboard[packet.killerId].AddFrag(packet.IsHeadshot);
             }

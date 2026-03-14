@@ -10,7 +10,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
-using OldTarkovMovement.MovementStates;
+using ifp.arena.bep.Core.MovementStates;
 using SPT.Reflection.Patching;
 using System;
 using System.Linq;

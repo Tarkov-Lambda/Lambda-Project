@@ -108,7 +108,7 @@ namespace ifp.arena.bep.Core.UI
             try
             {
                 H.Scoreboard.TryGetValue(killPacket.killerId, out PlayerScore playerKiller);
-                H.Scoreboard.TryGetValue(killPacket.killerId, out PlayerScore playerVictim);
+                H.Scoreboard.TryGetValue(killPacket.victimId, out PlayerScore playerVictim);
 
                 string leftName = playerKiller?.player.Profile.Nickname;
                 string rightName = playerVictim?.player.Profile.Nickname;

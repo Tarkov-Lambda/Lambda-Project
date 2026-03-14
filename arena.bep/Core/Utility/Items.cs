@@ -14,6 +14,7 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
+using ifp.arena.bep.Core.MovementStates;
 
 // Item flow summary:
 //   ClientRequestGiveItem  – client checks it can make room, then sends SpawnItemPacket
@@ -180,7 +181,9 @@ namespace ifp.arena.bep.Core
                 await UniTask.Delay(200);
                 if (equipmentSlot == EquipmentSlot.Backpack)
                 {
-                    await UniTask.Delay(500); // backpack loves bugging out
+                    await UniTask.WaitUntil(() =>
+                    player.MovementContext.CurrentState is IdleStateClass ||
+                    player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude <= 0f);
                 }
             }
 
