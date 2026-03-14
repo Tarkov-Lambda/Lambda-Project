@@ -11,6 +11,7 @@ namespace arena.ui
         [SerializeField] private TopBarTeamScore teamScoreRight;
 
         [SerializeField] private TMP_Text textTimer;
+        [SerializeField] private float textTimerMonospacing = 16;
 
         [SerializeField] private FactionColors factionColors;
 
@@ -30,7 +31,7 @@ namespace arena.ui
         {
             if (textTimer == null)
                 return;
-            textTimer.text = $"<mspace=21>{FormatTime(seconds)}</mspace>";
+            textTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
         }
 
         string FormatTime(float seconds)

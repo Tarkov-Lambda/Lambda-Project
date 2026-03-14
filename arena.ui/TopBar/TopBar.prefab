@@ -140,7 +140,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: <mspace=21>00:00</mspace>
+  m_text: <mspace=16>00:00</mspace>
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: db2f5a5941960bc4b8bd1f035ad5cc60, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 12974b36ad1901946aa2691a8e881f91, type: 2}
@@ -167,8 +167,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -780,6 +780,7 @@ MonoBehaviour:
   teamScoreLeft: {fileID: 7509561810606119603}
   teamScoreRight: {fileID: 8559120117851478156}
   textTimer: {fileID: 858208009453752689}
+  textTimerMonospacing: 16
   factionColors: {fileID: 11400000, guid: e2bd8496c7c1fb044a9ef6ae9f188a92, type: 2}
 --- !u!222 &4448883572648141033
 CanvasRenderer:
@@ -933,6 +934,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1217331742652367362, guid: 6aac8519fe0e66a44b905568600cff98, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 4600660973808023476, guid: 6aac8519fe0e66a44b905568600cff98, type: 3}
       propertyPath: m_Name
       value: TopBarTeamScore (1)
@@ -1045,6 +1050,10 @@ PrefabInstance:
     - target: {fileID: 739602542239208173, guid: 6aac8519fe0e66a44b905568600cff98, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1217331742652367362, guid: 6aac8519fe0e66a44b905568600cff98, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 4600660973808023476, guid: 6aac8519fe0e66a44b905568600cff98, type: 3}
       propertyPath: m_Name

@@ -302,22 +302,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   killfeed: {fileID: 2001455414}
   placeholdergun: {fileID: 21300000, guid: 9a7f70a1966987840ab885e2d4cb7cbf, type: 3}
-  playerLeft:
-    Id: 0
-    Faction: 1
-    Name: player_defender
-    Kills: 0
-    Deaths: 0
-    Assists: 0
-    Ping: 0
-  playerRight:
-    Id: 3
-    Faction: 2
-    Name: player_attacker
-    Kills: 0
-    Deaths: 0
-    Assists: 0
-    Ping: 0
+  playerLeft: jopa
+  factionLeft: 1
+  factionRight: 2
+  playerRight: pisya
 --- !u!1 &477593428
 GameObject:
   m_ObjectHideFlags: 1
@@ -1547,6 +1535,14 @@ PrefabInstance:
     - target: {fileID: 8923970533995379825, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
       propertyPath: m_SizeDelta.y
       value: 47.968
+      objectReference: {fileID: 0}
+    - target: {fileID: 8927725850655480764, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 242.8999
+      objectReference: {fileID: 0}
+    - target: {fileID: 8927725850655480764, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -52.61206
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
