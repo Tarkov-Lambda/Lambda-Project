@@ -38,15 +38,10 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
-            // PlayerScore shooter = H.GetPlayerScore(damageInfo.Player.iPlayer.Id);
-            // if (shooter != null && !shooter.isAlive)
-            // {
-            //     __result = 0f;
-            //     return false;
-            // }
-
-            LastReceivedDamageInfo = damageInfo;
-            // H.Dump(damageInfo);
+            if (damageInfo.DamageType is EDamageType.Bullet or EDamageType.Explosion)
+            {
+                LastReceivedDamageInfo = damageInfo;
+            }
             return true;
         }
     }

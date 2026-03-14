@@ -47,7 +47,13 @@ namespace ifp.arena.bep.networking
         public void Send(DamageInfoStruct damage)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
-            bool isHeadshot = damage.BodyPartColliderType == EBodyPartColliderType.HeadCommon;
+            bool isHeadshot = damage.BodyPartColliderType
+            is EBodyPartColliderType.HeadCommon
+            or EBodyPartColliderType.BackHead
+            or EBodyPartColliderType.Jaw
+            or EBodyPartColliderType.Eyes
+            or EBodyPartColliderType.Ears
+            or EBodyPartColliderType.ParietalHead;
 
             var packet = new PlayerKilledPacket
             {
