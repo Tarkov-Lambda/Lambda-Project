@@ -14,6 +14,8 @@ public class KillFeedTester : MonoBehaviour
 
     float t;
 
+    int counter;
+
     void Start()
     {
         
@@ -24,8 +26,11 @@ public class KillFeedTester : MonoBehaviour
         t += Time.deltaTime;
         if (t > 0.5f)
         {
+            counter++;
+            playerLeft.Name = $"player left {counter}";
+            playerRight.Name = $"player right {counter}";
             t = 0f;
-            killfeed.Add(playerLeft, playerRight, placeholdergun, true);
+            killfeed.Add(playerLeft, playerRight, placeholdergun, Random.value > 0.9f);
         }
     }
 }

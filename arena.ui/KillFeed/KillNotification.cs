@@ -21,12 +21,15 @@ namespace arena.ui
         [SerializeField] private Image imageWeapon;
         [SerializeField] private Image imageHeadshot;
 
-        public float TimeShowing { get; private set; }
+        public float ActivationTimeStamp { get; private set; }
+
+        private void OnEnable()
+        {
+            ActivationTimeStamp = Time.time;
+        }
 
         public void Set(string left, Color colorLeft, string right, Color colorRight, Sprite weapon, bool isHeadshot)
         {
-            TimeShowing = 0f;
-
             leftText.text = left;
             leftColoredGraphic.color = colorLeft;
             rightText.text = right;
@@ -37,11 +40,6 @@ namespace arena.ui
             imageHeadshot.gameObject.SetActive(isHeadshot);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
-        }
-
-        private void Update()
-        {
-            TimeShowing += Time.deltaTime;
         }
     }
 }

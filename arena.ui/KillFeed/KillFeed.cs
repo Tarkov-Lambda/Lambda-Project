@@ -14,7 +14,7 @@ namespace arena.ui.killfeed
 
         RectTransform container => transform as RectTransform;
 
-        Queue<KillNotification> currentlyShowing = new Queue<KillNotification>();
+        List<KillNotification> currentlyShowing = new List<KillNotification>();
 
         Stack<KillNotification> pool = new Stack<KillNotification>();
 
@@ -35,22 +35,29 @@ namespace arena.ui.killfeed
             notif.rectTransform.anchorMax = new Vector2(1f, 1f);
             notif.rectTransform.pivot = new Vector2(1f, 1f);
 
-            notif.rectTransform.anchoredPosition = new Vector2(0, 0f);
+            notif.rectTransform.anchoredPosition = new Vector2(0, notif.rectTransform.sizeDelta.y + spacing);
 
             notif.Set(left.Name, factionColors.Get(left.Faction), right.Name, factionColors.Get(right.Faction), weapon, isHeadshot);
 
-            foreach (var existingNotif in currentlyShowing)
-            {
-                existingNotif.rectTransform.anchoredPosition -= new Vector2(0, notif.rectTransform.sizeDelta.y + spacing);
-            }
-
-            currentlyShowing.Enqueue(notif);
+            currentlyShowing.Add(notif);
         }
 
         void Update()
         {
-            if (currentlyShowing.Count > 0 && currentlyShowing.Peek().TimeShowing > killShowTime)
-                ReturnToPool(currentlyShowing.Dequeue());
+            float offsetY = 0;
+            for (int i = currentlyShowing.Count - 1; i >= 0; i--)
+            {
+                var notif = currentlyShowing[i];
+                Vector2 targetPos = new Vector2(0, offsetY);
+                notif.rectTransform.anchoredPosition = Vector2.Lerp(notif.rectTransform.anchoredPosition, targetPos, Time.deltaTime * 30f);
+                offsetY -= notif.rectTransform.sizeDelta.y + spacing;
+            }
+
+            if (currentlyShowing.Count > 0 && currentlyShowing[0].ActivationTimeStamp < Time.time - killShowTime)
+            {
+                ReturnToPool(currentlyShowing[0]);
+                currentlyShowing.RemoveAt(0);
+            }
         }
 
         KillNotification SpawnOrGetFromPool()

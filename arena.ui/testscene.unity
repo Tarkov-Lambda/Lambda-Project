@@ -1540,6 +1540,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8923970533995379825, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 220.574
+      objectReference: {fileID: 0}
+    - target: {fileID: 8923970533995379825, guid: e667ef4a8aebd1b46b76dbc7dbdf5c94, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 47.968
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
