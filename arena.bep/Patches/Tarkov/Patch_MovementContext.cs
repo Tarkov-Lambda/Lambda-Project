@@ -23,10 +23,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     public class Patch_CanWalk : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
         [PatchPostfix]
         static void Postfix(ref bool __result)
@@ -41,10 +38,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_CanJump : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
 
         [PatchPostfix]
         static void Postfix(ref bool __result)
@@ -57,13 +51,10 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
-    // Bypass Player Animator
+    // BLINDFIRE
     public class Patch_MovementContext_PlayerAnimatorSetBlindFire : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementContext), "PlayerAnimatorSetBlindFire");
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.PlayerAnimatorSetBlindFire));
 
         [PatchPrefix]
         private static bool Prefix()
@@ -74,10 +65,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_MovementContext_SetBlindFire : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementContext), "SetBlindFire", new Type[] { typeof(int) });
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), new Type[] { typeof(int) });
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, int b)
@@ -103,12 +91,10 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
+    // Old movement
     public class SmoothSpeedFix : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
 
         [PatchPostfix]
         private static void Prefix(MovementContext __instance, float deltaTime)
@@ -140,85 +126,78 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
-    public class AimingSlowdownPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementContext), "SetAimingSlowdown");
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(MovementContext __instance)
-        {
-            try
-            {
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"GenericPatch Prefix failed: {ex}");
-                return true;
-            }
-        }
-    }
-
     public class StateReplacer : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementContext), "GetNewState");
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.GetNewState));
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, ref BaseMovementState __result, EPlayerState name, bool isAI = false)
         {
-            var IsForModern = false;
-            try
+            var IsForModern = true;
+
+            switch (name)
             {
-                switch (name)
-                {
-                    case EPlayerState.Idle:
-                        __result = new OldIdleState(__instance);
-                        return false;
-                    case EPlayerState.ProneIdle:
-                        if (isAI)
-                        {
-                            return true;
-                        }
-                        __result = new OldProneIdleState(__instance);
-                        return false;
-                    case EPlayerState.Run:
-                        __result = new OldRunState(__instance);
-                        return false;
-                    case EPlayerState.Sprint:
-                        if (IsForModern)
-                        {
-                            return true;
-                        }
+                case EPlayerState.Idle:
+                    __result = new OldIdleState(__instance);
+                    return false;
+                case EPlayerState.ProneIdle:
+                    if (isAI)
+                    {
+                        return true;
+                    }
+                    __result = new OldProneIdleState(__instance);
+                    return false;
+                case EPlayerState.Run:
+                    __result = new OldRunState(__instance);
+                    return false;
+                case EPlayerState.Sprint:
+                    if (IsForModern)
+                    {
+                        return true;
+                    }
 
-                        __result = new OldSprintState(__instance);
+                    __result = new OldSprintState(__instance);
 
-                        return false;
-                    case EPlayerState.Jump:
-                        if (IsForModern)
-                        {
-                            return true;
-                        }
+                    return false;
+                case EPlayerState.Jump:
+                    if (IsForModern)
+                    {
+                        return true;
+                    }
 
-                        __result = new OldJumpState(__instance);
-                        return false;
-                    case EPlayerState.Sidestep:
-                        __result = new OldSidestepState(__instance);
-                        return false;
-                }
-
-                return true;
+                    __result = new OldJumpState(__instance);
+                    return false;
+                case EPlayerState.Sidestep:
+                    __result = new OldSidestepState(__instance);
+                    return false;
             }
-            catch (Exception ex)
-            {
-                Logger.LogError($"GenericPatch Prefix failed: {ex}");
-                return true;
-            }
+
+            return true;
+        }
+    }
+
+    // ADS
+    public class AimingSlowdownPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
+
+        [PatchPrefix]
+        private static bool Prefix(MovementContext __instance)
+        {
+            return true;
+        }
+    }
+
+    // Leaning
+    public class Patch_MovementContext_method_15 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_15));
+
+        [PatchPrefix]
+        private static bool Prefix(MovementContext __instance, float smoothDiff, float deltaTime)
+        {
+            __instance.method_14(smoothDiff, deltaTime);
+            return false;
         }
     }
 }

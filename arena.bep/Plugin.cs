@@ -88,10 +88,11 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_MovementState_BlindFire());
 
             RegisterPatch(new SmoothSpeedFix());
-            RegisterPatch(new NostalgiaPatrolFixExitPatch());
-            RegisterPatch(new NostalgiaPatrolFixEnterPatch());
+            // RegisterPatch(new NostalgiaPatrolFixExitPatch());
+            // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
             RegisterPatch(new StateReplacer());
-            RegisterPatch(new AimingSlowdownPatch());
+            // RegisterPatch(new AimingSlowdownPatch());
+            // RegisterPatch(new Patch_MovementContext_method_15());
 
             RegisterPatch(new Patch_CanWalk()); // For controller locking
             RegisterPatch(new Patch_CanJump()); // For controller locking

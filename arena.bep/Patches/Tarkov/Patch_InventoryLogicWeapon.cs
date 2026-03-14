@@ -9,10 +9,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     // Whenever we spawn a fake ragdoll this method throws an error so we just skip it idk
     public class Patch_method_10 : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(EFT.InventoryLogic.Weapon), nameof(EFT.InventoryLogic.Weapon.method_10));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Weapon), nameof(Weapon.method_10));
 
         [PatchPrefix]
         static bool Prefix(Weapon __instance)

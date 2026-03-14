@@ -11,10 +11,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         private const float SpawnAnimationSpeed = 2f;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(EFT.Player.BaseGrenadeHandsController), nameof(EFT.Player.BaseGrenadeHandsController.Spawn));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.BaseGrenadeHandsController), nameof(Player.BaseGrenadeHandsController.Spawn));
 
         [PatchPrefix]
         static void Prefix(ref float animationSpeed)
