@@ -153,7 +153,7 @@ namespace ifp.arena.bep.Core
                     }
                 }
 
-                await UniTask.Delay(50, cancellationToken: _sessionCts.Token);
+                await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
                 return true;
             }
@@ -167,6 +167,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
+//
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
@@ -211,7 +212,6 @@ namespace ifp.arena.bep.Core
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
-            H.Dump(removalEvent);
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);

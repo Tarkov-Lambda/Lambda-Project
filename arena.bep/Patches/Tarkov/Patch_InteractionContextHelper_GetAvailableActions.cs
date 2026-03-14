@@ -94,7 +94,8 @@ namespace ifp.arena.bep.Patches.Tarkov
             // have the bomb, so they're effectively CT-side in that round).
             else if (bomb == null &&
                      H.MainPlayerScore?.faction != Faction.T &&
-                     (H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing))
+                     (H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) &&
+                     Vector3.Distance(player.Position, Singleton<ArenaController>.Instance.BombPlantedPosition) <= SnDModeRules.defuseRadius)
             {
                 float defusingTime = SnDModeRules.defusingTime;
 

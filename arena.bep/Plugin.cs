@@ -87,6 +87,13 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_MovementContext_SetBlindFire());
             RegisterPatch(new Patch_MovementState_BlindFire());
 
+            RegisterPatch(new SmoothSpeedFix());
+            RegisterPatch(new NostalgiaPatrolFixExitPatch());
+            RegisterPatch(new NostalgiaPatrolFixEnterPatch());
+            RegisterPatch(new StateReplacer());
+            RegisterPatch(new AimingSlowdownPatch());
+
+
 
             RegisterPatch(new Patch_CanWalk()); // For controller locking
             RegisterPatch(new Patch_CanJump()); // For controller locking
@@ -102,7 +109,6 @@ namespace ifp.arena.bep
             // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon()); // Other players see you inspecting hands
-            // RegisterPatch(new Patch_FirearmController_InitiateShot());
 
 
             //--------------- ANIMATIONS --------------- //

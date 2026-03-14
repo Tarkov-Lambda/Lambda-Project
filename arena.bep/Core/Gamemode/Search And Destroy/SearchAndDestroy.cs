@@ -77,6 +77,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public static float platingTime = 4.5f;
         public static float defusingTime = 5f;
+        public static float defuseRadius = 2.5f;
 
         public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
 

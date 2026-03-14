@@ -1,6 +1,5 @@
 ﻿using Comfort.Common;
 using EFT;
-using EFT.CameraControl;
 using EFT.HealthSystem;
 using HarmonyLib;
 using ifp.arena.bep.Core;
@@ -10,10 +9,6 @@ using SPT.Reflection.Patching;
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading.Tasks;
-using Comfort;
-using UnityEngine;
-using EFT.UI;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
