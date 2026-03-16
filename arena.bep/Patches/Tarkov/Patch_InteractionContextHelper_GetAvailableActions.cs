@@ -37,7 +37,6 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             var roundState = H.Session.roundState;
 
-            // Allow interaction during planting phase (RoundAction) or after bomb is planted (RoundPlanted)
             if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted)
                 return true;
 
@@ -45,8 +44,6 @@ namespace ifp.arena.bep.Patches.Tarkov
             AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
             Item bomb = FindBombItemInPlayer(player);
 
-            // ── Has bomb: planting during RoundAction only ───────────────────────────
-            // (Only T players receive the bomb via BombAssignment, so no explicit faction check needed)
             if (bomb != null && roundState == MatchState.RoundAction)
             {
 
@@ -85,10 +82,6 @@ namespace ifp.arena.bep.Patches.Tarkov
                 });
             }
 
-            // ── No bomb + bomb is planted: defusing ──────────────────────────────────
-            // Guard against T players defusing their own bomb. We allow Faction.None as
-            // a fallback for clients whose faction sync hasn't arrived yet (they won't
-            // have the bomb, so they're effectively CT-side in that round).
             else if (bomb == null &&
                      H.MainPlayerScore?.faction != Faction.T &&
                      (H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) &&

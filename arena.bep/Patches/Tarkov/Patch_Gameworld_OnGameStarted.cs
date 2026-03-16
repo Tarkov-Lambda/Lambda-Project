@@ -19,7 +19,6 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             if (__instance is HideoutGameWorld) return;
 
-            // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
             NetworkTime.Reset();
             OnGameStarted?.Invoke(__instance);
         }
@@ -36,7 +35,6 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             if (!H.isInRaid()) return;
 
-            // Reset time sync on every game start so reconnects / raids don't reuse stale offsets.
             NetworkTime.Reset();
             OnDispose?.Invoke(__instance);
         }
