@@ -13,7 +13,6 @@ namespace ifp.arena.bep.networking
         public int value; // -1 = side fire, 0 = none, 1 = over-top
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BlindFirePacket>(reader);
     }
 

@@ -14,10 +14,7 @@ namespace ifp.arena.bep.networking
         public Faction faction;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<FactionChangePacket>(reader);
-
-        public override string ToString() => $"{id} changed faction to {faction}";
     }
 
     public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>

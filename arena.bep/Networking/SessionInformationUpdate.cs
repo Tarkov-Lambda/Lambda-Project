@@ -40,7 +40,6 @@ namespace ifp.arena.bep.networking
         public PlayerScoreSyncData[] scores;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionInfoPacket>(reader);
     }
 

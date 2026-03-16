@@ -20,7 +20,6 @@ namespace ifp.arena.bep.networking
         public string msg;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<AssetLoadStatePacket>(reader);
     }
 

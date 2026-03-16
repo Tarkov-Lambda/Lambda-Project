@@ -11,7 +11,6 @@ namespace ifp.arena.bep.networking
         public int id;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TemplatePacket>(reader);
     }
 

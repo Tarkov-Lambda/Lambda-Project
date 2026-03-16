@@ -45,10 +45,7 @@ namespace ifp.arena.bep.networking
         }
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayerKilledPacket>(reader);
-
-        public override string ToString() => $"{killerId} killed {victimId}";
     }
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>

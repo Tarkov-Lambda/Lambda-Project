@@ -4,22 +4,15 @@ using UnityEngine;
 
 namespace ifp.arena.bep.networking
 {
-    /// <summary>
-    /// Drop-in helpers so every [MemoryPackable] packet's Serialize / Deserialize
-    /// collapses to a single expression-body line instead of manual field-by-field code.
-    /// </summary>
     public static class MemoryPackHelper
     {
         public static void Serialize<T>(NetDataWriter writer, T value)
         {
-            // Write raw MemoryPack bytes — no length prefix needed because LiteNetLib
-            // already frames each packet, so AvailableBytes on the reader side is exact.
             writer.Put(MemoryPackSerializer.Serialize(value));
         }
 
         public static T Deserialize<T>(NetDataReader reader) where T : struct
         {
-            // reader.AvailableBytes == remaining user-payload bytes in this packet frame.
             int length = reader.AvailableBytes;
             byte[] bytes = new byte[length];
             reader.GetBytes(bytes, length);

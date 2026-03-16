@@ -83,7 +83,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 {
                     player.HandsController.BlindFire(b);
 
-                    // if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
+                    if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
                 }
 
                 return false; // Skip the original method

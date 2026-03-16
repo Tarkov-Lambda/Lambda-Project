@@ -28,10 +28,7 @@ namespace ifp.arena.bep.networking
         }
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
-
-        public override string ToString() => $"{playerId} state: {state}";
     }
 
     public class BombStatePacketHandler : PacketHandler<BombStatePacket>

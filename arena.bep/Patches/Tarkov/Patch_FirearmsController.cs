@@ -40,7 +40,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         private const float DropAnimationSpeed = 3f;
 
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.Spawn));
-        
+
         [PatchPrefix]
         static bool Prefix(ref float animationSpeed, Action callback)
         {

@@ -310,7 +310,7 @@ namespace ifp.arena.bep.Core
                     address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
                     address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
                     slot.ApplyContainedItem();
-                    player.OnArmorPointsChanged(plate.Armor, true);
+                    // player.OnArmorPointsChanged(plate.Armor, true);
 
                     return true;
                 }

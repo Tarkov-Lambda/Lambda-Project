@@ -22,7 +22,6 @@ namespace ifp.arena.bep.networking
         public string mapName;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<RestartPacket>(reader);
     }
 

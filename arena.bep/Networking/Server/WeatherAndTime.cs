@@ -13,10 +13,7 @@ namespace ifp.arena.bep.networking
         public double minutesSinceMidnight;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<WeatherAndTimePacket>(reader);
-
-        public override string ToString() => $"{minutesSinceMidnight}";
     }
 
     public class WeatherAndTimePacketHandler : PacketHandler<WeatherAndTimePacket>

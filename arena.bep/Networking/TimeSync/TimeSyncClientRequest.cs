@@ -2,13 +2,23 @@ using Comfort.Common;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
+using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.Base.RateLimiting;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking.TimeSync
 {
-    // Client to server
+    [MemoryPackable]
+    public partial struct TimeSyncRequestPacket : INetSerializable
+    {
+        public double clientSendLocalSeconds;
+
+        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
+        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSyncRequestPacket>(reader);
+    }
+
     public class TimeSyncRequestPacketHandler : PacketHandler<TimeSyncRequestPacket>
     {
         public TimeSyncRequestPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
@@ -53,18 +63,4 @@ namespace ifp.arena.bep.networking.TimeSync
         }
     }
 
-    // Server to client responding
-    public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacket>
-    {
-        public TimeSyncResponsePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
-
-        public override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
-        {
-            if (FikaBackendUtils.IsServer)
-                return;
-
-            double clientReceiveLocal = NetworkTime.LocalNowSeconds;
-            NetworkTime.ApplySample(packet.clientSendLocalSeconds, clientReceiveLocal, packet.serverSendSeconds);
-        }
-    }
 }
