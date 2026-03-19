@@ -73,10 +73,9 @@ namespace ifp.arena.bep.Core.UI
                     continue;
 
                 Vector3 worldPos = playerScore.player.PlayerBones.Head.position + HEAD_OFFSET;
+                Vector3 viewportPos = cam.WorldToViewportPoint(worldPos);
 
-                Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
-
-                if (screenPos.z < 0f) // behind the camera
+                if (viewportPos.z < 0f) // behind the camera
                     continue;
 
                 Nameplate nameplate = GetOrCreateNameplate(activeCount);
@@ -84,9 +83,14 @@ namespace ifp.arena.bep.Core.UI
 
                 RectTransform nameplateRect = nameplate.transform as RectTransform;
 
+                Vector2 screenPos = new Vector2(
+                    viewportPos.x * Screen.width,
+                    viewportPos.y * Screen.height
+                );
+
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     rectTransform,
-                    new Vector2(screenPos.x, screenPos.y),
+                    screenPos,
                     cam: null,
                     out Vector2 localPoint
                 );
