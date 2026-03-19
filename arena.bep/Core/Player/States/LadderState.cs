@@ -9,6 +9,10 @@ namespace ifp.arena.bep.Core.MovementStates
     {
         private Ladder _ladder;
         private Vector2 _inputDirection;
+        private Player _player;
+
+
+        private bool wasOriginallyGrounded;
 
         private const float ClimbSpeed = 2.5f;
 
@@ -19,19 +23,21 @@ namespace ifp.arena.bep.Core.MovementStates
 
         public override void Enter(bool isFromSameState)
         {
+            wasOriginallyGrounded = this.MovementContext.IsGrounded;
+            _player = AccessTools.Field(this.MovementContext.GetType(), "_player").GetValue(this.MovementContext) as Player;
             base.Enter(isFromSameState);
 
             _inputDirection = Vector2.zero;
             this.MovementContext.EnableSprint(false);
 
             // Snap player horizontally to the ladder center
-            Player player = AccessTools.Field(this.MovementContext.GetType(), "_player").GetValue(this.MovementContext) as Player;
-            if (player != null)
-            {
-                Vector3 ladderCenter = _ladder.transform.position;
-                Vector3 current = player.Transform.position;
-                player.Teleport(new Vector3(ladderCenter.x, current.y, ladderCenter.z));
-            }
+            // Player player = AccessTools.Field(this.MovementContext.GetType(), "_player").GetValue(this.MovementContext) as Player;
+            // if (player != null)
+            // {
+            //     Vector3 ladderCenter = _ladder.transform.position;
+            //     Vector3 current = player.Transform.position;
+            //     player.Teleport(new Vector3(ladderCenter.x, current.y, ladderCenter.z));
+            // }
         }
 
         public override void Exit(bool toSameState)
@@ -47,6 +53,7 @@ namespace ifp.arena.bep.Core.MovementStates
 
         public override void ManualAnimatorMoveUpdate(float deltaTime)
         {
+            this.MovementContext.ResetFlying();
             // Move up or down along the ladder's Y axis based on W/S input
             Vector3 motion = Vector3.up * _inputDirection.y * ClimbSpeed * deltaTime;
             this.MovementContext.ApplyMotion(motion, deltaTime);
@@ -60,7 +67,10 @@ namespace ifp.arena.bep.Core.MovementStates
                 Player player = AccessTools.Field(this.MovementContext.GetType(), "_player").GetValue(this.MovementContext) as Player;
                 if (player != null)
                 {
-                    player.Teleport(this.MovementContext.TransformPosition + this.MovementContext.TransformForwardVector * 0.5f);
+                    // Vector3 playerAnimatorDeltaPosition = this.MovementContext.TransformPosition + this.MovementContext.TransformForwardVector * 0.75f;
+                    // this.ApplyMotion(ref playerAnimatorDeltaPosition, deltaTime);
+                    // this.MovementContext.PlayerAnimatorEnableFallingDown(false);
+                    player.Teleport(this.MovementContext.TransformPosition + this.MovementContext.TransformForwardVector * 0.75f);
                 }
                 ExitToIdle();
                 return;

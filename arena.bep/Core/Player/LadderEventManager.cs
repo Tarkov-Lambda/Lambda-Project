@@ -11,6 +11,7 @@ namespace ifp.arena.bep.Core.Ladders
     {
         public LadderEventManager()
         {
+            H.Log("Created");
             Ladder.onPlayerEnterLadder += OnTriggerEnter;
             Ladder.onPlayerExitLadder += OnTriggerExit;
         }
@@ -22,10 +23,8 @@ namespace ifp.arena.bep.Core.Ladders
             Release(this);
         }
 
-
         private void OnTriggerEnter(LadderEventPayload ladderEvent)
         {
-            H.Dump(ladderEvent);
             Player player = ladderEvent.collider.GetComponentInParent<Player>();
             if (player == null || !player.IsYourPlayer) return;
 
@@ -38,7 +37,6 @@ namespace ifp.arena.bep.Core.Ladders
 
         private void OnTriggerExit(LadderEventPayload ladderEvent)
         {
-            H.Dump(ladderEvent);
             Player player = ladderEvent.collider.GetComponentInParent<Player>();
             if (player == null || !player.IsYourPlayer) return;
 

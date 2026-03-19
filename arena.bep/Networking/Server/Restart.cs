@@ -94,14 +94,6 @@ namespace ifp.arena.bep.networking
                     break;
             }
 
-            await Task.Delay(25);
-
-            if (player != null)
-            {
-                Teleporter.Teleport(player);
-            }
-            await Task.Delay(25);
-
             PlayerUtils.OpenEyes();
         }
     }
