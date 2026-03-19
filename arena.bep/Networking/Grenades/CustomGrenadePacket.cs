@@ -1,5 +1,6 @@
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using EFT.Interactive;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -46,12 +47,17 @@ namespace ifp.arena.bep.networking
 
         public override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
         {
-            GameObject molotovExplosion = GameObject.Instantiate(Singleton<FXHandler>.Instance.prefabFire);
-            molotovExplosion.transform.position = packet.explosionPos;
-   
+            GameObject molotov = new GameObject("Molotov");
+            molotov.transform.position = packet.explosionPos;
+
+            SphereCollider sCollider = molotov.AddComponent<SphereCollider>();
+            sCollider.radius = 5f;
+
+            FlameDamageTrigger flameDamageTrigger = molotov.AddComponent<FlameDamageTrigger>();
+
             await UniTask.WaitForSeconds(3000);
 
-            GameObject.Destroy(molotovExplosion);
+            GameObject.Destroy(molotov);
         }
     }
 }
