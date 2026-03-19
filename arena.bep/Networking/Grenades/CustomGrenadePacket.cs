@@ -58,10 +58,10 @@ namespace ifp.arena.bep.networking
 
             Action disableFireEffect = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos);
 
-            await UniTask.WaitForSeconds(3000);
+            await UniTask.WaitForSeconds(3);
 
             disableFireEffect?.Invoke();
-            GameObject.Destroy(molotov);
+            GameObject.DestroyImmediate(molotov);
         }
     }
 }
