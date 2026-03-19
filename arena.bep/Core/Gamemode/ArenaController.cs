@@ -8,6 +8,7 @@ using ifp.arena.bep;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
+using ifp.arena.bep.Core.Ladders;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
@@ -102,7 +103,6 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (H.GameWorld is HideoutGameWorld) return;
 
-            // Reset the inventory operation lock so each session starts with a clean slate
             ItemsUtils.ResetInventoryLock();
 
             _tickerObject = new GameObject("Arena Gamesession");
@@ -111,9 +111,11 @@ namespace ifp.arena.bep.Core.Gamemode
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
             PlayerUtils.ApplyPainkiller();
-            
+
             H.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
+
+            // Preloading bomb asset
             InitBombVisualsAsync().Forget();
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap("lobby");
@@ -126,7 +128,6 @@ namespace ifp.arena.bep.Core.Gamemode
                 Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
 
-            // Preloading bomb asset
         }
 
         private async UniTaskVoid InitBombVisualsAsync()
@@ -235,7 +236,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 Vector3 explosionCenter = bombVisuals.transform.position;
                 float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
                 H.Log(distance.ToString());
-                if(distance <= 25f)
+                if (distance <= 25f)
                 {
                     H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);
                 }

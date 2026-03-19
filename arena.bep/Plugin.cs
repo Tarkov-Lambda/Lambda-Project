@@ -2,12 +2,15 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.Core.Ladders;
+using ifp.arena.bep.Core.MovementStates;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
@@ -19,8 +22,11 @@ using ifp.arena.shared;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
+#if DEBUG
+// To log H.Dump object name
 namespace System.Runtime.CompilerServices
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
@@ -34,6 +40,8 @@ namespace System.Runtime.CompilerServices
         }
     }
 }
+#endif
+
 
 namespace ifp.arena.bep
 {
@@ -58,17 +66,33 @@ namespace ifp.arena.bep
         private readonly List<ModulePatch> _patches = new();
         private readonly List<IDisposable> _disposables = new();
 
+        private CancellationTokenSource _cts;
+
         private void RegisterPatch(ModulePatch patch)
         {
             patch.Enable();
             _patches.Add(patch);
         }
 
-        private void RegisterSingleton<T>() where T : class, IDisposable, new()
+        public void RegisterSingleton<T>() where T : class, IDisposable, new()
         {
             var instance = new T();
             Singleton<T>.Create(instance);
             _disposables.Add(instance);
+        }
+
+        public async UniTask RegisterSingletonInRaid<T>() where T : class, IDisposable, new()
+        {
+            try
+            {
+                await UniTask.WaitUntil(() => H.isInRaid(), cancellationToken: _cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            RegisterSingleton<T>();
         }
 
         void Start()
@@ -88,7 +112,7 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_MovementContext_SetBlindFire()); // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
             RegisterPatch(new Patch_MovementState_BlindFire()); // Force Blindfire state regardless of movement state
 
-            RegisterPatch(new Patch_MovementContext_ManualUpdate()); // Remove Smooth Speed
+            RegisterPatch(new Patch_MovementContext_ManualUpdate()); // Smooth Speed Tweak
             // RegisterPatch(new NostalgiaPatrolFixExitPatch());
             // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
             RegisterPatch(new Patch_MovementContext_GetNewState()); // Change Movement State Classes
@@ -144,13 +168,14 @@ namespace ifp.arena.bep
             RegisterSingleton<TimeSyncResponsePacketHandler>();
             RegisterSingleton<PausePacketHandler>();
 
-            // Internal Classses
+            // Internal Classses (order matters)
+            RegisterSingleton<AssetBundleHandler>();
+            RegisterSingleton<RagdollCreator>();
             RegisterSingleton<ArenaController>();
             RegisterSingleton<ImmutableItemsCache>();
             RegisterSingleton<UIManager>();
-            RegisterSingleton<AssetBundleHandler>();
-            RegisterSingleton<RagdollCreator>();
 
+            RegisterSingletonInRaid<LadderEventManager>().Forget();
 #if DEBUG
             // _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
             TracerOverlay = new GameObject("Arena Gamesession");
@@ -164,10 +189,9 @@ namespace ifp.arena.bep
         {
             Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
             PrefferedFaction = Config.Bind("", "Preffered Faction", Faction.None, "Faction swaps only happen after the round end");
-            MusicKitPath = Config.Bind("", "MusicKitPath", "", "C:/Users/mrimf/Documents/GitHub/fika-arena/audio/music");
 
             MapName = Config.Bind("Admin", "Map Name", "", "");
-            GameMode = Config.Bind("Admin", "Gamemodes", GameModes.FFA, "");
+            GameMode = Config.Bind("Admin", "Gamemode", GameModes.SND, "");
             Password = Config.Bind("Admin", "Password", "", "");
 
             DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
@@ -191,6 +215,10 @@ namespace ifp.arena.bep
         {
             Logger.LogInfo("Unload");
             UnityEngine.Object.Destroy(TracerOverlay);
+
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
 
             if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
             {

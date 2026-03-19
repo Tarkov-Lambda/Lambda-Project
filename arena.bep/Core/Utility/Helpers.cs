@@ -53,9 +53,12 @@ namespace ifp.arena.bep.Core
 
 #if DEBUG
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
+        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) => _dump(obj, msg, name);
 #else 
         public static void Log(string msg) => null;
+        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) => null;
 #endif
+
         public static void LogError(string msg) => Plugin.Logger.LogError(msg);
 
         // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
@@ -120,7 +123,7 @@ namespace ifp.arena.bep.Core
         }
 
 
-        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null)
+        private static void _dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null)
         {
             if (obj == null) return;
 

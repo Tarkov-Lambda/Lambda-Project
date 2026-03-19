@@ -36,13 +36,6 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
             {
                 await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
             }
-
-            // I hate this spaghetti design
-            Ladder[] ladders = GameObject.FindObjectsOfType<Ladder>();
-            foreach (Ladder ladder in ladders)
-            {
-                H.Log(ladder.GetOrAddComponent<LadderTrigger>().name);
-            }
         }
 
         public async UniTask<AssetBundle> LoadAssetBundle(string name)
@@ -57,6 +50,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
             // Check if it's already loaded, OR if it was previously cached as null
             if (!loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) || bundle == null)
             {
+
                 BundleLoadingProgressReport progressReportBundle = new BundleLoadingProgressReport();
 
                 bundle = await AssetBundle.LoadFromFileAsync(fullPath).ToUniTask(progressReportBundle);

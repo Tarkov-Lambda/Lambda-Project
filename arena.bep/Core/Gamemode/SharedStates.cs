@@ -17,7 +17,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedNone : IGameState
     {
         public MatchState StateType => MatchState.None;
-        public void OnEnter() { Teleporter.Teleport(H.GameWorld.MainPlayer, "lobby"); }
+        public void OnEnter() { }
         public MatchState? OnUpdate()
         {
             return null;

@@ -42,7 +42,7 @@ namespace ifp.arena.bep.GameTypes
         public BombState bombState = BombState.None;
 
         public GameModes currentGameMode = GameModes.SND;
-        public string mapName = "a";
+        public string mapName = "";
 
         public int mvpId;
 
@@ -103,7 +103,7 @@ namespace ifp.arena.bep.GameTypes
             // return false;
 
             if (roundState == MatchState.RoundPrepare || roundState == MatchState.Pause) return true;
-            if (!H.MainPlayerScore.isAlive) return true;
+            if (!H.MainPlayerScore.isAlive && H.Session.mapName != "") return true;
 
             return false;
         }

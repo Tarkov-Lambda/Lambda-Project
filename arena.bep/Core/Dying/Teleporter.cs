@@ -53,7 +53,6 @@ namespace ifp.arena.bep.Core.Dying
         public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)
         {
             Scene s = SceneManager.GetSceneByName(sceneName);
-            H.Dump(s);
             if (s == null) H.LogError($"Trying to find spawn points in a scene that doesn't exist");
 
             GameObject[] gObjects = s.GetRootGameObjects();

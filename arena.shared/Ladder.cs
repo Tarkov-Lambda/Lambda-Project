@@ -4,9 +4,18 @@ using UnityEngine;
 
 namespace ifp.arena.shared
 {
+    public struct LadderEventPayload
+    {
+        public Collider collider;
+        public Ladder ladder;
+    }
+
     [RequireComponent(typeof(BoxCollider))]
     public class Ladder : MonoBehaviour
     {
+        public static Action<LadderEventPayload> onPlayerEnterLadder;
+        public static Action<LadderEventPayload> onPlayerExitLadder;
+
         private BoxCollider _collider;
 
         private BoxCollider Collider
@@ -43,6 +52,28 @@ namespace ifp.arena.shared
         {
             // Ensure the collider is a trigger so OnTriggerEnter fires
             Collider.isTrigger = true;
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            LadderEventPayload ladderEvent = new LadderEventPayload
+            {
+                collider = other,
+                ladder = this
+            };
+
+            onPlayerEnterLadder?.Invoke(ladderEvent);
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            LadderEventPayload ladderEvent = new LadderEventPayload
+            {
+                collider = other,
+                ladder = this
+            };
+
+            onPlayerExitLadder?.Invoke(ladderEvent);
         }
     }
 }
