@@ -18,11 +18,14 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
+using ifp.arena.bep.Core.Ladders;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
     public class Patch_CanWalk : ModulePatch
     {
+        private static bool wasOnLadder = false;
+
         protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
         [PatchPostfix]
@@ -37,6 +40,23 @@ namespace ifp.arena.bep.Patches.Tarkov
             {
                 __result = false;
             }
+
+            if (player.IsYourPlayer)
+            {
+                if (LadderEventManager.isOnLadder)
+                {
+                    wasOnLadder = true;
+                    __result = false;
+                }
+                else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground to move
+                {
+                    wasOnLadder = false;
+                    __result = false;
+                }
+
+
+            }
+
         }
     }
 

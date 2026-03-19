@@ -50,8 +50,9 @@ namespace ifp.arena.bep.Core.Dying
                 H.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
                 return;
             }
-
+            
             player.Teleport(nextPlayerPosition);
+            H.MainPlayer.MovementContext.ResetFlying();
         }
 
         public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)

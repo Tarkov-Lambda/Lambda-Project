@@ -120,7 +120,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby");
-            
+
 
             Physics.simulationMode = SimulationMode.FixedUpdate;
             // delay is stupid
@@ -261,12 +261,20 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
-    // legacy ig will refactor later
     public class GameModeTicker : MonoBehaviour
     {
+        public static Action onUpdate;
+        public static Action onLateUpdate;
+
         private void Update()
         {
+            onUpdate?.Invoke();
             Singleton<ArenaController>.Instance.Update();
+        }
+
+        private void LateUpdate()
+        {
+            onLateUpdate?.Invoke();
         }
     }
 }
