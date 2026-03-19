@@ -7,6 +7,7 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
+using ifp.arena.shared.FX;
 using MemoryPack;
 using System;
 using UnityEngine;
@@ -51,16 +52,19 @@ namespace ifp.arena.bep.networking
             GameObject molotov = new GameObject("Molotov");
             molotov.transform.position = packet.explosionPos;
 
+            float radius = 5f;
+
             SphereCollider sCollider = molotov.AddComponent<SphereCollider>();
-            sCollider.radius = 5f;
+            sCollider.radius = radius;
 
             FlameDamageTrigger flameDamageTrigger = molotov.AddComponent<FlameDamageTrigger>();
 
-            Action disableFireEffect = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos);
+            MolotovFXController molotovFX = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos, radius);
 
             await UniTask.WaitForSeconds(3);
 
-            disableFireEffect?.Invoke();
+            molotovFX.StopAndFadeOut();
+
             GameObject.DestroyImmediate(molotov);
         }
     }

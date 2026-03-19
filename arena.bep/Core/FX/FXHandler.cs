@@ -1,9 +1,8 @@
 ﻿using Comfort.Common;
-using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.shared.FX;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.FX
@@ -11,26 +10,54 @@ namespace ifp.arena.bep.Core.FX
     internal class FXHandler : Singleton<FXHandler>, IDisposable
     {
         private AssetBundle fxbundle;
+        private MolotovFXController prefabFire;
 
-        private GameObject prefabFire;
+        private Stack<MolotovFXController> molotovPool = new Stack<MolotovFXController>();
+
+        Transform parentEffects;
 
         public FXHandler()
         {
             fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(AssetBundleHandler.pathToBundlesDir, "fx"));
-            prefabFire = fxbundle.LoadAsset<GameObject>("Assets/FX/FLAMES/Fire_zone_Animaton.prefab");
+            prefabFire = fxbundle.LoadAsset<GameObject>("Assets/FX/FLAMES/MolotovFX.prefab").GetComponent<MolotovFXController>();
+
+            parentEffects = new GameObject("FX").transform;
+            GameObject.DontDestroyOnLoad(parentEffects.gameObject);
         }
 
-        public Action SpawnMolotov(Vector3 pos)
+        public MolotovFXController SpawnMolotov(Vector3 pos, float radius)
         {
-            GameObject instance = GameObject.Instantiate(prefabFire);
-            instance.transform.position = pos;
+            MolotovFXController instance;
 
-            return () => instance.gameObject.SetActive(false);
+            if (molotovPool.Count > 0)
+            {
+                instance = molotovPool.Pop();
+                instance.gameObject.SetActive(true);
+            }
+            else
+            {
+                instance = GameObject.Instantiate(prefabFire, parentEffects);
+            }
+
+            instance.transform.position = pos;
+            instance.transform.localScale = new Vector3(radius, 1f, radius);
+            instance.Ignite(ReturnToPool);
+
+            return instance;
+        }
+
+        private void ReturnToPool(MolotovFXController controller)
+        {
+            controller.gameObject.SetActive(false);
+            molotovPool.Push(controller);
         }
 
         public void Dispose()
         {
+            GameObject.Destroy(parentEffects.gameObject);
+
             fxbundle.Unload(false);
+            molotovPool.Clear();
         }
     }
 }
