@@ -98,7 +98,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
             if (H.GameWorld?.MainPlayer != null)
             {
-                Teleporter.Teleport(H.GameWorld.MainPlayer);
+                Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
                 PlayerUtils.FixMe();
             }
 
