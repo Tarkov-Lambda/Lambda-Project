@@ -60,6 +60,7 @@ namespace ifp.arena.bep.networking
                 Step = AdminAuthStep.Request,
                 Payload = ""
             };
+            
             RequestSend(packet);
         }
 
@@ -100,7 +101,9 @@ namespace ifp.arena.bep.networking
                 MakePeerAdmin(netPeer);
 
                 var successPacket = new AdminAuthPacket { Step = AdminAuthStep.Success };
-                H.FikaNet.SendDataToPeer(ref successPacket, deliveryMethod, netPeer);
+                // H.FikaNet.SendDataToPeer(ref successPacket, deliveryMethod, netPeer);
+                RequestSendToPlayer(successPacket, netPeer.Id);
+
             }
             else if (packet.Step == AdminAuthStep.Success)
             {

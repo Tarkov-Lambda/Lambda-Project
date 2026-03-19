@@ -26,9 +26,13 @@ namespace ifp.arena.bep.Patches.Tarkov
         protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
         [PatchPostfix]
-        static void Postfix(ref bool __result)
+        static void Postfix(MovementContext __instance, ref bool __result)
         {
             if (!H.isInRaid()) return;
+
+            Player player = AccessTools.Field(__instance.GetType(), "_player").GetValue(__instance) as Player;
+            if (player.MovementContext.CurrentState is LadderState) __result = false;
+
             if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
                 __result = false;
@@ -41,7 +45,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
 
         [PatchPostfix]
-        static void Postfix(ref bool __result)
+        static void Postfix(MovementContext __instance, ref bool __result)
         {
             if (!H.isInRaid()) return;
             if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
@@ -70,31 +74,22 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, int b)
         {
-            
-            var playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            Player player = AccessTools.Field(__instance.GetType(), "_player").GetValue(__instance) as Player;
 
-            if (playerField != null)
+            if (player.MovementContext.CurrentState is SprintStateClass) return true;
+
+            if (player != null && player.HandsController != null)
             {
-                Player player = playerField.GetValue(__instance) as Player;
-                
-                if(player.MovementContext.CurrentState is SprintStateClass) return true;
+                player.HandsController.BlindFire(b);
 
-                if (player != null && player.HandsController != null)
-                {
-                    player.HandsController.BlindFire(b);
-
-                    if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
-                }
-
-                return false; // Skip the original method
+                if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
             }
-
-            return true;
+            return false; // Skip the original method
         }
     }
 
     // Old movement
-    public class SmoothSpeedFix : ModulePatch
+    public class Patch_MovementContext_ManualUpdate : ModulePatch
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
 
@@ -128,7 +123,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
-    public class StateReplacer : ModulePatch
+    public class Patch_MovementContext_GetNewState : ModulePatch
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.GetNewState));
 
@@ -179,14 +174,14 @@ namespace ifp.arena.bep.Patches.Tarkov
     }
 
     // ADS
-    public class AimingSlowdownPatch : ModulePatch
+    public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance)
         {
-            return true;
+            return false;
         }
     }
 

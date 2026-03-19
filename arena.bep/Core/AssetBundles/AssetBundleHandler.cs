@@ -1,5 +1,7 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using ifp.arena.bep.Core.Ladders;
+using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,21 +18,31 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
         public async UniTask LoadMap(string mapName)
         {
             AssetBundle MapBundle = await LoadAssetBundle(mapName);
+            if (MapBundle == null) return;
 
             string[] scenePaths = MapBundle.GetAllScenePaths();
-            if (scenePaths.Length == 0)
-            {
-                return;
-            }
+            if (scenePaths.Length == 0) H.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
 
             BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
 
-            if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded && !scenePaths[0].Contains("Lobby"))
+            // Unloading in case it's already loaded (essentially to refresh for dev)
+            // also making sure it's not the lobby, because it's a persistent player safety place
+            if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded && scenePaths[0] != "lobby")
             {
                 await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();
             }
 
-            await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
+            if (!SceneManager.GetSceneByPath(scenePaths[0]).isLoaded)
+            {
+                await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
+            }
+
+            // I hate this spaghetti design
+            Ladder[] ladders = GameObject.FindObjectsOfType<Ladder>();
+            foreach (Ladder ladder in ladders)
+            {
+                H.Log(ladder.GetOrAddComponent<LadderTrigger>().name);
+            }
         }
 
         public async UniTask<AssetBundle> LoadAssetBundle(string name)
@@ -38,7 +50,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
             string fullPath = Path.Combine(pathToBundlesDir, name);
             if (!File.Exists(fullPath))
             {
-                H.Log($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
+                H.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
                 return null;
             }
 
@@ -71,7 +83,8 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
                 AssetBundle bundle = kvp.Value;
                 if (bundle != null)
                 {
-                    if (bundle.name == "Lobby") continue;
+                    // we do not unload lobby so that we can teleport there during reloads
+                    if (bundle.name == "lobby") continue;
 
                     foreach (var scenePath in bundle.GetAllScenePaths())
                     {

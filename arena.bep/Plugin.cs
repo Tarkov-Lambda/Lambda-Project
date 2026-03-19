@@ -64,7 +64,7 @@ namespace ifp.arena.bep
             _patches.Add(patch);
         }
 
-        private void RegisterPacket<T>() where T : class, IDisposable, new()
+        private void RegisterSingleton<T>() where T : class, IDisposable, new()
         {
             var instance = new T();
             Singleton<T>.Create(instance);
@@ -83,24 +83,24 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_Kill()); // Bypass Dying entirely
 
-            RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments());
-            RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());
-            RegisterPatch(new Patch_MovementContext_SetBlindFire());
-            RegisterPatch(new Patch_MovementState_BlindFire());
+            RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments()); // Procedural Blindfire Position
+            RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire()); // Override Blindfire Animation
+            RegisterPatch(new Patch_MovementContext_SetBlindFire()); // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
+            RegisterPatch(new Patch_MovementState_BlindFire()); // Force Blindfire state regardless of movement state
 
-            RegisterPatch(new SmoothSpeedFix());
+            RegisterPatch(new Patch_MovementContext_ManualUpdate()); // Remove Smooth Speed
             // RegisterPatch(new NostalgiaPatrolFixExitPatch());
             // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
-            RegisterPatch(new StateReplacer());
-            // RegisterPatch(new AimingSlowdownPatch());
-            // RegisterPatch(new Patch_MovementContext_method_15());
+            RegisterPatch(new Patch_MovementContext_GetNewState()); // Change Movement State Classes
+            RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // 
+            RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
 
             RegisterPatch(new Patch_CanWalk()); // For controller locking
             RegisterPatch(new Patch_CanJump()); // For controller locking
             RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
             // RegisterPatch(new Patch_ApplyShot());
 
-            RegisterPatch(new Patch_ApplyDamage());
+            RegisterPatch(new Patch_ApplyDamage()); // Caching last damage packet for death
             RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
 
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Planting/Defusing
@@ -119,42 +119,39 @@ namespace ifp.arena.bep
             // RegisterPatch(new Patch_FirearmController_InitiateOperation());
             //------------------------------------------ //
 
+            RegisterPatch(new Patch_CommonUI_Awake()); // Action Hook
+            RegisterPatch(new Patch_ItemsTabController_Show()); // Action Hook
+            RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput()); // Inventory opening control (for when we reset inv or hold tab for scoreboard)
 
-            RegisterPatch(new Patch_CommonUI_Awake());
-            RegisterPatch(new Patch_ItemsTabController_Show());
-            RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());
-
-            RegisterPacket<AssetBundleHandler>();
-            RegisterPacket<RagdollCreator>();
-
-            // FIKA
-            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());
+            // Fika patches
+            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
 
             // NETWORK
-            RegisterPacket<PlayerKilledPacketHandler>();
-            RegisterPacket<FactionChangePacketHandler>();
-            RegisterPacket<SpawnItemPacketHandler>();
+            RegisterSingleton<PlayerKilledPacketHandler>();
+            RegisterSingleton<FactionChangePacketHandler>();
+            RegisterSingleton<SpawnItemPacketHandler>();
+            RegisterSingleton<SessionInfoPacketHandler>();
+            RegisterSingleton<BombStatePacketHandler>();
+            RegisterSingleton<BombAssignmentPacketHandler>();
+            RegisterSingleton<MatchStateSyncPacketHandler>();
+            RegisterSingleton<RestartPacketHandler>();
+            RegisterSingleton<AssetLoadStatePacketHandler>();
+            RegisterSingleton<AdminLoginPacketHandler>();
+            RegisterSingleton<HandsInspectPacketHandler>();
+            RegisterSingleton<BlindFirePacketHandler>();
+            RegisterSingleton<ReplenishPacketHandler>();
+            RegisterSingleton<TimeSyncRequestPacketHandler>();
+            RegisterSingleton<TimeSyncResponsePacketHandler>();
+            RegisterSingleton<PausePacketHandler>();
 
-            RegisterPacket<SessionInfoPacketHandler>();
-            RegisterPacket<BombStatePacketHandler>();
-            RegisterPacket<BombAssignmentPacketHandler>();
-            RegisterPacket<MatchStateSyncPacketHandler>();
-            RegisterPacket<RestartPacketHandler>();
-            RegisterPacket<AssetLoadStatePacketHandler>();
-            RegisterPacket<AdminLoginPacketHandler>();
-            RegisterPacket<HandsInspectPacketHandler>();
-            RegisterPacket<BlindFirePacketHandler>();
-            RegisterPacket<ReplenishPacketHandler>();
-            RegisterPacket<TimeSyncRequestPacketHandler>();
-            RegisterPacket<TimeSyncResponsePacketHandler>();
-            RegisterPacket<PausePacketHandler>();
+            // Internal Classses
+            RegisterSingleton<ArenaController>();
+            RegisterSingleton<ImmutableItemsCache>();
+            RegisterSingleton<UIManager>();
+            RegisterSingleton<AssetBundleHandler>();
+            RegisterSingleton<RagdollCreator>();
 
-            RegisterPacket<ArenaController>();
-
-            RegisterPacket<ImmutableItemsCache>();
-            RegisterPacket<UIManager>();
-
-#if (DEBUG)
+#if DEBUG
             // _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
             TracerOverlay = new GameObject("Arena Gamesession");
             TracerOverlay.AddComponent<TracerOverlay>();
@@ -197,8 +194,8 @@ namespace ifp.arena.bep
 
             if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
             {
-                ArenaController.Instance.session.roundState = MatchState.None;
-                Teleporter.Teleport(H.GameWorld.MainPlayer);
+                H.Session.roundState = MatchState.None;
+                Teleporter.Teleport(H.MainPlayer, "lobby");
             }
 
             foreach (var patch in _patches)

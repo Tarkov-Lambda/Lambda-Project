@@ -17,7 +17,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedNone : IGameState
     {
         public MatchState StateType => MatchState.None;
-        public void OnEnter() { Teleporter.Teleport(H.GameWorld.MainPlayer); }
+        public void OnEnter() { Teleporter.Teleport(H.GameWorld.MainPlayer, "lobby"); }
         public MatchState? OnUpdate()
         {
             return null;
@@ -90,10 +90,12 @@ namespace ifp.arena.bep.Core.Gamemode
                 InventoryResetter.ResetInventory();
                 PlayerUtils.OpenEyes();
             }
+            
             foreach (var p in H.Arena.session.scoreboard.Values)
             {
                 p.Spawn();
             }
+
             if (H.GameWorld?.MainPlayer != null)
             {
                 Teleporter.Teleport(H.GameWorld.MainPlayer);

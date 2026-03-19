@@ -51,7 +51,12 @@ namespace ifp.arena.bep.Core
         public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
         public static void NotifyLong(string msg) => NotificationManagerClass.DisplayMessageNotification(msg, EFT.Communications.ENotificationDurationType.Long);
 
+#if DEBUG
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
+#else 
+        public static void Log(string msg) => null;
+#endif
+        public static void LogError(string msg) => Plugin.Logger.LogError(msg);
 
         // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
         // public static void PlayMusic(MusicEvent musicEvent) => H.Notify(musicEvent.ToString());

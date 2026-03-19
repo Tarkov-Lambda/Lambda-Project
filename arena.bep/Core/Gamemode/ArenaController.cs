@@ -5,6 +5,8 @@ using EFT.CameraControl;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep;
+using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
@@ -96,7 +98,7 @@ namespace ifp.arena.bep.Core.Gamemode
             Release(this);
         }
 
-        public void StartSession(GameWorld gameWorld)
+        public async void StartSession(GameWorld gameWorld)
         {
             if (H.GameWorld is HideoutGameWorld) return;
 
@@ -109,17 +111,22 @@ namespace ifp.arena.bep.Core.Gamemode
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
             PlayerUtils.ApplyPainkiller();
-            //Singleton<AssetBundleHandler>.Instance.LoadMap("Lobby");
-
+            
             H.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
+            InitBombVisualsAsync().Forget();
+
+            await Singleton<AssetBundleHandler>.Instance.LoadMap("lobby");
+            Teleporter.Teleport(H.MainPlayer, "lobby");
+
+            // delay is stupid
             if (FikaBackendUtils.IsClient)
             {
+                await UniTask.Delay(200);
                 Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
 
             // Preloading bomb asset
-            InitBombVisualsAsync().Forget();
         }
 
         private async UniTaskVoid InitBombVisualsAsync()

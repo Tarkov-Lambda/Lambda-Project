@@ -81,6 +81,7 @@ namespace ifp.arena.bep.networking
                 H.Arena.ChangeState(MatchState.Warmup);
             }
 
+            // Report back to the server that the map is loaded
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
 
             switch (H.Session.currentGameMode)

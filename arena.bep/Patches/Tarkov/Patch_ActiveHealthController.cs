@@ -33,10 +33,11 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             // H.Dump(damageInfo);
             // H.Dump(damageInfo.DamageType);
-            if (damageInfo.DamageType is EDamageType.Bullet or EDamageType.Explosion)
-            {
-                LastReceivedDamageInfo = damageInfo;
-            }
+            LastReceivedDamageInfo = damageInfo;
+            // if (damageInfo.DamageType is EDamageType.Bullet or EDamageType.Explosion)
+            // {
+                
+            // }
             return true;
         }
     }
@@ -71,11 +72,14 @@ namespace ifp.arena.bep.Patches.Tarkov
             try
             {
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                // everyone else is handled in Patch_FikaServer_OnCommonPlayerPacketReceived
+                
+                // If the server player dies
+                // or if the client kills themselves
                 if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
                 {
                     Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
                 }
+
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
                 _ = PlayerUtils.CloseEyes(true, false);
