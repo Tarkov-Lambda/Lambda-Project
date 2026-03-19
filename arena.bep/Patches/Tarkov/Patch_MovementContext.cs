@@ -52,8 +52,6 @@ namespace ifp.arena.bep.Patches.Tarkov
                     wasOnLadder = false;
                     __result = false;
                 }
-
-
             }
 
         }

@@ -169,6 +169,12 @@
         "price": 300,
         "maxQuantity": 2,
         "maxBuy": 1
+      },
+      {
+        "bsgId": "617fd91e5539a84ec44ce155",
+        "price": 300,
+        "maxQuantity": 2,
+        "maxBuy": 1
       }
     ]
   }

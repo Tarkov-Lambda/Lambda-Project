@@ -86,7 +86,9 @@ namespace ifp.arena.bep
         {
             try
             {
-                await UniTask.WaitUntil(() => H.isInRaid(), cancellationToken: _cts.Token);
+                // await UniTask.WaitUntil(() => H.isInRaid(), cancellationToken: _cts.Token);
+                await UniTask.WaitUntil(() => H.isInRaid());
+
             }
             catch (OperationCanceledException)
             {
@@ -117,7 +119,7 @@ namespace ifp.arena.bep
             // RegisterPatch(new NostalgiaPatrolFixExitPatch());
             // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
             RegisterPatch(new Patch_MovementContext_GetNewState()); // Change Movement State Classes
-            RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // 
+            // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // Do not slow down during aiming
             RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
 
             RegisterPatch(new Patch_CanWalk()); // For controller locking
@@ -135,6 +137,8 @@ namespace ifp.arena.bep
 
             RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon()); // Other players see you inspecting hands
 
+
+            RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent()); // Bypassing explosion for custom grenades
 
             //--------------- ANIMATIONS --------------- //
             // RegisterPatch(new Patch_GClass2963_Spawn());
@@ -168,6 +172,7 @@ namespace ifp.arena.bep
             RegisterSingleton<TimeSyncRequestPacketHandler>();
             RegisterSingleton<TimeSyncResponsePacketHandler>();
             RegisterSingleton<PausePacketHandler>();
+            RegisterSingleton<CustomGrenadeExplosionPacketHandler>();
 
             // Internal Classses (order matters)
             RegisterSingleton<AssetBundleHandler>();
@@ -177,7 +182,9 @@ namespace ifp.arena.bep
             RegisterSingleton<UIManager>();
             RegisterSingleton<FXHandler>();
 
+            var warmup = typeof(Ladder);
             RegisterSingletonInRaid<LadderEventManager>().Forget();
+
 #if DEBUG
             // _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
             TracerOverlay = new GameObject("Arena Gamesession");
@@ -217,6 +224,10 @@ namespace ifp.arena.bep
         {
             Logger.LogInfo("Unload");
             UnityEngine.Object.Destroy(TracerOverlay);
+
+            // H.MainPlayer.MovementContext.ExitOverridenState();
+            // RunStateClass idleState = new RunStateClass(H.MainPlayer.MovementContext);
+            // H.MainPlayer.MovementContext.ProcessStateEnter(idleState);
 
             _cts?.Cancel();
             _cts?.Dispose();

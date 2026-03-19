@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace ifp.arena.bep.Core.FX
     {
         AssetBundle fxbundle;
 
-        GameObject prefabFire;
+        public GameObject prefabFire { get; private set; }
 
         public FXHandler()
         {
