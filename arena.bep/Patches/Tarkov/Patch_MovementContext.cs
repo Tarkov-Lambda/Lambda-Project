@@ -34,7 +34,6 @@ namespace ifp.arena.bep.Patches.Tarkov
             if (!H.isInRaid()) return;
 
             Player player = AccessTools.Field(__instance.GetType(), "_player").GetValue(__instance) as Player;
-            if (player.MovementContext.CurrentState is LadderState) __result = false;
 
             if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
