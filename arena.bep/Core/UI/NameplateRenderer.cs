@@ -1,0 +1,114 @@
+﻿using EFT.UI;
+using ifp.arena.shared;
+using ifp.arena.ui.Nameplate;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace ifp.arena.bep.Core.UI
+{
+    internal class NameplateRenderer : MonoBehaviour
+    {
+        private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.4f, 0f);
+
+        RectTransform rectTransform => transform as RectTransform;
+
+        List<Nameplate> nameplates = new List<Nameplate>();
+
+        Nameplate prefabNameplate;
+
+        public void Init(CommonUI commonUI, Nameplate prefabNameplate)
+        {
+            rectTransform.SetParent(commonUI.EftBattleUIScreen.transform);
+            rectTransform.SetAsFirstSibling();
+
+            rectTransform.localScale = Vector3.one;
+            rectTransform.localPosition = Vector3.zero;
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+
+            this.prefabNameplate = prefabNameplate;
+        }
+
+        private Nameplate GetOrCreateNameplate(int index)
+        {
+            while (nameplates.Count <= index)
+            {
+                Nameplate instance = Instantiate(prefabNameplate, rectTransform);
+                instance.gameObject.SetActive(false);
+                nameplates.Add(instance);
+            }
+            return nameplates[index];
+        }
+
+        private void DisableAll()
+        {
+            for (int i = 0; i < nameplates.Count; i++)
+                nameplates[i].gameObject.SetActive(false);
+        }
+
+        void LateUpdate()
+        {
+            if (!H.isInRaid())
+            {
+                DisableAll();
+                return;
+            }
+
+            Faction ownFaction = H.MainPlayerScore.faction;
+            int activeCount = 0;
+
+            Camera cam = CameraClass.Instance.Camera;
+
+            foreach (var playerScore in H.Scoreboard.Values)
+            {
+                if (playerScore == H.MainPlayerScore)
+                    continue;
+
+                if (playerScore.faction != ownFaction)
+                    continue;
+
+                if (playerScore.player == null || !playerScore.isAlive)
+                    continue;
+
+                Vector3 worldPos = playerScore.player.PlayerBones.Head.position + HEAD_OFFSET;
+
+                Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+
+                if (screenPos.z < 0f) // behind the camera
+                    continue;
+
+                Nameplate nameplate = GetOrCreateNameplate(activeCount);
+                nameplate.gameObject.SetActive(true);
+
+                RectTransform nameplateRect = nameplate.transform as RectTransform;
+
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    rectTransform,
+                    new Vector2(screenPos.x, screenPos.y),
+                    cam: null,
+                    out Vector2 localPoint
+                );
+
+                nameplateRect.localPosition = localPoint;
+
+                nameplate.Set(playerScore.player.Profile.Nickname, playerScore.faction);
+
+                activeCount++;
+            }
+
+            // disable leftover
+            for (int i = activeCount; i < nameplates.Count; i++)
+                nameplates[i].gameObject.SetActive(false);
+        }
+
+        void OnDestroy()
+        {
+            foreach (var item in nameplates)
+            {
+                Destroy(item.gameObject);
+            }
+        }
+    }
+}

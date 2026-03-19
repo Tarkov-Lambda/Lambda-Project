@@ -13,6 +13,7 @@ using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
 using ifp.arena.shared.Models;
+using ifp.arena.ui.Nameplate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,8 @@ namespace ifp.arena.bep.Core.UI
         BSGItemInfoProvider itemInfoProvider;
 
         InventoryHotkeyListener inventoryHotkeyListener;
+
+        NameplateRenderer nameplateRenderer;
 
         public UIManager()
         {
@@ -76,6 +79,10 @@ namespace ifp.arena.bep.Core.UI
             shopRectTransform.anchorMax = new Vector2(1, 1);
             shopRectTransform.offsetMin = new Vector2(0, 0);
             shopRectTransform.offsetMax = new Vector2(0, 0);
+
+            nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
+            GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
+            nameplateRenderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
 
             AhhhhWire();
         }
@@ -187,6 +194,9 @@ namespace ifp.arena.bep.Core.UI
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);
+
+            if (nameplateRenderer != null)
+                GameObject.Destroy(nameplateRenderer.gameObject);
 
             if (inventoryHotkeyListener != null)
                 Component.Destroy(inventoryHotkeyListener);
