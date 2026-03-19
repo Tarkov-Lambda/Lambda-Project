@@ -120,7 +120,9 @@ namespace ifp.arena.bep.Core.Gamemode
 
             await Singleton<AssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby");
+            
 
+            Physics.simulationMode = SimulationMode.FixedUpdate;
             // delay is stupid
             if (FikaBackendUtils.IsClient)
             {
@@ -141,6 +143,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public void EndSession(GameWorld gameWorld)
         {
+            Physics.simulationMode = SimulationMode.Script;
             // Cancel any in-flight ClientRequestGiveItem calls so they don't touch
             // inventory after the session has been torn down
             ItemsUtils.ResetInventoryLock();

@@ -15,8 +15,6 @@ namespace ifp.arena.bep.Core.Dying
 {
     public class Teleporter
     {
-        static public Vector3 newPos;
-
         // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
         static public void Teleport(Player player, string mapName = "", Faction faction = Faction.None)
         {
@@ -25,18 +23,24 @@ namespace ifp.arena.bep.Core.Dying
             string targetMap;
             Faction targetFaction;
 
+            H.Log(H.Session.mapName);
+            H.Log(faction.ToString());
+
             if (!string.IsNullOrEmpty(mapName))
             {
+                H.Log("1");
                 targetMap = mapName;
                 targetFaction = faction;
             }
             else if (pScore.isAlive)
             {
+                H.Log("2");
                 targetMap = H.Session.mapName;
                 targetFaction = pScore.faction;
             }
             else
             {
+                H.Log("3");
                 targetMap = "lobby";
                 targetFaction = Faction.None;
             }
@@ -60,7 +64,7 @@ namespace ifp.arena.bep.Core.Dying
             SpawnPoints[] allSpawnPoints = [];
             foreach (GameObject gObject in gObjects)
             {
-                SpawnPoints[] sPoints = UnityEngine.Object.FindObjectsByType<SpawnPoints>(FindObjectsSortMode.None);
+                SpawnPoints[] sPoints = gObject.GetComponentsInChildren<SpawnPoints>();
                 if (sPoints.Length > 0)
                 {
                     allSpawnPoints = sPoints;
