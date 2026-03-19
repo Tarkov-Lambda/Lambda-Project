@@ -8,6 +8,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
+using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.Ladders;
 using ifp.arena.bep.Core.MovementStates;
@@ -174,6 +175,7 @@ namespace ifp.arena.bep
             RegisterSingleton<ArenaController>();
             RegisterSingleton<ImmutableItemsCache>();
             RegisterSingleton<UIManager>();
+            RegisterSingleton<FXHandler>();
 
             RegisterSingletonInRaid<LadderEventManager>().Forget();
 #if DEBUG
