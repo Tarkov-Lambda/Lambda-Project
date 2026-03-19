@@ -8,6 +8,7 @@ using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
+using System;
 using UnityEngine;
 
 namespace ifp.arena.bep.networking
@@ -55,8 +56,11 @@ namespace ifp.arena.bep.networking
 
             FlameDamageTrigger flameDamageTrigger = molotov.AddComponent<FlameDamageTrigger>();
 
+            Action disableFireEffect = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos);
+
             await UniTask.WaitForSeconds(3000);
 
+            disableFireEffect?.Invoke();
             GameObject.Destroy(molotov);
         }
     }

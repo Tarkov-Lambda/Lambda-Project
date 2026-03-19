@@ -10,14 +10,22 @@ namespace ifp.arena.bep.Core.FX
 {
     internal class FXHandler : Singleton<FXHandler>, IDisposable
     {
-        AssetBundle fxbundle;
+        private AssetBundle fxbundle;
 
-        public GameObject prefabFire { get; private set; }
+        private GameObject prefabFire;
 
         public FXHandler()
         {
             fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(AssetBundleHandler.pathToBundlesDir, "fx"));
             prefabFire = fxbundle.LoadAsset<GameObject>("Assets/FX/FLAMES/Fire_zone_Animaton.prefab");
+        }
+
+        public Action SpawnMolotov(Vector3 pos)
+        {
+            GameObject instance = GameObject.Instantiate(prefabFire);
+            instance.transform.position = pos;
+
+            return () => instance.gameObject.SetActive(false);
         }
 
         public void Dispose()
