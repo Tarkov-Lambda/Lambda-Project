@@ -90,7 +90,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 InventoryResetter.ResetInventory();
                 PlayerUtils.OpenEyes();
             }
-            
+
             foreach (var p in H.Arena.session.scoreboard.Values)
             {
                 p.Spawn();
@@ -166,6 +166,7 @@ namespace ifp.arena.bep.Core.Gamemode
         }
         public void OnExit()
         {
+            // ItemsUtils.GarbageCollectWorldLoot();
         }
     }
 

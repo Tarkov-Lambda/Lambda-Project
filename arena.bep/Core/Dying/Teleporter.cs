@@ -23,24 +23,18 @@ namespace ifp.arena.bep.Core.Dying
             string targetMap;
             Faction targetFaction;
 
-            H.Log(H.Session.mapName);
-            H.Log(faction.ToString());
-
             if (!string.IsNullOrEmpty(mapName))
             {
-                H.Log("1");
                 targetMap = mapName;
                 targetFaction = faction;
             }
             else if (pScore.isAlive)
             {
-                H.Log("2");
                 targetMap = H.Session.mapName;
                 targetFaction = pScore.faction;
             }
             else
             {
-                H.Log("3");
                 targetMap = "lobby";
                 targetFaction = Faction.None;
             }
@@ -50,7 +44,7 @@ namespace ifp.arena.bep.Core.Dying
                 H.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
                 return;
             }
-            
+
             player.Teleport(nextPlayerPosition);
             H.MainPlayer.MovementContext.ResetFlying();
         }
@@ -79,8 +73,14 @@ namespace ifp.arena.bep.Core.Dying
                 return false;
             }
 
-            var currentSpawnPoints = allSpawnPoints.First(spawnPoint => spawnPoint.faction == faction);
-
+            var currentSpawnPoints = allSpawnPoints.FirstOrDefault(spawnPoint => spawnPoint.faction == faction);
+            if (currentSpawnPoints == null)
+            {
+                H.LogError($"Can't find spawn point for {faction} faction");
+                newPos = Vector3.zero;
+                return false;
+            }
+            
             var list = new List<Vector3>();
             foreach (Transform transform in currentSpawnPoints.transform)
             {

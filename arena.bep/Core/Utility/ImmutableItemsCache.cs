@@ -15,7 +15,7 @@ namespace ifp.arena.bep.Core.UI
             if (cacheImmutableItems.ContainsKey(bsgId))
                 return cacheImmutableItems[bsgId];
 
-            var weaponBuild = PresetUtils.GetCustomTemplate(bsgId);
+            var weaponBuild = FactoryUtils.GetCustomTemplate(bsgId);
             if (weaponBuild != null)
                 return weaponBuild.Item;
 

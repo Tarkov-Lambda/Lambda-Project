@@ -18,6 +18,9 @@ namespace ifp.arena.bep.Core
 {
     public static class PlayerUtils
     {
+        public static SearchableItemItemClass GetPlayerPockets(Player player) => player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
+        public static Item GetPlayerSlotItem(Player player, EquipmentSlot slotType) => player.Equipment.GetSlot(slotType).ContainedItem;
+
         // Applies a permanent painkiller at the start of the raid
         public static void ApplyPainkiller()
         {
@@ -33,7 +36,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        public static List<Weapon> GetAllWeapons(Player player)
+        public static List<Weapon> GetPlayerWeapons(Player player)
         {
             List<Weapon> weapons = new();
             foreach (var slot in player.Equipment.AllSlots)
@@ -63,7 +66,7 @@ namespace ifp.arena.bep.Core
                     if (item is Weapon weapon)
                     {
 
-                        if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                        if (FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
                         {
                             if (shouldReloadGun)
                             {
@@ -80,6 +83,7 @@ namespace ifp.arena.bep.Core
             }
         }
 
+        // Local only, sends spawn item clients 
         public static void ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
         {
             Slot vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
@@ -89,7 +93,9 @@ namespace ifp.arena.bep.Core
 
             string weaponMagTemplate = weapon.GetCurrentMagazine()?.TemplateId;
             if (weaponMagTemplate == null)
-                return;
+            {
+                H.NotifyLong($"Can't find {weapon.LocalizedName()}'s mag");
+            }
 
             List<MagazineItemClass> mags = new();
 
@@ -97,8 +103,15 @@ namespace ifp.arena.bep.Core
             {
                 foreach (var item in grid.Items)
                 {
-                    if (item is MagazineItemClass mag && mag.TemplateId == weaponMagTemplate)
-                        mags.Add(mag);
+                    if (item is MagazineItemClass mag && mag.TemplateId == weaponMagTemplate) mags.Add(mag);
+                }
+            }
+
+            foreach (var grid in GetPlayerPockets(player).Grids)
+            {
+                foreach (var item in grid.Items)
+                {
+                    if (item is MagazineItemClass mag && mag.TemplateId == weaponMagTemplate) mags.Add(mag);
                 }
             }
 
@@ -122,7 +135,10 @@ namespace ifp.arena.bep.Core
                 ReplenishMagazine(newMag, ammo);
 
                 if (ItemsUtils.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
+                {
+                    H.NotifyLong("Can't find space for a mag");
                     continue;
+                }
 
                 Singleton<SpawnItemPacketHandler>.Instance.Send(newMag);
             }

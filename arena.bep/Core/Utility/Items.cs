@@ -15,6 +15,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using ifp.arena.bep.Core.MovementStates;
+using EFT.Interactive;
 
 // Item flow summary:
 //   ClientRequestGiveItem  – client checks it can make room, then sends SpawnItemPacket
@@ -69,7 +70,6 @@ namespace ifp.arena.bep.Core
 
         public static Item CreateItemFromTemplateId(string templateId) => ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
-
         public static bool TryCreateItem(string templateId, out Item newItem)
         {
             newItem = null;
@@ -89,7 +89,7 @@ namespace ifp.arena.bep.Core
             // Also include the ammo bundle for any weapons in the item tree.
             foreach (var subItem in item.GetAllItems())
             {
-                if (subItem is Weapon weapon && PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                if (subItem is Weapon weapon && FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
                 {
                     var ammoPrefab = ammo.Template.Prefab;
                     if (ammoPrefab != null && !string.IsNullOrEmpty(ammoPrefab.path))
@@ -320,13 +320,12 @@ namespace ifp.arena.bep.Core
 
         private static void SetupWeaponAfterEquip(Weapon weapon, Player player)
         {
-            if (PresetUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            if (FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
             {
                 PlayerUtils.ReplenishGun(weapon, ammo);
 
                 // Only the local player's machine should create and broadcast vest magazines.
-                if (player.IsYourPlayer)
-                    PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
+                if (player.IsYourPlayer) PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
             }
 
             var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
@@ -345,20 +344,28 @@ namespace ifp.arena.bep.Core
         public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch
         {
             Weapon w => ResolveWeaponSlot(w),
+
             BackpackItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Backpack),
+            VestItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.TacticalVest),
+            ArmorItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.ArmorVest),
             HeadwearItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Headwear),
+            FaceCoverItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.FaceCover),
+            HeadphonesItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Earpiece),
+
             ArmorPlateItemClass _ => ResolveArmorPlatePlacement(player),
+
             MagazineItemClass _ => ResolveVestAddress(item, player),
             MedicalItemClass _ => ResolveVestAddress(item, player),
             ThrowWeapItemClass _ => ResolveVestAddress(item, player),
             BarterItemItemClass _ => ResolveVestAddress(item, player),
-            KeycardItemClass _ => ResolveVestAddress(item, player),
+            KeycardItemClass _ => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
             _ => ItemPlacement.None
         };
 
+        // revolver shotgun is fucked gg
         private static ItemPlacement ResolveWeaponSlot(Weapon weapon)
         {
-            var slot = weapon is PistolItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
+            var slot = weapon is PistolItemClass or RevolverItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
             return ItemPlacement.ForSlot(slot);
         }
 
@@ -371,6 +378,7 @@ namespace ifp.arena.bep.Core
         private static ItemPlacement ResolveVestAddress(Item item, Player player)
         {
             var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
+            var pockets = player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
             if (vest == null) return ItemPlacement.None;
 
             bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
@@ -378,10 +386,16 @@ namespace ifp.arena.bep.Core
             // For 1x1 items, prefer placing them in a 1x1 grid first.
             if (isOneByOne)
             {
+                foreach (var container in pockets.Containers)
+                {
+                    if (container is SearchableGrid grid && grid.GridWidth == 1 && grid.GridHeight == 1 && container.TryFindLocationForItem(item, out ItemAddress location))
+                    {
+                        return ItemPlacement.ForAddress(location);
+                    }
+                }
                 foreach (var container in vest.Containers)
                 {
-                    if (container is SearchableGrid grid && grid.GridWidth == 1 && grid.GridHeight == 1
-                        && container.TryFindLocationForItem(item, out ItemAddress location))
+                    if (container is SearchableGrid grid && grid.GridWidth == 1 && grid.GridHeight == 1 && container.TryFindLocationForItem(item, out ItemAddress location))
                     {
                         return ItemPlacement.ForAddress(location);
                     }
@@ -403,8 +417,19 @@ namespace ifp.arena.bep.Core
         public static CompoundItem GetPlateHolder(Player player)
         {
             VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
-            if (tacRig != null && tacRig.Slots.Any())
-                return tacRig;
+            if (tacRig != null)
+            {
+                var tacRigTemplate = tacRig.Template as VestTemplateClass;
+                if (tacRigTemplate.BlocksArmorVest)
+                {
+                    return tacRig;
+                }
+            }
+
+            ArmorItemClass armorVest = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
+            if (armorVest != null)
+                return armorVest;
+
             return null;
         }
 
@@ -426,6 +451,16 @@ namespace ifp.arena.bep.Core
                         yield return slot.ContainedItem;
                     }
                 }
+            }
+        }
+
+        public static void GarbageCollectWorldLoot()
+        {
+            var allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
+
+            foreach(var loot in allLoot)
+            {
+                loot.Kill();
             }
         }
     }

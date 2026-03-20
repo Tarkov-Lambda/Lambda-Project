@@ -25,7 +25,7 @@ namespace ifp.arena.bep.Core.FX
             GameObject.DontDestroyOnLoad(parentEffects.gameObject);
         }
 
-        public MolotovFXController SpawnMolotov(Vector3 pos, float radius)
+        public MolotovFXController SpawnMolotov(Vector3 pos, float startRadius, float endRadius, float bloomDuration)
         {
             MolotovFXController instance;
 
@@ -40,7 +40,7 @@ namespace ifp.arena.bep.Core.FX
             }
 
             instance.transform.position = pos;
-            instance.transform.localScale = new Vector3(radius, 1f, radius);
+            instance.transform.localScale = new Vector3(startRadius, 1f, startRadius);
             instance.Ignite(ReturnToPool);
 
             return instance;

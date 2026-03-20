@@ -46,6 +46,8 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action<int> OnSelfMoneyAdded;
 
         public static Action OnItemBuy;
+
+        public static Action OnSelfRespawn;
     }
 
     [MemoryPackable]

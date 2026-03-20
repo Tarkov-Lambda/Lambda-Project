@@ -74,12 +74,12 @@ namespace ifp.arena.bep.networking
                 Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
             }
 
-            await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
-
             if (FikaBackendUtils.IsServer)
             {
                 H.Arena.ChangeState(MatchState.Warmup);
             }
+
+            await Singleton<AssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             // Report back to the server that the map is loaded
             Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
