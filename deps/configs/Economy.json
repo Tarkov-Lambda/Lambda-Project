@@ -88,7 +88,7 @@
   },
   {
     "name": "Mid-Tier",
-    "wide" : true,
+    "verticalLayout" : true,
     "items": [
       {
         "bsgId": "5fc3e272f8b6a877a729eac5",
@@ -126,7 +126,7 @@
   },
   {
     "name": "Rifles",
-    "wide" : true,
+    "verticalLayout" : true,
     "items": [
       {
         "bsgId": "5a367e5dc4a282000e49738f",

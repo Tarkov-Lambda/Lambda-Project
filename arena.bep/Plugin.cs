@@ -188,6 +188,7 @@ namespace ifp.arena.bep
             RegisterSingleton<ImmutableItemsCache>();
             RegisterSingleton<UIManager>();
             RegisterSingleton<FXHandler>();
+            RegisterSingleton<PresetManager>();
 
 
             var warmup = typeof(Ladder);

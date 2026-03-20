@@ -25,7 +25,7 @@ namespace ifp.arena.bep.Core
 
         public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; } = new(); // What is actually used
 
-        private PresetManager()
+        public PresetManager()
         {
             LoadItems(File.ReadAllText(PresetDataPath));
             H.OnGameStarted += CapturePreset;

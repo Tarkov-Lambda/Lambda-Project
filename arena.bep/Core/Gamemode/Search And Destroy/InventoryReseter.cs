@@ -106,18 +106,26 @@ namespace ifp.arena.bep.Core.Gamemode
 
                 // ── 5. Armor Vest - Remove plates ──────
                 var armorVest = player.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
-                if (tacRig != null)
+                if (armorVest != null)
                 {
-                    foreach (var grid in tacRig.Containers)
+                    foreach (ArmorHolderComponent armorHolder in armorVest.Components)
                     {
-                        foreach (var item in grid.Items)
+                        foreach (var slot in armorHolder.ArmorSlots)
                         {
-                            bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                            if (!isDefaultPistolMag) itemsToRemove.Add(item);
+                            if (slot.ContainedItem != null)
+                                itemsToRemove.Add(slot.ContainedItem);
                         }
                     }
                 }
 
+                // ── 6. Preset-managed equipment slots ───────────────────────────────────
+                // If the currently equipped item doesn't match the recorded preset, remove it.
+                foreach (var kvp in PresetManager.Instance.RecordedItems)
+                {
+                    var currentItem = player.Equipment.GetSlot(kvp.Key).ContainedItem;
+                    if (currentItem != null && currentItem.TemplateId != kvp.Value.TemplateId)
+                        itemsToRemove.Add(currentItem);
+                }
                 foreach (var grid in PlayerUtils.GetPlayerPockets(H.MainPlayer).Containers)
                 {
                     foreach (var item in grid.Items)
@@ -134,11 +142,23 @@ namespace ifp.arena.bep.Core.Gamemode
                     await UniTask.Delay(25);
                 }
 
-                // ── 6. Give default pistol if the holster ended up empty ─────────────────
+                // ── 7. Give default pistol if the holster ended up empty ─────────────────
                 if (needsDefaultPistol && defaultPistolBsgId != null)
                 {
                     var defaultPistolItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId);
                     if (defaultPistolItem != null) await ItemsUtils.ClientRequestGiveItem(defaultPistolItem);
+                }
+
+                // ── 8. Restore preset-managed equipment slots ────────────────────────────
+                var presetItems = PresetManager.Instance.RecordedItems;
+                foreach (var kvp in presetItems)
+                {
+                    var currentItem = player.Equipment.GetSlot(kvp.Key).ContainedItem;
+                    if (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId)
+                    {
+                        await ItemsUtils.ClientRequestGiveItem(kvp.Value);
+                        await UniTask.Delay(25);
+                    }
                 }
 
             }
