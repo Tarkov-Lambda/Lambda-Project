@@ -10,7 +10,6 @@ using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.Core.Ladders;
 using ifp.arena.bep.Core.MovementStates;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
@@ -120,7 +119,7 @@ namespace ifp.arena.bep
             // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
             RegisterPatch(new Patch_MovementContext_GetNewState()); // Change Movement State Classes
             // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // Do not slow down during aiming
-            RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
+            // RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
 
             RegisterPatch(new Patch_CanWalk()); // For controller locking
             RegisterPatch(new Patch_CanJump()); // For controller locking

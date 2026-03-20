@@ -90,8 +90,8 @@
 
       <DebugDependencies Include="../deps/ScriptEngine.dll" />
 
-      <Configs Include="../configs/*.cfg" />
-      <JSON Include="../configs/*.json" />
+      <Configs Include="../deps/configs/*.cfg" />
+      <JSON Include="../deps/configs/*.json" />
 
       <Bundles Include="../bundles/*" />
     </ItemGroup>

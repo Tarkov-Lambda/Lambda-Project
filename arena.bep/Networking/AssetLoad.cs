@@ -27,15 +27,9 @@ namespace ifp.arena.bep.networking
     {
         public void Send(bool isLoaded, string msg)
         {
-            var mainPlayer = H.GameWorld?.MainPlayer;
-            if (mainPlayer == null)
-            {
-                return;
-            }
-
             var packet = new AssetLoadStatePacket
             {
-                id = mainPlayer.Id,
+                id = H.MainPlayer.Id,
                 isReady = isLoaded,
                 msg = msg
             };
@@ -45,15 +39,7 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(AssetLoadStatePacket packet, NetPeer peer)
         {
-            var playerScore = H.GetPlayerScore(packet.id);
-            if (playerScore != null)
-            {
-                playerScore.isMapReady = packet.isReady;
-            }
-            else
-            {
-                Plugin.Logger.LogError($"Player {packet.id} not found in scoreboard!");
-            }
+            H.GetPlayerScore(packet.id)?.isMapReady = packet.isReady;
         }
     }
 }

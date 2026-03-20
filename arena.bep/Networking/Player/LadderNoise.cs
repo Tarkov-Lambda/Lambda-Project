@@ -32,6 +32,8 @@ namespace ifp.arena.bep.networking
         protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
         {
             Player player = H.GetPlayer(packet.id);
+            MakeLadderNoise(player);
+
             if (player.IsYourPlayer) return;
 
             MakeLadderNoise(player);

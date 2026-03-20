@@ -52,7 +52,7 @@ namespace ifp.arena.bep.networking
             GameObject molotov = new GameObject("Molotov");
             molotov.transform.position = packet.explosionPos;
 
-            float radius = 5f;
+            float radius = 3f;
 
             SphereCollider sCollider = molotov.AddComponent<SphereCollider>();
             sCollider.radius = radius;
@@ -61,7 +61,7 @@ namespace ifp.arena.bep.networking
 
             MolotovFXController molotovFX = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos, radius);
 
-            await UniTask.WaitForSeconds(3);
+            await UniTask.WaitForSeconds(7);
 
             molotovFX.StopAndFadeOut();
 

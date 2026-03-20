@@ -9,7 +9,6 @@ using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
 using UnityEngine;
-using ifp.arena.bep.Core.Ladders;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {

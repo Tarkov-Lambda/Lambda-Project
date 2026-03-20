@@ -28,16 +28,11 @@ namespace ifp.arena.bep.Patches.Tarkov
 
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
 
+        // Has to be prefix so that we can capture the damageInfo packet before Kill is invoked
         [PatchPrefix]
         static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
-            // H.Dump(damageInfo);
-            // H.Dump(damageInfo.DamageType);
             LastReceivedDamageInfo = damageInfo;
-            // if (damageInfo.DamageType is EDamageType.Bullet or EDamageType.Explosion)
-            // {
-                
-            // }
             return true;
         }
     }
@@ -77,6 +72,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 // or if the client kills themselves
                 if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
                 {
+                    H.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);
                     Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
                 }
 
