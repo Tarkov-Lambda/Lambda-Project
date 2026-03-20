@@ -37,18 +37,18 @@ namespace ifp.arena.bep.Core.Ladders
 
         private void OnTriggerEnter(LadderEventPayload ladderEvent)
         {
-            Player player = ladderEvent.collider.GetComponentInParent<Player>();
+            Player player = ladderEvent.other.GetComponentInParent<Player>();
             if (player == null || !player.IsYourPlayer) return;
             if (player.MovementContext.CurrentState is SprintStateClass) return;
 
             isOnLadder = true;
             wasOriginallyGrounded = H.MainPlayer.MovementContext.IsGrounded;
-            ladderCollider = ladderEvent.collider;
+            ladderCollider = ladderEvent.other;
         }
 
         private void OnTriggerExit(LadderEventPayload ladderEvent)
         {
-            Player player = ladderEvent.collider.GetComponentInParent<Player>();
+            Player player = ladderEvent.other.GetComponentInParent<Player>();
             if (player == null || !player.IsYourPlayer || ladderCollider == null) return;
 
             Exit();

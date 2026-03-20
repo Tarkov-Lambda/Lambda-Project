@@ -6,7 +6,7 @@ namespace ifp.arena.shared
 {
     public struct LadderEventPayload
     {
-        public Collider collider;
+        public Collider other;
         public Ladder ladder;
     }
 
@@ -28,7 +28,6 @@ namespace ifp.arena.shared
             }
         }
 
-        /// <summary>World-space top center of the ladder collider.</summary>
         public Vector3 TopPoint
         {
             get
@@ -38,7 +37,6 @@ namespace ifp.arena.shared
             }
         }
 
-        /// <summary>World-space bottom center of the ladder collider.</summary>
         public Vector3 BottomPoint
         {
             get
@@ -50,15 +48,14 @@ namespace ifp.arena.shared
 
         private void Awake()
         {
-            // Ensure the collider is a trigger so OnTriggerEnter fires
-            Collider.isTrigger = true;
+            Collider.isTrigger = true; // just in case
         }
 
         private void OnTriggerEnter(Collider other)
         {
             LadderEventPayload ladderEvent = new LadderEventPayload
             {
-                collider = other,
+                other = other,
                 ladder = this
             };
 
@@ -69,7 +66,7 @@ namespace ifp.arena.shared
         {
             LadderEventPayload ladderEvent = new LadderEventPayload
             {
-                collider = other,
+                other = other,
                 ladder = this
             };
 

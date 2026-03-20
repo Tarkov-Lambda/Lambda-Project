@@ -243,7 +243,6 @@ namespace ifp.arena.bep.networking.Base
         }
 
         // OPTIONAL
-        // 
         protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
 
         // OPTIONAL
