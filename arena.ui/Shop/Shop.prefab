@@ -143,7 +143,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7996380967596119263
 RectTransform:
   m_ObjectHideFlags: 0
@@ -328,7 +328,7 @@ MonoBehaviour:
     m_Left: 0
     m_Right: 0
     m_Top: 0
-    m_Bottom: 0
+    m_Bottom: 5
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
@@ -459,7 +459,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1798706867892186992}
   m_Direction: 0
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1121,6 +1121,7 @@ MonoBehaviour:
   textMoney: {fileID: 5966352444930910913}
   containerCategories: {fileID: 709654287020414234}
   prefabShopCategory: {fileID: 1739557493793637394, guid: 7c44a2bbccf06ec428a9496fdc3fe5ea, type: 3}
+  prefabShopCategoryVerticalLayout: {fileID: 1739557493793637394, guid: 0f8fb051bba5d1a4da6012adeb307a02, type: 3}
   prefabShopItem: {fileID: 8533212490897312726, guid: 625371505ea11844eb1c297029ce1f93, type: 3}
 --- !u!225 &269535804546799580
 CanvasGroup:

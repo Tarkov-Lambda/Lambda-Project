@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace arena.ui
 {
@@ -18,13 +19,16 @@ namespace arena.ui
         [SerializeField] private RectTransform containerCategories;
 
         [SerializeField] private ShopCategory prefabShopCategory;
+        [SerializeField] private ShopCategory prefabShopCategoryVerticalLayout;
         [SerializeField] private ShopItemButton prefabShopItem;
 
         Dictionary<ShopItem, ShopItemButton> assortment;
 
+        HorizontalLayoutGroup currentRow;
+
         public void SetAssortment(List<BuyCategory> shelves, IItemInfoProvider itemInfoProvider, Action<ShopItem> onRequest)
         {
-            foreach (Transform child in containerCategories)
+            foreach (Transform child in containerCategories) // full reset
             {
                 Destroy(child.gameObject);
             }
@@ -32,9 +36,28 @@ namespace arena.ui
             assortment = new Dictionary<ShopItem, ShopItemButton>();
             foreach (var shelf in shelves)
             {
-                ShopCategory newShelf = Instantiate(prefabShopCategory, containerCategories).GetComponent<ShopCategory>();
+                if (shelf.verticalLayout)
+                {
+                    bool needNewRow = currentRow == null || currentRow.transform.childCount >= 3;
+                    if (needNewRow)
+                    {
+                        currentRow = new GameObject("HorizontalLayoutGroup")
+                            .AddComponent<HorizontalLayoutGroup>();
+                        currentRow.transform.SetParent(containerCategories);
+                        currentRow.transform.localScale = Vector3.one;
+                        currentRow.childControlWidth = true;
+                    }
+                }
+                else
+                {
+                    currentRow = null; // break pairing when a non-vertical category appears
+                }
 
-                foreach (Transform child in newShelf.container)
+                ShopCategory newShelf = Instantiate(
+                    shelf.verticalLayout ? prefabShopCategoryVerticalLayout : prefabShopCategory,
+                    shelf.verticalLayout ? currentRow.transform : containerCategories);
+
+                foreach (Transform child in newShelf.container) // clean up placeholders left form editor
                 {
                     Destroy(child.gameObject);
                 }

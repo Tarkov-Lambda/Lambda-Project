@@ -43,7 +43,18 @@ namespace arena.ui
         void SetIconSprite(Sprite sprite)
         {
             icon.sprite = sprite;
-            icon.SetNativeSize();
+
+            if (sprite == null) 
+                return;
+
+            RectTransform parentRect = icon.rectTransform.parent as RectTransform;
+
+            Vector2 parentSize = parentRect.rect.size;
+            Vector2 spriteSize = sprite.rect.size;
+
+            float scale = Mathf.Min(1f, parentSize.x / spriteSize.x, parentSize.y / spriteSize.y);
+
+            icon.rectTransform.sizeDelta = spriteSize * scale;
         }
 
         public void SetInteractable(bool interactable)
