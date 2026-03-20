@@ -11,5 +11,14 @@ namespace arena.ui
             color.a = alpha;
             graphic.color = color;
         }
+
+        public static void SetColorKeepGraphicAlpha(this Graphic graphic, Color color)
+        {
+            Color newColor = graphic.color;
+            newColor.r = color.r;
+            newColor.g = color.g;
+            newColor.b = color.b;
+            graphic.color = newColor;
+        }
     }
 }

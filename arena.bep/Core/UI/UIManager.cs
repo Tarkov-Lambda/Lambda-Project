@@ -90,10 +90,33 @@ namespace ifp.arena.bep.Core.UI
         void AhhhhWire()
         {
             EventBus.OnEnter += OnMatchStateEnter;
+            EventBus.OnRoundActionEnd += OnRoundActionEnd;
             EventBus.OnPlayerKill += OnPlayerKill;
 
             H.Arena.OnUpdateTick += () => matchUIController.TopBar.SetTime(H.Arena.StateTimer);
 
+        }
+
+        void OnRoundActionEnd(RoundActionPhaseEnd data)
+        {
+            bool win = data.winner == H.MainPlayerScore.faction;
+            string mainTitle = win ? "ROUND WON" : "ROUND LOST";
+
+            string subTitle = "che";
+            switch (data.roundWinReason)
+            {
+                case RoundWinReason.Elimination:
+                    subTitle = "elinmiant";
+                    break;
+                case RoundWinReason.Timeout:
+                    subTitle = "tiem otu";
+                    break;
+                case RoundWinReason.Objective:
+                    subTitle = "bamba";
+                    break;
+            }
+
+            matchUIController.PopupMatchEnd.Pop(win, mainTitle, subTitle);
         }
 
         void OnMatchStateEnter(GameTypes.MatchState matchState)
@@ -188,6 +211,8 @@ namespace ifp.arena.bep.Core.UI
             Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
             EventBus.OnEnter -= OnMatchStateEnter;
+            EventBus.OnRoundActionEnd -= OnRoundActionEnd;
+            EventBus.OnPlayerKill -= OnPlayerKill;
 
             if (matchUIController != null)
                 GameObject.Destroy(matchUIController.gameObject);

@@ -50,3 +50,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   factionColors: {fileID: 11400000, guid: e2bd8496c7c1fb044a9ef6ae9f188a92, type: 2}
   prefabNotification: {fileID: 6920028083857589387, guid: 3f5367f8b9e960f48b159a1afce85892, type: 3}
+  killShowTime: 8
+  spacing: 5

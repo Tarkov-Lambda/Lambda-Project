@@ -11,6 +11,7 @@ namespace arena.ui
         [field: SerializeField] public TopBar TopBar { get; private set; }
         [field: SerializeField] public Scoreboard Scoreboard { get; private set; }
         [field: SerializeField] public KillFeed KillFeed { get; private set; }
+        [field: SerializeField] public PopupMatchEnd PopupMatchEnd { get; private set; }
 
         public void ToggleScoreboard(bool show)
         {
