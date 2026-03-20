@@ -177,13 +177,12 @@ namespace ifp.arena.bep.Core
 
             if (waitUntilStationary)
             {
-                await UniTask.WaitUntil(() => !player.MovementContext.CanWalk);
-                await UniTask.Delay(200);
+                await PlayerUtils.WaitUntilStationary(player);
                 if (equipmentSlot == EquipmentSlot.Backpack)
                 {
                     await UniTask.WaitUntil(() =>
-                    player.MovementContext.CurrentState is IdleStateClass ||
-                    player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
+                        player.MovementContext.CurrentState is IdleStateClass ||
+                        player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
                 }
             }
 
@@ -206,14 +205,10 @@ namespace ifp.arena.bep.Core
             if (slot.ContainedItem == null) return true;
 
             if (waitUntilStationary)
-            {
-                await UniTask.WaitUntil(() => !player.MovementContext.CanWalk);
-                await UniTask.Delay(200);
-            }
+                await PlayerUtils.WaitUntilStationary(player);
 
             return await TryThrowItem(slot.ContainedItem, player);
         }
-
 
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
@@ -257,7 +252,7 @@ namespace ifp.arena.bep.Core
             await PlaceItem(item, player, GetItemPlacement(item, player));
             // H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
 
-            if (item is Weapon weapon) SetupWeaponAfterEquip(weapon, player);
+            if (item is Weapon weapon) ReplenishUtils.SetupWeaponAfterEquip(weapon, player);
 
             if (player.IsYourPlayer) PlayEquipSound(item);
         }
@@ -316,23 +311,6 @@ namespace ifp.arena.bep.Core
                 }
             }
             return false;
-        }
-
-        private static void SetupWeaponAfterEquip(Weapon weapon, Player player)
-        {
-            if (FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
-            {
-                PlayerUtils.ReplenishGun(weapon, ammo);
-
-                // Only the local player's machine should create and broadcast vest magazines.
-                if (player.IsYourPlayer) PlayerUtils.ReplenishVestMagazines(weapon, ammo, player);
-            }
-
-            var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
-            if (firemode != null && firemode.AvailableEFireModes.Contains(Weapon.EFireMode.fullauto))
-            {
-                firemode.FireMode = Weapon.EFireMode.fullauto;
-            }
         }
 
         private static void PlayEquipSound(Item item)
@@ -427,8 +405,7 @@ namespace ifp.arena.bep.Core
             VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
             if (tacRig != null)
             {
-                var tacRigTemplate = tacRig.Template as VestTemplateClass;
-                if (tacRigTemplate.BlocksArmorVest)
+                if (IsTacRigArmored(tacRig))
                 {
                     return tacRig;
                 }
@@ -439,6 +416,13 @@ namespace ifp.arena.bep.Core
                 return armorVest;
 
             return null;
+        }
+
+        public static bool IsTacRigArmored(VestItemClass tacRig)
+        {
+            var tacRigTemplate = tacRig?.Template as VestTemplateClass;
+            if (tacRigTemplate != null && tacRigTemplate.BlocksArmorVest) return true;
+            return false;
         }
 
         public static IEnumerable<Item> GetArmorPlates(Player player)

@@ -29,7 +29,7 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(ReplenishPacket packet, NetPeer peer)
         {
-            PlayerUtils.Replenish(H.GetPlayer(packet.id));
+            ReplenishUtils.Replenish(H.GetPlayer(packet.id));
         }
     }
 }

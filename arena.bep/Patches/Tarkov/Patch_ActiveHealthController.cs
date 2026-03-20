@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
+using Fika.Core;
 using Fika.Core.Main.Utils;
 using HarmonyLib;
 using ifp.arena.bep.Core;
@@ -62,7 +63,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             if (!H.MainPlayerScore.isAlive) return false;
 
             // Delayed double healing to make sure every negative effect is fixed
-            _ = PlayerUtils.FixMe();
+            PlayerHealthUtils.FixMe().Forget();
             Singleton<ReplenishPacketHandler>.Instance.Send();
             try
             {

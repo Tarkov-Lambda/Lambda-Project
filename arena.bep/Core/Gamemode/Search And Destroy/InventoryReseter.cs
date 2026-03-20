@@ -91,10 +91,24 @@ namespace ifp.arena.bep.Core.Gamemode
                 if (helmetSlot.ContainedItem != null) itemsToRemove.Add(helmetSlot.ContainedItem);
 
                 // ── 5. Rig grid – remove everything except default-pistol magazines (including plates) ──────
-                var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
-                if (vest != null)
+                var tacRig = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+                if (tacRig != null)
                 {
-                    foreach (var grid in vest.Containers)
+                    foreach (var grid in tacRig.Containers)
+                    {
+                        foreach (var item in grid.Items)
+                        {
+                            bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                            if (!isDefaultPistolMag) itemsToRemove.Add(item);
+                        }
+                    }
+                }
+
+                // ── 5. Armor Vest - Remove plates ──────
+                var armorVest = player.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
+                if (tacRig != null)
+                {
+                    foreach (var grid in tacRig.Containers)
                     {
                         foreach (var item in grid.Items)
                         {

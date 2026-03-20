@@ -14,6 +14,8 @@ namespace ifp.arena.bep.Core
         public bool isRequired;
     }
 
+    // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
     public class PresetManager : Singleton<PresetManager>, IDisposable
     {
 
@@ -51,6 +53,30 @@ namespace ifp.arena.bep.Core
                 if (item == null && presetInfo.Value.isRequired)
                 {
                     item = ItemsUtils.CreateItemFromTemplateId(presetInfo.Value.defaultBsgId);
+                }
+
+                // If the tactical rig is armoured, skip armor vest
+                if (presetInfo.Key is EquipmentSlot.ArmorVest)
+                {
+                    if (ItemsUtils.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                    {
+                        continue;
+                    }
+                }
+
+                // pizdets nastoyashiy
+                if (presetInfo.Key == EquipmentSlot.ArmorVest ||
+                    presetInfo.Key == EquipmentSlot.TacticalVest && ItemsUtils.IsTacRigArmored(item as VestItemClass))
+                {
+                    CompoundItem cItem = item as CompoundItem;
+                    foreach (var grid in cItem.Containers)
+                    {
+                        foreach (Item childItem in grid.Items)
+                        {
+                            // Delete plates
+                            // currently unimplemented here, instead remove plates from inventory resetter
+                        }
+                    }
                 }
 
                 RecordedItems[presetInfo.Key] = item;
