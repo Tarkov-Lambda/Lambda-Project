@@ -378,9 +378,9 @@ namespace ifp.arena.bep.Core
         private static ItemPlacement ResolveVestAddress(Item item, Player player)
         {
             var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
-            var pockets = player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
             if (vest == null) return ItemPlacement.None;
 
+            var pockets = PlayerUtils.GetPlayerPockets(player);
             bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
 
             // For 1x1 items, prefer placing them in a 1x1 grid first.
@@ -403,6 +403,14 @@ namespace ifp.arena.bep.Core
             }
 
             // Default, try any grid.
+            foreach (var container in pockets.Containers)
+            {
+                if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
+                {
+                    return ItemPlacement.ForAddress(location);
+                }
+            }
+
             foreach (var container in vest.Containers)
             {
                 if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
@@ -456,10 +464,12 @@ namespace ifp.arena.bep.Core
 
         public static void GarbageCollectWorldLoot()
         {
-            var allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
+            ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
 
-            foreach(var loot in allLoot)
+            foreach (ObservedLootItem loot in allLoot)
             {
+                if (!loot.isActiveAndEnabled)
+                    continue;
                 loot.Kill();
             }
         }

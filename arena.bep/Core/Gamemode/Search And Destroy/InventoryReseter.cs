@@ -77,7 +77,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 {
                     bool isDefault = defaultPistolBsgId != null && holsterSlot.ContainedItem.TemplateId == defaultPistolBsgId;
                     if (!isDefault) itemsToRemove.Add(holsterSlot.ContainedItem);
-                    
+
                     needsDefaultPistol = !isDefault;
                 }
                 else
@@ -90,24 +90,26 @@ namespace ifp.arena.bep.Core.Gamemode
                 var helmetSlot = player.Equipment.GetSlot(EquipmentSlot.Headwear);
                 if (helmetSlot.ContainedItem != null) itemsToRemove.Add(helmetSlot.ContainedItem);
 
-                // ── 4. Armor plates (Front_plate / Back_plate inside the rig) ────────────
-                itemsToRemove.AddRange(ItemsUtils.GetArmorPlates(player));
-
-                // ── 5. Rig grid – remove everything except default-pistol magazines ──────
+                // ── 5. Rig grid – remove everything except default-pistol magazines (including plates) ──────
                 var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
                 if (vest != null)
                 {
-                    foreach (var grid in vest.Grids)
+                    foreach (var grid in vest.Containers)
                     {
-                        foreach (var item in grid.Items.ToArray())
+                        foreach (var item in grid.Items)
                         {
-                            bool isDefaultPistolMag = item is MagazineItemClass mag
-                                && defaultPistolMagTemplateId != null
-                                && mag.TemplateId == defaultPistolMagTemplateId;
-
-                            if (!isDefaultPistolMag)
-                                itemsToRemove.Add(item);
+                            bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                            if (!isDefaultPistolMag) itemsToRemove.Add(item);
                         }
+                    }
+                }
+
+                foreach (var grid in PlayerUtils.GetPlayerPockets(H.MainPlayer).Containers)
+                {
+                    foreach (var item in grid.Items)
+                    {
+                        bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                        if (!isDefaultPistolMag) itemsToRemove.Add(item);
                     }
                 }
 

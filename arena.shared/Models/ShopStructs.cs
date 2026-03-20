@@ -9,6 +9,7 @@ namespace ifp.arena.shared.Models
     public struct BuyCategory
     {
         public string name;
+        public bool wide;
         public List<ShopItem> items;
     }
 

@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
+using Fika.Core;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
@@ -34,6 +35,7 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 p.SetMoney(EconomyConstants.MAX_MONEY);
             }
+            ItemsUtils.GarbageCollectWorldLoot();
         }
 
         public MatchState? OnUpdate()
@@ -61,7 +63,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit()
         {
             H.Session.InitializeScoreBoard();
-            InventoryResetter.ResetInventory();
+            InventoryResetter.ResetInventory().Forget();
             H.Session.ResetRoundScopeFields();
         }
     }
@@ -85,9 +87,11 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.RoundPrepare;
         public void OnEnter()
         {
+            ItemsUtils.GarbageCollectWorldLoot();
+
             if (!H.MainPlayerScore.isAlive)
             {
-                InventoryResetter.ResetInventory();
+                InventoryResetter.ResetInventory().Forget();
                 PlayerUtils.OpenEyes();
             }
 
@@ -99,7 +103,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (H.GameWorld?.MainPlayer != null)
             {
                 Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
-                PlayerUtils.FixMe();
+                PlayerUtils.FixMe().Forget();
             }
 
             H.Session.bombState = BombState.None;
@@ -166,7 +170,7 @@ namespace ifp.arena.bep.Core.Gamemode
         }
         public void OnExit()
         {
-            // ItemsUtils.GarbageCollectWorldLoot();
+            ItemsUtils.GarbageCollectWorldLoot();
         }
     }
 

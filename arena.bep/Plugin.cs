@@ -56,7 +56,6 @@ namespace ifp.arena.bep
         internal static ConfigEntry<Faction> PrefferedFaction;
         internal static ConfigEntry<string> MapName;
         internal static ConfigEntry<string> Password;
-        internal static ConfigEntry<string> MusicKitPath;
 
         private ConfigEntry<KeyboardShortcut> DeathKey;
         private ConfigEntry<KeyboardShortcut> RestartKey;
@@ -154,6 +153,8 @@ namespace ifp.arena.bep
 
             //--------------- FIKA --------------- //
             RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
+            RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate()); 
+            RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone()); 
             //------------------------------------------ //
 
             //--------------- NETWORK --------------- //
