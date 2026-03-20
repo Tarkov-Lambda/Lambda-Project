@@ -152,27 +152,34 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_ItemsTabController_Show()); // Action Hook
             RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput()); // Inventory opening control (for when we reset inv or hold tab for scoreboard)
 
-            // Fika patches
-            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
 
-            // NETWORK
+            //--------------- FIKA --------------- //
+            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
+            //------------------------------------------ //
+
+            //--------------- NETWORK --------------- //
+            // Player
             RegisterSingleton<PlayerKilledPacketHandler>();
             RegisterSingleton<FactionChangePacketHandler>();
             RegisterSingleton<SpawnItemPacketHandler>();
+            RegisterSingleton<HandsInspectPacketHandler>();
+            RegisterSingleton<BlindFirePacketHandler>();
+            RegisterSingleton<ReplenishPacketHandler>();
+            RegisterSingleton<BombAssignmentPacketHandler>();
+            RegisterSingleton<CustomGrenadeExplosionPacketHandler>();
+            RegisterSingleton<LadderNoisePacketHandler>();
+
+            // Session
             RegisterSingleton<SessionInfoPacketHandler>();
             RegisterSingleton<BombStatePacketHandler>();
-            RegisterSingleton<BombAssignmentPacketHandler>();
             RegisterSingleton<MatchStateSyncPacketHandler>();
             RegisterSingleton<RestartPacketHandler>();
             RegisterSingleton<AssetLoadStatePacketHandler>();
             RegisterSingleton<AdminLoginPacketHandler>();
-            RegisterSingleton<HandsInspectPacketHandler>();
-            RegisterSingleton<BlindFirePacketHandler>();
-            RegisterSingleton<ReplenishPacketHandler>();
             RegisterSingleton<TimeSyncRequestPacketHandler>();
             RegisterSingleton<TimeSyncResponsePacketHandler>();
             RegisterSingleton<PausePacketHandler>();
-            RegisterSingleton<CustomGrenadeExplosionPacketHandler>();
+            //------------------------------------------ //
 
             // Internal Classses (order matters)
             RegisterSingleton<AssetBundleHandler>();
@@ -181,6 +188,7 @@ namespace ifp.arena.bep
             RegisterSingleton<ImmutableItemsCache>();
             RegisterSingleton<UIManager>();
             RegisterSingleton<FXHandler>();
+
 
             var warmup = typeof(Ladder);
             RegisterSingletonInRaid<LadderEventManager>().Forget();

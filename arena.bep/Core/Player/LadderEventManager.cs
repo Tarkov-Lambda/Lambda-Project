@@ -3,6 +3,7 @@ using Comfort.Common;
 using EFT;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.MovementStates;
+using ifp.arena.bep.networking;
 using ifp.arena.shared;
 using UnityEngine;
 
@@ -14,8 +15,10 @@ namespace ifp.arena.bep.Core.Ladders
         public static bool wasOriginallyGrounded;
         public static Collider ladderCollider;
 
-        // GoldSrc default climb speed was relatively fast (~200 units). Adjust to fit your scale.
         private float _climbSpeed = 4f;
+
+        private float _ladderStepDistanceThreshold = 1.2f; 
+        private float _ladderDistanceAccumulator = 0f;
 
         public LadderEventManager()
         {
@@ -44,6 +47,9 @@ namespace ifp.arena.bep.Core.Ladders
             isOnLadder = true;
             wasOriginallyGrounded = H.MainPlayer.MovementContext.IsGrounded;
             ladderCollider = ladderEvent.other;
+            
+            // Reset the audio accumulator when we grab the ladder
+            _ladderDistanceAccumulator = 0f;
         }
 
         private void OnTriggerExit(LadderEventPayload ladderEvent)
@@ -71,6 +77,7 @@ namespace ifp.arena.bep.Core.Ladders
             isOnLadder = false;
             ladderCollider = null;
             H.MainPlayer.MovementContext.IsGrounded = false; // idk if needed
+            _ladderDistanceAccumulator = 0f;
 
             // Vector3 motion = CameraClass.Instance.Camera.transform.forward * 3;
             // H.MainPlayer.MovementContext.ApplyMotion(motion, 1f);
@@ -85,34 +92,26 @@ namespace ifp.arena.bep.Core.Ladders
                 Vector2 input = H.MainPlayer.InputDirection; // x = A/D, y = W/S
                 Transform camTransform = CameraClass.Instance.Camera.transform;
 
-                // --- GOLDSRC LADDER MOVEMENT ---
-                // W/S maps directly to Camera Forward. A/D maps directly to Camera Right.
                 Vector3 forwardMove = camTransform.forward * input.y;
                 Vector3 sideMove = camTransform.right * input.x;
 
                 Vector3 moveDirection = forwardMove + sideMove;
+                Vector3 motionThisFrame = moveDirection * _climbSpeed * Time.deltaTime;
+                
+                H.MainPlayer.MovementContext.PlatformMotion = motionThisFrame;
 
+                float distanceMovedThisFrame = motionThisFrame.magnitude;
+                
+                if (distanceMovedThisFrame > 0f)
+                {
+                    _ladderDistanceAccumulator += distanceMovedThisFrame;
 
-                // --- COLLISION FALLBACK ---
-                // In GoldSrc, the engine's built-in "SlideMove" physics stops the player from going
-                // through the wall when their camera's forward vector points into it. 
-                // If EFT's PlatformMotion simply translates the player without sweeping/sliding, 
-                // looking straight into the wall and holding W will clip them out of bounds. 
-                // If this happens, you can use the collider to project their movement onto the ladder's plane:
-                // if (ladderCollider != null)
-                // {
-                //     // Find the ladder's outward-facing normal (assuming its local Z faces away from the wall)
-                //     Vector3 ladderNormal = ladderCollider.transform.forward;
-
-                //     // If the player is trying to move backward into the wall, flatten that movement
-                //     if (Vector3.Dot(moveDirection, ladderNormal) < 0)
-                //     {
-                //         moveDirection = Vector3.ProjectOnPlane(moveDirection, ladderNormal);
-                //     }
-                // }
-
-                // Apply final movement. 
-                H.MainPlayer.MovementContext.PlatformMotion = moveDirection * _climbSpeed * Time.deltaTime;
+                    if (_ladderDistanceAccumulator >= _ladderStepDistanceThreshold)
+                    {
+                        _ladderDistanceAccumulator %= _ladderStepDistanceThreshold;
+                        Singleton<LadderNoisePacketHandler>.Instance.Send(); 
+                    }
+                }
             }
         }
     }
