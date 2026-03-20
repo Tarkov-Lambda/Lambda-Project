@@ -47,7 +47,7 @@ namespace ifp.arena.bep.networking.TimeSync
             RequestSend(packet);
         }
 
-        public override void WhenApproved(TimeSyncRequestPacket packet, NetPeer netPeer)
+        protected override void WhenApproved(TimeSyncRequestPacket packet, NetPeer netPeer)
         {
             if (FikaBackendUtils.IsClient)
                 return;

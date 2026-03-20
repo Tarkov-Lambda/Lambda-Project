@@ -30,7 +30,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void WhenApproved(FactionChangePacket packet, NetPeer peer)
+        protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)
         {
             if (H.Scoreboard[packet.id] != null)
             {

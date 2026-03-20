@@ -60,13 +60,13 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref RestartPacket packet, NetPeer netPeer)
+        protected override bool ServerValidation(ref RestartPacket packet, NetPeer netPeer)
         {
             PrepareForRestart();
             return base.ServerValidation(ref packet, netPeer);
         }
 
-        public override async void WhenApproved(RestartPacket packet, NetPeer peer)
+        protected override async void WhenApproved(RestartPacket packet, NetPeer peer)
         {
             Player player = H.GetMainPlayer();
             if (player != null)

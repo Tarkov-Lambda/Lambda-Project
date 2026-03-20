@@ -33,12 +33,17 @@ namespace ifp.arena.bep.networking.Base
         }
     }
 
+    // Quick flow explanation of this https://youtu.be/dQw4w9WgXcQ
+    // Currently still a lot of pit falls in packet traversal route
+    // Note: currently the responsibility between ShouldBroadcastClientPacket and RequestSendToPlayer is kind of blurred
+    // this is probably the first place for refactoring
     public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
     {
         protected DeliveryMethod deliveryMethod;
         protected PacketAuthority authority;
 
-        private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
+        private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
+        protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
 
         public PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
         {
@@ -59,7 +64,7 @@ namespace ifp.arena.bep.networking.Base
                 if (FikaBackendUtils.IsServer)
                 {
                     H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
-                    H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { });
+                    H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
                 }
                 else
                 {
@@ -71,7 +76,7 @@ namespace ifp.arena.bep.networking.Base
 
         public void UnregisterPacket(GameWorld gameWorld)
         {
-            Plugin.Logger.LogInfo($"Disposing {typeof(T).FullName}");
+            H.Log($"Disposing {typeof(T).FullName}");
 
             try
             {
@@ -94,21 +99,40 @@ namespace ifp.arena.bep.networking.Base
             Release(this);
         }
 
+        // Admins have the same authority as the server
         private bool IsUnauthorized(int id)
         {
-            return authority == PacketAuthority.ServerOnly && !H.MainPlayerScore.IsAdmin;
+            return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(id).IsAdmin;
+        }
+
+        // OPTIONAL ENTRY POINT
+        // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
+        protected void RequestSendToPlayer(T packet, int netId)
+        {
+            if (!H.isInRaid()) return;
+
+            // local sender is the target, execute locally; I am not sure how I want to do this
+            // But for the sake of keeping things as coupled as possible with the network layer
+            // this might come handy later.
+            if (netId == H.FikaNet.NetId)
+            {
+                WhenApproved(packet, null);
+                return;
+            }
+
+            var peer = H.NetManager.GetPeerById(netId) as NetPeer;
+            RequestSend(packet, peer);
         }
 
         // ENTRY POINT
-        // SERVER ONLY: If a peer is provided, we will not broadcast and only send it to that peer.
+        // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
         protected void RequestSend(T packet, NetPeer targetPeer = null)
         {
             if (!H.isInRaid()) return;
-            if (IsUnauthorized(H.MainPlayer.Id)) return;
+            if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft Check client-side
 
             if (targetPeer != null)
             {
-                // Unicast — send only to the specified peer, do not handle locally
                 H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
             }
             else
@@ -122,25 +146,9 @@ namespace ifp.arena.bep.networking.Base
                 }
                 else
                 {
-                    ClientPrediction(packet);
+                    ClientPrediction(packet); // By default does nothing unless the packet overrides
                 }
             }
-        }
-
-        // 
-        protected void RequestSendToPlayer(T packet, int netId)
-        {
-            if (!H.isInRaid()) return;
-
-            if (netId == H.FikaNet.NetId)
-            {
-                // We are the target — execute locally
-                WhenApproved(packet, null);
-                return;
-            }
-
-            var peer = H.NetManager.GetPeerById(netId) as NetPeer;
-            RequestSend(packet, peer);
         }
 
         private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
@@ -151,10 +159,11 @@ namespace ifp.arena.bep.networking.Base
             // idk what the best action here is, but for now we just drop
             if (IsUnauthorized(netPeer.Id))
             {
-                Plugin.Logger.LogInfo("Unauthorized Packet, dropping");
+                H.Log("Unauthorized Packet, dropping");
                 return;
             }
 
+            // If ServerValidation returns false, send reject packet and return before doing applying the packet.
             bool validPacket = ServerValidation(ref packet, netPeer);
             if (!validPacket)
             {
@@ -183,10 +192,6 @@ namespace ifp.arena.bep.networking.Base
         {
             WhenRejected(rejectedPacket.Payload, netPeer);
         }
-
-        protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
-
-        protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default;
 
         protected virtual void OnRateLimited(T packet, NetPeer netPeer, in RateLimitConfig config)
         {
@@ -229,14 +234,7 @@ namespace ifp.arena.bep.networking.Base
                     }
 
                 case RateLimitAction.Disconnect:
-                    try
-                    {
-                        netPeer.Disconnect();
-                    }
-                    catch
-                    {
-                        // oh well
-                    }
+                    netPeer.Disconnect();
                     return false;
 
                 default:
@@ -244,16 +242,29 @@ namespace ifp.arena.bep.networking.Base
             }
         }
 
-        public virtual bool ServerValidation(ref T packet, NetPeer netPeer)
+        // OPTIONAL
+        // 
+        protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
+
+        // OPTIONAL
+        // For hard checking client packets
+        /// <summary>returning false means the packet is rejected</summary>
+        protected virtual bool ServerValidation(ref T packet, NetPeer netPeer) => true;
+
+        // OPTIONAL
+        // In case client is quite sure that the packet is gonna get approved
+        // and we want to do sfx/vfx without delay
+        protected virtual void ClientPrediction(T packet) { }
+
+        // ENTRY POINT
+        // packet type specific way of applying the received packet
+        protected abstract void WhenApproved(T packet, NetPeer netPeer);
+
+        // OPTIONAL
+        // kinda only using this to notify or negate anything done in ClientPrediction
+        protected virtual void WhenRejected(T packet, NetPeer netPeer)
         {
-            return true;
+            H.Log($"Server Rejected the packet: {GetType().Name}");
         }
-
-        public virtual void ClientPrediction(T packet) { }
-
-        public abstract void WhenApproved(T packet, NetPeer netPeer);
-
-        // Whenever the loca
-        public virtual void WhenRejected(T packet, NetPeer netPeer) { }
     }
 }

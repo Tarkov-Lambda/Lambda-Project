@@ -64,7 +64,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref AdminAuthPacket packet, NetPeer netPeer)
+        protected override bool ServerValidation(ref AdminAuthPacket packet, NetPeer netPeer)
         {
             switch (packet.Step)
             {
@@ -80,7 +80,7 @@ namespace ifp.arena.bep.networking
             }
         }
 
-        public override void WhenApproved(AdminAuthPacket packet, NetPeer netPeer)
+        protected override void WhenApproved(AdminAuthPacket packet, NetPeer netPeer)
         {
             if (packet.Step == AdminAuthStep.Challenge)
             {
@@ -111,7 +111,7 @@ namespace ifp.arena.bep.networking
             }
         }
 
-        public override void WhenRejected(AdminAuthPacket packet, NetPeer netPeer)
+        protected override void WhenRejected(AdminAuthPacket packet, NetPeer netPeer)
         {
             // H.Notify("Rejected");
         }

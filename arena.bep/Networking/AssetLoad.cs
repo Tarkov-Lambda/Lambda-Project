@@ -43,7 +43,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void WhenApproved(AssetLoadStatePacket packet, NetPeer peer)
+        protected override void WhenApproved(AssetLoadStatePacket packet, NetPeer peer)
         {
             var playerScore = H.GetPlayerScore(packet.id);
             if (playerScore != null)

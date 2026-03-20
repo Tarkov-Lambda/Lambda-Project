@@ -36,7 +36,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)
+        protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)
         {
             H.Arena.TransitionToState(packet);
         }

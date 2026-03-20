@@ -100,7 +100,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
+        protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
             H.Notify($"Killing {H.GetPlayer(packet.victimId).Profile.Nickname}");
             // The server will preemptively decide that we are dead

@@ -42,7 +42,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void WhenApproved(PlayersPingPacket packet, NetPeer peer)
+        protected override void WhenApproved(PlayersPingPacket packet, NetPeer peer)
         {
             foreach (var syncScore in packet.scores)
             {

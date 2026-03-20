@@ -137,7 +137,7 @@ namespace ifp.arena.bep.networking
         }
 
         // local client, server, remote clients all execute this packet on arrival (synchronization of weapon generation)
-        public override void WhenApproved(SpawnItemPacket packet, NetPeer peer)
+        protected override void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
             if (packet.flatItems == null || packet.flatItems.Length == 0) return;
 

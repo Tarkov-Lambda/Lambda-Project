@@ -24,7 +24,7 @@ namespace ifp.arena.bep.networking.TimeSync
     {
         public TimeSyncResponsePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-        public override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
+        protected override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
         {
             if (FikaBackendUtils.IsServer)
                 return;

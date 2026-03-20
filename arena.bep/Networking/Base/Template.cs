@@ -26,12 +26,12 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref TemplatePacket packet, NetPeer netPeer)
+        protected override bool ServerValidation(ref TemplatePacket packet, NetPeer netPeer)
         {
             return base.ServerValidation(ref packet, netPeer);
         }
 
-        public override void WhenApproved(TemplatePacket packet, NetPeer peer)
+        protected override void WhenApproved(TemplatePacket packet, NetPeer peer)
         {
             // H.Notify($"{packet}");
         }

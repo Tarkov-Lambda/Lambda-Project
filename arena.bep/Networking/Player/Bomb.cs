@@ -46,12 +46,12 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
+        protected override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
         {
             return base.ServerValidation(ref packet, peer);
         }
 
-        public override void WhenApproved(BombStatePacket packet, NetPeer peer)
+        protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
         {
             H.Session.bombState = packet.state;
 

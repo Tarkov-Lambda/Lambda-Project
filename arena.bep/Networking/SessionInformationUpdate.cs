@@ -85,7 +85,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override void WhenApproved(SessionInfoPacket packet, NetPeer peer)
+        protected override void WhenApproved(SessionInfoPacket packet, NetPeer peer)
         {
             var session = H.Session;
             if (session == null) return;

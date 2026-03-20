@@ -1,11 +1,5 @@
 ﻿using Comfort.Common;
 using EFT;
-using EFT.HealthSystem;
-using EFT.UI;
-using Fika.Core.Main.Components;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
@@ -13,10 +7,7 @@ using ifp.arena.bep.networking;
 using ifp.arena.bep.Core.MovementStates;
 using SPT.Reflection.Patching;
 using System;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using UnityEngine;
 using ifp.arena.bep.Core.Ladders;
 
@@ -47,7 +38,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                     wasOnLadder = true;
                     __result = false;
                 }
-                else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground to move
+                else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground after ladder use to move 
                 {
                     wasOnLadder = false;
                     __result = false;
@@ -101,11 +92,10 @@ namespace ifp.arena.bep.Patches.Tarkov
 
                 if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
             }
-            return false; // Skip the original method
+            return false;
         }
     }
 
-    // Old movement
     public class Patch_MovementContext_ManualUpdate : ModulePatch
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));

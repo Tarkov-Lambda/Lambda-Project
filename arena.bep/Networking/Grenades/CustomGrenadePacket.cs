@@ -47,7 +47,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
+        protected override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
         {
             GameObject molotov = new GameObject("Molotov");
             molotov.transform.position = packet.explosionPos;

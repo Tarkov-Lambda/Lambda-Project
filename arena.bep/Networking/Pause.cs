@@ -40,7 +40,7 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
-        public override bool ServerValidation(ref PausePacket packet, NetPeer netPeer)
+        protected override bool ServerValidation(ref PausePacket packet, NetPeer netPeer)
         {
             packet.serverPhaseStartSeconds = NetworkTime.ServerNowSeconds;
             if (H.Session.roundState == MatchState.RoundPrepare)
@@ -49,7 +49,7 @@ namespace ifp.arena.bep.networking
             } else return false;
         }
 
-        public override void WhenApproved(PausePacket packet, NetPeer peer)
+        protected override void WhenApproved(PausePacket packet, NetPeer peer)
         {
             MatchStateSyncPacket matchStateSyncPacket = new MatchStateSyncPacket
             {
