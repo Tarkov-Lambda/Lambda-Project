@@ -213,9 +213,11 @@ namespace ifp.arena.bep.Core
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
+            // H.Dump(removalEvent, 1);
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
+            // H.Dump(result, 1);
             return !result.Failed;
         }
 
@@ -234,13 +236,20 @@ namespace ifp.arena.bep.Core
 
                 if (vest != null)
                 {
-                    var magsToThrow = vest.Grids.SelectMany(g => g.Items)
-                        .OfType<MagazineItemClass>()
-                        .Where(m => m.TemplateId == oldMagTemplateId)
-                        .ToList();
+                    var mags =
+                    vest.Grids
+                    .Concat(PlayerUtils.GetPlayerPockets(player).Grids)
+                    .SelectMany(g => g.Items)
+                    .OfType<MagazineItemClass>()
+                    .Where(m => m.TemplateId == oldMagTemplateId)
+                    .ToList();
+                    H.Log(mags.Count.ToString());
 
-                    foreach (var mag in magsToThrow)
+                    foreach (var mag in mags)
+                    {
+                        H.Log($"Throwing away {mag.LocalizedName()}");
                         await TryThrowItem(mag, player);
+                    }
                 }
             }
 
@@ -301,11 +310,9 @@ namespace ifp.arena.bep.Core
                     // the ui does not display any durability changes
                     // this is very likely due to me missing an action invocation somewhere that happens
                     // in the normal network transaction pipeline
-                    var address = plate.CurrentAddress;
-                    address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
-                    address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
+                    plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
+                    plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
                     slot.ApplyContainedItem();
-                    // player.OnArmorPointsChanged(plate.Armor, true);
 
                     return true;
                 }
