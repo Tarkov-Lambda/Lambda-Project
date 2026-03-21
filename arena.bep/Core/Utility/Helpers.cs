@@ -14,6 +14,7 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Patches.Tarkov;
 using System.Runtime.CompilerServices;
+using EFT.UI;
 
 namespace ifp.arena.bep.Core
 {
@@ -24,6 +25,8 @@ namespace ifp.arena.bep.Core
         public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
         public static Inventory MainInventory => isInRaid() ? MainPlayer.Inventory : null;
         public static InventoryController MainInventoryController => isInRaid() ? MainPlayer.InventoryController : null;
+
+        public static GUISounds GUISounds => isInRaid() ? Singleton<GUISounds>.Instance : null;
 
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();
         public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();

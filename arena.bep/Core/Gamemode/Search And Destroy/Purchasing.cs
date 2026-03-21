@@ -66,7 +66,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (isSuccessful)
             {
                 H.MainPlayerScore.SpendMoney(request.price);
-                Singleton<EFT.UI.GUISounds>.Instance.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
+                H.GUISounds.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
                 EventBus.OnItemBuy?.Invoke();
             }
         }

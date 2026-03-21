@@ -215,7 +215,7 @@ namespace ifp.arena.bep.Core
             foreach (var item in items)
             {
                 await TryRemoveItem(item, player);
-                await UniTask.Delay(delayMs);
+                if (delayMs != 0) await UniTask.Delay(delayMs);
             }
         }
 
@@ -319,12 +319,13 @@ namespace ifp.arena.bep.Core
                         return false;
                     }
 
-                    // This is an extremely manual way of adding armor (and probably very fragile)
+                    // This is an extremely manual way of adding armor
                     // however after spending an entire day throwing myself against the wall I must give up
-                    // whilst this plate is registered correctly whilst the player is shot at
+                    // whilst this plate is registered correctly when the player is shot at
                     // the ui does not display any durability changes
-                    // this is very likely due to me missing an action invocation somewhere that happens
+                    // this is very likely due to me missing a listener somewhere that happens
                     // in the normal network transaction pipeline
+                    // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
                     plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
                     plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
                     slot.ApplyContainedItem();
@@ -337,8 +338,8 @@ namespace ifp.arena.bep.Core
 
         private static void PlayEquipSound(Item item)
         {
-            AudioClip clip = Singleton<GUISounds>.Instance.GetItemClip(item.ItemSound, EInventorySoundType.drop);
-            if (clip != null) Singleton<GUISounds>.Instance.PlaySound(clip);
+            AudioClip clip = H.GUISounds.GetItemClip(item.ItemSound, EInventorySoundType.drop);
+            if (clip != null) H.GUISounds.PlaySound(clip);
         }
 
         public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch
@@ -359,6 +360,7 @@ namespace ifp.arena.bep.Core
             ThrowWeapItemClass _ => ResolveVestAddress(item, player),
             BarterItemItemClass _ => ResolveVestAddress(item, player),
             KeycardItemClass _ => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
+
             _ => ItemPlacement.None
         };
 
@@ -381,45 +383,30 @@ namespace ifp.arena.bep.Core
             if (vest == null) return ItemPlacement.None;
 
             var pockets = PU.GetPlayerPockets(player);
+            var allContainers = pockets.Containers.Concat(vest.Containers);
+
             bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
 
-            // For 1x1 items, prefer placing them in a 1x1 grid first.
+            ItemPlacement FindPlacement(IEnumerable<EFT.InventoryLogic.IContainer> containers, Func<SearchableGrid, bool> gridFilter)
+            {
+                foreach (var container in containers.OfType<SearchableGrid>().Where(gridFilter))
+                {
+                    if (container.TryFindLocationForItem(item, out ItemAddress location))
+                        return ItemPlacement.ForAddress(location);
+                }
+                return ItemPlacement.None;
+            }
+
+            // Prefer 1x1 grids for 1x1 items
             if (isOneByOne)
             {
-                foreach (var container in pockets.Containers)
-                {
-                    if (container is SearchableGrid grid && grid.GridWidth == 1 && grid.GridHeight == 1 && container.TryFindLocationForItem(item, out ItemAddress location))
-                    {
-                        return ItemPlacement.ForAddress(location);
-                    }
-                }
-                foreach (var container in vest.Containers)
-                {
-                    if (container is SearchableGrid grid && grid.GridWidth == 1 && grid.GridHeight == 1 && container.TryFindLocationForItem(item, out ItemAddress location))
-                    {
-                        return ItemPlacement.ForAddress(location);
-                    }
-                }
+                var placement = FindPlacement(allContainers, g => g.GridWidth == 1 && g.GridHeight == 1);
+                if (!placement.Equals(ItemPlacement.None))
+                    return placement;
             }
 
-            // Default, try any grid.
-            foreach (var container in pockets.Containers)
-            {
-                if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
-                {
-                    return ItemPlacement.ForAddress(location);
-                }
-            }
-
-            foreach (var container in vest.Containers)
-            {
-                if (container is SearchableGrid && container.TryFindLocationForItem(item, out ItemAddress location))
-                {
-                    return ItemPlacement.ForAddress(location);
-                }
-            }
-
-            return ItemPlacement.None;
+            // Fallback to any grid
+            return FindPlacement(allContainers, _ => true);
         }
 
         public static CompoundItem GetPlateHolder(Player player)
@@ -443,7 +430,7 @@ namespace ifp.arena.bep.Core
         public static bool IsTacRigArmored(VestItemClass tacRig)
         {
             var tacRigTemplate = tacRig?.Template as VestTemplateClass;
-            if (tacRigTemplate != null && tacRigTemplate.BlocksArmorVest) return true;
+            if (tacRigTemplate.BlocksArmorVest) return true;
             return false;
         }
 
@@ -474,8 +461,7 @@ namespace ifp.arena.bep.Core
 
             foreach (ObservedLootItem loot in allLoot)
             {
-                if (!loot.isActiveAndEnabled)
-                    continue;
+                if (!loot.isActiveAndEnabled) continue;
                 loot.Kill();
             }
         }

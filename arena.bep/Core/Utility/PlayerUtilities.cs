@@ -61,8 +61,8 @@ namespace ifp.arena.bep.Core
                 var soundsWrapper = (UISoundsWrapper)resourceRequest.asset;
                 var uIClip = soundsWrapper.GetUIClip(EUISoundType.PlayerIsDead);
 
-                Singleton<GUISounds>.Instance.PlaySound(uIClip, false, true);
-                Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.PlayerIsDead);
+                H.GUISounds.PlaySound(uIClip, false, true);
+                H.GUISounds.PlayUISound(EUISoundType.PlayerIsDead);
             }
 
             if (openAfter)
