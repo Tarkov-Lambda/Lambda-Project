@@ -64,7 +64,7 @@ namespace ifp.arena.bep.Core
             string weaponMagTemplate = weapon.GetCurrentMagazine()?.TemplateId;
             if (weaponMagTemplate == null)
             {
-                H.LogError($"Can't find {weapon.LocalizedName()}'s mag");
+                D.LogError($"Can't find {weapon.LocalizedName()}'s mag");
                 return;
             }
 
@@ -92,7 +92,7 @@ namespace ifp.arena.bep.Core
 
                 if (IU.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
                 {
-                    H.NotifyLong("Can't find space for a mag");
+                    D.NotifyLong("Can't find space for a mag");
                     continue;
                 }
 

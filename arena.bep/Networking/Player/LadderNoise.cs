@@ -41,7 +41,7 @@ namespace ifp.arena.bep.networking
 
         private void MakeLadderNoise(Player player)
         {
-            H.Notify("Ladder Noise");
+            D.Notify("Ladder Noise");
         }
     }
 }

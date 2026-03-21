@@ -76,7 +76,7 @@ namespace ifp.arena.bep.networking.Base
 
         public void UnregisterPacket(GameWorld gameWorld)
         {
-            H.Log($"Disposing {typeof(T).FullName}");
+            D.Log($"Disposing {typeof(T).FullName}");
 
             try
             {
@@ -159,7 +159,7 @@ namespace ifp.arena.bep.networking.Base
             // idk what the best action here is, but for now we just drop
             if (IsUnauthorized(netPeer.Id))
             {
-                H.Log("Unauthorized Packet, dropping");
+                D.Log("Unauthorized Packet, dropping");
                 return;
             }
 
@@ -195,7 +195,7 @@ namespace ifp.arena.bep.networking.Base
 
         protected virtual void OnRateLimited(T packet, NetPeer netPeer, in RateLimitConfig config)
         {
-            H.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
+            D.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
         }
 
         private bool TryPassServerRateLimit(T packet, NetPeer netPeer)
@@ -263,7 +263,7 @@ namespace ifp.arena.bep.networking.Base
         // kinda only using this to notify or negate anything done in ClientPrediction
         protected virtual void WhenRejected(T packet, NetPeer netPeer)
         {
-            H.Log($"Server Rejected the packet: {GetType().Name}");
+            D.Log($"Server Rejected the packet: {GetType().Name}");
         }
     }
 }

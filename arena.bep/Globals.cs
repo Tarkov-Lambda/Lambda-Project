@@ -4,6 +4,8 @@ global using H  = ifp.arena.bep.Core.Helpers;
 global using IU = ifp.arena.bep.Core.ItemUtilities;
 global using PU = ifp.arena.bep.Core.PlayerUtilities;
 global using RU = ifp.arena.bep.Core.ReplenishmentUtilities;
+global using D = ifp.arena.bep.Core.Debugging;
+
 
 // Tarkov
 global using SearchableGrid = GClass3117;

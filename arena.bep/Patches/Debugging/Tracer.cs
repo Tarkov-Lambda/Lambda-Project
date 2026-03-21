@@ -180,11 +180,11 @@ namespace ifp.arena.bep
                                                       : (isVoid ? harmonyPostfixVoid : harmonyPostfix);
 
                     _harmony.Patch(method, prefix: prefix, postfix: postfix);
-                    H.Log($"[TRACER] Patched {_typeName}.{method.Name}{(hasRefOut ? " (ref-safe)" : "")}");
+                    D.Log($"[TRACER] Patched {_typeName}.{method.Name}{(hasRefOut ? " (ref-safe)" : "")}");
                 }
                 catch (Exception ex)
                 {
-                    H.Log($"[TRACER] Failed to patch {_typeName}.{method.Name}: {ex.Message}");
+                    D.Log($"[TRACER] Failed to patch {_typeName}.{method.Name}: {ex.Message}");
                 }
             }
         }
@@ -252,7 +252,7 @@ namespace ifp.arena.bep
                 if (key.StartsWith(_typeName + "."))
                     TracedData.TryRemove(key, out _);
             TracerLabels.TryRemove(_typeName, out _);
-            H.Log($"[TRACER] Unpatched all methods for {_harmonyId}");
+            D.Log($"[TRACER] Unpatched all methods for {_harmonyId}");
         }
 
         private static void GenericPrefix(MethodBase __originalMethod)

@@ -72,7 +72,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 // or if the client kills themselves (explosion prolly, fall)
                 if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
                 {
-                    H.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);
+                    D.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);
                     Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
                 }
 

@@ -113,7 +113,7 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenRejected(AdminAuthPacket packet, NetPeer netPeer)
         {
-            // H.Notify("Rejected");
+            // D.Notify("Rejected");
         }
 
         private void HandleLoginRequest(NetPeer peer)

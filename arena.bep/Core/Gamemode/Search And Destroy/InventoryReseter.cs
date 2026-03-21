@@ -47,7 +47,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public static void AddItem(ref List<Item> itemList, Item item)
         {
-            H.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+            D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
             itemList.Add(item);
         }
 
@@ -55,7 +55,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             foreach (Item item in itemCollection)
             {
-                H.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+                D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
             }
             itemList.AddRange(itemCollection);
         }

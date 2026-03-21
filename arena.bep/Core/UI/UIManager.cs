@@ -60,7 +60,7 @@ namespace ifp.arena.bep.Core.UI
 
             foreach (var item in uibundle.GetAllAssetNames())
             {
-                H.Log("in arena UI bundle found " + item);
+                D.Log("in arena UI bundle found " + item);
             }
 
             GameObject prefabMatchUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/ArenaMatchUI.prefab");

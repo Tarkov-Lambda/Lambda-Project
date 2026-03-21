@@ -41,7 +41,7 @@ namespace ifp.arena.bep.Core.Dying
 
             if (!TryGetNewPosition(targetMap, targetFaction, out Vector3 nextPlayerPosition))
             {
-                H.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
+                D.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
                 return;
             }
 
@@ -52,7 +52,7 @@ namespace ifp.arena.bep.Core.Dying
         public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)
         {
             Scene s = SceneManager.GetSceneByName(sceneName);
-            if (s == null) H.LogError($"Trying to find spawn points in a scene that doesn't exist");
+            if (s == null) D.LogError($"Trying to find spawn points in a scene that doesn't exist");
 
             GameObject[] gObjects = s.GetRootGameObjects();
 
@@ -76,7 +76,7 @@ namespace ifp.arena.bep.Core.Dying
             var currentSpawnPoints = allSpawnPoints.FirstOrDefault(spawnPoint => spawnPoint.faction == faction);
             if (currentSpawnPoints == null)
             {
-                H.LogError($"Can't find spawn point for {faction} faction");
+                D.LogError($"Can't find spawn point for {faction} faction");
                 newPos = Vector3.zero;
                 return false;
             }

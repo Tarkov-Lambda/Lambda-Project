@@ -134,7 +134,7 @@ namespace ifp.arena.bep.Core
 
                         if (!removed)
                         {
-                            H.Notify("Failed to allocate slot space in the inventory.");
+                            D.Notify("Failed to allocate slot space in the inventory.");
                             return false;
                         }
                     }
@@ -142,7 +142,7 @@ namespace ifp.arena.bep.Core
 
                 await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
-                H.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
+                D.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
                 Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem);
                 return true;
             }
@@ -192,20 +192,20 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryRemoveItem(Item item, Player player)
         {
-            H.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
+            D.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
             OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
             if (removalEvent.Failed)
             {
-                H.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
-                H.LogTransaction($"Reason: {removalEvent.Error}");
+                D.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {removalEvent.Error}");
             }
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
             if (result.Failed)
             {
-                H.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
-                H.LogTransaction($"Reason: {result.Error}");
+                D.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {result.Error}");
             }
             return !result.Failed;
         }
@@ -222,20 +222,20 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
-            H.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
+            D.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
             if (removalEvent.Failed)
             {
-                H.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
-                H.LogTransaction($"Reason: {removalEvent.Error}");
+                D.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {removalEvent.Error}");
             }
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
             if (result.Failed)
             {
-                H.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
-                H.LogTransaction($"Reason: {result.Error}");
+                D.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {result.Error}");
             }
             return !result.Failed;
         }
@@ -272,7 +272,7 @@ namespace ifp.arena.bep.Core
         public static async UniTask WhenApprovedGiveItem(Item item, Player player)
         {
             await PlaceItem(item, player, GetItemPlacement(item, player));
-            // H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
+            // D.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
 
@@ -284,12 +284,12 @@ namespace ifp.arena.bep.Core
             switch (placement.Kind)
             {
                 case PlacementKind.VestAddress: // if we have an address, it means the space is free.
-                    H.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.EquipmentSlot:
-                    H.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     var slot = player.Equipment.GetSlot(placement.Slot);
                     player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
                     break;
@@ -315,7 +315,7 @@ namespace ifp.arena.bep.Core
                     var addResult = slot.AddWithoutRestrictions(plate);
                     if (addResult.Failed)
                     {
-                        H.Dump(addResult);
+                        D.Dump(addResult);
                         return false;
                     }
 

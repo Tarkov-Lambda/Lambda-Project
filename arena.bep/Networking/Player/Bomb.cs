@@ -59,7 +59,7 @@ namespace ifp.arena.bep.networking
             {
                 H.Arena.LastObjectivePlayerId = packet.playerId;
             }
-            H.Notify(packet.state);
+            D.Notify(packet.state);
 
             if (packet.state is BombState.Defused or BombState.Exploded)
             {

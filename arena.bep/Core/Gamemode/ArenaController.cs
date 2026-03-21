@@ -113,7 +113,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
             HU.ApplyPainkiller();
 
-            H.Notify("Plugin Reloaded");
+            D.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
 
             // Preloading bomb asset
@@ -205,6 +205,8 @@ namespace ifp.arena.bep.Core.Gamemode
 
             session.roundState = packet.matchState;
             _currentState = ActiveRules.CreateState(packet.matchState);
+            
+            D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
 
             StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
@@ -239,7 +241,6 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 Vector3 explosionCenter = bombVisuals.transform.position;
                 float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
-                H.Log(distance.ToString());
                 if (distance <= 25f)
                 {
                     H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);

@@ -53,8 +53,8 @@ namespace ifp.arena.bep.networking
         public void Send(DamageInfoStruct damage)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
-            H.Dump(damage);
-            H.Dump(damage.Player.iPlayer);
+            D.Dump(damage);
+            D.Dump(damage.Player.iPlayer);
 
             var packet = new PlayerKilledPacket
             {
@@ -102,7 +102,7 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            H.Notify($"Killing {H.GetPlayer(packet.victimId).Profile.Nickname}");
+            D.Notify($"Killing {H.GetPlayer(packet.victimId).Profile.Nickname}");
             // The server will preemptively decide that we are dead
             // if another client sends a damage packet directed at us
             // and it ends up being fatal

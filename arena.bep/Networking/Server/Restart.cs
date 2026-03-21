@@ -74,7 +74,7 @@ namespace ifp.arena.bep.networking
                 Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
             }
 
-            H.LogTransaction("Starting a match");
+            D.LogTransaction("Starting a match");
             if (FikaBackendUtils.IsServer)
             {
                 H.Arena.ChangeState(MatchState.Warmup);

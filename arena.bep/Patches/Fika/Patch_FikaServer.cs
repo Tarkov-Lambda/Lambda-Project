@@ -46,7 +46,7 @@ namespace ifp.arena.bep.Patches
             victim.HandleDamagePacket(damage);
 
             if (H.Scoreboard[victim.Id].isAlive == false) return;
-            H.Log(victim.Profile.Nickname);
+            D.Log(victim.Profile.Nickname);
 
             // Check if head or chest is blacked out after this damage
             var headHP = victim.ActiveHealthController.GetBodyPartHealth(EBodyPart.Head, false);

@@ -21,7 +21,7 @@ namespace ifp.arena.bep.Core
 
         public LadderEventManager()
         {
-            H.Log("Created");
+            D.Log("Created");
             Ladder.onPlayerEnterLadder += OnTriggerEnter;
             Ladder.onPlayerExitLadder += OnTriggerExit;
             GameModeTicker.onUpdate += OnUpdate;

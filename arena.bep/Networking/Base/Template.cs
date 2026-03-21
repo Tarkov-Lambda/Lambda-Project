@@ -33,7 +33,7 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(TemplatePacket packet, NetPeer peer)
         {
-            // H.Notify($"{packet}");
+            // D.Notify($"{packet}");
         }
     }
 }

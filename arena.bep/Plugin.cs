@@ -26,7 +26,7 @@ using System.Threading;
 using UnityEngine;
 
 #if DEBUG
-// To log H.Dump object name
+// To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
