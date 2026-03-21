@@ -62,7 +62,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             // delai
             Item item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(request.bsgId);
-            bool isSuccessful = await ItemsUtils.ClientRequestGiveItem(item);
+            bool isSuccessful = await IU.ClientRequestGiveItem(item);
             if (isSuccessful)
             {
                 H.MainPlayerScore.SpendMoney(request.price);

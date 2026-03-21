@@ -47,8 +47,8 @@ namespace ifp.arena.bep.networking
         // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful
         protected override void WhenApproved(BombAssignmentPacket packet, NetPeer peer)
         {
-            Item BombBackpack = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
-            _ = ItemsUtils.ClientRequestGiveItem(BombBackpack);
+            Item BombBackpack = IU.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+           IU.ClientRequestGiveItem(BombBackpack).Forget();
         }
     }
 }

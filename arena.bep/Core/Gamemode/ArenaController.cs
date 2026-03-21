@@ -104,7 +104,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (H.GameWorld is HideoutGameWorld) return;
 
-            ItemsUtils.ResetInventoryLock();
+            IU.ResetInventoryLock();
 
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
@@ -135,8 +135,8 @@ namespace ifp.arena.bep.Core.Gamemode
 
         private async UniTaskVoid InitBombVisualsAsync()
         {
-            Item bombItem = ItemsUtils.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
-            await ItemsUtils.LoadBundlesForItem(bombItem);
+            Item bombItem = IU.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+            await IU.LoadBundlesForItem(bombItem);
             bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
             bombVisuals.SetActive(false);
             UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
@@ -147,7 +147,7 @@ namespace ifp.arena.bep.Core.Gamemode
             Physics.simulationMode = SimulationMode.Script;
             // Cancel any in-flight ClientRequestGiveItem calls so they don't touch
             // inventory after the session has been torn down
-            ItemsUtils.ResetInventoryLock();
+            IU.ResetInventoryLock();
 
             if (_tickerObject != null)
             {

@@ -78,7 +78,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
-                _ = PlayerUtils.CloseEyes(true, false);
+                _ = PU.CloseEyes(true, false);
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)

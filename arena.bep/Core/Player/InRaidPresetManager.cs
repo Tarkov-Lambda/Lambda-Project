@@ -52,13 +52,13 @@ namespace ifp.arena.bep.Core
                 Item item = H.MainInventory.Equipment.GetSlot(presetInfo.Key).ContainedItem;
                 if (item == null && presetInfo.Value.isRequired)
                 {
-                    item = ItemsUtils.CreateItemFromTemplateId(presetInfo.Value.defaultBsgId);
+                    item = IU.CreateItemFromTemplateId(presetInfo.Value.defaultBsgId);
                 }
 
                 // If the tactical rig is armoured, skip armor vest
                 if (presetInfo.Key is EquipmentSlot.ArmorVest)
                 {
-                    if (ItemsUtils.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                    if (IU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
                     {
                         continue;
                     }
@@ -66,7 +66,7 @@ namespace ifp.arena.bep.Core
 
                 // pizdets nastoyashiy
                 if (presetInfo.Key == EquipmentSlot.ArmorVest ||
-                    presetInfo.Key == EquipmentSlot.TacticalVest && ItemsUtils.IsTacRigArmored(item as VestItemClass))
+                    presetInfo.Key == EquipmentSlot.TacticalVest && IU.IsTacRigArmored(item as VestItemClass))
                 {
                     CompoundItem cItem = item as CompoundItem;
                     foreach (var grid in cItem.Containers)

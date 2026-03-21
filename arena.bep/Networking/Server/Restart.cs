@@ -94,7 +94,7 @@ namespace ifp.arena.bep.networking
                     break;
             }
 
-            PlayerUtils.OpenEyes();
+            PU.OpenEyes();
         }
     }
 }

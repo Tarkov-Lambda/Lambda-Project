@@ -30,7 +30,7 @@ namespace ifp.arena.bep.Core
         public static async Task FixMe()
         {
             var health = H.MainPlayer.ActiveHealthController;
-            ReplenishUtils.Replenish(H.MainPlayer, true);
+            RU.Replenish(H.MainPlayer, true);
 
             health.ChangeHydration(100f);
             health.ChangeEnergy(100f);

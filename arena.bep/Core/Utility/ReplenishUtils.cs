@@ -8,7 +8,7 @@ using ifp.arena.bep.networking;
 
 namespace ifp.arena.bep.Core
 {
-    public static class ReplenishUtils
+    public static class RU
     {
         // FIKA DOES NOT SYNC DURABILITY REPAIRS
         // Though I think it does sync equipment changes from client automatically (player still has to manually invoke RaiseEvents)
@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Core
 
                     if (item is Weapon weapon)
                     {
-                        if (FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                        if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
                         {
                             if (shouldReloadGun)
                             {
@@ -38,7 +38,7 @@ namespace ifp.arena.bep.Core
 
         public static void SetupWeaponAfterEquip(Weapon weapon, Player player)
         {
-            if (FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
             {
                 ReplenishGun(weapon, ammo);
 
@@ -69,7 +69,7 @@ namespace ifp.arena.bep.Core
             }
 
             // Collect all matching mags from vest grids and pockets in one pass.
-            var mags = PlayerUtils.GetMatchingMags(player, vestCompound, weaponMagTemplate);
+            var mags = PU.GetMatchingMags(player, vestCompound, weaponMagTemplate);
 
             foreach (var mag in mags)
             {
@@ -82,7 +82,7 @@ namespace ifp.arena.bep.Core
 
             for (int i = 0; i < missing; i++)
             {
-                if (!ItemsUtils.TryCreateItem(weaponMagTemplate, out Item newItem))
+                if (!IU.TryCreateItem(weaponMagTemplate, out Item newItem))
                     continue;
 
                 if (newItem is not MagazineItemClass newMag)
@@ -90,7 +90,7 @@ namespace ifp.arena.bep.Core
 
                 ReplenishMagazine(newMag, ammo);
 
-                if (ItemsUtils.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
+                if (IU.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
                 {
                     H.NotifyLong("Can't find space for a mag");
                     continue;
@@ -129,7 +129,7 @@ namespace ifp.arena.bep.Core
                 {
                     topAmmoItem.StackObjectsCount = Math.Min(topAmmoItem.Template.StackMaxSize, magazine.MaxCount);
                 }
-                else if (ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
+                else if (IU.TryCreateItem(ammo.TemplateId, out Item newItem))
                 {
                     newItem.StackObjectsCount = magazine.MaxCount;
                     magazine.Cartridges.Add(newItem, simulate: false);
@@ -141,7 +141,7 @@ namespace ifp.arena.bep.Core
         {
             foreach (var slot in slots)
             {
-                if (slot.ContainedItem == null && ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
+                if (slot.ContainedItem == null && IU.TryCreateItem(ammo.TemplateId, out Item newItem))
                 {
                     slot.AddWithoutRestrictions(newItem);
                 }

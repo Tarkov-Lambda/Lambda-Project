@@ -15,11 +15,11 @@ namespace ifp.arena.bep.Core.UI
             if (cacheImmutableItems.ContainsKey(bsgId))
                 return cacheImmutableItems[bsgId];
 
-            var weaponBuild = FactoryUtils.GetCustomTemplate(bsgId);
+            var weaponBuild = FU.GetCustomTemplate(bsgId);
             if (weaponBuild != null)
                 return weaponBuild.Item;
 
-            ItemsUtils.TryCreateItem(bsgId, out Item newImmutableItem);
+            IU.TryCreateItem(bsgId, out Item newImmutableItem);
             if (newImmutableItem != null)
                 cacheImmutableItems.Add(bsgId, newImmutableItem);
 

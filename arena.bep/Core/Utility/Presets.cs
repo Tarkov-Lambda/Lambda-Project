@@ -16,8 +16,11 @@ using ifp.arena.shared.Models; // Assumption
 
 namespace ifp.arena.bep.Core
 {
-    public static class FactoryUtils
+    /// <summary>Tarkov's Factory Utilities</summary>
+    public static class FU
     {
+        public static ItemFactoryClass  ItemFactory => Singleton<ItemFactoryClass>.Instance;
+        
         public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
         public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
 

@@ -34,7 +34,7 @@ namespace ifp.arena.bep.Core
             Kind = kind;
             Slot = slot;
             Address = address;
-            PlateHolder = plateHolder;
+            PlateHolder = plateHolder; // lowkey might be able to squash this into address
         }
 
         public static ItemPlacement ForSlot(EquipmentSlot slot) => new(PlacementKind.EquipmentSlot, slot: slot);
@@ -46,7 +46,7 @@ namespace ifp.arena.bep.Core
     // 1. ClientRequestGiveItem client checks it can make room, then sends SpawnItemPacket
     // 2. SpawnItemPacketHandler server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
     // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
-    public static class ItemsUtils
+    public static class IU
     {
         private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
         private static CancellationTokenSource _sessionCts = new CancellationTokenSource();
@@ -60,16 +60,14 @@ namespace ifp.arena.bep.Core
             _giveItemLock = new SemaphoreSlim(1, 1);
         }
 
-        public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
-
-        public static Item CreateItemFromTemplateId(string templateId) => ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+        public static Item CreateItemFromTemplateId(string templateId) => FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
         public static bool TryCreateItem(string templateId, out Item newItem)
         {
             newItem = null;
-            if (!Singleton<ItemFactoryClass>.Instantiated || !Singleton<ItemFactoryClass>.Instance.ItemTemplates.ContainsKey(templateId))
+            if (!FU.ItemFactory.ItemTemplates.ContainsKey(templateId))
                 return false;
-            newItem = ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+            newItem = FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
             return newItem != null;
         }
 
@@ -83,7 +81,7 @@ namespace ifp.arena.bep.Core
             // Also include the ammo bundle for any weapons in the item tree.
             foreach (var subItem in item.GetAllItems())
             {
-                if (subItem is Weapon weapon && FactoryUtils.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                if (subItem is Weapon weapon && FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
                 {
                     var ammoPrefab = ammo.Template.Prefab;
                     if (ammoPrefab != null && !string.IsNullOrEmpty(ammoPrefab.path))
@@ -180,12 +178,12 @@ namespace ifp.arena.bep.Core
             bool waitUntilStationary,
             bool extraBackpackWait = false)
         {
-            Item item = PlayerUtils.GetPlayerSlotItem(player, equipmentSlot);
+            Item item = PU.GetPlayerSlotItem(player, equipmentSlot);
             if (item == null) return true;
 
             if (waitUntilStationary)
             {
-                await PlayerUtils.WaitUntilStationary(player);
+                await PU.WaitUntilStationary(player);
                 if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
                 {
                     await UniTask.WaitUntil(() =>
@@ -248,9 +246,8 @@ namespace ifp.arena.bep.Core
                 string oldMagTemplateId = oldWeapon.GetCurrentMagazine()?.TemplateId;
                 if (oldMagTemplateId != null)
                 {
-                    var vest = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
-                    magsToThrow = PlayerUtils.GetMatchingMags(player, vest, oldMagTemplateId);
-                    H.Log(magsToThrow.Count.ToString());
+                    var vest = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
+                    magsToThrow = PU.GetMatchingMags(player, vest, oldMagTemplateId);
                 }
             }
 
@@ -260,7 +257,6 @@ namespace ifp.arena.bep.Core
             {
                 foreach (var mag in magsToThrow)
                 {
-                    H.LogTransaction($"Throwing away {mag.LocalizedName()} ({mag.Id})");
                     await TryThrowItem(mag, player);
                 }
             }
@@ -273,7 +269,7 @@ namespace ifp.arena.bep.Core
             await PlaceItem(item, player, GetItemPlacement(item, player));
             // H.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
 
-            if (item is Weapon weapon) ReplenishUtils.SetupWeaponAfterEquip(weapon, player);
+            if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
 
             if (player.IsYourPlayer) PlayEquipSound(item);
         }
@@ -379,7 +375,7 @@ namespace ifp.arena.bep.Core
             var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
             if (vest == null) return ItemPlacement.None;
 
-            var pockets = PlayerUtils.GetPlayerPockets(player);
+            var pockets = PU.GetPlayerPockets(player);
             bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
 
             // For 1x1 items, prefer placing them in a 1x1 grid first.
