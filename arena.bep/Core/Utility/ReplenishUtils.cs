@@ -64,18 +64,12 @@ namespace ifp.arena.bep.Core
             string weaponMagTemplate = weapon.GetCurrentMagazine()?.TemplateId;
             if (weaponMagTemplate == null)
             {
-                H.NotifyLong($"Can't find {weapon.LocalizedName()}'s mag");
+                H.LogError($"Can't find {weapon.LocalizedName()}'s mag");
                 return;
             }
 
             // Collect all matching mags from vest grids and pockets in one pass.
-            var mags =
-                vestCompound.Grids
-                .Concat(PlayerUtils.GetPlayerPockets(player).Grids)
-                .SelectMany(g => g.Items)
-                .OfType<MagazineItemClass>()
-                .Where(m => m.TemplateId == weaponMagTemplate)
-                .ToList();
+            var mags = PlayerUtils.GetMatchingMags(player, vestCompound, weaponMagTemplate);
 
             foreach (var mag in mags)
             {
@@ -115,13 +109,7 @@ namespace ifp.arena.bep.Core
                 ReplenishMagazine(magazine, ammo);
             }
 
-            foreach (var chamber in weapon.Chambers)
-            {
-                if (chamber.ContainedItem == null && ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
-                {
-                    chamber.AddWithoutRestrictions(newItem);
-                }
-            }
+            FillSlotsWithAmmo(weapon.Chambers, ammo);
         }
 
         public static void ReplenishMagazine(MagazineItemClass magazine, AmmoItemClass ammo)
@@ -129,13 +117,7 @@ namespace ifp.arena.bep.Core
             // Handle cylinder magazines
             if (magazine is CylinderMagazineItemClass cylinder)
             {
-                foreach (var camora in cylinder.Camoras)
-                {
-                    if (camora.ContainedItem == null && ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
-                    {
-                        camora.AddWithoutRestrictions(newItem);
-                    }
-                }
+                FillSlotsWithAmmo(cylinder.Camoras, ammo);
                 return;
             }
 
@@ -151,6 +133,17 @@ namespace ifp.arena.bep.Core
                 {
                     newItem.StackObjectsCount = magazine.MaxCount;
                     magazine.Cartridges.Add(newItem, simulate: false);
+                }
+            }
+        }
+
+        private static void FillSlotsWithAmmo(IEnumerable<Slot> slots, AmmoItemClass ammo)
+        {
+            foreach (var slot in slots)
+            {
+                if (slot.ContainedItem == null && ItemsUtils.TryCreateItem(ammo.TemplateId, out Item newItem))
+                {
+                    slot.AddWithoutRestrictions(newItem);
                 }
             }
         }

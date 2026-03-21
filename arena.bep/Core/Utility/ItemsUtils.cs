@@ -167,14 +167,26 @@ namespace ifp.arena.bep.Core
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+            => await TryOperateOnSlot(equipmentSlot, player, TryRemoveItem, waitUntilStationary, extraBackpackWait: true);
+
+        public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+            => await TryOperateOnSlot(equipmentSlot, player, TryThrowItem, waitUntilStationary);
+
+
+        private static async UniTask<bool> TryOperateOnSlot(
+            EquipmentSlot equipmentSlot,
+            Player player,
+            Func<Item, Player, UniTask<bool>> operation,
+            bool waitUntilStationary,
+            bool extraBackpackWait = false)
         {
-            var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
-            if (slot.ContainedItem == null) return true;
+            Item item = PlayerUtils.GetPlayerSlotItem(player, equipmentSlot);
+            if (item == null) return true;
 
             if (waitUntilStationary)
             {
                 await PlayerUtils.WaitUntilStationary(player);
-                if (equipmentSlot == EquipmentSlot.Backpack)
+                if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
                 {
                     await UniTask.WaitUntil(() =>
                         player.MovementContext.CurrentState is IdleStateClass ||
@@ -182,7 +194,7 @@ namespace ifp.arena.bep.Core
                 }
             }
 
-            return await TryRemoveItem(slot.ContainedItem, player);
+            return await operation(item, player);
         }
 
 
@@ -195,16 +207,15 @@ namespace ifp.arena.bep.Core
             return !result.Failed;
         }
 
-        public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+        public static async UniTask TryRemoveItems(IEnumerable<Item> items, Player player, int delayMs = 25)
         {
-            var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
-            if (slot.ContainedItem == null) return true;
-
-            if (waitUntilStationary)
-                await PlayerUtils.WaitUntilStationary(player);
-
-            return await TryThrowItem(slot.ContainedItem, player);
+            foreach (var item in items)
+            {
+                await TryRemoveItem(item, player);
+                await UniTask.Delay(delayMs);
+            }
         }
+
 
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
@@ -237,17 +248,9 @@ namespace ifp.arena.bep.Core
                 string oldMagTemplateId = oldWeapon.GetCurrentMagazine()?.TemplateId;
                 if (oldMagTemplateId != null)
                 {
-                    var vest = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
-                    if (vest != null)
-                    {
-                        magsToThrow = vest.Grids
-                            .Concat(PlayerUtils.GetPlayerPockets(player).Grids)
-                            .SelectMany(g => g.Items)
-                            .OfType<MagazineItemClass>()
-                            .Where(m => m.TemplateId == oldMagTemplateId)
-                            .ToList();
-                        H.Log(magsToThrow.Count.ToString());
-                    }
+                    var vest = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
+                    magsToThrow = PlayerUtils.GetMatchingMags(player, vest, oldMagTemplateId);
+                    H.Log(magsToThrow.Count.ToString());
                 }
             }
 

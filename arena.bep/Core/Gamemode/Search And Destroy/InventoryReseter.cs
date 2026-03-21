@@ -62,20 +62,20 @@ namespace ifp.arena.bep.Core.Gamemode
 
                 List<Item> itemsToRemove = new List<Item>();
 
-                Item primaryWeapon = player.Equipment.GetSlot(EquipmentSlot.FirstPrimaryWeapon).ContainedItem;
+                // Primary / secondary weapons
+                Item primaryWeapon = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.FirstPrimaryWeapon);
                 if (primaryWeapon != null) itemsToRemove.Add(primaryWeapon);
 
-                Item secondaryWeapon = player.Equipment.GetSlot(EquipmentSlot.SecondPrimaryWeapon).ContainedItem;
+                Item secondaryWeapon = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.SecondPrimaryWeapon);
                 if (secondaryWeapon != null) itemsToRemove.Add(secondaryWeapon);
 
-                var pistol = player.Equipment.GetSlot(EquipmentSlot.Holster).ContainedItem;
+                // Keep holster only if it already holds the default pistol
+                var pistol = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.Holster);
                 bool needsDefaultPistol;
-
                 if (pistol != null)
                 {
                     bool isDefault = defaultPistolBsgId != null && pistol.TemplateId == defaultPistolBsgId;
                     if (!isDefault) itemsToRemove.Add(pistol);
-
                     needsDefaultPistol = !isDefault;
                 }
                 else
@@ -83,79 +83,47 @@ namespace ifp.arena.bep.Core.Gamemode
                     needsDefaultPistol = true;
                 }
 
-                Item helmetSlot = player.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
+                // Helmet
+                Item helmetSlot = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.Headwear);
                 if (helmetSlot != null) itemsToRemove.Add(helmetSlot);
 
-                // remove anything that isn't default pistol mag (including plates)
-                CompoundItem tacRig = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
-                if (tacRig != null)
+                // Remove everything from vest + pockets that isn't the default pistol mag
+                CompoundItem tacRig = PlayerUtils.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
+                foreach (var item in PlayerUtils.GetVestAndPocketGridItems<Item>(player, tacRig))
                 {
-                    foreach (var grid in tacRig.Containers)
-                    {
-                        foreach (Item item in grid.Items)
-                        {
-                            bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                            if (!isDefaultPistolMag) itemsToRemove.Add(item);
-                        }
-                    }
+                    bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                    if (!isDefaultPistolMag) itemsToRemove.Add(item);
                 }
 
-                // same as above
-                foreach (var grid in PlayerUtils.GetPlayerPockets(H.MainPlayer).Containers)
-                {
-                    foreach (var item in grid.Items)
-                    {
-                        bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                        if (!isDefaultPistolMag) itemsToRemove.Add(item);
-                    }
-                }
-
-                CompoundItem armorVest = player.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
-                if (armorVest != null)
-                {
-                    foreach (var armorHolder in armorVest.Components.OfType<ArmorHolderComponent>())
-                    {
-                        foreach (var slot in armorHolder.ArmorSlots)
-                        {
-                            if (slot.ContainedItem != null) itemsToRemove.Add(slot.ContainedItem);
-                        }
-                    }
-                }
+                // Remove all armor plates via the shared helper (covers both armored tac-rigs and armor vests)
+                itemsToRemove.AddRange(ItemsUtils.GetArmorPlates(player));
 
                 // If the currently equipped item doesn't match the recorded preset, remove it.
                 foreach (var kvp in PresetManager.Instance.RecordedItems)
                 {
-                    var currentItem = player.Equipment.GetSlot(kvp.Key).ContainedItem;
+                    var currentItem = PlayerUtils.GetPlayerSlotItem(player, kvp.Key);
                     if (currentItem != null && currentItem.TemplateId != kvp.Value.TemplateId) itemsToRemove.Add(currentItem);
                 }
 
+                await ItemsUtils.TryRemoveItems(itemsToRemove, player);
 
-
-                foreach (var item in itemsToRemove)
-                {
-                    await ItemsUtils.TryRemoveItem(item, player); // we can prolly run async and forget here
-                    await UniTask.Delay(25);
-                }
-
-                // give default pistol if needed
+                // Give default pistol if needed
                 if (needsDefaultPistol && defaultPistolBsgId != null)
                 {
                     var defaultPistolItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId);
-                    if (defaultPistolItem != null) await ItemsUtils.ClientRequestGiveItem(defaultPistolItem); // we aren't actually awaiting when approved, which is okay ish?
+                    if (defaultPistolItem != null) await ItemsUtils.ClientRequestGiveItem(defaultPistolItem);
                 }
-
 
                 var presetItems = PresetManager.Instance.RecordedItems;
                 foreach (var kvp in presetItems)
                 {
-                    var currentItem = player.Equipment.GetSlot(kvp.Key).ContainedItem;
+                    var currentItem = PlayerUtils.GetPlayerSlotItem(player, kvp.Key);
                     if (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId)
                     {
                         await ItemsUtils.ClientRequestGiveItem(kvp.Value);
                         await UniTask.Delay(25);
                     }
                 }
-
             }
             finally
             {

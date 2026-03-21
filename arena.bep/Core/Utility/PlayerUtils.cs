@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
@@ -13,6 +14,21 @@ namespace ifp.arena.bep.Core
     {
         public static SearchableItemItemClass GetPlayerPockets(Player player) => player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
         public static Item GetPlayerSlotItem(Player player, EquipmentSlot slotType) => player.Equipment.GetSlot(slotType).ContainedItem;
+
+        public static IEnumerable<T> GetVestAndPocketGridItems<T>(Player player, CompoundItem vest) where T : Item
+        {
+            var pockets = GetPlayerPockets(player);
+            var vestItems = vest?.Grids.SelectMany(g => g.Items) ?? Enumerable.Empty<Item>();
+            var pocketItems = pockets?.Grids.SelectMany(g => g.Items) ?? Enumerable.Empty<Item>();
+            return vestItems.Concat(pocketItems).OfType<T>();
+        }
+
+        public static List<MagazineItemClass> GetMatchingMags(Player player, CompoundItem vest, string magTemplateId)
+        {
+            return GetVestAndPocketGridItems<MagazineItemClass>(player, vest)
+                .Where(m => m.TemplateId == magTemplateId)
+                .ToList();
+        }
 
         public static List<Weapon> GetPlayerWeapons(Player player)
         {
