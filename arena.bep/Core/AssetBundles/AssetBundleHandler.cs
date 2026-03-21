@@ -1,5 +1,7 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using EFT;
+using ifp.arena.bep.Patches.Tarkov;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +14,11 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
     {
         public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
         private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
+
+        public AssetBundleHandler()
+        {
+            Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;
+        }
 
         public async UniTask LoadMap(string mapName)
         {
@@ -68,7 +75,12 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
             return bundle;
         }
 
-        void UnloadAll()
+        void UnloadEverythingOnGameWorldDispose(GameWorld gWorld)
+        {
+            UnloadAll(true);
+        }
+
+        void UnloadAll(bool includingLobby = false)
         {
             foreach (var kvp in loadedAssetBundles)
             {
@@ -76,7 +88,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
                 if (bundle != null)
                 {
                     // we do not unload lobby so that we can teleport there during reloads
-                    if (bundle.name == "lobby") continue;
+                    if (!includingLobby && bundle.name == "lobby") continue;
 
                     foreach (var scenePath in bundle.GetAllScenePaths())
                     {
@@ -95,6 +107,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
         public void Dispose()
         {
+            Patch_Gameworld_OnDispose.OnDispose -= UnloadEverythingOnGameWorldDispose;
             UnloadAll();
             Release(this);
         }

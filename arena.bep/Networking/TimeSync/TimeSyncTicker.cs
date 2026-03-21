@@ -19,8 +19,6 @@ namespace ifp.arena.bep.networking.TimeSync
 
         private void Update()
         {
-            if (!Plugin.Active.Value)
-                return;
 
             if (FikaBackendUtils.IsServer)
                 return;

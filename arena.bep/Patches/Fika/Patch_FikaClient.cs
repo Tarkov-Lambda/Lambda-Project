@@ -21,7 +21,6 @@ namespace ifp.arena.bep.Patches
         [PatchPrefix]
         static bool Prefix(CoopHandler ____coopHandler, CommonPlayerPacket packet)
         {
-            if (!Plugin.Active.Value) return true;
             H.Notify(packet.SubPacket.ToString());
             // if (____coopHandler.Players.TryGetValue(packet.NetId, out var playerToApply))
             // {

@@ -53,9 +53,11 @@ namespace ifp.arena.bep.Core
 
 #if DEBUG
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
+        public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg);
         public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, msg, name);
 #else 
         public static void Log(string msg) => null;
+        public static void LogTransaction(string msg) => null;
         public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) => null;
 #endif
 
@@ -74,7 +76,7 @@ namespace ifp.arena.bep.Core
         public static Player GetPlayer(int playerId)
         {
             if (!isInRaid()) return null;
-            return H.AllPlayers.FirstOrDefault(p => p.Id == playerId);
+            return AllPlayers.FirstOrDefault(p => p.Id == playerId);
         }
 
         public static PlayerScore GetPlayerScore(int playerId)
@@ -87,7 +89,7 @@ namespace ifp.arena.bep.Core
         public static PlayerScore GetMainPlayerScore()
         {
             if (!isInRaid()) return null;
-            Arena.session.scoreboard.TryGetValue(H.MainPlayer.Id, out var playerScore);
+            Arena.session.scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
             return playerScore;
         }
 
@@ -114,19 +116,15 @@ namespace ifp.arena.bep.Core
 
         public static NetManager GetNetManager()
         {
-            var manager = H.FikaNet;
+            var manager = FikaNet;
             if (manager == null) return null;
 
-            var field = AccessTools.Field(H.FikaNet.GetType(), "_netServer");
+            var field = AccessTools.Field(FikaNet.GetType(), "_netServer");
 
             return field?.GetValue(manager) as NetManager;
         }
 
-        private static void _dump(
-            object obj,
-            int depth = 1,
-            string msg = "",
-            [CallerArgumentExpression("obj")] string name = null)
+        private static void _dump(object obj, int depth = 1, string msg = "", [CallerArgumentExpression("obj")] string name = null)
         {
             if (obj == null) return;
 

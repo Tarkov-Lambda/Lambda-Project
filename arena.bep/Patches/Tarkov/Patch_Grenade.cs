@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using Fika.Core.Main.Utils;
 using HarmonyLib;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
@@ -21,12 +22,17 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             if (__instance.WeaponSource.StringTemplateId is _molotovTemplateId)
             {
+                // explosion sfx
                 if (!string.IsNullOrEmpty(__instance.WeaponSource.ExplosionEffectType))
                 {
                     Singleton<Effects>.Instance.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
                 }
-                
-                Singleton<CustomGrenadeExplosionPacketHandler>.Instance.Send(__instance.transform.position, CustomGrenadeType.Molotov);
+
+                if (FikaBackendUtils.IsServer)
+                {
+                    Singleton<CustomGrenadeExplosionPacketHandler>.Instance.Send(__instance.transform.position, CustomGrenadeType.Molotov);
+                }
+
                 UnityEngine.Object.DestroyImmediate(__instance.gameObject);
                 return false;
             }

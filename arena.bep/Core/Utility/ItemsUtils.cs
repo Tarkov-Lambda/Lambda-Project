@@ -17,21 +17,17 @@ using System;
 using ifp.arena.bep.Core.MovementStates;
 using EFT.Interactive;
 
-// Item flow summary:
-//   ClientRequestGiveItem  – client checks it can make room, then sends SpawnItemPacket
-//   SpawnItemPacketHandler – server approves, broadcasts to all clients, loads bundles
-//   WhenApprovedGiveItem   – every client places the item in the correct slot/address
 namespace ifp.arena.bep.Core
 {
-    // Describes how and where an item should land in a player's inventory.
+    // Where to place the item (none = tough luck)
     public enum PlacementKind { None, EquipmentSlot, VestAddress, ArmorPlate }
 
     public readonly struct ItemPlacement
     {
         public readonly PlacementKind Kind;
-        public readonly EquipmentSlot Slot;         // valid when Kind == EquipmentSlot
-        public readonly ItemAddress Address;        // valid when Kind == VestAddress
-        public readonly CompoundItem PlateHolder;   // valid when Kind == ArmorPlate
+        public readonly EquipmentSlot Slot;         // For EquipmentSlot
+        public readonly ItemAddress Address;        // For VestAddress
+        public readonly CompoundItem PlateHolder;   // For ArmorPlate
 
         private ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null, CompoundItem plateHolder = null)
         {
@@ -47,22 +43,20 @@ namespace ifp.arena.bep.Core
         public static readonly ItemPlacement None = new(PlacementKind.None);
     }
 
+    // 1. ClientRequestGiveItem client checks it can make room, then sends SpawnItemPacket
+    // 2. SpawnItemPacketHandler server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
+    // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
     public static class ItemsUtils
     {
-        // Serializes concurrent ClientRequestGiveItem calls so the slot-check and the
-        // resulting SpawnItemPacket.Send() are always atomic with respect to each other.
-        // A fresh instance is created each session via ResetInventoryLock().
         private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
         private static CancellationTokenSource _sessionCts = new CancellationTokenSource();
 
-        // Call on game start AND game dispose so the lock and cancellation token are always fresh.
+        // OnGameStarted / OnGameDispose
         public static void ResetInventoryLock()
         {
             _sessionCts.Cancel();
             _sessionCts.Dispose();
             _sessionCts = new CancellationTokenSource();
-            // Replace rather than reset to handle the edge case where a caller is still
-            // holding the semaphore when a raid ends.
             _giveItemLock = new SemaphoreSlim(1, 1);
         }
 
@@ -123,7 +117,7 @@ namespace ifp.arena.bep.Core
             }
             catch (OperationCanceledException)
             {
-                return false; // Session ended while waiting — bail out cleanly
+                return false; // Session ended
             }
 
             try
@@ -155,7 +149,9 @@ namespace ifp.arena.bep.Core
                 }
 
                 await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
-                Singleton<SpawnItemPacketHandler>.Instance.Send(ItemExtensions.CloneItem(templateItem));
+                Item clonedItem = ItemExtensions.CloneItem(templateItem);
+                H.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
+                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem);
                 return true;
             }
             catch (OperationCanceledException)
@@ -189,7 +185,7 @@ namespace ifp.arena.bep.Core
             return await TryRemoveItem(slot.ContainedItem, player);
         }
 
-        /// <summary>Removes any item from a player's inventory via a network transaction.</summary>
+
         public static async UniTask<bool> TryRemoveItem(Item item, Player player)
         {
             OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
@@ -212,12 +208,21 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
+            H.LogTransaction($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
-            // H.Dump(removalEvent, 1);
+            if (removalEvent.Failed)
+            {
+                H.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
+                H.LogTransaction($"Reason: {removalEvent.Error}");
+            }
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
-            // H.Dump(result, 1);
+            if (result.Failed)
+            {
+                H.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
+                H.LogTransaction($"Reason: {result.Error}");
+            }
             return !result.Failed;
         }
 
@@ -226,30 +231,34 @@ namespace ifp.arena.bep.Core
             var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
             if (slot.ContainedItem == null) return true;
 
-            // Capture the mag template before the weapon is thrown.
-            string oldMagTemplateId = slot.ContainedItem is Weapon oldWeapon ? oldWeapon.GetCurrentMagazine()?.TemplateId : null;
+            List<MagazineItemClass> magsToThrow = null;
+            if (slot.ContainedItem is Weapon oldWeapon)
+            {
+                string oldMagTemplateId = oldWeapon.GetCurrentMagazine()?.TemplateId;
+                if (oldMagTemplateId != null)
+                {
+                    var vest = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
+                    if (vest != null)
+                    {
+                        magsToThrow = vest.Grids
+                            .Concat(PlayerUtils.GetPlayerPockets(player).Grids)
+                            .SelectMany(g => g.Items)
+                            .OfType<MagazineItemClass>()
+                            .Where(m => m.TemplateId == oldMagTemplateId)
+                            .ToList();
+                        H.Log(magsToThrow.Count.ToString());
+                    }
+                }
+            }
+
             bool removed = await TryThrowSlot(equipmentSlot, player, waitUntilStationary);
 
-            if (removed && oldMagTemplateId != null)
+            if (removed && magsToThrow != null)
             {
-                var vest = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as CompoundItem;
-
-                if (vest != null)
+                foreach (var mag in magsToThrow)
                 {
-                    var mags =
-                    vest.Grids
-                    .Concat(PlayerUtils.GetPlayerPockets(player).Grids)
-                    .SelectMany(g => g.Items)
-                    .OfType<MagazineItemClass>()
-                    .Where(m => m.TemplateId == oldMagTemplateId)
-                    .ToList();
-                    H.Log(mags.Count.ToString());
-
-                    foreach (var mag in mags)
-                    {
-                        H.Log($"Throwing away {mag.LocalizedName()}");
-                        await TryThrowItem(mag, player);
-                    }
+                    H.LogTransaction($"Throwing away {mag.LocalizedName()} ({mag.Id})");
+                    await TryThrowItem(mag, player);
                 }
             }
 
@@ -271,10 +280,12 @@ namespace ifp.arena.bep.Core
             switch (placement.Kind)
             {
                 case PlacementKind.VestAddress: // if we have an address, it means the space is free.
+                    H.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.EquipmentSlot:
+                    H.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     var slot = player.Equipment.GetSlot(placement.Slot);
                     player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
                     break;

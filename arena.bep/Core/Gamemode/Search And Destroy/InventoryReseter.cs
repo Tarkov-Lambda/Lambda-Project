@@ -113,7 +113,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 CompoundItem armorVest = player.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as CompoundItem;
                 if (armorVest != null)
                 {
-                    foreach (ArmorHolderComponent armorHolder in armorVest.Components)
+                    foreach (var armorHolder in armorVest.Components.OfType<ArmorHolderComponent>())
                     {
                         foreach (var slot in armorHolder.ArmorSlots)
                         {

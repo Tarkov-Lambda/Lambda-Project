@@ -15,14 +15,16 @@ namespace ifp.arena.bep.Patches.Tarkov
 {
     internal class Patch_EmptyHandsController_ExamineWeapon : ModulePatch
     {
+        private static readonly AccessTools.FieldRef<EmptyHandsController, Player> playerRef = AccessTools.FieldRefAccess<EmptyHandsController, Player>("_player");
+
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EmptyHandsController), nameof(EmptyHandsController.ExamineWeapon));
 
         [PatchPostfix]
         public static void Postfix(EmptyHandsController __instance)
         {
-            Player player = AccessTools.Field(__instance.GetType(), "_player").GetValue(__instance) as Player;
+            Player player = playerRef(__instance);
 
-            if (player != null && player.IsYourPlayer)
+            if (player.IsYourPlayer)
             {
                 Singleton<HandsInspectPacketHandler>.Instance.Send(player.Id);
             }

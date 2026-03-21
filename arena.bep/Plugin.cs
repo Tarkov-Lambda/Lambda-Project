@@ -51,7 +51,6 @@ namespace ifp.arena.bep
     {
         public static new ManualLogSource Logger;
 
-        internal static ConfigEntry<bool> Active;
         internal static ConfigEntry<GameModes> GameMode;
         internal static ConfigEntry<Faction> PrefferedFaction;
         internal static ConfigEntry<string> MapName;
@@ -205,7 +204,6 @@ namespace ifp.arena.bep
 
         private void InitConfiguration()
         {
-            Active = Config.Bind("", "Active", true, "Whether or not the plugin is active");
             PrefferedFaction = Config.Bind("", "Preffered Faction", Faction.None, "Faction swaps only happen after the round end");
 
             MapName = Config.Bind("Admin", "Map Name", "", "");

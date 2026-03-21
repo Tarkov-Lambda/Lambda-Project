@@ -16,6 +16,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     {
         private static bool wasOnLadder = false;
 
+        private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
         protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
         [PatchPostfix]
@@ -23,7 +24,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         {
             if (!H.isInRaid()) return;
 
-            Player player = AccessTools.Field(__instance.GetType(), "_player").GetValue(__instance) as Player;
+            Player player = playerRef(__instance);
 
             if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
             {
@@ -76,12 +77,14 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_MovementContext_SetBlindFire : ModulePatch
     {
+        private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
+
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), new Type[] { typeof(int) });
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, int b)
         {
-            Player player = AccessTools.Field(__instance.GetType(), "_player").GetValue(__instance) as Player;
+            Player player = playerRef(__instance);
 
             if (player.MovementContext.CurrentState is SprintStateClass) return true;
 
@@ -97,32 +100,29 @@ namespace ifp.arena.bep.Patches.Tarkov
 
     public class Patch_MovementContext_ManualUpdate : ModulePatch
     {
+        private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
+
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
 
         [PatchPostfix]
         private static void Prefix(MovementContext __instance, float deltaTime)
         {
-            var playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            Player player = playerRef(__instance);
 
-            if (playerField != null)
+            if (!player.Physical.Sprinting)
             {
-                Player player = playerField.GetValue(__instance) as Player;
-
-                if (!player.Physical.Sprinting)
+                float clampedSpeed = __instance.ClampedSpeed;
+                float num = Math.Abs(__instance.SmoothedCharacterMovementSpeed - clampedSpeed);
+                if (num < 1E-45f)
                 {
-                    float clampedSpeed = __instance.ClampedSpeed;
-                    float num = Math.Abs(__instance.SmoothedCharacterMovementSpeed - clampedSpeed);
-                    if (num < 1E-45f)
-                    {
-                        return;
-                    }
-                    if (num > 0.001f)
-                    {
-                        __instance.SmoothedCharacterMovementSpeed = Mathf.Lerp(__instance.SmoothedCharacterMovementSpeed, clampedSpeed, deltaTime * EFTHardSettings.Instance.CHARACTER_SPEED_CHANGING_SPEED);
-                        return;
-                    }
-                    __instance.SmoothedCharacterMovementSpeed = clampedSpeed;
+                    return;
                 }
+                if (num > 0.001f)
+                {
+                    __instance.SmoothedCharacterMovementSpeed = Mathf.Lerp(__instance.SmoothedCharacterMovementSpeed, clampedSpeed, deltaTime * EFTHardSettings.Instance.CHARACTER_SPEED_CHANGING_SPEED);
+                    return;
+                }
+                __instance.SmoothedCharacterMovementSpeed = clampedSpeed;
             }
 
             return;

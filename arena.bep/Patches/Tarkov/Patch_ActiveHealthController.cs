@@ -49,7 +49,6 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
         {
-            if (!Plugin.Active.Value) return true;
             if (__instance.Player.IsAI) return true;
 
             long now = Stopwatch.GetTimestamp();
@@ -70,7 +69,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
                 
                 // If the server player dies
-                // or if the client kills themselves
+                // or if the client kills themselves (explosion prolly, fall)
                 if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
                 {
                     H.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);

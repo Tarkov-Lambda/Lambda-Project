@@ -42,7 +42,7 @@ namespace ifp.arena.bep.Patches
             // shooter sends a packet of 60 damage to thorax of victim
             // victim sends a sync packet saying they just healed, right after we just send them a damage packet.
             // eventually the victim will be the source of truth when we healthsync, but just how serious is sync mismatch here given low ttk?
-            // although, at the end of the day the other player will eventually pick up all the damage packets and apply them, in worst case scenario dying themselves (right?)
+            // although, at the end of the day the victim will eventually pick up all the damage packets and apply them, in worst case scenario killing themselves (right?)
             victim.HandleDamagePacket(damage);
 
             if (H.Scoreboard[victim.Id].isAlive == false) return;
