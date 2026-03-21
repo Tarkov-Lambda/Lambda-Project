@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core
 {
-    public static class PlayerHealthUtils
+    public static class HealthUtilities
     {
         // Applies a permanent painkiller at the start of the raid
         public static void ApplyPainkiller()

@@ -8,7 +8,7 @@ using ifp.arena.bep.networking;
 
 namespace ifp.arena.bep.Core
 {
-    public static class RU
+    public static class ReplenishmentUtilities
     {
         // FIKA DOES NOT SYNC DURABILITY REPAIRS
         // Though I think it does sync equipment changes from client automatically (player still has to manually invoke RaiseEvents)

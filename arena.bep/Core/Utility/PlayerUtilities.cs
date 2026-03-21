@@ -11,7 +11,7 @@ using UnityEngine;
 namespace ifp.arena.bep.Core
 {
     /// <summary>Player Utilities</summary>
-    public static class PU
+    public static class PlayerUtilities
     {
         public static SearchableItemItemClass GetPlayerPockets(Player player) => player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
         public static Item GetPlayerSlotItem(Player player, EquipmentSlot slotType) => player.Equipment.GetSlot(slotType).ContainedItem;

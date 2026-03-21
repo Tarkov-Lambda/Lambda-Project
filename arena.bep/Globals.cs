@@ -1,0 +1,12 @@
+global using FU = ifp.arena.bep.Core.FactoryUtilities;
+global using HU = ifp.arena.bep.Core.HealthUtilities;
+global using H  = ifp.arena.bep.Core.Helpers;
+global using IU = ifp.arena.bep.Core.ItemUtilities;
+global using PU = ifp.arena.bep.Core.PlayerUtilities;
+global using RU = ifp.arena.bep.Core.ReplenishmentUtilities;
+
+// Tarkov
+global using SearchableGrid = GClass3117;
+global using ItemExtensions = GClass3380;
+global using OperationResult = GStruct153;
+global using EquipmentBuildClass = GClass3953;

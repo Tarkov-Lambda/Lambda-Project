@@ -1,8 +1,3 @@
-using SearchableGrid = GClass3117;
-using ItemExtensions = GClass3380;
-using OperationResult = GStruct153;
-//---------------------------------------------------------------//
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,7 +9,6 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
-using ifp.arena.bep.Core.MovementStates;
 using EFT.Interactive;
 
 namespace ifp.arena.bep.Core
@@ -46,7 +40,7 @@ namespace ifp.arena.bep.Core
     // 1. ClientRequestGiveItem client checks it can make room, then sends SpawnItemPacket
     // 2. SpawnItemPacketHandler server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
     // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
-    public static class IU
+    public static class ItemUtilities
     {
         private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
         private static CancellationTokenSource _sessionCts = new CancellationTokenSource();

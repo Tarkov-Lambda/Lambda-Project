@@ -3,24 +3,20 @@ using System.Linq;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using HarmonyLib;
-
-// --------------------------------------------- //
-using SearchableGrid = GClass3117;
-using EquipmentBuildClass = GClass3953;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
-using ifp.arena.shared.Models; // Assumption
-// --------------------------------------------- //
-
+using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.Core
 {
-    /// <summary>Tarkov's Factory Utilities</summary>
-    public static class FU
+    /// <summary>
+    /// Factory Utilities
+    /// Has pointers for Tarkov's Singleton instances
+    /// </summary>
+    public static class FactoryUtilities
     {
-        public static ItemFactoryClass  ItemFactory => Singleton<ItemFactoryClass>.Instance;
-        
+        public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
+
         public static WeaponBuildsStorageClass WeaponBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
         public static EquipmentBuildsStorageClass EquipmentBuilds => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
 

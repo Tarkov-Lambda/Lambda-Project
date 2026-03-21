@@ -18,7 +18,7 @@ using System.Runtime.CompilerServices;
 namespace ifp.arena.bep.Core
 {
     // Helper class for singleton refences & helper functions
-    public static class H
+    public static class Helpers
     {
         public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
         public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;

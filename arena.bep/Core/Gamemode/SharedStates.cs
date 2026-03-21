@@ -103,7 +103,7 @@ namespace ifp.arena.bep.Core.Gamemode
             if (H.GameWorld?.MainPlayer != null)
             {
                 Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
-                PlayerHealthUtils.FixMe().Forget();
+                HU.FixMe().Forget();
             }
 
             H.Session.bombState = BombState.None;

@@ -62,7 +62,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             if (!H.MainPlayerScore.isAlive) return false;
 
             // Delayed double healing to make sure every negative effect is fixed
-            PlayerHealthUtils.FixMe().Forget();
+            HU.FixMe().Forget();
             Singleton<ReplenishPacketHandler>.Instance.Send();
             try
             {
