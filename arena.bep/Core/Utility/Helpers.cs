@@ -53,12 +53,22 @@ namespace ifp.arena.bep.Core
 
 #if DEBUG
         public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
-        public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg);
+        // public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg); // for stuff that goes over the wire
+        public static void LogInventory(string msg) => Plugin.Logger.LogInfo(msg); // for inventory item tracking
         public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, msg, name);
+
+        // ---------
+
+        // public static void Log(string msg) => null;
+        public static void LogTransaction(string msg) { }
+        // public static void LogInventory(string msg) => null;
+        // public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) {}};
+
 #else 
-        public static void Log(string msg) => null;
-        public static void LogTransaction(string msg) => null;
-        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) => null;
+        public static void Log(string msg) { }
+        public static void LogTransaction(string msg) { }
+        public static void LogInventory(string msg) => {}
+        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { }
 #endif
 
         public static void LogError(string msg) => Plugin.Logger.LogError(msg);

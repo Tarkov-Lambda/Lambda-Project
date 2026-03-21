@@ -192,10 +192,21 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryRemoveItem(Item item, Player player)
         {
+            H.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
             OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
+            if (removalEvent.Failed)
+            {
+                H.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
+                H.LogTransaction($"Reason: {removalEvent.Error}");
+            }
             if (removalEvent.Failed) return false;
 
             IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
+            if (result.Failed)
+            {
+                H.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
+                H.LogTransaction($"Reason: {result.Error}");
+            }
             return !result.Failed;
         }
 
@@ -211,7 +222,7 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryThrowItem(Item item, Player player)
         {
-            H.LogTransaction($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
+            H.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
             OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
             if (removalEvent.Failed)
             {
@@ -449,7 +460,7 @@ namespace ifp.arena.bep.Core
 
                 foreach (var slot in armorHolder.ArmorSlots)
                 {
-                    if (slot.ContainedItem != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+                    if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
                     {
                         yield return slot.ContainedItem;
                     }

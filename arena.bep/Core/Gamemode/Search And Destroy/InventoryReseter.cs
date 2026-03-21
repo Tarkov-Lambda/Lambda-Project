@@ -45,6 +45,21 @@ namespace ifp.arena.bep.Core.Gamemode
             return pistol?.GetCurrentMagazine()?.TemplateId;
         }
 
+        public static void AddItem(ref List<Item> itemList, Item item)
+        {
+            H.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+            itemList.Add(item);
+        }
+
+        public static void AddRange(ref List<Item> itemList, IEnumerable<Item> itemCollection)
+        {
+            foreach (Item item in itemCollection)
+            {
+                H.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+            }
+            itemList.AddRange(itemCollection);
+        }
+
         public static async UniTask ResetInventory()
         {
             var player = H.MainPlayer;
@@ -64,10 +79,10 @@ namespace ifp.arena.bep.Core.Gamemode
 
                 // Primary / secondary weapons
                 Item primaryWeapon = PU.GetPlayerSlotItem(player, EquipmentSlot.FirstPrimaryWeapon);
-                if (primaryWeapon != null) itemsToRemove.Add(primaryWeapon);
+                if (primaryWeapon != null) AddItem(ref itemsToRemove, primaryWeapon);
 
                 Item secondaryWeapon = PU.GetPlayerSlotItem(player, EquipmentSlot.SecondPrimaryWeapon);
-                if (secondaryWeapon != null) itemsToRemove.Add(secondaryWeapon);
+                if (secondaryWeapon != null) AddItem(ref itemsToRemove, secondaryWeapon);
 
                 // Keep holster only if it already holds the default pistol
                 var pistol = PU.GetPlayerSlotItem(player, EquipmentSlot.Holster);
@@ -75,7 +90,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 if (pistol != null)
                 {
                     bool isDefault = defaultPistolBsgId != null && pistol.TemplateId == defaultPistolBsgId;
-                    if (!isDefault) itemsToRemove.Add(pistol);
+                    if (!isDefault) AddItem(ref itemsToRemove, pistol);
                     needsDefaultPistol = !isDefault;
                 }
                 else
@@ -85,24 +100,27 @@ namespace ifp.arena.bep.Core.Gamemode
 
                 // Helmet
                 Item helmetSlot = PU.GetPlayerSlotItem(player, EquipmentSlot.Headwear);
-                if (helmetSlot != null) itemsToRemove.Add(helmetSlot);
+                if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
 
                 // Remove everything from vest + pockets that isn't the default pistol mag
                 CompoundItem tacRig = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
                 foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
                 {
                     bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                    if (!isDefaultPistolMag) itemsToRemove.Add(item);
+                    if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
                 }
 
                 // Remove all armor plates via the shared helper (covers both armored tac-rigs and armor vests)
-                itemsToRemove.AddRange(IU.GetArmorPlates(player));
+                AddRange(ref itemsToRemove, IU.GetArmorPlates(player));
 
                 // If the currently equipped item doesn't match the recorded preset, remove it.
-                foreach (var kvp in PresetManager.Instance.RecordedItems)
+                if (PresetManager.Instance != null)
                 {
-                    var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
-                    if (currentItem != null && currentItem.TemplateId != kvp.Value.TemplateId) itemsToRemove.Add(currentItem);
+                    foreach (var kvp in PresetManager.Instance.RecordedItems)
+                    {
+                        var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
+                        if (currentItem != null && kvp.Value != null && currentItem.TemplateId != kvp.Value.TemplateId) AddItem(ref itemsToRemove, currentItem);
+                    }
                 }
 
                 await IU.TryRemoveItems(itemsToRemove, player);
@@ -114,14 +132,17 @@ namespace ifp.arena.bep.Core.Gamemode
                     if (defaultPistolItem != null) await IU.ClientRequestGiveItem(defaultPistolItem);
                 }
 
-                var presetItems = PresetManager.Instance.RecordedItems;
-                foreach (var kvp in presetItems)
+                var presetItems = PresetManager.Instance?.RecordedItems;
+                if (presetItems != null)
                 {
-                    var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
-                    if (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId)
+                    foreach (var kvp in presetItems)
                     {
-                        await IU.ClientRequestGiveItem(kvp.Value);
-                        await UniTask.Delay(25);
+                        var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
+                        if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
+                        {
+                            await IU.ClientRequestGiveItem(kvp.Value);
+                            await UniTask.Delay(25);
+                        }
                     }
                 }
             }
