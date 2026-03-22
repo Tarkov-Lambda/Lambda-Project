@@ -101,7 +101,7 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_Gameworld_OnGameStarted()); // Hooks
             RegisterPatch(new Patch_Gameworld_OnDispose()); // Hooks
 
-            RegisterPatch(new Patch_Kill()); // Bypass Dying entirely
+            RegisterPatch(new Patch_ActiveHealthController_Kill()); // Bypass Dying entirely
 
             RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments()); // Procedural Blindfire Position
             RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire()); // Override Blindfire Animation
@@ -120,7 +120,7 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
             // RegisterPatch(new Patch_ApplyShot());
 
-            RegisterPatch(new Patch_ApplyDamage()); // Caching last damage packet for death
+            RegisterPatch(new Patch_ActiveHealthController_ApplyDamage()); // Caching last damage packet for death
             RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
 
             // RegisterPatch(new Patch_BackendConfigSettingsClass_AimPunchMagnitude()); // Set aimpunch to 0

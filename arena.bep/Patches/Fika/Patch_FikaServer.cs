@@ -1,6 +1,8 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.HealthSystem;
 using Fika.Core.Main.Components;
+using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
@@ -11,26 +13,14 @@ using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
+using UnityEngine.Video;
 
 namespace ifp.arena.bep.Patches
 {
-
-    // [Info   : arena.bep] CoriumOperator
-    // [Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object
-    // Stack trace:
-    // ifp.arena.bep.Patches.Patch_FikaServer_OnCommonPlayerPacketReceived.Postfix (Fika.Core.Networking.FikaServer __instance, Fika.Core.Networking.Packets.Player.Common.CommonPlayerPacket packet, Fika.Core.Networking.LiteNetLib.NetPeer peer) (at <00a04958e6b5425baf50a72d6d850112>:0)
-    // (wrapper dynamic-method) Fika.Core.Networking.FikaServer.DMD<Fika.Core.Networking.FikaServer::OnCommonPlayerPacketReceived>(Fika.Core.Networking.FikaServer,Fika.Core.Networking.Packets.Player.Common.CommonPlayerPacket,Fika.Core.Networking.LiteNetLib.NetPeer)
-    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor+<>c__DisplayClass27_0`2[T,TUserData].<SubscribeNetReusable>b__0 (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadPacket (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadAllPackets (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.FikaServer.OnNetworkReceive (Fika.Core.Networking.LiteNetLib.NetPeer peer, Fika.Core.Networking.LiteNetLib.NetPacketReader reader, System.Byte channelNumber, Fika.Core.Networking.LiteNetLib.DeliveryMethod deliveryMethod) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.NetManager.ProcessEvent (Fika.Core.Networking.LiteNetLib.NetEvent evt) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.LiteNetManager.PollEvents () (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.FikaServer.Update () (at <4961a269c1a0469488965fa870906146>:0)
-    // UnityEngine.DebugLogHandler:LogException(Exception, Object)
-    // Class412:LogException(Exception, Object)
-    // UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
 
     internal sealed class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     {
@@ -54,6 +44,21 @@ namespace ifp.arena.bep.Patches
             // kind of ass backwards, but it makes sense in my head rn
             if (victim.IsYourPlayer) return;
 
+
+            DamageInfoStruct damageInfo = new()
+            {
+                Damage = damage.Damage,
+                DamageType = damage.DamageType,
+                BodyPartColliderType = damage.ColliderType,
+                HitPoint = damage.Point,
+                HitNormal = damage.HitNormal,
+                Direction = damage.Direction,
+                PenetrationPower = damage.PenetrationPower,
+                // BlockedBy = packet.BlockedBy, // does not exist
+                // DeflectedBy = packet.DeflectedBy, // does not exist
+                ArmorDamage = damage.ArmorDamage
+            };
+
             // Instead of waiting for healthsync, we apply a damage packet directly on the server on a player that's not ours.
             // I can't vouch as per how accurate this is going to be
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
@@ -63,23 +68,144 @@ namespace ifp.arena.bep.Patches
             // victim sends a sync packet saying they just healed, right after we just send them a damage packet.
             // eventually the victim will be the source of truth when we healthsync, but just how serious is sync mismatch here given low ttk?
             // although, at the end of the day the victim will eventually pick up all the damage packets and apply them, in worst case scenario killing themselves (right?)
+            ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
+
             victim.HandleDamagePacket(damage);
+        }
 
-            if (H.Scoreboard[victim.Id].isAlive == false) return;
-            D.Log(victim.Profile.Nickname);
 
-            // Check if head or chest is blacked out after this damage
-            // D.Dump(victim);
-            // D.Dump(victim.HealthController);
+        public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+        {
+            if (!H.GetPlayerScore(victim.Id).isAlive) return 0f;
+
+            ObservedHealthController healthController = victim.HealthController as ObservedHealthController;
+
+            if (H.MainPlayer.ActiveHealthController.DamageMultiplier > 1f || bodyPart != EBodyPart.Head || !damageInfo.DamageType.IsEnemyDamage())
+            {
+                damage *= H.MainPlayer.ActiveHealthController.DamageMultiplier;
+            }
+            if (damageInfo.DamageType.IsEnvironmental())
+            {
+                damage *= GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[bodyPart].EnvironmentDamageMultiplier;
+            }
+            EDamageType damageType = damageInfo.DamageType;
+            GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState = healthController.Dictionary_0[bodyPart];
+            float num = bodyPartState.Health.Current;
+            float current = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;
+            ChangeHealth(healthController as ObservedHealthController, bodyPart, -damage, damageInfo);
+
+            // healthController.method_43(bodyPart, damage, damageInfo); // Network
+
+            // Action<EBodyPart, float, DamageInfoStruct> applyDamageEvent = healthController.ApplyDamageEvent;
+            // if (applyDamageEvent != null)
+            // {
+            //     applyDamageEvent(bodyPart, damage, damageInfo);
+            // }
+            // if (damageInfo.DamageType.IsEnemyDamage())
+            // {
+            //     Action<Player, IPlayer> onApplyDamageByPlayer = healthController.OnApplyDamageByPlayer;
+            //     if (onApplyDamageByPlayer != null)
+            //     {
+            //         Player player = healthController.Player;
+            //         IPlayerOwner player2 = damageInfo.Player;
+            //         onApplyDamageByPlayer(player, (player2 != null) ? player2.iPlayer : null);
+            //     }
+            // }
+            // if (!bodyPartState.IsDestroyed && bodyPartState.Health.AtMinimum)
+            // {
+            //     healthController.DestroyBodyPart(bodyPart, damageType);
+            // }
+            // if (bodyPartState.IsDestroyed)
+            // {
+            //     healthController.method_24(bodyPart, damageType);
+            // }
+
+            if (!damageType.IsSelfInflicted())
+            {
+                float num2 = Mathf.Max(0f, damage - num);
+                if (num2 > 0f)
+                {
+                    float num3 = 0f;
+                    foreach (KeyValuePair<EBodyPart, GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState> keyValuePair in healthController.Dictionary_0)
+                    {
+                        EBodyPart ebodyPart;
+                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState2;
+                        keyValuePair.Deconstruct(out ebodyPart, out bodyPartState2);
+                        EBodyPart ebodyPart2 = ebodyPart;
+                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState3 = bodyPartState2;
+                        if (ebodyPart2 != bodyPart && !bodyPartState3.IsDestroyed)
+                        {
+                            num3 += healthController.GetBodyPartHealth(ebodyPart2, false).Maximum;
+                        }
+                    }
+                    float num4 = num2 * Singleton<BackendConfigSettingsClass>.Instance.OverDamageFactor[bodyPart];
+                    DamageInfoStruct overDamage = damageInfo.GetOverDamage(bodyPart);
+                    foreach (KeyValuePair<EBodyPart, GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState> keyValuePair in healthController.Dictionary_0)
+                    {
+                        EBodyPart ebodyPart;
+                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState2;
+                        keyValuePair.Deconstruct(out ebodyPart, out bodyPartState2);
+                        EBodyPart ebodyPart3 = ebodyPart;
+                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState4 = bodyPartState2;
+                        if (ebodyPart3 != bodyPart && !bodyPartState4.IsDestroyed)
+                        {
+                            float overDamageReceivedMultiplier = GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[ebodyPart3].OverDamageReceivedMultiplier;
+                            // healthController.ChangeHealth(ebodyPart3, Mathf.Min(-num4 * bodyPartState4.Health.Maximum / num3 * overDamageReceivedMultiplier, 0f), overDamage);
+                            // if (bodyPartState4.Health.AtMinimum)
+                            // {
+                            //     healthController.DestroyBodyPart(ebodyPart3, damageType);
+                            // }
+                        }
+                    }
+                }
+
+            }
+
+            // ValueStruct bodyPartHealth = healthController.GetBodyPartHealth(EBodyPart.Common, false);
+            // D.Dump(bodyPartHealth);
+            // if (bodyPartHealth.AtMinimum)
+            // {
+            //     Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo);
+            // }
+
 
             var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
             var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
             if (headHP.AtMinimum || chestHP.AtMinimum)
             {
-                D.Log("Died");
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(damage);
+                D.Log($"{victim.Profile.Nickname} died");
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id);
             }
+
+
+            float current2 = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;
+            return current - current2;
+        }
+
+        public static void ChangeHealth(ObservedHealthController healthController, EBodyPart bodyPart, float value, DamageInfoStruct damageInfo)
+        {
+            // if (!base.IsAlive)
+            // {
+            //     return;
+            // }
+            GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState = healthController.Dictionary_0[bodyPart];
+            if (bodyPartState.IsDestroyed)
+            {
+                return;
+            }
+            bodyPartState.Health.Current += value;
+            float lastDiff = bodyPartState.Health.LastDiff;
+            if (lastDiff.IsZero())
+            {
+                return;
+            }
+            // healthController.method_36(bodyPart); // network
+            // Action<EBodyPart, float, DamageInfoStruct> healthChangedEvent = this.HealthChangedEvent;
+            // if (healthChangedEvent != null)
+            // {
+            //     healthChangedEvent(bodyPart, lastDiff, damageInfo);
+            // }
         }
     }
 }

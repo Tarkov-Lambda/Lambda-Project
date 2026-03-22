@@ -24,17 +24,12 @@ namespace ifp.arena.il
         void Start()
         {
             Logger = base.Logger;
-            Logger.LogInfo("Load");
-
-            RegisterPatch(new ObservedPlayer_CreateObservedPlayer_Transpiler());
-
+            // RegisterPatch(new ObservedPlayer_CreateObservedPlayer_Transpiler());
         }
 
 
         void OnDestroy()
         {
-            // Logger.LogInfo("Unload");
-
             foreach (var patch in _patches)
                 patch.Disable();
 

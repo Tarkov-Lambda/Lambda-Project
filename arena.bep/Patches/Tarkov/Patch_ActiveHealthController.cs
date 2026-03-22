@@ -23,7 +23,7 @@ namespace ifp.arena.bep.Patches.Tarkov
     //
     // Here we can theoretically check if the shooter is already dead not damage
     // ourselves, or at least tighen up the kill trade window.
-    public class Patch_ApplyDamage : ModulePatch
+    public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     {
         public static DamageInfoStruct LastReceivedDamageInfo { get; private set; }
 
@@ -46,20 +46,11 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(ref float __result, ActiveHealthController __instance)
         {
-            var headHP = __instance.GetBodyPartHealth(EBodyPart.Head, false);
-            var chestHP = __instance.GetBodyPartHealth(EBodyPart.Chest, false);
-            D.Dump(headHP);
-            D.Dump(chestHP);
-
-            if (FikaBackendUtils.IsServer && (headHP.AtMinimum || chestHP.AtMinimum))
-            {
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
-            }
 
         }
     }
 
-    public class Patch_Kill : ModulePatch
+    public class Patch_ActiveHealthController_Kill : ModulePatch
     {
         private static long _lastKillTime;
         private const int CooldownMs = 500;
@@ -96,9 +87,9 @@ namespace ifp.arena.bep.Patches.Tarkov
             }
 
             if (FikaBackendUtils.IsServer)
+            // if (__instance.Player.IsYourPlayer)
             {
-
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo);
             }
 
             return false;

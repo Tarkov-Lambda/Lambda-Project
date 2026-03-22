@@ -51,11 +51,9 @@ namespace ifp.arena.bep.networking
 
     public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
-        public void Send(DamageInfoStruct damage)
+        public void Send(DamageInfoStruct damage, int? victimId = null)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
-            // D.Dump(damage);
-            // D.Dump(damage.Player.iPlayer);
 
             var packet = new PlayerKilledPacket
             {
@@ -66,6 +64,8 @@ namespace ifp.arena.bep.networking
                 bodyPartCollider = damage.BodyPartColliderType,
                 weaponId = H.GetPlayer(killerId).HandsController.Item.TemplateId,
             };
+
+            if (victimId.HasValue) packet.victimId = victimId.Value;
 
             RequestSend(packet);
         }
@@ -103,15 +103,19 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            D.Notify($"Killing {H.GetPlayer(packet.victimId).Profile.Nickname}");
+            D.Dump(packet);
+
             PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
 
-            if (victimScore != null && !victimScore.player.IsYourPlayer)
+
+            if (victimScore != null)
             {
                 victimScore.Kill();
             }
 
+            D.Dump(killerScore);
+            D.Dump(victimScore);
 
             if (killerScore != null && killerScore != victimScore && killerScore.faction != victimScore.faction)
             {
@@ -126,10 +130,6 @@ namespace ifp.arena.bep.networking
             {
                 H.MainPlayer.ActiveHealthController.Kill(packet.damageType);
             }
-
-
-
-
 
             EventBus.OnPlayerKill(packet);
         }
