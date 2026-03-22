@@ -73,8 +73,7 @@ namespace ifp.arena.bep.Patches
             victim.HandleDamagePacket(damage);
         }
 
-
-        public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+       public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
             if (!H.GetPlayerScore(victim.Id).isAlive) return 0f;
 
@@ -88,19 +87,23 @@ namespace ifp.arena.bep.Patches
             {
                 damage *= GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[bodyPart].EnvironmentDamageMultiplier;
             }
+
             EDamageType damageType = damageInfo.DamageType;
-            GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState = healthController.Dictionary_0[bodyPart];
+            var bodyPartState = healthController.Dictionary_0[bodyPart];
+
             float num = bodyPartState.Health.Current;
             float current = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;
-            ChangeHealth(healthController as ObservedHealthController, bodyPart, -damage, damageInfo);
 
-            // healthController.method_43(bodyPart, damage, damageInfo); // Network
+            ChangeHealth(healthController, bodyPart, -damage, damageInfo);
+
+            // healthController.method_43(bodyPart, damage, damageInfo);
 
             // Action<EBodyPart, float, DamageInfoStruct> applyDamageEvent = healthController.ApplyDamageEvent;
             // if (applyDamageEvent != null)
             // {
             //     applyDamageEvent(bodyPart, damage, damageInfo);
             // }
+
             // if (damageInfo.DamageType.IsEnemyDamage())
             // {
             //     Action<Player, IPlayer> onApplyDamageByPlayer = healthController.OnApplyDamageByPlayer;
@@ -111,10 +114,12 @@ namespace ifp.arena.bep.Patches
             //         onApplyDamageByPlayer(player, (player2 != null) ? player2.iPlayer : null);
             //     }
             // }
+
             // if (!bodyPartState.IsDestroyed && bodyPartState.Health.AtMinimum)
             // {
             //     healthController.DestroyBodyPart(bodyPart, damageType);
             // }
+
             // if (bodyPartState.IsDestroyed)
             // {
             //     healthController.method_24(bodyPart, damageType);
@@ -126,58 +131,66 @@ namespace ifp.arena.bep.Patches
                 if (num2 > 0f)
                 {
                     float num3 = 0f;
-                    foreach (KeyValuePair<EBodyPart, GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState> keyValuePair in healthController.Dictionary_0)
+
+                    foreach (var kvp in healthController.Dictionary_0)
                     {
-                        EBodyPart ebodyPart;
-                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState2;
-                        keyValuePair.Deconstruct(out ebodyPart, out bodyPartState2);
-                        EBodyPart ebodyPart2 = ebodyPart;
-                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState3 = bodyPartState2;
-                        if (ebodyPart2 != bodyPart && !bodyPartState3.IsDestroyed)
+                        var part = kvp.Key;
+                        var state = kvp.Value;
+
+                        if (part != bodyPart && !state.IsDestroyed)
                         {
-                            num3 += healthController.GetBodyPartHealth(ebodyPart2, false).Maximum;
+                            num3 += healthController.GetBodyPartHealth(part, false).Maximum;
                         }
                     }
+
                     float num4 = num2 * Singleton<BackendConfigSettingsClass>.Instance.OverDamageFactor[bodyPart];
                     DamageInfoStruct overDamage = damageInfo.GetOverDamage(bodyPart);
-                    foreach (KeyValuePair<EBodyPart, GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState> keyValuePair in healthController.Dictionary_0)
+
+                    foreach (var kvp in healthController.Dictionary_0)
                     {
-                        EBodyPart ebodyPart;
-                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState2;
-                        keyValuePair.Deconstruct(out ebodyPart, out bodyPartState2);
-                        EBodyPart ebodyPart3 = ebodyPart;
-                        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState4 = bodyPartState2;
-                        if (ebodyPart3 != bodyPart && !bodyPartState4.IsDestroyed)
+                        var part = kvp.Key;
+                        var state = kvp.Value;
+
+                        if (part != bodyPart && !state.IsDestroyed)
                         {
-                            float overDamageReceivedMultiplier = GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[ebodyPart3].OverDamageReceivedMultiplier;
-                            // healthController.ChangeHealth(ebodyPart3, Mathf.Min(-num4 * bodyPartState4.Health.Maximum / num3 * overDamageReceivedMultiplier, 0f), overDamage);
-                            // if (bodyPartState4.Health.AtMinimum)
+                            float mult = GClass3009<ActiveHealthController.GClass3008>
+                                .GClass1728_0.ProfileHealthSettings.BodyPartsSettings[part]
+                                .OverDamageReceivedMultiplier;
+
+                            // healthController.ChangeHealth(part,
+                            //     Mathf.Min(-num4 * state.Health.Maximum / num3 * mult, 0f),
+                            //     overDamage);
+
+                            // if (state.Health.AtMinimum)
                             // {
-                            //     healthController.DestroyBodyPart(ebodyPart3, damageType);
+                            //     healthController.DestroyBodyPart(part, damageType);
                             // }
                         }
                     }
                 }
 
+                // if (damage >= 1f && damageType != EDamageType.Barbed)
+                // {
+                //     healthController.method_27(bodyPart, 0f, 0f,
+                //         Mathf.Clamp(15f * damage / bodyPartState.Health.Maximum, 1f, 10f),
+                //         new float?(Mathf.Clamp(damage / bodyPartState.Health.Maximum * 2f, 0.33f, 2f)));
+                // }
+
+                // if (damageType == EDamageType.Btr)
+                // {
+                //     healthController.DoStun(12f, 1f);
+                // }
             }
 
-            // ValueStruct bodyPartHealth = healthController.GetBodyPartHealth(EBodyPart.Common, false);
-            // D.Dump(bodyPartHealth);
-            // if (bodyPartHealth.AtMinimum)
-            // {
-            //     Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo);
-            // }
-
+            ValueStruct bodyPartHealth = healthController.GetBodyPartHealth(EBodyPart.Common, false);
 
             var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
             var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
-            if (headHP.AtMinimum || chestHP.AtMinimum)
+            if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
-                D.Log($"{victim.Profile.Nickname} died");
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id); // Client dies
             }
-
 
             float current2 = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;
             return current - current2;
