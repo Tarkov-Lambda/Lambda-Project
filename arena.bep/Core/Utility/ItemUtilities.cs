@@ -10,6 +10,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using EFT.Interactive;
+using Fika.Core.Main.FreeCamera.Patches;
 
 namespace ifp.arena.bep.Core
 {
@@ -21,14 +22,12 @@ namespace ifp.arena.bep.Core
         public readonly PlacementKind Kind;
         public readonly EquipmentSlot Slot;         // For EquipmentSlot
         public readonly ItemAddress Address;        // For VestAddress
-        public readonly CompoundItem PlateHolder;   // For ArmorPlate
 
-        private ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null, CompoundItem plateHolder = null)
+        public ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null, CompoundItem plateHolder = null)
         {
             Kind = kind;
             Slot = slot;
             Address = address;
-            PlateHolder = plateHolder; // lowkey might be able to squash this into address
         }
 
         public static ItemPlacement ForSlot(EquipmentSlot slot) => new(PlacementKind.EquipmentSlot, slot: slot);
@@ -269,9 +268,16 @@ namespace ifp.arena.bep.Core
             return removed;
         }
 
-        public static async UniTask WhenApprovedGiveItem(Item item, Player player)
+        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedAddress = null)
         {
+            // var placement = precomputedAddress != null ? ItemPlacement.ForAddress(precomputedAddress) : GetItemPlacement(item, player);
             await PlaceItem(item, player, GetItemPlacement(item, player));
+            // await PlaceItem(item, player, newItemPlacement);
+
+
+            // placement.Address = itemAddress;
+            // await PlaceItem(item, player, GetItemPlacement(item, player));
+
             // D.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
@@ -295,13 +301,16 @@ namespace ifp.arena.bep.Core
                     break;
 
                 case PlacementKind.ArmorPlate:
-                    await PlaceArmorPlate(item, player, placement.PlateHolder);
+                    await PlaceArmorPlate(item, player, placement);
                     break;
             }
         }
 
-        private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, CompoundItem plateHolder)
+        private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
         {
+            // var plateHolder = PU.GetPlayerSlotItem(player, placement.Slot) as CompoundItem;
+            var plateHolder = GetPlateHolder(player);
+
             var plate = item as ArmorPlateItemClass;
             foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
             {
@@ -313,6 +322,9 @@ namespace ifp.arena.bep.Core
                         continue;
 
                     var addResult = slot.AddWithoutRestrictions(plate);
+                    D.Log(slot.CreateItemAddress().ContainerName);
+                    D.Log(plate.CurrentAddress.ContainerName);
+
                     if (addResult.Failed)
                     {
                         // D.Dump(addResult);

@@ -125,7 +125,6 @@ namespace ifp.arena.bep.Core.Gamemode
 
                 await IU.TryRemoveItems(itemsToRemove, player);
 
-                // Give default pistol if needed
                 if (needsDefaultPistol && defaultPistolBsgId != null)
                 {
                     var defaultPistolItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId);

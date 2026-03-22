@@ -18,9 +18,28 @@ namespace ifp.arena.bep.networking
         public int playerId;
         public FlatItemsDataClass[] flatItems;
 
+        /// <summary>
+        /// The pre-computed destination address for this item.
+        /// Populated on the sending side; reconstructed from the interim binary fields
+        /// (<see cref="_addressContainerId"/>, <see cref="_addressIsGrid"/>, etc.) in
+        /// <see cref="SpawnItemPacketHandler.WhenApproved"/> once the receiving client has access
+        /// to the target player's live container tree.
+        /// </summary>
+        public ItemAddress address;
+
+        // Interim wire fields — populated during Deserialize, used to rebuild `address` in WhenApproved.
+        public string _addressContainerId;
+        public bool _addressIsGrid;
+        public int _addressX, _addressY, _addressR;
+
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(playerId);
+
+            bool hasAddress = address != null;
+            writer.Put(hasAddress);
+            if (hasAddress)
+                writer.Put(address); // containerId + isGrid + (x, y, r if grid)
 
             if (flatItems == null)
             {
@@ -68,6 +87,20 @@ namespace ifp.arena.bep.networking
         public void Deserialize(NetDataReader reader)
         {
             playerId = reader.GetInt();
+
+            // Read interim address fields — address is reconstructed later in WhenApproved
+            // once we have access to the target player's live container tree.
+            if (reader.GetBool())
+            {
+                _addressContainerId = reader.GetString();
+                _addressIsGrid = reader.GetBool();
+                if (_addressIsGrid)
+                {
+                    _addressX = reader.GetInt();
+                    _addressY = reader.GetInt();
+                    _addressR = reader.GetInt();
+                }
+            }
 
             int itemsCount = reader.GetInt();
             if (itemsCount == 0)
@@ -125,12 +158,13 @@ namespace ifp.arena.bep.networking
             stateTtlSeconds: 60,
             rejectCooldownSeconds: 1.0);
 
-        public void Send(Item item)
+        public void Send(Item item, ItemAddress targetAddress = null)
         {
             var packet = new SpawnItemPacket
             {
                 playerId = H.MainPlayer.Id,
-                flatItems = FU.ItemFactory.TreeToFlatItems(item)
+                flatItems = FU.ItemFactory.TreeToFlatItems(item),
+                address = targetAddress
             };
 
             RequestSend(packet);
@@ -163,24 +197,63 @@ namespace ifp.arena.bep.networking
                 int playerId = packet.playerId;
                 Item captured = rootItem;
 
+                // Capture the wire fields so the lambda closes over values, not the mutable struct.
+                string addressContainerId = packet._addressContainerId;
+                bool addressIsGrid = packet._addressIsGrid;
+                int addressX = packet._addressX;
+                int addressY = packet._addressY;
+                ItemRotation addressR = (ItemRotation)packet._addressR;
+
                 // Get the existing chain tail for this player, or start fresh
                 UniTask prev = _chains.TryGetValue(playerId, out var existing)
                     ? existing
                     : UniTask.CompletedTask;
 
-                // Append our work sequentially; each step waits for the previous to finish
+                // Append our work sequentially; each step waits for the previous to finish.
+                // IMPORTANT: address reconstruction happens INSIDE the lambda so that it reads the
+                // inventory state AFTER all previous chain steps have placed their items.
+                // Computing it before the lambda (in WhenApproved) causes address collisions when
+                // multiple packets arrive before any item has been placed.
                 _chains[playerId] = prev.ContinueWith(async () =>
                 {
                     try
                     {
                         await IU.LoadBundlesForItem(captured);
-                        await IU.WhenApprovedGiveItem(captured, H.GetPlayer(playerId));
+
+                        // Reconstruct the address now — the inventory is up-to-date at this point.
+                        Player player = H.GetPlayer(playerId);
+                        ItemAddress address = null;
+                        if (addressContainerId != null && player != null)
+                            address = NetExtensions.GetItemAddress(
+                                addressContainerId,
+                                addressIsGrid,
+                                addressX,
+                                addressY,
+                                addressR,
+                                GetAllPlayerContainers(player));
+
+                        await IU.WhenApprovedGiveItem(captured, player);
                     }
                     catch (Exception ex)
                     {
                         Plugin.Logger.LogWarning($"[SpawnItem] Chain step failed for player {playerId}: {ex.Message}");
                     }
                 });
+            }
+        }
+
+        /// <summary>
+        /// Collects every <see cref="EFT.InventoryLogic.IContainer"/> reachable from the player's
+        /// equipment tree — both <see cref="Slot"/>s and grid containers inside compound items.
+        /// </summary>
+        private static IEnumerable<EFT.InventoryLogic.IContainer> GetAllPlayerContainers(Player player)
+        {
+            foreach (var item in player.Inventory.Equipment.GetAllItems().OfType<CompoundItem>())
+            {
+                foreach (var container in item.Containers)
+                    yield return container;
+                foreach (var slot in item.Slots)
+                    yield return slot;
             }
         }
 

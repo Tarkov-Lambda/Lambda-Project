@@ -103,7 +103,7 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            D.Dump(packet);
+            // D.Dump(packet);
 
             PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
@@ -114,8 +114,8 @@ namespace ifp.arena.bep.networking
                 victimScore.Kill();
             }
 
-            D.Dump(killerScore);
-            D.Dump(victimScore);
+            // D.Dump(killerScore);
+            // D.Dump(victimScore);
 
             if (killerScore != null && killerScore != victimScore && killerScore.faction != victimScore.faction)
             {

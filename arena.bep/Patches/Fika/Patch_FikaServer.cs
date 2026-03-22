@@ -15,6 +15,7 @@ using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Video;
@@ -38,8 +39,19 @@ namespace ifp.arena.bep.Patches
             var coopHandler = CoopHandlerRef(__instance);
             int victimNetId = packet.NetId;
 
+
+            // D.Dump(packet, 2);
+            // D.Dump(damage.SourceId);
+            // D.Dump(peer);
+
             if (!coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
 
+            D.Log(peer.Id.ToString());
+            D.Log(damage.ProfileId);
+            var damagePlayer = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
+
+            D.Log(damagePlayer.Profile.Nickname);
+            D.Log(damagePlayer.Id.ToString());
             // we handle the server owner player in the Patch_Kill
             // kind of ass backwards, but it makes sense in my head rn
             if (victim.IsYourPlayer) return;
@@ -73,7 +85,7 @@ namespace ifp.arena.bep.Patches
             victim.HandleDamagePacket(damage);
         }
 
-       public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+        public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
             if (!H.GetPlayerScore(victim.Id).isAlive) return 0f;
 
@@ -187,6 +199,7 @@ namespace ifp.arena.bep.Patches
             var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
             var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
+            D.Dump(victim.Profile.Nickname);
             if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id); // Client dies

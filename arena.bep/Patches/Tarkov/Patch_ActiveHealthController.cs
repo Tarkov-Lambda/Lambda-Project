@@ -34,12 +34,10 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
-
-            // D.Log($"{__instance.Player.Profile.Nickname} got hit");
-            // D.Dump(damageInfo);
-
-
-            LastReceivedDamageInfo = damageInfo;
+            if (__instance.Player.IsYourPlayer)
+            {
+                LastReceivedDamageInfo = damageInfo;
+            }
             return true;
         }
 
@@ -86,8 +84,8 @@ namespace ifp.arena.bep.Patches.Tarkov
                 Teleporter.Teleport(__instance.Player);
             }
 
-            if (FikaBackendUtils.IsServer)
-            // if (__instance.Player.IsYourPlayer)
+            if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+            // if (__instance.Player.IsYourPlayer )
             {
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo);
             }
