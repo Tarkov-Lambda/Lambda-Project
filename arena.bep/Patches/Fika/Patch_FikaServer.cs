@@ -1,6 +1,8 @@
 ﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Main.Components;
+using Fika.Core.Main.Players;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
@@ -13,6 +15,23 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches
 {
+
+    // [Info   : arena.bep] CoriumOperator
+    // [Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object
+    // Stack trace:
+    // ifp.arena.bep.Patches.Patch_FikaServer_OnCommonPlayerPacketReceived.Postfix (Fika.Core.Networking.FikaServer __instance, Fika.Core.Networking.Packets.Player.Common.CommonPlayerPacket packet, Fika.Core.Networking.LiteNetLib.NetPeer peer) (at <00a04958e6b5425baf50a72d6d850112>:0)
+    // (wrapper dynamic-method) Fika.Core.Networking.FikaServer.DMD<Fika.Core.Networking.FikaServer::OnCommonPlayerPacketReceived>(Fika.Core.Networking.FikaServer,Fika.Core.Networking.Packets.Player.Common.CommonPlayerPacket,Fika.Core.Networking.LiteNetLib.NetPeer)
+    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor+<>c__DisplayClass27_0`2[T,TUserData].<SubscribeNetReusable>b__0 (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadPacket (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadAllPackets (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.FikaServer.OnNetworkReceive (Fika.Core.Networking.LiteNetLib.NetPeer peer, Fika.Core.Networking.LiteNetLib.NetPacketReader reader, System.Byte channelNumber, Fika.Core.Networking.LiteNetLib.DeliveryMethod deliveryMethod) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.NetManager.ProcessEvent (Fika.Core.Networking.LiteNetLib.NetEvent evt) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.LiteNetManager.PollEvents () (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.FikaServer.Update () (at <4961a269c1a0469488965fa870906146>:0)
+    // UnityEngine.DebugLogHandler:LogException(Exception, Object)
+    // Class412:LogException(Exception, Object)
+    // UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
+
     internal sealed class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     {
         private static readonly AccessTools.FieldRef<FikaServer, CoopHandler> CoopHandlerRef = AccessTools.FieldRefAccess<FikaServer, CoopHandler>("_coopHandler");
@@ -22,6 +41,7 @@ namespace ifp.arena.bep.Patches
         [PatchPostfix]
         private static void Postfix(FikaServer __instance, CommonPlayerPacket packet, NetPeer peer)
         {
+            // D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
             if (packet.Type != ECommonSubPacketType.Damage) return;
             if (packet.SubPacket is not DamagePacket damage) return;
 
@@ -49,11 +69,15 @@ namespace ifp.arena.bep.Patches
             D.Log(victim.Profile.Nickname);
 
             // Check if head or chest is blacked out after this damage
-            var headHP = victim.ActiveHealthController.GetBodyPartHealth(EBodyPart.Head, false);
-            var chestHP = victim.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest, false);
+            // D.Dump(victim);
+            // D.Dump(victim.HealthController);
+
+            var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
+            var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
             if (headHP.AtMinimum || chestHP.AtMinimum)
             {
+                D.Log("Died");
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(damage);
             }
         }

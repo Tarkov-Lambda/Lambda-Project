@@ -60,6 +60,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             _lastKillTime = now;
 
             if (!H.MainPlayerScore.isAlive) return false;
+            H.MainPlayerScore.Kill();
 
             // Delayed double healing to make sure every negative effect is fixed
             HU.FixMe().Forget();
@@ -67,18 +68,18 @@ namespace ifp.arena.bep.Patches.Tarkov
             try
             {
                 H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                
+
                 // If the server player dies
                 // or if the client kills themselves (explosion prolly, fall)
-                if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
-                {
-                    D.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);
-                    Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
-                }
+                // if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+                // {
+                // D.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
+                // }
 
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
-                _ = PU.CloseEyes(true, false);
+                _ = PU.CloseEyes(true, true);
                 Teleporter.Teleport(__instance.Player);
             }
             catch (Exception ex)

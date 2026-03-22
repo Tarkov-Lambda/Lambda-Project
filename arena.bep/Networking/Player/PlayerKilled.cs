@@ -8,6 +8,7 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using MemoryPack;
@@ -53,8 +54,8 @@ namespace ifp.arena.bep.networking
         public void Send(DamageInfoStruct damage)
         {
             int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
-            D.Dump(damage);
-            D.Dump(damage.Player.iPlayer);
+            // D.Dump(damage);
+            // D.Dump(damage.Player.iPlayer);
 
             var packet = new PlayerKilledPacket
             {
@@ -103,6 +104,20 @@ namespace ifp.arena.bep.networking
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
             D.Notify($"Killing {H.GetPlayer(packet.victimId).Profile.Nickname}");
+            PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
+            PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
+
+            if (victimScore != null && !victimScore.player.IsYourPlayer)
+            {
+                victimScore.Kill();
+            }
+
+
+            if (killerScore != null && killerScore != victimScore && killerScore.faction != victimScore.faction)
+            {
+                killerScore.AddFrag(packet.IsHeadshot);
+            }
+
             // The server will preemptively decide that we are dead
             // if another client sends a damage packet directed at us
             // and it ends up being fatal
@@ -112,15 +127,9 @@ namespace ifp.arena.bep.networking
                 H.MainPlayer.ActiveHealthController.Kill(packet.damageType);
             }
 
-            if (H.Scoreboard[packet.killerId] != null && packet.killerId != packet.victimId)
-            {
-                H.Scoreboard[packet.killerId].AddFrag(packet.IsHeadshot);
-            }
 
-            if (H.Scoreboard[packet.victimId] != null)
-            {
-                H.Scoreboard[packet.victimId].Kill();
-            }
+
+
 
             EventBus.OnPlayerKill(packet);
         }

@@ -122,6 +122,8 @@ namespace ifp.arena.bep.Core.Gamemode
             await Singleton<AssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby");
 
+            Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
+
 
             Physics.simulationMode = SimulationMode.FixedUpdate;
             // delay is stupid

@@ -11,8 +11,8 @@ namespace ifp.arena.bep.Core.Economy
 {
     public static class EconomyConstants
     {
-        public const int MAX_MONEY = 160000000;
-        public const int START_MONEY = 800000;
+        public const int MAX_MONEY = 16000;
+        public const int START_MONEY = 800;
 
         public const int WIN_ELIMINATION = 3250;
         public const int WIN_TIME = 3250;

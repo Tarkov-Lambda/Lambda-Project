@@ -99,6 +99,21 @@ namespace ifp.arena.bep.networking.Base
             Release(this);
         }
 
+        // [Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object
+        // Stack trace:
+        // ifp.arena.bep.networking.Base.PacketHandler`1[T].IsUnauthorized (System.Int32 id) (at <969384f4afc24680a3f8616f1f99f5da>:0)
+        // ifp.arena.bep.networking.Base.PacketHandler`1[T].WhenServerReceivesPacket (T packet, Fika.Core.Networking.LiteNetLib.NetPeer netPeer) (at <969384f4afc24680a3f8616f1f99f5da>:0)
+        // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor+<>c__DisplayClass30_0`2[T,TUserData].<SubscribeNetSerializable>b__0 (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+        // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadPacket (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+        // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadAllPackets (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+        // Fika.Core.Networking.FikaServer.OnNetworkReceive (Fika.Core.Networking.LiteNetLib.NetPeer peer, Fika.Core.Networking.LiteNetLib.NetPacketReader reader, System.Byte channelNumber, Fika.Core.Networking.LiteNetLib.DeliveryMethod deliveryMethod) (at <4961a269c1a0469488965fa870906146>:0)
+        // Fika.Core.Networking.LiteNetLib.NetManager.ProcessEvent (Fika.Core.Networking.LiteNetLib.NetEvent evt) (at <4961a269c1a0469488965fa870906146>:0)
+        // Fika.Core.Networking.LiteNetLib.LiteNetManager.PollEvents () (at <4961a269c1a0469488965fa870906146>:0)
+        // Fika.Core.Networking.FikaServer.Update () (at <4961a269c1a0469488965fa870906146>:0)
+        // UnityEngine.DebugLogHandler:LogException(Exception, Object)
+        // Class412:LogException(Exception, Object)
+        // UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
+
         // Admins have the same authority as the server
         private bool IsUnauthorized(int id)
         {

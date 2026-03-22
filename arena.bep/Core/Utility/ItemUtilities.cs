@@ -315,7 +315,7 @@ namespace ifp.arena.bep.Core
                     var addResult = slot.AddWithoutRestrictions(plate);
                     if (addResult.Failed)
                     {
-                        D.Dump(addResult);
+                        // D.Dump(addResult);
                         return false;
                     }
 

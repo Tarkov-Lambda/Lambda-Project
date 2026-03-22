@@ -4,13 +4,11 @@ using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.Core.MovementStates;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
@@ -25,7 +23,6 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-#if DEBUG
 // To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {
@@ -40,7 +37,6 @@ namespace System.Runtime.CompilerServices
         }
     }
 }
-#endif
 
 
 namespace ifp.arena.bep
@@ -127,6 +123,8 @@ namespace ifp.arena.bep
             RegisterPatch(new Patch_ApplyDamage()); // Caching last damage packet for death
             RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
 
+            // RegisterPatch(new Patch_BackendConfigSettingsClass_AimPunchMagnitude()); // Set aimpunch to 0
+
             RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Planting/Defusing
 
             RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
@@ -151,9 +149,9 @@ namespace ifp.arena.bep
 
 
             //--------------- FIKA --------------- //
-            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
-            RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate()); 
-            RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone()); 
+            // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
+            RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());
+            RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());
             //------------------------------------------ //
 
             //--------------- NETWORK --------------- //
@@ -188,7 +186,6 @@ namespace ifp.arena.bep
             RegisterSingleton<UIManager>();
             RegisterSingleton<FXHandler>();
             RegisterSingleton<PresetManager>();
-
 
             var warmup = typeof(Ladder);
             RegisterSingletonInRaid<LadderEventManager>().Forget();
