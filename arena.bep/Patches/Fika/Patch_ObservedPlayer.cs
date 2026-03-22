@@ -1,12 +1,13 @@
 ﻿using Comfort.Common;
 using EFT;
-using Fika.Core.Main.HostClasses;
+using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
+using EFT.HealthSystem;
 
 namespace ifp.arena.bep.Patches
 {
@@ -38,7 +39,6 @@ namespace ifp.arena.bep.Patches
                 ArmorDamage = packet.ArmorDamage
             };
 
-
             if (packet.SourceId.HasValue)
             {
                 damageInfo.SourceId = packet.SourceId.Value;
@@ -59,23 +59,17 @@ namespace ifp.arena.bep.Patches
 
             if (FikaBackendUtils.IsServer)
             {
-                // 1. We are the Server. Feed the flesh damage into the Authoritative Controller.
-                // This will calculate over-damage, bleeds, fractures, and death.
-                ServerAuthoritativeHealthController serverAuthoritativeHealthController = __instance.HealthController as ServerAuthoritativeHealthController;
+                ActiveHealthController serverAuthoritativeHealthController = __instance.HealthController as ActiveHealthController;
                 serverAuthoritativeHealthController.ApplyDamage(packet.BodyPartType, damageInfo.Damage, damageInfo);
 
-                // 2. Play visual/audio flinch reactions on the Server's proxy
                 __instance.ShotReactions(damageInfo, packet.BodyPartType);
                 __instance.ReceiveDamage(damageInfo.Damage, packet.BodyPartType, damageInfo.DamageType, packet.Absorbed, packet.Material);
             }
             else
             {
-                // We are a Client (Either the Victim or a Bystander).
-                // DO NOT call ApplyDamage here! We wait for the Server to send us HealthSyncPackets.
-
-                // We DO still want to play the visual blood splatters and audio grunts locally:
                 __instance.ShotReactions(damageInfo, packet.BodyPartType);
-                __instance.ReceiveDamage(0f, packet.BodyPartType, damageInfo.DamageType, packet.Absorbed, packet.Material); // Notice damage is 0f so we don't accidentally lower HP early!
+                // clients don't apply damage and just wait for serverside healthsyncs
+                __instance.ReceiveDamage(0f, packet.BodyPartType, damageInfo.DamageType, packet.Absorbed, packet.Material);
             }
 
             LastDamageInfoRef(__instance) = damageInfo;
@@ -85,15 +79,42 @@ namespace ifp.arena.bep.Patches
 
     }
 
-    internal sealed class Patch_ObservedPlayer_CreateObservedPlayer : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ObservedPlayer), nameof(ObservedPlayer.CreateObservedPlayer));
+    // internal sealed class Patch_ObservedPlayer_ApplyClientShot : ModulePatch
+    // {
+    //     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ObservedPlayer), nameof(ObservedPlayer.ApplyClientShot));
+    // }
 
-        // replace observedhealthcontroller to serversidehealthcontroller (on server)
+
+    // ObservedPlayer.NetworkHealthController is null on server
+    internal class ObservedPlayer_PauseAllEffectsOnPlayer_Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ObservedPlayer).GetMethod(nameof(ObservedPlayer.PauseAllEffectsOnPlayer));
+        }
+
+        [PatchPrefix]
+        public static bool Prefix(ObservedPlayer __instance)
+        {
+            // Return false (skip original) when NetworkHealthController is null, which happens on
+            // the server where the controller is ServerAuthoritativeHealthController.
+            return __instance.NetworkHealthController != null;
+        }
     }
 
-        internal sealed class Patch_ObservedPlayer_ApplyClientShot : ModulePatch
+    // same shit as above
+    internal class ObservedPlayer_UnpauseAllEffectsOnPlayer_Patch : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ObservedPlayer), nameof(ObservedPlayer.ApplyClientShot));
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ObservedPlayer).GetMethod(nameof(ObservedPlayer.UnpauseAllEffectsOnPlayer));
+        }
+
+        [PatchPrefix]
+        public static bool Prefix(ObservedPlayer __instance)
+        {
+            return __instance.NetworkHealthController != null;
+        }
     }
 }
+

@@ -149,9 +149,14 @@ namespace ifp.arena.bep
 
 
             //--------------- FIKA --------------- //
-            // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
+            RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
             RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());
             RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());
+
+            // RegisterPatch(new ObservedPlayer_CreateObservedPlayer_Transpiler());
+            // RegisterPatch(new Patch_ObservedPlayer_HandleDamagePacket());
+            // RegisterPatch(new ObservedPlayer_PauseAllEffectsOnPlayer_Patch());
+            // RegisterPatch(new ObservedPlayer_UnpauseAllEffectsOnPlayer_Patch());
             //------------------------------------------ //
 
             //--------------- NETWORK --------------- //

@@ -29,12 +29,33 @@ namespace ifp.arena.bep.Patches.Tarkov
 
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
 
+
         // Has to be prefix so that we can capture the damageInfo packet before Kill is invoked
         [PatchPrefix]
         static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
+
+            // D.Log($"{__instance.Player.Profile.Nickname} got hit");
+            // D.Dump(damageInfo);
+
+
             LastReceivedDamageInfo = damageInfo;
             return true;
+        }
+
+        [PatchPostfix]
+        static void Postfix(ref float __result, ActiveHealthController __instance)
+        {
+            var headHP = __instance.GetBodyPartHealth(EBodyPart.Head, false);
+            var chestHP = __instance.GetBodyPartHealth(EBodyPart.Chest, false);
+            D.Dump(headHP);
+            D.Dump(chestHP);
+
+            if (FikaBackendUtils.IsServer && (headHP.AtMinimum || chestHP.AtMinimum))
+            {
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
+            }
+
         }
     }
 
@@ -50,43 +71,35 @@ namespace ifp.arena.bep.Patches.Tarkov
         static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
         {
             if (__instance.Player.IsAI) return true;
+            D.Log($"{__instance.Player.Profile.Nickname} died");
 
             long now = Stopwatch.GetTimestamp();
             long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;
 
-            if (elapsedMs < CooldownMs)
-                return false;
+            if (elapsedMs < CooldownMs) return false;
 
             _lastKillTime = now;
 
-            if (!H.MainPlayerScore.isAlive) return false;
-            H.MainPlayerScore.Kill();
+            if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
+            H.GetPlayerScore(__instance.Player.Id).Kill();
 
-            // Delayed double healing to make sure every negative effect is fixed
-            HU.FixMe().Forget();
-            Singleton<ReplenishPacketHandler>.Instance.Send();
-            try
+            if (__instance.Player.IsYourPlayer)
             {
-                H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+                HU.FixMe().Forget();
+                Singleton<ReplenishPacketHandler>.Instance.Send();
 
-                // If the server player dies
-                // or if the client kills themselves (explosion prolly, fall)
-                // if (FikaBackendUtils.IsServer || FikaBackendUtils.IsClient && Patch_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
-                // {
-                // D.Dump(Patch_ApplyDamage.LastReceivedDamageInfo);
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
-                // }
-
+                __instance.Player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
                 Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
                 _ = PU.CloseEyes(true, true);
                 Teleporter.Teleport(__instance.Player);
             }
-            catch (Exception ex)
-            {
-                Plugin.Logger.LogError(ex);
-            }
 
+            if (FikaBackendUtils.IsServer)
+            {
+
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ApplyDamage.LastReceivedDamageInfo);
+            }
 
             return false;
         }

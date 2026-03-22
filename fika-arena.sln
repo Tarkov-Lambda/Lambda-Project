@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.shared", "arena.share
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.ui", "arena.ui\arena.ui.csproj", "{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.il", "arena.il\arena.il.csproj", "{FF8134DC-62E5-9CB6-8C8E-4430DBB6E25D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF8134DC-62E5-9CB6-8C8E-4430DBB6E25D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF8134DC-62E5-9CB6-8C8E-4430DBB6E25D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF8134DC-62E5-9CB6-8C8E-4430DBB6E25D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF8134DC-62E5-9CB6-8C8E-4430DBB6E25D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
