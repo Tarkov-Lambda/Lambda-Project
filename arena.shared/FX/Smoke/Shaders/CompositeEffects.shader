@@ -40,15 +40,7 @@ Shader "Hidden/CompositeEffects" {
             #pragma fragment fp
 
             float4 fp(v2f i) : SV_Target {
-                float2 uv = i.uv;
-                // _CameraDepthTexture uses screen-space UVs (Y from bottom).
-                // On D3D / Metal, render textures have Y starting at the top, so we
-                // need to flip before sampling the depth texture to keep it consistent
-                // with what the compute shader expects (id.y=0 = bottom row).
-                #if UNITY_UV_STARTS_AT_TOP
-                if (_ProjectionParams.x > 0) uv.y = 1.0 - uv.y;
-                #endif
-                return _CameraDepthTexture.Sample(point_clamp_sampler, uv).r;
+                return _CameraDepthTexture.Sample(point_clamp_sampler, i.uv).r;
             }
 
             ENDCG
