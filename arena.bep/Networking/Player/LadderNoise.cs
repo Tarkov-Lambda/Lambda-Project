@@ -23,7 +23,7 @@ namespace ifp.arena.bep.networking
             RequestSend(new LadderNoisePacket { id = H.MainPlayer.Id });
         }
 
-        protected override void ClientPrediction(LadderNoisePacket packet)
+        protected override void LocalPredictApproved(LadderNoisePacket packet)
         {
             MakeLadderNoise(H.MainPlayer);
         }
@@ -32,8 +32,6 @@ namespace ifp.arena.bep.networking
         protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
         {
             Player player = H.GetPlayer(packet.id);
-            MakeLadderNoise(player);
-
             if (player.IsYourPlayer) return;
 
             MakeLadderNoise(player);

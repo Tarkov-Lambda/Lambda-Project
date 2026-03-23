@@ -10,7 +10,6 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using EFT.Interactive;
-using Fika.Core.Main.FreeCamera.Patches;
 
 namespace ifp.arena.bep.Core
 {
@@ -49,7 +48,7 @@ namespace ifp.arena.bep.Core
                 .Where(p => p != null && !string.IsNullOrEmpty(p.path))
                 .ToList();
 
-            // Also include the ammo bundle for any weapons in the item tree.
+            // also include the ammo bundle for any weapons in the item tree
             foreach (var subItem in item.GetAllItems())
             {
                 if (subItem is Weapon weapon && FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
@@ -100,13 +99,13 @@ namespace ifp.arena.bep.Core
                     {
                         bool removed;
                         if (templateItem is BackpackItemClass) // Backpack is only the bomb
-                            removed = await TryRemoveSlot(placement.Slot, H.MainPlayer);
+                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
                         else
                         {
                             if (templateItem is Weapon)
                                 removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
                             else
-                                removed = await TryThrowSlot(placement.Slot, H.MainPlayer);
+                                removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
                         }
 
                         if (!removed)
@@ -135,10 +134,10 @@ namespace ifp.arena.bep.Core
 
         // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
         // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
-        public static async UniTask<bool> TryRemoveSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
-            => await TryOperateOnSlot(equipmentSlot, player, TryRemoveItem, waitUntilStationary, extraBackpackWait: true);
+        public static async UniTask<bool> TryPopContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+            => await TryOperateOnSlot(equipmentSlot, player, TryPopItem, waitUntilStationary, extraBackpackWait: true);
 
-        public static async UniTask<bool> TryThrowSlot(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
+        public static async UniTask<bool> TryThrowContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
             => await TryOperateOnSlot(equipmentSlot, player, TryThrowItem, waitUntilStationary);
 
 
@@ -167,53 +166,50 @@ namespace ifp.arena.bep.Core
         }
 
 
-        public static async UniTask<bool> TryRemoveItem(Item item, Player player)
-        {
-            D.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
-            OperationResult removalEvent = InteractionsHandlerClass.Remove(item, player.InventoryController, true);
-            if (removalEvent.Failed)
-            {
-                D.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
-                D.LogTransaction($"Reason: {removalEvent.Error}");
-            }
-            if (removalEvent.Failed) return false;
 
-            IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
-            if (result.Failed)
-            {
-                D.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
-                D.LogTransaction($"Reason: {result.Error}");
-            }
-            return !result.Failed;
-        }
-
-        public static async UniTask TryRemoveItems(IEnumerable<Item> items, Player player, int delayMs = 25)
+        public static async UniTask TryPopItems(IEnumerable<Item> items, Player player, int delayMs = 25)
         {
             foreach (var item in items)
             {
-                await TryRemoveItem(item, player);
+                await TryPopItem(item, player);
                 if (delayMs != 0) await UniTask.Delay(delayMs);
             }
         }
 
-
-        public static async UniTask<bool> TryThrowItem(Item item, Player player)
+        public static UniTask<bool> TryPopItem(Item item, Player player)
         {
-            D.LogInventory($"Player {player.Profile.Nickname} is trying to create throw event for {item.LocalizedName()} ({item.Id})");
-            OperationResult removalEvent = InteractionsHandlerClass.Throw(item, player.InventoryController, true);
-            if (removalEvent.Failed)
-            {
-                D.LogTransaction($"Player {player.Profile.Nickname} failed to execute throw simulation for {item.LocalizedName()} ({item.Id})");
-                D.LogTransaction($"Reason: {removalEvent.Error}");
-            }
-            if (removalEvent.Failed) return false;
+            return TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
+        }
 
-            IResult result = await player.InventoryController.TryRunNetworkTransaction(removalEvent);
+        public static UniTask<bool> TryThrowItem(Item item, Player player)
+        {
+            return TryDoItemAction(item, player, InteractionsHandlerClass.Throw, "throw");
+        }
+
+        public static async UniTask<bool> TryDoItemAction<T>(
+            Item item,
+            Player player,
+            Func<Item, InventoryController, bool, GStruct154<T>> action, string actionName) where T : IRaiseEvents
+        {
+            D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
+
+            var opResult = action(item, player.InventoryController, true);
+
+            if (opResult.Failed)
+            {
+                D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {opResult.Error}");
+                return false;
+            }
+
+            IResult result = await player.InventoryController.TryRunNetworkTransaction(opResult);
+
             if (result.Failed)
             {
-                D.LogTransaction($"Player {player.Profile.Nickname} got an error for throwing network transaction event for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
                 D.LogTransaction($"Reason: {result.Error}");
             }
+
             return !result.Failed;
         }
 
@@ -233,7 +229,7 @@ namespace ifp.arena.bep.Core
                 }
             }
 
-            bool removed = await TryThrowSlot(equipmentSlot, player, waitUntilStationary);
+            bool removed = await TryThrowContainedItem(equipmentSlot, player, waitUntilStationary);
 
             if (removed && magsToThrow != null)
             {
@@ -248,18 +244,10 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedAddress = null)
         {
-            var placement = precomputedAddress != null ? ItemPlacement.ForAddress(precomputedAddress) : AU.GetItemPlacement(item, player);
+            ItemPlacement placement = precomputedAddress != null ? ItemPlacement.ForAddress(precomputedAddress) : AU.GetItemPlacement(item, player);
             await PlaceItem(item, player, placement);
-            // await PlaceItem(item, player, newItemPlacement);
-
-
-            // placement.Address = itemAddress;
-            // await PlaceItem(item, player, GetItemPlacement(item, player));
-
-            // D.Notify($"Giving ${item.LocalizedName()} to {player.Profile.Nickname}");
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
-
             if (player.IsYourPlayer) PlayEquipSound(item);
         }
 

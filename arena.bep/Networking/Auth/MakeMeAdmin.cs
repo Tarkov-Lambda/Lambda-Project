@@ -45,7 +45,7 @@ namespace ifp.arena.bep.networking
             rejectCooldownSeconds: 2
         );
 
-        protected override bool ShouldBroadcastClientPacket(AdminAuthPacket packet) => false;
+        protected override bool ShouldBroadcastPacket(AdminAuthPacket packet) => false;
 
         public void Send()
         {

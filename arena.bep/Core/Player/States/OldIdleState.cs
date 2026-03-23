@@ -17,7 +17,7 @@ namespace ifp.arena.bep.Core.MovementStates
             }
         }
 
-        private static bool smethod_0(Vector2 direction)
+        private static new  bool smethod_0(Vector2 direction)
         {
             return direction.x > 1E-05f || direction.y > 1E-05f || direction.x < -1E-05f || direction.y < -1E-05f;
         }
@@ -173,7 +173,7 @@ namespace ifp.arena.bep.Core.MovementStates
         }
 
 
-        public void method_0(float deltaTime)
+        public new void method_0(float deltaTime)
         {
             GClass777 gclass777_ = this.Gclass777_0;
             if (gclass777_ == null)

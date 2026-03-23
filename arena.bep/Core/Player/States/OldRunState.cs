@@ -70,18 +70,18 @@ namespace ifp.arena.bep.Core.MovementStates
             this.MovementContext.TryVaulting();
         }
 
-        protected virtual bool HasNoInputForLongTime()
+        protected new virtual bool HasNoInputForLongTime()
         {
             return this.int_0 > 10 /**EFTHardSettings.Instance.MAX_FRAMES_WITHOUT_INPUT*/ || this.int_0 > this.int_1;
         }
 
-        protected virtual void UpdateRotationAndPosition(float deltaTime)
+        protected new virtual void UpdateRotationAndPosition(float deltaTime)
         {
             this.method_0(deltaTime);
             this.UpdatePosition(deltaTime);
         }
 
-        private void method_0(float deltaTime)
+        private new void method_0(float deltaTime)
         {
             base.UpdateRotationSpeed(deltaTime);
             float f = Mathf.DeltaAngle(this.MovementContext.Yaw, this.float_4);
@@ -90,7 +90,7 @@ namespace ifp.arena.bep.Core.MovementStates
             this.MovementContext.ApplyRotation(Quaternion.AngleAxis(this.float_4, Vector3.up) * this.MovementContext.AnimatorDeltaRotation);
         }
 
-        protected virtual void UpdatePosition(float deltaTime)
+        protected new virtual void UpdatePosition(float deltaTime)
         {
             Vector3 playerAnimatorDeltaPosition = this.MovementContext.PlayerAnimatorDeltaPosition;
             this.MovementContext.ProjectMotionToSurface(ref playerAnimatorDeltaPosition);
@@ -103,7 +103,7 @@ namespace ifp.arena.bep.Core.MovementStates
             }
         }
 
-        private void method_1(float deltaTime)
+        private new void method_1(float deltaTime)
         {
             if (Math.Abs(this.vector2_0.y) < 1E-45f && Math.Abs(this.vector2_0.x) < 1E-45f)
             {

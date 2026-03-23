@@ -16,6 +16,10 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <NoWarn>0649,0169,0414,NU1702</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include=".\configs\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

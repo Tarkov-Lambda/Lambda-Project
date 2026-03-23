@@ -1,38 +1,25 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
-using ifp.arena.bep.networking;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 using System;
 using EFT.Interactive;
-using Fika.Core.Main.FreeCamera.Patches;
 
 namespace ifp.arena.bep.Core
 {
     // Where to place the item (none = tough luck)
     public enum PlacementKind { None, EquipmentSlot, VestAddress, ArmorPlate }
 
-    public readonly struct ItemPlacement
+    public readonly struct ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null)
     {
-        public readonly PlacementKind Kind;
-        public readonly EquipmentSlot Slot;         // For EquipmentSlot
-        public readonly ItemAddress Address;        // For VestAddress
-
-        public ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null, CompoundItem plateHolder = null)
-        {
-            Kind = kind;
-            Slot = slot;
-            Address = address;
-        }
+        public readonly PlacementKind Kind = kind;
+        public readonly EquipmentSlot Slot = slot;         // For EquipmentSlot
+        public readonly ItemAddress Address = address;        // For VestAddress
 
         public static ItemPlacement ForSlot(EquipmentSlot slot) => new(PlacementKind.EquipmentSlot, slot: slot);
         public static ItemPlacement ForAddress(ItemAddress address) => new(PlacementKind.VestAddress, address: address);
-        public static ItemPlacement ForArmorPlate(CompoundItem holder) => new(PlacementKind.ArmorPlate, plateHolder: holder);
+        public static ItemPlacement ForArmorPlate() => new(PlacementKind.ArmorPlate);
         public static readonly ItemPlacement None = new(PlacementKind.None);
     }
 
@@ -72,8 +59,7 @@ namespace ifp.arena.bep.Core
 
         private static ItemPlacement ResolveArmorPlatePlacement(Player player)
         {
-            var plateHolder = GetPlateHolder(player);
-            return plateHolder != null ? ItemPlacement.ForArmorPlate(plateHolder) : ItemPlacement.None;
+            return GetPlateHolder(player) != null ? ItemPlacement.ForArmorPlate() : ItemPlacement.None;
         }
 
         private static ItemPlacement ResolveVestAddress(Item item, Player player)

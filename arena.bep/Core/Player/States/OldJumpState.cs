@@ -120,14 +120,14 @@ namespace ifp.arena.bep.Core.MovementStates
             this.ApplyMovementAndRotation(deltaTime);
         }
 
-        private void method_0()
+        private new void method_0()
         {
             this.MovementContext.PlayerAnimatorEnableJump(false);
             this.MovementContext.PlayerAnimatorEnableLanding(true);
             this.ejumpState_0 = JumpStateClass.EJumpState.Bumbped;
         }
 
-        protected virtual void ApplyMovementAndRotation(float deltaTime)
+        protected new virtual void ApplyMovementAndRotation(float deltaTime)
         {
             Quaternion rotation = Quaternion.Lerp(this.MovementContext.TransformRotation, Quaternion.AngleAxis(this.MovementContext.Yaw, Vector3.up), EFTHardSettings.Instance.TRANSFORM_ROTATION_LERP_SPEED * deltaTime);
             this.MovementContext.ApplyRotation(rotation);
@@ -140,7 +140,7 @@ namespace ifp.arena.bep.Core.MovementStates
             this.bool_0 &= (enable && this.MovementContext.CanSprint);
         }
 
-        private void method_1(float deltaTime)
+        private new void method_1(float deltaTime)
         {
             float d = this.float_2 - this.float_3;
             this.vector3_2 = ((this.float_2 < this.float_3) ? Vector3.zero : (this.vector3_1 * this.float_5 + Physics.gravity * d));
@@ -228,7 +228,7 @@ namespace ifp.arena.bep.Core.MovementStates
 
         private Vector3 vector3_2;
 
-        protected enum EJumpState
+        protected new enum EJumpState
         {
             PushingFromTheGround,
             Jump,

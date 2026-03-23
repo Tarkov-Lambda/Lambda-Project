@@ -123,7 +123,7 @@ namespace ifp.arena.bep.Core.Gamemode
                     }
                 }
 
-                await IU.TryRemoveItems(itemsToRemove, player);
+                await IU.TryPopItems(itemsToRemove, player);
 
                 if (needsDefaultPistol && defaultPistolBsgId != null)
                 {

@@ -32,7 +32,7 @@ namespace ifp.arena.bep.networking.TimeSync
             stateTtlSeconds: 30,
             rejectCooldownSeconds: 0.5);
 
-        protected override bool ShouldBroadcastClientPacket(TimeSyncRequestPacket packet) => false;
+        protected override bool ShouldBroadcastPacket(TimeSyncRequestPacket packet) => false;
 
         public void Send()
         {

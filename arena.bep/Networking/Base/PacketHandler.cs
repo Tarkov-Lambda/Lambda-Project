@@ -3,8 +3,6 @@ using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using HarmonyLib;
-using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base.RateLimiting;
 using System;
 using System.Diagnostics;
@@ -60,7 +58,7 @@ namespace ifp.arena.bep.networking.Base
         {
             if (H.isInRaid())
             {
-                Plugin.Logger.LogInfo($"Registering {typeof(T).Name}");
+                D.Log($"Registering {typeof(T).Name}");
                 if (FikaBackendUtils.IsServer)
                 {
                     H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
@@ -144,24 +142,22 @@ namespace ifp.arena.bep.networking.Base
         protected void RequestSend(T packet, NetPeer targetPeer = null)
         {
             if (!H.isInRaid()) return;
-            if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft Check client-side
+            if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft check local-side
 
+            // targetPeer will never be local here
             if (targetPeer != null)
             {
                 H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
             }
             else
             {
-                // Broadcast (original behavior)
                 H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
 
+                LocalPredictApproved(packet);
                 if (FikaBackendUtils.IsServer)
                 {
+                    // WhenServerReceivesPacket(packet, Singleton<NetPeer>.Instance);
                     WhenApproved(packet, Singleton<NetPeer>.Instance);
-                }
-                else
-                {
-                    ClientPrediction(packet); // By default does nothing unless the packet overrides
                 }
             }
         }
@@ -190,7 +186,7 @@ namespace ifp.arena.bep.networking.Base
                 return;
             }
 
-            if (ShouldBroadcastClientPacket(packet))
+            if (ShouldBroadcastPacket(packet)) // if this packet originates from the server - we already broadcasted it
             {
                 H.FikaNet.SendData(ref packet, deliveryMethod, true);
             }
@@ -258,7 +254,7 @@ namespace ifp.arena.bep.networking.Base
         }
 
         // OPTIONAL
-        protected virtual bool ShouldBroadcastClientPacket(T packet) => true;
+        protected virtual bool ShouldBroadcastPacket(T packet) => true;
 
         // OPTIONAL
         // For hard checking client packets
@@ -268,7 +264,7 @@ namespace ifp.arena.bep.networking.Base
         // OPTIONAL
         // In case client is quite sure that the packet is gonna get approved
         // and we want to do sfx/vfx without delay
-        protected virtual void ClientPrediction(T packet) { }
+        protected virtual void LocalPredictApproved(T packet) { }
 
         // ENTRY POINT
         // packet type specific way of applying the received packet
