@@ -49,6 +49,7 @@ namespace ifp.arena.bep.networking
 
         protected override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
         {
+            // Singleton<RaymarchHandler>.Instance.Raymarcher.smokeVoxelData.HandleSmokeThrow(packet.explosionPos);
             GameObject molotov = new GameObject("Molotov");
             molotov.transform.position = packet.explosionPos;
 

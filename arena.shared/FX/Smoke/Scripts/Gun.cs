@@ -58,7 +58,7 @@ public class Gun : MonoBehaviour {
     }
 
     void OnEnable() {
-        cam = Camera.main;
+        cam = GetComponentInParent<Camera>();
 
         bulletHoleBuffer = new ComputeBuffer(maxBulletHoles, SizeOf(typeof(GPUBulletHole)));
 

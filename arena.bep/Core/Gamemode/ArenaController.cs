@@ -119,7 +119,7 @@ namespace ifp.arena.bep.Core.Gamemode
             // Preloading bomb asset
             InitBombVisualsAsync().Forget();
 
-            await Singleton<AssetBundleHandler>.Instance.LoadMap("lobby");
+            await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby");
 
             Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;

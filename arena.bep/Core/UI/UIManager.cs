@@ -56,7 +56,7 @@ namespace ifp.arena.bep.Core.UI
 
         async void LoadUI(CommonUI commonUI)
         {
-            uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(AssetBundleHandler.pathToBundlesDir, "arenaui"));
+            uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "arenaui"));
 
             foreach (var item in uibundle.GetAllAssetNames())
             {

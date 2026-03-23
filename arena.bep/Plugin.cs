@@ -184,16 +184,18 @@ namespace ifp.arena.bep
             //------------------------------------------ //
 
             // Internal Classses (order matters)
-            RegisterSingleton<AssetBundleHandler>();
+            RegisterSingleton<MapAssetBundleHandler>();
             RegisterSingleton<RagdollCreator>();
             RegisterSingleton<ArenaController>();
             RegisterSingleton<ImmutableItemsCache>();
             RegisterSingleton<UIManager>();
             RegisterSingleton<FXHandler>();
             RegisterSingleton<PresetManager>();
+            // RegisterSingleton<RaymarchHandler>();
 
             var warmup = typeof(Ladder);
-            RegisterSingletonInRaid<LadderEventManager>().Forget();
+            RegisterSingletonInRaid<LadderEventManager>().Forget(); // this lifecycle needs refactor asap
+
 
 #if DEBUG
             // _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));

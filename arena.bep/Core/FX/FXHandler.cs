@@ -9,7 +9,7 @@ namespace ifp.arena.bep.Core.FX
 {
     internal class FXHandler : Singleton<FXHandler>, IDisposable
     {
-        private AssetBundle fxbundle;
+        public AssetBundle fxbundle { get; private set; }
         private MolotovFXController prefabFire;
 
         private Stack<MolotovFXController> molotovPool = new Stack<MolotovFXController>();
@@ -18,11 +18,12 @@ namespace ifp.arena.bep.Core.FX
 
         public FXHandler()
         {
-            fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(AssetBundleHandler.pathToBundlesDir, "fx"));
-            prefabFire = fxbundle.LoadAsset<GameObject>("Assets/FX/FLAMES/MolotovFX.prefab").GetComponent<MolotovFXController>();
+            fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "fx"));
 
-            parentEffects = new GameObject("FX").transform;
-            GameObject.DontDestroyOnLoad(parentEffects.gameObject);
+            // prefabFire = fxbundle.LoadAsset<GameObject>("Assets/FX/FLAMES/MolotovFX.prefab").GetComponent<MolotovFXController>();
+
+            // parentEffects = new GameObject("FX").transform;
+            // GameObject.DontDestroyOnLoad(parentEffects.gameObject);
         }
 
         public MolotovFXController SpawnMolotov(Vector3 pos, float startRadius, float endRadius, float bloomDuration)
