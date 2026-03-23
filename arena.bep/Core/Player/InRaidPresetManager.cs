@@ -19,7 +19,7 @@ namespace ifp.arena.bep.Core
     public class PresetManager : Singleton<PresetManager>, IDisposable
     {
 
-        private string PresetDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "PresetData.json");
+        private string PresetDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "PresetData.jsonc");
 
         private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 
@@ -58,7 +58,7 @@ namespace ifp.arena.bep.Core
                 // If the tactical rig is armoured, skip armor vest
                 if (presetInfo.Key is EquipmentSlot.ArmorVest)
                 {
-                    if (IU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                    if (AU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
                     {
                         continue;
                     }
@@ -66,7 +66,7 @@ namespace ifp.arena.bep.Core
 
                 // pizdets nastoyashiy
                 if (presetInfo.Key == EquipmentSlot.ArmorVest ||
-                    presetInfo.Key == EquipmentSlot.TacticalVest && IU.IsTacRigArmored(item as VestItemClass))
+                    presetInfo.Key == EquipmentSlot.TacticalVest && AU.IsTacRigArmored(item as VestItemClass))
                 {
                     CompoundItem cItem = item as CompoundItem;
                     foreach (var grid in cItem.Containers)

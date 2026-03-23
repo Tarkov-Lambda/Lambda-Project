@@ -90,7 +90,7 @@ namespace ifp.arena.bep.Core
 
                 ReplenishMagazine(newMag, ammo);
 
-                if (IU.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
+                if (AU.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
                 {
                     D.NotifyLong("Can't find space for a mag");
                     continue;

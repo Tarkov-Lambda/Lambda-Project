@@ -3,6 +3,8 @@ global using HU = ifp.arena.bep.Core.HealthUtilities;
 global using H  = ifp.arena.bep.Core.Helpers;
 global using IU = ifp.arena.bep.Core.ItemUtilities;
 global using PU = ifp.arena.bep.Core.PlayerUtilities;
+global using AU = ifp.arena.bep.Core.AddressUtilities;
+
 global using RU = ifp.arena.bep.Core.ReplenishmentUtilities;
 global using D = ifp.arena.bep.Core.Debugging;
 

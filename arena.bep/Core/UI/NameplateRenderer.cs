@@ -8,7 +8,7 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class NameplateRenderer : MonoBehaviour
     {
-        private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.4f, 0f);
+        private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.2f, 0f);
 
         RectTransform rectTransform => transform as RectTransform;
 

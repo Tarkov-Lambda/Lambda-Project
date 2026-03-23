@@ -14,28 +14,6 @@ using Fika.Core.Main.FreeCamera.Patches;
 
 namespace ifp.arena.bep.Core
 {
-    // Where to place the item (none = tough luck)
-    public enum PlacementKind { None, EquipmentSlot, VestAddress, ArmorPlate }
-
-    public readonly struct ItemPlacement
-    {
-        public readonly PlacementKind Kind;
-        public readonly EquipmentSlot Slot;         // For EquipmentSlot
-        public readonly ItemAddress Address;        // For VestAddress
-
-        public ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null, CompoundItem plateHolder = null)
-        {
-            Kind = kind;
-            Slot = slot;
-            Address = address;
-        }
-
-        public static ItemPlacement ForSlot(EquipmentSlot slot) => new(PlacementKind.EquipmentSlot, slot: slot);
-        public static ItemPlacement ForAddress(ItemAddress address) => new(PlacementKind.VestAddress, address: address);
-        public static ItemPlacement ForArmorPlate(CompoundItem holder) => new(PlacementKind.ArmorPlate, plateHolder: holder);
-        public static readonly ItemPlacement None = new(PlacementKind.None);
-    }
-
     // 1. ClientRequestGiveItem client checks it can make room, then sends SpawnItemPacket
     // 2. SpawnItemPacketHandler server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
     // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
@@ -113,7 +91,7 @@ namespace ifp.arena.bep.Core
 
             try
             {
-                var placement = GetItemPlacement(templateItem, H.MainPlayer);
+                var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
 
                 if (placement.Kind == PlacementKind.EquipmentSlot)
                 {
@@ -139,10 +117,10 @@ namespace ifp.arena.bep.Core
                     }
                 }
 
-                await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
+                // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
                 D.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
-                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem);
+                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement.Address);
                 return true;
             }
             catch (OperationCanceledException)
@@ -270,8 +248,8 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedAddress = null)
         {
-            // var placement = precomputedAddress != null ? ItemPlacement.ForAddress(precomputedAddress) : GetItemPlacement(item, player);
-            await PlaceItem(item, player, GetItemPlacement(item, player));
+            var placement = precomputedAddress != null ? ItemPlacement.ForAddress(precomputedAddress) : AU.GetItemPlacement(item, player);
+            await PlaceItem(item, player, placement);
             // await PlaceItem(item, player, newItemPlacement);
 
 
@@ -309,7 +287,7 @@ namespace ifp.arena.bep.Core
         private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
         {
             // var plateHolder = PU.GetPlayerSlotItem(player, placement.Slot) as CompoundItem;
-            var plateHolder = GetPlateHolder(player);
+            var plateHolder = AU.GetPlateHolder(player);
 
             var plate = item as ArmorPlateItemClass;
             foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
@@ -354,118 +332,6 @@ namespace ifp.arena.bep.Core
             if (clip != null) H.GUISounds.PlaySound(clip);
         }
 
-        public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch
-        {
-            Weapon w => ResolveWeaponSlot(w),
-
-            BackpackItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Backpack),
-            VestItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.TacticalVest),
-            ArmorItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.ArmorVest),
-            HeadwearItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Headwear),
-            FaceCoverItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.FaceCover),
-            HeadphonesItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Earpiece),
-
-            ArmorPlateItemClass _ => ResolveArmorPlatePlacement(player),
-
-            MagazineItemClass _ => ResolveVestAddress(item, player),
-            MedicalItemClass _ => ResolveVestAddress(item, player),
-            ThrowWeapItemClass _ => ResolveVestAddress(item, player),
-            BarterItemItemClass _ => ResolveVestAddress(item, player),
-            KeycardItemClass _ => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
-
-            _ => ItemPlacement.None
-        };
-
-        // revolver shotgun is fucked gg
-        private static ItemPlacement ResolveWeaponSlot(Weapon weapon)
-        {
-            var slot = weapon is PistolItemClass or RevolverItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
-            return ItemPlacement.ForSlot(slot);
-        }
-
-        private static ItemPlacement ResolveArmorPlatePlacement(Player player)
-        {
-            var plateHolder = GetPlateHolder(player);
-            return plateHolder != null ? ItemPlacement.ForArmorPlate(plateHolder) : ItemPlacement.None;
-        }
-
-        private static ItemPlacement ResolveVestAddress(Item item, Player player)
-        {
-            var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
-            if (vest == null) return ItemPlacement.None;
-
-            var pockets = PU.GetPlayerPockets(player);
-            var allContainers = pockets.Containers.Concat(vest.Containers);
-
-            bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
-
-            ItemPlacement FindPlacement(IEnumerable<EFT.InventoryLogic.IContainer> containers, Func<SearchableGrid, bool> gridFilter)
-            {
-                foreach (var container in containers.OfType<SearchableGrid>().Where(gridFilter))
-                {
-                    if (container.TryFindLocationForItem(item, out ItemAddress location))
-                        return ItemPlacement.ForAddress(location);
-                }
-                return ItemPlacement.None;
-            }
-
-            // Prefer 1x1 grids for 1x1 items
-            if (isOneByOne)
-            {
-                var placement = FindPlacement(allContainers, g => g.GridWidth == 1 && g.GridHeight == 1);
-                if (!placement.Equals(ItemPlacement.None))
-                    return placement;
-            }
-
-            // Fallback to any grid
-            return FindPlacement(allContainers, _ => true);
-        }
-
-        public static CompoundItem GetPlateHolder(Player player)
-        {
-            VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
-            if (tacRig != null)
-            {
-                if (IsTacRigArmored(tacRig))
-                {
-                    return tacRig;
-                }
-            }
-
-            ArmorItemClass armorVest = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
-            if (armorVest != null)
-                return armorVest;
-
-            return null;
-        }
-
-        public static bool IsTacRigArmored(VestItemClass tacRig)
-        {
-            var tacRigTemplate = tacRig?.Template as VestTemplateClass;
-            if (tacRigTemplate.BlocksArmorVest) return true;
-            return false;
-        }
-
-        public static IEnumerable<Item> GetArmorPlates(Player player)
-        {
-            var plateHolder = GetPlateHolder(player);
-            if (plateHolder == null)
-                yield break;
-
-            foreach (var component in plateHolder.Components)
-            {
-                if (component is not ArmorHolderComponent armorHolder)
-                    continue;
-
-                foreach (var slot in armorHolder.ArmorSlots)
-                {
-                    if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        yield return slot.ContainedItem;
-                    }
-                }
-            }
-        }
 
         public static void GarbageCollectWorldLoot()
         {

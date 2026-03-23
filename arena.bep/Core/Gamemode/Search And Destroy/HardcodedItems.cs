@@ -14,7 +14,7 @@ namespace ifp.arena.bep.Core.Economy
 {
     public static class BuyMenu
     {
-        public static string EconomyDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "Economy.json");
+        public static string EconomyDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "Economy.jsonc");
 
         public static List<BuyCategory> buyCategories = new();
 

@@ -4,21 +4,16 @@ using EFT.HealthSystem;
 using Fika.Core.Main.Components;
 using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.Packets.Player.Common;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using HarmonyLib;
-using ifp.arena.bep.Core;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.Video;
 
 namespace ifp.arena.bep.Patches
 {
@@ -39,11 +34,6 @@ namespace ifp.arena.bep.Patches
             var coopHandler = CoopHandlerRef(__instance);
             int victimNetId = packet.NetId;
 
-
-            // D.Dump(packet, 2);
-            // D.Dump(damage.SourceId);
-            // D.Dump(peer);
-
             if (!coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
 
             D.Log(peer.Id.ToString());
@@ -52,8 +42,8 @@ namespace ifp.arena.bep.Patches
 
             D.Log(damagePlayer.Profile.Nickname);
             D.Log(damagePlayer.Id.ToString());
-            // we handle the server owner player in the Patch_Kill
-            // kind of ass backwards, but it makes sense in my head rn
+
+            // we handle the server owner player natively
             if (victim.IsYourPlayer) return;
 
 
@@ -74,17 +64,14 @@ namespace ifp.arena.bep.Patches
             // Instead of waiting for healthsync, we apply a damage packet directly on the server on a player that's not ours.
             // I can't vouch as per how accurate this is going to be
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
-            //
-            // The only catch can be if the client sends a healthsync of their regened health right after we send this packet
-            // shooter sends a packet of 60 damage to thorax of victim
-            // victim sends a sync packet saying they just healed, right after we just send them a damage packet.
-            // eventually the victim will be the source of truth when we healthsync, but just how serious is sync mismatch here given low ttk?
-            // although, at the end of the day the victim will eventually pick up all the damage packets and apply them, in worst case scenario killing themselves (right?)
             ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
 
             victim.HandleDamagePacket(damage);
         }
 
+        // This is fucking retarded but the alternative is to create activehealthcontroller for each player and that's even more retarded
+        // Intended to be a lightweight damage simulation so that killing still feels quite responsive
+        // Hopefully this does not cause too much desync server side (at the end of the day we are still fully healing the player after death)
         public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
             if (!H.GetPlayerScore(victim.Id).isAlive) return 0f;
@@ -165,13 +152,9 @@ namespace ifp.arena.bep.Patches
 
                         if (part != bodyPart && !state.IsDestroyed)
                         {
-                            float mult = GClass3009<ActiveHealthController.GClass3008>
-                                .GClass1728_0.ProfileHealthSettings.BodyPartsSettings[part]
-                                .OverDamageReceivedMultiplier;
+                            float mult = GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[part].OverDamageReceivedMultiplier;
 
-                            // healthController.ChangeHealth(part,
-                            //     Mathf.Min(-num4 * state.Health.Maximum / num3 * mult, 0f),
-                            //     overDamage);
+                            ChangeHealth(healthController, part, Mathf.Min(-num4 * state.Health.Maximum / num3 * mult, 0f), overDamage);
 
                             // if (state.Health.AtMinimum)
                             // {

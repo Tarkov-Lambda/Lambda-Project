@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
+using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using Fika.Core.Networking.Pooling;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.Base.RateLimiting;
@@ -18,28 +19,32 @@ namespace ifp.arena.bep.networking
         public int playerId;
         public FlatItemsDataClass[] flatItems;
 
-        /// <summary>
-        /// The pre-computed destination address for this item.
-        /// Populated on the sending side; reconstructed from the interim binary fields
-        /// (<see cref="_addressContainerId"/>, <see cref="_addressIsGrid"/>, etc.) in
-        /// <see cref="SpawnItemPacketHandler.WhenApproved"/> once the receiving client has access
-        /// to the target player's live container tree.
-        /// </summary>
+        // optional (for now)
         public ItemAddress address;
 
-        // Interim wire fields — populated during Deserialize, used to rebuild `address` in WhenApproved.
-        public string _addressContainerId;
-        public bool _addressIsGrid;
-        public int _addressX, _addressY, _addressR;
+        // length == 0 means we don't provide an address
+        public byte[] _locationDescription;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(playerId);
 
-            bool hasAddress = address != null;
-            writer.Put(hasAddress);
-            if (hasAddress)
-                writer.Put(address); // containerId + isGrid + (x, y, r if grid)
+            GClass1950 descriptor = address?.ToDescriptor();
+
+            EFTWriterClass eftWriter = WriterPoolManager.GetWriter();
+            byte[] locationDescription;
+            if (descriptor != null)
+            {
+                eftWriter.WritePolymorph(descriptor); // do not ever look into this function
+                locationDescription = eftWriter.ToArray();
+            }
+            else
+            {
+                locationDescription = [];
+            }
+            WriterPoolManager.ReturnWriter(eftWriter);
+
+            writer.PutByteArray(locationDescription);
 
             if (flatItems == null)
             {
@@ -88,19 +93,8 @@ namespace ifp.arena.bep.networking
         {
             playerId = reader.GetInt();
 
-            // Read interim address fields — address is reconstructed later in WhenApproved
-            // once we have access to the target player's live container tree.
-            if (reader.GetBool())
-            {
-                _addressContainerId = reader.GetString();
-                _addressIsGrid = reader.GetBool();
-                if (_addressIsGrid)
-                {
-                    _addressX = reader.GetInt();
-                    _addressY = reader.GetInt();
-                    _addressR = reader.GetInt();
-                }
-            }
+            // reconstruct in WhenApproved
+            _locationDescription = reader.GetByteArray();
 
             int itemsCount = reader.GetInt();
             if (itemsCount == 0)
@@ -197,63 +191,39 @@ namespace ifp.arena.bep.networking
                 int playerId = packet.playerId;
                 Item captured = rootItem;
 
-                // Capture the wire fields so the lambda closes over values, not the mutable struct.
-                string addressContainerId = packet._addressContainerId;
-                bool addressIsGrid = packet._addressIsGrid;
-                int addressX = packet._addressX;
-                int addressY = packet._addressY;
-                ItemRotation addressR = (ItemRotation)packet._addressR;
+                // immutable
+                byte[] locationDescription = packet._locationDescription;
 
                 // Get the existing chain tail for this player, or start fresh
-                UniTask prev = _chains.TryGetValue(playerId, out var existing)
-                    ? existing
-                    : UniTask.CompletedTask;
+                UniTask prev = _chains.TryGetValue(playerId, out var existing) ? existing : UniTask.CompletedTask;
 
-                // Append our work sequentially; each step waits for the previous to finish.
-                // IMPORTANT: address reconstruction happens INSIDE the lambda so that it reads the
-                // inventory state AFTER all previous chain steps have placed their items.
-                // Computing it before the lambda (in WhenApproved) causes address collisions when
-                // multiple packets arrive before any item has been placed.
+
+                // even though we are in a chain, this doesn't stop the player from moving something in their inventory
+                // can definitely cause major issues
                 _chains[playerId] = prev.ContinueWith(async () =>
                 {
                     try
                     {
                         await IU.LoadBundlesForItem(captured);
 
-                        // Reconstruct the address now — the inventory is up-to-date at this point.
+                        // address reconstruction
                         Player player = H.GetPlayer(playerId);
                         ItemAddress address = null;
-                        if (addressContainerId != null && player != null)
-                            address = NetExtensions.GetItemAddress(
-                                addressContainerId,
-                                addressIsGrid,
-                                addressX,
-                                addressY,
-                                addressR,
-                                GetAllPlayerContainers(player));
+                        if (locationDescription != null && locationDescription.Length != 0 && player != null)
+                        {
+                            using var eftReader = PacketToEFTReaderAbstractClass.Get(locationDescription);
+                            var descriptor = eftReader.ReadPolymorph<GClass1950>();
+                            address = player.InventoryController.ToItemAddress(descriptor);
+                        }
 
                         await IU.WhenApprovedGiveItem(captured, player);
                     }
                     catch (Exception ex)
                     {
-                        Plugin.Logger.LogWarning($"[SpawnItem] Chain step failed for player {playerId}: {ex.Message}");
+                        D.Log($"[SpawnItem] Chain step failed for player {playerId}");
+                        D.Dump(ex);
                     }
                 });
-            }
-        }
-
-        /// <summary>
-        /// Collects every <see cref="EFT.InventoryLogic.IContainer"/> reachable from the player's
-        /// equipment tree — both <see cref="Slot"/>s and grid containers inside compound items.
-        /// </summary>
-        private static IEnumerable<EFT.InventoryLogic.IContainer> GetAllPlayerContainers(Player player)
-        {
-            foreach (var item in player.Inventory.Equipment.GetAllItems().OfType<CompoundItem>())
-            {
-                foreach (var container in item.Containers)
-                    yield return container;
-                foreach (var slot in item.Slots)
-                    yield return slot;
             }
         }
 
