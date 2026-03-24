@@ -50,38 +50,7 @@ namespace ifp.arena.bep.networking
         protected override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
         {
             // Singleton<RaymarchHandler>.Instance.Raymarcher.smokeVoxelData.HandleSmokeThrow(packet.explosionPos);
-            GameObject molotov = new GameObject("Molotov");
-            molotov.transform.position = packet.explosionPos;
-
-
-            SphereCollider sCollider = molotov.AddComponent<SphereCollider>();
-
-            float duration = 2f;
-            float elapsed = 0f;
-
-            float startRadius = 1f;
-            float endRadius = 3f;
-
-            FlameDamageTrigger flameDamageTrigger = molotov.AddComponent<FlameDamageTrigger>();
-            MolotovFXController molotovFX = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos, startRadius, endRadius, duration);
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-
-                float t = elapsed / duration;
-                sCollider.radius = Mathf.Lerp(startRadius, endRadius, t);
-
-                await UniTask.Yield();
-            }
-
-            sCollider.radius = endRadius;
-
-            await UniTask.WaitForSeconds(7);
-
-            molotovFX.StopAndFadeOut();
-            GameObject.DestroyImmediate(flameDamageTrigger);
-            GameObject.DestroyImmediate(molotov);
+            Molotov.Spawn(packet).Forget();
         }
     }
 }
