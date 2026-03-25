@@ -43,7 +43,7 @@ namespace ifp.arena.bep.networking
         protected override bool ServerValidation(ref PausePacket packet, NetPeer netPeer)
         {
             packet.serverPhaseStartSeconds = NetworkTime.ServerNowSeconds;
-            if (H.Session.roundState == MatchState.RoundPrepare)
+            if (H.Session.matchState == MatchState.RoundPrepare)
             {
                 return true;
             } else return false;

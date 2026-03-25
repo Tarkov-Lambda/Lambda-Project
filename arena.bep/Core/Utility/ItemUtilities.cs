@@ -181,6 +181,15 @@ namespace ifp.arena.bep.Core
             return TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
         }
 
+        public static async UniTask TryThrowItems(IEnumerable<Item> items, Player player, int delayMs = 25)
+        {
+            foreach (var item in items)
+            {
+                await TryThrowItem(item, player);
+                if (delayMs != 0) await UniTask.Delay(delayMs);
+            }
+        }
+
         public static UniTask<bool> TryThrowItem(Item item, Player player)
         {
             return TryDoItemAction(item, player, InteractionsHandlerClass.Throw, "throw");
@@ -233,10 +242,7 @@ namespace ifp.arena.bep.Core
 
             if (removed && magsToThrow != null)
             {
-                foreach (var mag in magsToThrow)
-                {
-                    await TryThrowItem(mag, player);
-                }
+                TryThrowItems(magsToThrow, player).Forget();
             }
 
             return removed;

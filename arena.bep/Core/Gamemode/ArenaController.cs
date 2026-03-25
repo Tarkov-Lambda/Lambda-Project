@@ -44,7 +44,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action OnFixedUpdate;
 
         public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
-        public static Action<int> OnSelfMoneyAdded;
+        public static Action<int> OnSelfMoneyChanged;
 
         public static Action OnItemBuy;
 
@@ -191,7 +191,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd.Value);
             }
 
-            session.roundState = packet.matchState;
+            session.matchState = packet.matchState;
             _currentState = ActiveRules.CreateState(packet.matchState);
 
             D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");

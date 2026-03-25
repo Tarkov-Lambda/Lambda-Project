@@ -36,7 +36,7 @@ namespace ifp.arena.bep.GameTypes
 
     public class SessionInfo
     {
-        public MatchState roundState = MatchState.None;
+        public MatchState matchState = MatchState.None;
         public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
         public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
         public BombState bombState = BombState.None;
@@ -102,7 +102,7 @@ namespace ifp.arena.bep.GameTypes
             if (H.GameWorld is HideoutGameWorld) return false;
             // return false;
 
-            if (roundState == MatchState.RoundPrepare || roundState == MatchState.Pause) return true;
+            if (matchState == MatchState.RoundPrepare || matchState == MatchState.Pause) return true;
             if (!H.MainPlayerScore.isAlive && H.Session.mapName != "") return true;
 
             return false;
@@ -202,7 +202,7 @@ namespace ifp.arena.bep.GameTypes
             money = Math.Clamp(money, 0, EconomyConstants.MAX_MONEY);
 
             if (player == H.MainPlayer)
-                EventBus.OnSelfMoneyAdded?.Invoke(amount);
+                EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
         }
 
         public void SpendMoney(int amount)
@@ -210,11 +210,21 @@ namespace ifp.arena.bep.GameTypes
             money -= amount;
             if (money < 0)
                 money = 0;
+            EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
         }
 
         public void SetMoney(int newMoney)
         {
             money = newMoney;
+        }
+
+        public bool CanBuy()
+        {
+            if (H.Session.matchState is MatchState.RoundPrepare) return true;
+            if (H.Session.matchState is MatchState.RoundAction)
+                return H.Arena.StateTimer >= H.Arena.PhaseDurationSeconds - 30; // only allow buying within first 30 seconds of round action
+
+            return false;
         }
     }
 

@@ -35,7 +35,7 @@ namespace ifp.arena.bep.networking
         {
             H.Session.scoreboard.Clear();
             H.Session.factionWins.Clear();
-            H.Session.roundState = MatchState.None;
+            H.Session.matchState = MatchState.None;
             H.Session.mapName = Plugin.MapName.Value;
             H.Session.currentGameMode = Plugin.GameMode.Value;
             H.Session.InitializeScoreBoard();

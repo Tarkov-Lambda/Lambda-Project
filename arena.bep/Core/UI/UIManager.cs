@@ -52,6 +52,19 @@ namespace ifp.arena.bep.Core.UI
 
             EventBus.OnUpdate += UpdateTime;
 
+            EventBus.OnFixedUpdate += SetInteractable;
+            EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
+        }
+
+        public void SetInteractable()
+        {
+            if (H.MainPlayerScore is null) return;
+            shop?.SetInteractable(H.MainPlayerScore.CanBuy());
+        }
+
+        void OnSelfMoneyChanged(int money)
+        {
+            shop?.SetCurrentMoneyBalance(money);
         }
 
         private void AddInventoryHotkeyInterceptor(GameWorld gameWorld)
@@ -94,6 +107,7 @@ namespace ifp.arena.bep.Core.UI
 
         private void UpdateTime()
         {
+            if (H.Arena is null) return;
             matchUIController.TopBar.SetTime(H.Arena.StateTimer);
         }
 
@@ -128,8 +142,6 @@ namespace ifp.arena.bep.Core.UI
             }
 
             shop.SetFaction(H.MainPlayerScore.faction);
-            shop.SetInteractable(matchState == GameTypes.MatchState.RoundPrepare);
-
             Refresh();
         }
 
@@ -215,6 +227,8 @@ namespace ifp.arena.bep.Core.UI
             EventBus.OnPlayerKill -= OnPlayerKill;
             EventBus.OnUpdate -= UpdateTime;
 
+            EventBus.OnFixedUpdate -= SetInteractable;
+            EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
 
             if (matchUIController != null)
                 GameObject.Destroy(matchUIController.gameObject);

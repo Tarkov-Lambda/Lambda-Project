@@ -58,7 +58,7 @@ namespace ifp.arena.bep.networking
 
             var packet = new SessionInfoPacket
             {
-                roundState = session.roundState,
+                roundState = session.matchState,
                 gameMode = session.currentGameMode,
                 bombState = session.bombState,
                 mvpId = session.mvpId,
@@ -90,7 +90,7 @@ namespace ifp.arena.bep.networking
             var session = H.Session;
             if (session == null) return;
 
-            session.roundState = packet.roundState;
+            session.matchState = packet.roundState;
             session.currentGameMode = packet.gameMode;
             session.bombState = packet.bombState;
             session.mvpId = packet.mvpId;

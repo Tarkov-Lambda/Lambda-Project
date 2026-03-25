@@ -21,6 +21,7 @@ using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 
@@ -77,7 +78,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<T>();
     }
 
-    void Start()
+    async Task Start()
     {
         Logger = base.Logger;
         Logger.LogInfo("Load");
@@ -172,19 +173,19 @@ public class Plugin : BaseUnityPlugin
         // Internal Classses (order matters)
         RegisterSingleton<MapAssetBundleHandler>();
         RegisterSingleton<RagdollCreator>();
-        RegisterSingleton<ArenaController>();
         RegisterSingleton<ImmutableItemsCache>();
-        RegisterSingleton<UIManager>();
         RegisterSingleton<PresetManager>();
 
         RegisterSingleton<FXHandler>();
         RegisterSingleton<AudioHandler>();
         RegisterSingleton<MusicHandler>();
         // RegisterSingleton<RaymarchHandler>();
+        RegisterSingleton<UIManager>();
+        RegisterSingleton<ArenaController>();
 
         var warmup = typeof(Ladder);
-        RegisterSingletonInRaid<LadderEventManager>().Forget(); // this lifecycle needs refactor asap
-        RegisterSingletonInRaid<BombHandler>().Forget();
+        await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap
+        await RegisterSingletonInRaid<BombHandler>();
 
 
 #if DEBUG
@@ -236,7 +237,7 @@ public class Plugin : BaseUnityPlugin
 
         if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
         {
-            H.Session.roundState = MatchState.None;
+            H.Session.matchState = MatchState.None;
             Teleporter.Teleport(H.MainPlayer, "lobby");
         }
 

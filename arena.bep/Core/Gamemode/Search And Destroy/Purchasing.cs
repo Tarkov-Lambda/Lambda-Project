@@ -62,10 +62,10 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             // delai
             Item item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(request.bsgId);
+            H.MainPlayerScore.SpendMoney(request.price);
             bool isSuccessful = await IU.ClientRequestGiveItem(item);
             if (isSuccessful)
             {
-                H.MainPlayerScore.SpendMoney(request.price);
                 H.EFTGUISounds.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
                 EventBus.OnItemBuy?.Invoke();
             }

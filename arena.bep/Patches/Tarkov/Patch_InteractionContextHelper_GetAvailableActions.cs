@@ -31,7 +31,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         private static bool PatchPrefix(ref ActionsReturnClass __result, GamePlayerOwner owner, PlaceItemTrigger itemTrigger)
         {
-            var roundState = H.Session.roundState;
+            var roundState = H.Session.matchState;
 
             if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted)
                 return true;

@@ -39,10 +39,11 @@ namespace ifp.arena.bep.Core.FX
 
         public void Update()
         {
+            if (H.Arena is null) return;
             if (H.Arena.ActiveRules is not SnDModeRules) return;
 
             if (_beforeExplodingPlayed) return;
-            if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.roundState is MatchState.RoundPlanted)
+            if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.matchState is MatchState.RoundPlanted)
             {
                 H.AudioHandler.PlayAtPoint(BombPlantedPosition, H.Sounds.BeforeExploding);
                 _beforeExplodingPlayed = true;
@@ -159,7 +160,7 @@ namespace ifp.arena.bep.Core.FX
             Item bombItem = IU.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
             await IU.LoadBundlesForItem(bombItem);
             bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
-            bombVisuals.SetActive(false);
+            bombVisuals?.SetActive(false);
             UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
         }
 
@@ -176,10 +177,10 @@ namespace ifp.arena.bep.Core.FX
                 case BombState.Defusing:
                 case BombState.Defused:
                 case BombState.Planted:
-                    bombVisuals.SetActive(true);
+                    bombVisuals?.SetActive(true);
                     break;
                 default:
-                    bombVisuals.SetActive(false);
+                    bombVisuals?.SetActive(false);
                     break;
             }
 
