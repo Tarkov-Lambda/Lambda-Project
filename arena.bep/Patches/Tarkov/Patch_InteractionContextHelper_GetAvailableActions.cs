@@ -80,7 +80,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 });
             }
             // bomb == null && H.MainPlayerScore?.faction != Faction.T &&
-            else if ((H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) && Vector3.Distance(H.MainPlayer.Position, H.Arena.BombPlantedPosition) <= SnDModeRules.defuseRadius)
+            else if ((H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) && Vector3.Distance(H.MainPlayer.Position, H.BombHandler.BombPlantedPosition) <= SnDModeRules.defuseRadius)
             {
                 // RaycastHit hit;
                 // Ray ray = CameraClass.Instance.Camera.ScreenPointToRay(Input.mousePosition);
@@ -101,14 +101,14 @@ namespace ifp.arena.bep.Patches.Tarkov
                     {
                         if (owner.Player.CurrentState is IdleStateClass)
                         {
-                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.Arena.BombPlantedPosition);
+                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.BombHandler.BombPlantedPosition);
 
                             owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
                             owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, (bool successful) =>
                             {
                                 owner.CloseObjectivesPanel();
                                 // Re-read in case another defuser already changed state
-                                Vector3 pos = H.Arena.BombPlantedPosition;
+                                Vector3 pos = H.BombHandler.BombPlantedPosition;
                                 if (!successful)
                                 {
                                     // Revert state for all clients so another CT can try

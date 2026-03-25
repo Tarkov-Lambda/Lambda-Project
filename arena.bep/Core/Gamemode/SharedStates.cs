@@ -112,7 +112,7 @@ namespace ifp.arena.bep.Core.Gamemode
             H.Arena.LastObjectiveBombState = BombState.None;
 
             // Hide any leftover bomb visual from the previous round
-            Singleton<ArenaController>.Instance.SetBombVisuals(new BombStatePacket { state = BombState.None });
+            H.BombHandler.SetBombVisuals(new BombStatePacket { state = BombState.None });
 
             IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
         }
@@ -171,7 +171,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit()
         {
             IU.GarbageCollectWorldLoot();
-            H.Arena.bombVisuals.SetActive(false);
+            H.BombHandler.bombVisuals.SetActive(false);
         }
     }
 

@@ -175,9 +175,11 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<ArenaController>();
         RegisterSingleton<ImmutableItemsCache>();
         RegisterSingleton<UIManager>();
+        RegisterSingleton<PresetManager>();
+
         RegisterSingleton<FXHandler>();
         RegisterSingleton<AudioHandler>();
-        RegisterSingleton<PresetManager>();
+        RegisterSingleton<BombHandler>();
         // RegisterSingleton<RaymarchHandler>();
 
         var warmup = typeof(Ladder);

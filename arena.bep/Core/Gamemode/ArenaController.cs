@@ -1,8 +1,6 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using EFT.CameraControl;
-using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -16,7 +14,6 @@ using MemoryPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Systems.Effects;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode
@@ -86,9 +83,6 @@ namespace ifp.arena.bep.Core.Gamemode
         private GameObject _tickerObject;
         public GameObject _musicObject;
 
-        public GameObject bombVisuals { get; private set; }
-        public Vector3 BombPlantedPosition { get; private set; }
-
         public ArenaController()
         {
             if (H.GameWorld != null) StartSession(H.GameWorld);
@@ -120,9 +114,6 @@ namespace ifp.arena.bep.Core.Gamemode
             D.Notify("Plugin Reloaded");
             if (session == null) session = new SessionInfo();
 
-            // Preloading bomb asset
-            InitBombVisualsAsync().Forget();
-
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby");
 
@@ -137,15 +128,6 @@ namespace ifp.arena.bep.Core.Gamemode
                 Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
 
-        }
-
-        private async UniTaskVoid InitBombVisualsAsync()
-        {
-            Item bombItem = IU.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
-            await IU.LoadBundlesForItem(bombItem);
-            bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
-            bombVisuals.SetActive(false);
-            UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
         }
 
         public void EndSession(GameWorld gameWorld)
@@ -220,38 +202,6 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 _currentState.OnEnter();
                 EventBus.OnEnter?.Invoke(_currentState.StateType);
-            }
-        }
-
-        public void SetBombVisuals(BombStatePacket bombStatePacket)
-        {
-            if (bombStatePacket.state == BombState.Planted)
-            {
-                BombPlantedPosition = bombStatePacket.position;
-                bombVisuals.transform.position = bombStatePacket.position;
-            }
-
-            switch (bombStatePacket.state)
-            {
-                case BombState.Defusing:
-                case BombState.Defused:
-                case BombState.Planted:
-                    bombVisuals.SetActive(true);
-                    break;
-                default:
-                    bombVisuals.SetActive(false);
-                    break;
-            }
-
-            if (bombStatePacket.state == BombState.Exploded)
-            {
-                Vector3 explosionCenter = bombVisuals.transform.position;
-                float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
-                if (distance <= 25f)
-                {
-                    H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);
-                }
-                Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
             }
         }
 

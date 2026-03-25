@@ -45,6 +45,13 @@ namespace ifp.arena.bep.Core.UI
 
             if (Singleton<GameWorld>.Instantiated)
                 AddInventoryHotkeyInterceptor(Singleton<GameWorld>.Instance);
+
+            EventBus.OnEnter += OnMatchStateEnter;
+            EventBus.OnRoundActionEnd += OnRoundActionEnd;
+            EventBus.OnPlayerKill += OnPlayerKill;
+
+            EventBus.OnUpdate += UpdateTime;
+
         }
 
         private void AddInventoryHotkeyInterceptor(GameWorld gameWorld)
@@ -83,18 +90,11 @@ namespace ifp.arena.bep.Core.UI
             nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
             GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
             nameplateRenderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
-
-            AhhhhWire();
         }
 
-        void AhhhhWire()
+        private void UpdateTime()
         {
-            EventBus.OnEnter += OnMatchStateEnter;
-            EventBus.OnRoundActionEnd += OnRoundActionEnd;
-            EventBus.OnPlayerKill += OnPlayerKill;
-
-            H.Arena.OnUpdateTick += () => matchUIController.TopBar.SetTime(H.Arena.StateTimer);
-
+            matchUIController.TopBar.SetTime(H.Arena.StateTimer);
         }
 
         void OnRoundActionEnd(RoundActionPhaseEnd data)
@@ -190,7 +190,7 @@ namespace ifp.arena.bep.Core.UI
                     Kills = playerScore.kills,
                     Deaths = playerScore.deaths,
                     Assists = playerScore.assists,
-                    Ping = playerScore.ping 
+                    Ping = playerScore.ping
                 });
             }
 
@@ -213,6 +213,8 @@ namespace ifp.arena.bep.Core.UI
             EventBus.OnEnter -= OnMatchStateEnter;
             EventBus.OnRoundActionEnd -= OnRoundActionEnd;
             EventBus.OnPlayerKill -= OnPlayerKill;
+            EventBus.OnUpdate -= UpdateTime;
+
 
             if (matchUIController != null)
                 GameObject.Destroy(matchUIController.gameObject);

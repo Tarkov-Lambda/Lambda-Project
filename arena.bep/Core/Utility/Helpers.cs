@@ -32,6 +32,8 @@ namespace ifp.arena.bep.Core
         public static AudioHandler AudioHandler => isInRaid() ? Singleton<AudioHandler>.Instance : null;
         public static LambdaSounds Sounds => isInRaid() ? Singleton<AudioHandler>.Instance.prefabSounds : null;
 
+        public static BombHandler BombHandler => isInRaid() ? Singleton<BombHandler>.Instance : null;
+
         public static FXHandler FXHandler => isInRaid() ? H.FXHandler : null;
 
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();

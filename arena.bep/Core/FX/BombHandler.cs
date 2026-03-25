@@ -1,12 +1,17 @@
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using EFT;
+using EFT.CameraControl;
+using EFT.InventoryLogic;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.networking;
 using ifp.arena.shared.FX;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Systems.Effects;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.FX
@@ -19,14 +24,16 @@ namespace ifp.arena.bep.Core.FX
         public BetterSource LastBombSource { get; private set; }
         public BetterSource LastBombTickSource { get; private set; }
 
+        public GameObject bombVisuals { get; private set; }
+        public Vector3 BombPlantedPosition { get; private set; }
+
         private CancellationTokenSource _bombTickCancellationSource;
 
         private bool _beforeExplodingPlayed = false;
 
         public BombHandler()
         {
-            audioBundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "audio"));
-            prefabSounds = audioBundle.LoadAsset<LambdaSounds>("Assets/Sounds/SoundData.asset");
+            InitBombVisualsAsync().Forget();
 
             EventBus.OnEnter += OnEnter;
             EventBus.OnEnd += OnEnd;
@@ -40,7 +47,7 @@ namespace ifp.arena.bep.Core.FX
             if (_beforeExplodingPlayed) return;
             if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length)
             {
-                PlayBombAudio(H.Arena.BombPlantedPosition, H.Sounds.BeforeExploding);
+                H.AudioHandler.PlayAtPoint(BombPlantedPosition, H.Sounds.BeforeExploding);
                 _beforeExplodingPlayed = true;
             }
         }
@@ -61,9 +68,51 @@ namespace ifp.arena.bep.Core.FX
             }
         }
 
-        public void PlayBombAudio(Vector3 pos, AudioClip clip)
+        public void PlayBombAudio(BombStatePacket packet)
         {
-            LastBombSource = H.AudioHandler.PlayAtPoint(pos, clip);
+            Player player = H.GetPlayer(packet.playerId);
+
+            Vector3 pos = Vector3.zero;
+            AudioClip clip = null;
+            bool shouldPlay = true;
+
+            switch (packet.state)
+            {
+                case BombState.None:
+                    CancelBombAudio();
+                    break;
+                case BombState.Planting:
+                    pos = player.PlayerBody.transform.position;
+                    clip = H.Sounds.Planting;
+                    break;
+                case BombState.Defusing:
+                    pos = player.PlayerBody.transform.position;
+                    clip = H.Sounds.Defusing;
+                    break;
+                case BombState.Defused:
+                    pos = H.BombHandler.BombPlantedPosition;
+                    clip = H.Sounds.Defused;
+                    StopBombTick();
+                    break;
+                case BombState.Planted:
+                    pos = H.BombHandler.BombPlantedPosition;
+                    clip = H.Sounds.Planted;
+                    StartBombTick(pos);
+                    break;
+                case BombState.Exploded:
+                    pos = H.BombHandler.BombPlantedPosition;
+                    clip = H.Sounds.Planted;
+                    StopBombTick();
+                    break;
+                default:
+                    shouldPlay = false;
+                    break;
+            }
+
+            if (shouldPlay && pos != Vector3.zero && clip != null)
+            {
+                LastBombSource = H.AudioHandler.PlayAtPoint(pos, clip);
+            }
         }
 
         public void CancelBombAudio()
@@ -108,6 +157,47 @@ namespace ifp.arena.bep.Core.FX
             catch (OperationCanceledException)
             {
                 // expected, ignore
+            }
+        }
+
+        private async UniTaskVoid InitBombVisualsAsync()
+        {
+            Item bombItem = IU.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+            await IU.LoadBundlesForItem(bombItem);
+            bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
+            bombVisuals.SetActive(false);
+            UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
+        }
+
+        public void SetBombVisuals(BombStatePacket bombStatePacket)
+        {
+            if (bombStatePacket.state == BombState.Planted)
+            {
+                BombPlantedPosition = bombStatePacket.position;
+                bombVisuals.transform.position = bombStatePacket.position;
+            }
+
+            switch (bombStatePacket.state)
+            {
+                case BombState.Defusing:
+                case BombState.Defused:
+                case BombState.Planted:
+                    bombVisuals.SetActive(true);
+                    break;
+                default:
+                    bombVisuals.SetActive(false);
+                    break;
+            }
+
+            if (bombStatePacket.state == BombState.Exploded)
+            {
+                Vector3 explosionCenter = bombVisuals.transform.position;
+                float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
+                if (distance <= 25f)
+                {
+                    H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);
+                }
+                Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
             }
         }
 

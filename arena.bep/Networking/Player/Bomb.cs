@@ -55,54 +55,7 @@ namespace ifp.arena.bep.networking
 
         protected override void LocalPredictApproved(BombStatePacket packet)
         {
-            PlayBombAudio(packet);
-        }
-
-        private void PlayBombAudio(BombStatePacket packet)
-        {
-            Player player = H.GetPlayer(packet.playerId);
-
-            Vector3 pos = Vector3.zero;
-            AudioClip clip = null;
-            bool shouldPlay = true;
-
-            switch (packet.state)
-            {
-                case BombState.None:
-                    H.AudioHandler.CancelBombAudio();
-                    break;
-                case BombState.Planting:
-                    pos = player.PlayerBody.transform.position;
-                    clip = H.Sounds.Planting;
-                    break;
-                case BombState.Defusing:
-                    pos = player.PlayerBody.transform.position;
-                    clip = H.Sounds.Defusing;
-                    break;
-                case BombState.Defused:
-                    pos = H.Arena.BombPlantedPosition;
-                    clip = H.Sounds.Defused;
-                    H.AudioHandler.StopBombTick();
-                    break;
-                case BombState.Planted:
-                    pos = H.Arena.BombPlantedPosition;
-                    clip = H.Sounds.Planted;
-                    H.AudioHandler.StartBombTick(pos);
-                    break;
-                case BombState.Exploded:
-                    pos = H.Arena.BombPlantedPosition;
-                    clip = H.Sounds.Planted;
-                    H.AudioHandler.StopBombTick();
-                    break;
-                default:
-                    shouldPlay = false;
-                    break;
-            }
-
-            if (shouldPlay && pos != Vector3.zero && clip != null)
-            {
-                H.AudioHandler.PlayBombAudio(pos, clip);
-            }
+            H.BombHandler.PlayBombAudio(packet);
         }
 
         protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
@@ -113,7 +66,7 @@ namespace ifp.arena.bep.networking
             Player player = H.GetPlayer(packet.playerId);
             if (!player.IsYourPlayer)
             {
-                PlayBombAudio(packet);
+                H.BombHandler.PlayBombAudio(packet);
             }
 
             if (packet.state is BombState.Planted)
@@ -130,7 +83,7 @@ namespace ifp.arena.bep.networking
                     H.Arena.LastObjectivePlayerId = packet.playerId;
             }
 
-            Singleton<ArenaController>.Instance.SetBombVisuals(packet);
+            Singleton<BombHandler>.Instance.SetBombVisuals(packet);
             EventBus.OnBombStateChange(packet.state);
         }
     }
