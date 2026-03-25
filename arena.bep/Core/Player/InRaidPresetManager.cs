@@ -4,6 +4,7 @@ using System.IO;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using ifp.arena.bep.Core.UI;
 using Newtonsoft.Json;
 
 namespace ifp.arena.bep.Core
@@ -52,7 +53,7 @@ namespace ifp.arena.bep.Core
                 Item item = H.MainInventory.Equipment.GetSlot(presetInfo.Key).ContainedItem;
                 if (item == null && presetInfo.Value.isRequired)
                 {
-                    item = IU.CreateItemFromTemplateId(presetInfo.Value.defaultBsgId);
+                    item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(presetInfo.Value.defaultBsgId);
                 }
 
                 // If the tactical rig is armoured, skip armor vest
@@ -61,21 +62,6 @@ namespace ifp.arena.bep.Core
                     if (AU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
                     {
                         continue;
-                    }
-                }
-
-                // pizdets nastoyashiy
-                if (presetInfo.Key == EquipmentSlot.ArmorVest ||
-                    presetInfo.Key == EquipmentSlot.TacticalVest && AU.IsTacRigArmored(item as VestItemClass))
-                {
-                    CompoundItem cItem = item as CompoundItem;
-                    foreach (var grid in cItem.Containers)
-                    {
-                        foreach (Item childItem in grid.Items)
-                        {
-                            // Delete plates
-                            // currently unimplemented here, instead remove plates from inventory resetter
-                        }
                     }
                 }
 

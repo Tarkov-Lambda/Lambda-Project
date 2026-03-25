@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
@@ -195,14 +196,14 @@ namespace ifp.arena.bep.networking
                 byte[] locationDescription = packet._locationDescription;
 
                 // Get the existing chain tail for this player, or start fresh
-                UniTask prev = _chains.TryGetValue(playerId, out var existing) ? existing : UniTask.CompletedTask;
+                // UniTask prev = _chains.TryGetValue(playerId, out var existing) ? existing : UniTask.CompletedTask;
 
                 // even though we are in a chain, this doesn't stop the player from moving something in their inventory
                 // can definitely cause major issues
-                _chains[playerId] = prev.ContinueWith(async () =>
-                {
-                   try
-                    {
+                // _chains[playerId] = prev.ContinueWith(async () =>
+                // {
+                //    try
+                //     {
                         await IU.LoadBundlesForItem(captured);
 
                         // address reconstruction
@@ -215,15 +216,16 @@ namespace ifp.arena.bep.networking
                             address = player.InventoryController.ToItemAddress(descriptor);
                         }
 
-                        captured.StackObjectsCount = 1; // WHAT THE FUCK
+                        captured.StackObjectsCount = 1; // idfk why but some guns just set themselves to 999999...
+
                         await IU.WhenApprovedGiveItem(captured, player, address);
-                    }
-                    catch (Exception ex)
-                    {
-                        D.Log($"[SpawnItem] Chain step failed for player {playerId}");
-                        D.Dump(ex);
-                    } 
-                });
+                //     }
+                //     catch (Exception ex)
+                //     {
+                //         D.Log($"[SpawnItem] Chain step failed for player {playerId}");
+                //         D.Dump(ex);
+                //     } 
+                // });
             }
         }
 

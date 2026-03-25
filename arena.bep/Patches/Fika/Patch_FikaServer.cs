@@ -182,7 +182,7 @@ namespace ifp.arena.bep.Patches
             var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
             var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
-            D.Dump(victim.Profile.Nickname);
+            // D.Dump(victim.Profile.Nickname);
             if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id); // Client dies

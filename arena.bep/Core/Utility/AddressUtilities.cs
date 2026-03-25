@@ -14,12 +14,12 @@ namespace ifp.arena.bep.Core
     public readonly struct ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null)
     {
         public readonly PlacementKind Kind = kind;
-        public readonly EquipmentSlot Slot = slot;         // For EquipmentSlot
-        public readonly ItemAddress Address = address;        // For VestAddress
+        public readonly EquipmentSlot Slot = slot; // for EquipmentSlot
+        public readonly ItemAddress Address = address;
 
-        public static ItemPlacement ForSlot(EquipmentSlot slot) => new(PlacementKind.EquipmentSlot, slot: slot);
+        public static ItemPlacement ForSlot(EquipmentSlot slot, ItemAddress address) => new(PlacementKind.EquipmentSlot, slot: slot, address: address);
         public static ItemPlacement ForAddress(ItemAddress address) => new(PlacementKind.VestAddress, address: address);
-        public static ItemPlacement ForArmorPlate() => new(PlacementKind.ArmorPlate);
+        public static ItemPlacement ForArmorPlate() => new(PlacementKind.ArmorPlate); // I really should pass address into this
         public static readonly ItemPlacement None = new(PlacementKind.None);
     }
 
@@ -30,14 +30,14 @@ namespace ifp.arena.bep.Core
     {
         public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch
         {
-            Weapon w => ResolveWeaponSlot(w),
+            Weapon w => ResolveWeaponSlot(w, player),
 
-            BackpackItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Backpack),
-            VestItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.TacticalVest),
-            ArmorItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.ArmorVest),
-            HeadwearItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Headwear),
-            FaceCoverItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.FaceCover),
-            HeadphonesItemClass _ => ItemPlacement.ForSlot(EquipmentSlot.Earpiece),
+            BackpackItemClass _ => ResolveSlotAddress(EquipmentSlot.Backpack, player),
+            VestItemClass _ => ResolveSlotAddress(EquipmentSlot.TacticalVest, player),
+            ArmorItemClass _ => ResolveSlotAddress(EquipmentSlot.ArmorVest, player),
+            HeadwearItemClass _ => ResolveSlotAddress(EquipmentSlot.Headwear, player),
+            FaceCoverItemClass _ => ResolveSlotAddress(EquipmentSlot.FaceCover, player),
+            HeadphonesItemClass _ => ResolveSlotAddress(EquipmentSlot.Earpiece, player),
 
             ArmorPlateItemClass _ => ResolveArmorPlatePlacement(player),
 
@@ -51,15 +51,20 @@ namespace ifp.arena.bep.Core
         };
 
         // revolver shotgun is fucked gg
-        private static ItemPlacement ResolveWeaponSlot(Weapon weapon)
+        private static ItemPlacement ResolveWeaponSlot(Weapon weapon, Player player)
         {
             var slot = weapon is PistolItemClass or RevolverItemClass ? EquipmentSlot.Holster : EquipmentSlot.FirstPrimaryWeapon;
-            return ItemPlacement.ForSlot(slot);
+            return ResolveSlotAddress(slot, player);
         }
 
         private static ItemPlacement ResolveArmorPlatePlacement(Player player)
         {
             return GetPlateHolder(player) != null ? ItemPlacement.ForArmorPlate() : ItemPlacement.None;
+        }
+
+        private static ItemPlacement ResolveSlotAddress(EquipmentSlot slotType, Player player)
+        {
+            return ItemPlacement.ForSlot(slotType, player.Inventory.Equipment.GetSlot(slotType).CreateItemAddress());
         }
 
         private static ItemPlacement ResolveVestAddress(Item item, Player player)

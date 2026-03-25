@@ -78,14 +78,14 @@ namespace ifp.arena.bep.Core
 
             // if another call is already in progress, wait for it to finish
             // before we check or mutate any slot state.
-            // try
-            // {
-            //     await _giveItemLock.WaitAsync(_sessionCts.Token);
-            // }
-            // catch (OperationCanceledException)
-            // {
-            //     return false; // Session ended
-            // }
+            try
+            {
+                await _giveItemLock.WaitAsync(_sessionCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return false; // Session ended
+            }
 
             try
             {
@@ -93,12 +93,11 @@ namespace ifp.arena.bep.Core
 
                 if (placement.Kind == PlacementKind.EquipmentSlot)
                 {
-                    var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
-                    if (slot.ContainedItem is not null)
+                    if (PU.GetPlayerSlotItem(H.MainPlayer, placement.Slot) is not null)
                     {
                         bool removed;
-                        if (templateItem is BackpackItemClass) // Backpack is only the bomb
-                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
+                        if (templateItem is BackpackItemClass) // gotta wait for backpack otherwise we get fucked
+                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer, true);
                         else
                         {
                             if (templateItem is Weapon)
@@ -117,7 +116,7 @@ namespace ifp.arena.bep.Core
 
                 // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
-                D.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
+                D.LogTransaction($"{H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id}) into ({placement.Address})");
                 Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement.Address);
                 return true;
             }
@@ -151,12 +150,12 @@ namespace ifp.arena.bep.Core
 
             if (waitUntilStationary)
             {
-                await PU.WaitUntilStationary(player);
-                if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
-                {
-                    await UniTask.WaitUntil(() =>
+                await UniTask.WaitUntil(() =>
                         player.MovementContext.CurrentState is IdleStateClass ||
                         player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
+                if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
+                {
+                    await PU.WaitUntilStationary(player);
                 }
             }
 
@@ -216,6 +215,17 @@ namespace ifp.arena.bep.Core
                 D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
                 D.LogTransaction($"Reason: {result.Error}");
             }
+            else
+            {
+                // if (item is ArmorPlateItemClass)
+                // {
+                //     Slot parentSlot = item.CurrentAddress.Container as Slot;
+                //     if (parentSlot is not null)
+                //     {
+                //         parentSlot.ApplyContainedItem();
+                //     }
+                // }
+            }
 
             return !result.Failed;
         }
@@ -240,7 +250,7 @@ namespace ifp.arena.bep.Core
 
             if (removed && magsToThrow != null)
             {
-                TryThrowItems(magsToThrow, player).Forget();
+                await TryThrowItems(magsToThrow, player, 25);
             }
 
             return removed;
@@ -259,18 +269,14 @@ namespace ifp.arena.bep.Core
         {
             switch (placement.Kind)
             {
-                case PlacementKind.VestAddress: // if we have an address, it means the space is free.
+                case PlacementKind.VestAddress:
+                case PlacementKind.EquipmentSlot:
                     D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
-                case PlacementKind.EquipmentSlot:
-                    var slot = player.Equipment.GetSlot(placement.Slot);
-                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {slot.CreateItemAddress()}");
-                    player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
-                    break;
-
                 case PlacementKind.ArmorPlate:
+                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Slot}");
                     await PlaceArmorPlate(item, player, placement);
                     break;
             }
@@ -292,8 +298,6 @@ namespace ifp.arena.bep.Core
                         continue;
 
                     var addResult = slot.AddWithoutRestrictions(plate);
-                    D.Log(slot.CreateItemAddress().ContainerName);
-                    D.Log(plate.CurrentAddress.ContainerName);
 
                     if (addResult.Failed)
                     {

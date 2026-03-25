@@ -110,9 +110,6 @@ namespace ifp.arena.bep.Core.Gamemode
                     if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
                 }
 
-                // Remove all armor plates via the shared helper (covers both armored tac-rigs and armor vests)
-                AddRange(ref itemsToRemove, AU.GetArmorPlates(player));
-
                 // If the currently equipped item doesn't match the recorded preset, remove it.
                 if (PresetManager.Instance != null)
                 {
@@ -144,6 +141,10 @@ namespace ifp.arena.bep.Core.Gamemode
                         }
                     }
                 }
+
+                // Finally remove all the plates.
+                AddRange(ref itemsToRemove, AU.GetArmorPlates(player));
+                await IU.TryPopItems(itemsToRemove, player);
             }
             finally
             {
