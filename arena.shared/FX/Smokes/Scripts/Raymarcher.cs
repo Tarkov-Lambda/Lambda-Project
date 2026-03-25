@@ -1,370 +1,435 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [RequireComponent(typeof(Camera))]
-public class Raymarcher : MonoBehaviour {
+public class Raymarcher : MonoBehaviour
+{
+    // ── External references ──────────────────────────────────────────────────
     public Voxelizer smokeVoxelData = null;
     public Gun gun = null;
 
-    public enum Res {
-        FullResolution = 0,
-        HalfResolution,
-        QuarterResolution
-    } public Res resolutionScale;
+    /// <summary>Directional light whose forward is used as _SunDirection.
+    /// Set this from RaymarchHandler before enabling the component.</summary>
+    public Transform sunTransform;
 
-    [Header("Noise Settings")]
-    [Space(5)]
-    [Range(0, 100000)]
-    public int seed = 0;
+    // ── Resolution ───────────────────────────────────────────────────────────
+    public enum Res { FullResolution = 0, HalfResolution, QuarterResolution }
+    public Res resolutionScale;
 
-    [Range(1, 16)]
-    public int octaves = 1;
-
-    [Range(1, 128)]
-    public int cellSize = 16;
-
-    [Range(1, 64)]
-    public int axisCellCount = 4;
-
-    [Range(0.1f, 16.0f)]
-    public float amplitude = 1.0f;
-    
-    [Range(0.0f, 5.0f)]
-    public float warp = 0.0f;
-
-    [Range(-5.0f, 5.0f)]
-    public float add = 0.0f;
-
+    // ── Noise Settings ───────────────────────────────────────────────────────
+    [Header("Noise Settings"), Space(5)]
+    [Range(0, 100000)] public int seed = 0;
+    [Range(1, 16)]     public int octaves = 1;
+    [Range(1, 128)]    public int cellSize = 16;
+    [Range(1, 64)]     public int axisCellCount = 4;
+    [Range(0.1f, 16f)] public float amplitude = 1.0f;
+    [Range(0f, 5f)]    public float warp = 0.0f;
+    [Range(-5f, 5f)]   public float add = 0.0f;
     public bool invertNoise = false;
-
     public bool updateNoise = false;
 
+    // Debug noise (editor only)
     public bool debugNoise = false;
-
     public bool debugTiledNoise = false;
+    public enum DebugAxis { X = 0, Y, Z }
+    public DebugAxis debugNoiseAxis;
+    [Range(0, 128)] public int debugNoiseSlice = 0;
 
-    public enum DebugAxis {
-        X = 0,
-        Y,
-        Z
-    } public DebugAxis debugNoiseAxis;
-    
-    [Range(0, 128)]
-    public int debugNoiseSlice = 0;
-
-    [Header("SDF Settings")]
-    [Space(5)]
+    // ── SDF Settings ─────────────────────────────────────────────────────────
+    [Header("SDF Settings"), Space(5)]
     public Vector4 cubeParams = new Vector4(0, 0, 0, 1);
 
-    [Header("Smoke Settings")]
-    [Space(5)]
-    [ColorUsageAttribute(false, true)]
-    public Color lightColor;
-
+    // ── Smoke Settings ───────────────────────────────────────────────────────
+    [Header("Smoke Settings"), Space(5)]
+    [ColorUsage(false, true)] public Color lightColor;
     public Color smokeColor;
-
-    [Range(1, 256)]
-    public int stepCount = 64;
-
-    [Range(0.01f, 0.1f)]
-    public float stepSize = 0.05f;
-
-    [Range(1, 32)]
-    public int lightStepCount = 8;
-
-    [Range(0.01f, 1.0f)]
-    public float lightStepSize = 0.25f;
-
-    [Range(0.01f, 64.0f)]
-    public float smokeSize = 32.0f;
-
-    [Range(0.0f, 10.0f)]
-    public float volumeDensity = 1.0f;
-
-    [Range(0.0f, 3.0f)]
-    public float absorptionCoefficient = 0.5f;
-
-    [Range(0.0f, 3.0f)]
-    public float scatteringCoefficient = 0.5f;
-
+    [Range(1, 256)]    public int   stepCount             = 64;
+    [Range(0.01f, 0.1f)] public float stepSize            = 0.05f;
+    [Range(1, 32)]     public int   lightStepCount        = 8;
+    [Range(0.01f, 1f)] public float lightStepSize         = 0.25f;
+    [Range(0.01f, 64f)] public float smokeSize            = 32.0f;
+    [Range(0f, 10f)]   public float volumeDensity         = 1.0f;
+    [Range(0f, 3f)]    public float absorptionCoefficient = 0.5f;
+    [Range(0f, 3f)]    public float scatteringCoefficient = 0.5f;
     public Color extinctionColor = new Color(1, 1, 1);
+    [Range(0f, 10f)]   public float shadowDensity         = 1.0f;
 
-    [Range(0.0f, 10.0f)]
-    public float shadowDensity = 1.0f;
+    public enum PhaseFunction { HenyeyGreenstein = 0, Mie, Rayleigh }
+    public PhaseFunction phaseFunction;
 
-    public enum PhaseFunction {
-        HenyeyGreenstein = 0,
-        Mie,
-        Rayleigh
-    } public PhaseFunction phaseFunction;
+    [Range(-1f, 1f)] public float scatteringAnisotropy = 0.0f;
+    [Range(0f, 1f)]  public float densityFalloff       = 0.25f;
+    [Range(0f, 1f)]  public float alphaThreshold       = 0.1f;
 
-    [Range(-1.0f, 1.0f)]
-    public float scatteringAnisotropy = 0.0f;
-    
-    [Range(0.0f, 1.0f)]
-    public float densityFalloff = 0.25f;
-
-    [Range(0.0f, 1.0f)]
-    public float alphaThreshold = 0.1f;
-
-    [Header("Animation Settings")]
-    [Space(5)]
+    // ── Animation Settings ───────────────────────────────────────────────────
+    [Header("Animation Settings"), Space(5)]
     public Vector3 animationDirection = new Vector3(0, -0.1f, 0);
 
-    [Header("Composite Settings")]
-    [Space(5)]
+    // ── Composite Settings ───────────────────────────────────────────────────
+    [Header("Composite Settings"), Space(5)]
     public bool bicubicUpscale = true;
+    [Range(-1f, 1f)] public float sharpness = 0.0f;
 
-    [Range(-1.0f, 1.0f)]
-    public float sharpness = 0.0f;
+    public enum ViewTexture { Composite = 0, SmokeAlbedo, SmokeMask, PolygonalDepth }
+    public ViewTexture debugView;
 
-    public enum ViewTexture {
-        Composite = 0,
-        SmokeAlbedo,
-        SmokeMask,
-        PolygonalDepth
-    } public ViewTexture debugView;
+    // ── Assets (injected by RaymarchHandler at runtime) ──────────────────────
+    public Material       compositeMaterial;
+    public ComputeShader  raymarchCompute;
 
-    private GameObject sun;
-    private Camera cam;
+    // ── Private state ────────────────────────────────────────────────────────
+    private Camera _cam;
+    private CommandBuffer _cmd;
 
-    public Material compositeMaterial;
-    public ComputeShader raymarchCompute;
+    // Kernel handles
+    private int _kGenerateNoise, _kDebugNoise, _kRaymarch;
 
-    private int generateNoisePass, debugNoisePass, raymarchSmokePass;
-    
-    private RenderTexture noiseTex, depthTex;
-    private RenderTexture smokeAlbedoFullTex, smokeAlbedoHalfTex, smokeAlbedoQuarterTex;
-    private RenderTexture smokeMaskFullTex, smokeMaskHalfTex, smokeMaskQuarterTex;
+    // Render textures
+    private RenderTexture _noiseTex;
+    private RenderTexture _depthTex;
+    private RenderTexture _albedoFull,    _albedoHalf,    _albedoQuarter;
+    private RenderTexture _maskFull,      _maskHalf,      _maskQuarter;
 
-    private ComputeBuffer smokeVoxelBuffer;
+    // Cached resolution for resize detection
+    private int _allocWidth, _allocHeight;
 
-    void UpdateNoise() {
-        raymarchCompute.SetTexture(generateNoisePass, "_RWNoiseTex", noiseTex);
-        raymarchCompute.SetInt("_Octaves", octaves);
-        raymarchCompute.SetInt("_CellSize", cellSize);
-        raymarchCompute.SetInt("_AxisCellCount", axisCellCount);
-        raymarchCompute.SetFloat("_Amplitude", amplitude);
-        raymarchCompute.SetFloat("_Warp", warp);
-        raymarchCompute.SetFloat("_Add", add);
-        raymarchCompute.SetInt("_InvertNoise", invertNoise ? 1 : 0);
-        raymarchCompute.SetInt("_Seed", seed);
-        raymarchCompute.SetVector("_NoiseRes", new Vector4(128, 128, 128, 0));
+    // Temp RT name, allocated inside the command buffer each frame
+    private static readonly int _tempColorID = Shader.PropertyToID("_SmokeSceneColorTex");
 
-        // 128 / 8
-        raymarchCompute.Dispatch(generateNoisePass, 16, 16, 16);
+    // ════════════════════════════════════════════════════════════════════════
+    // MonoBehaviour lifecycle
+    // ════════════════════════════════════════════════════════════════════════
 
-        raymarchCompute.SetTexture(raymarchSmokePass, "_NoiseTex", noiseTex);
-    }
-
-    void InitializeNoise() {
-        if (noiseTex != null) {
-            UpdateNoise();
-            return;
-        }
-        
-        noiseTex = new RenderTexture(128, 128, 0, RenderTextureFormat.RHalf, RenderTextureReadWrite.Linear);
-        noiseTex.enableRandomWrite = true;
-        noiseTex.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-        noiseTex.volumeDepth = 128;
-        noiseTex.Create();
-
-        UpdateNoise();
-    }
-
-    void InitializeVariables() {
-
+    void OnEnable()
+    {
 #if UNITY_EDITOR
         compositeMaterial = new Material(Shader.Find("Hidden/CompositeEffects"));
         raymarchCompute = (ComputeShader)Resources.Load("RenderSmoke");
 #endif
-
-        generateNoisePass = raymarchCompute.FindKernel("CS_GenerateNoise");
-        debugNoisePass = raymarchCompute.FindKernel("CS_DebugNoise");
-        raymarchSmokePass = raymarchCompute.FindKernel("CS_RayMarchSmoke");
-
-        InitializeNoise();
-
-        smokeAlbedoFullTex = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.Linear);
-        smokeAlbedoFullTex.enableRandomWrite = true;
-        smokeAlbedoFullTex.Create();
-
-        smokeAlbedoHalfTex = new RenderTexture(Mathf.CeilToInt(Screen.width / 2), Mathf.CeilToInt(Screen.height / 2), 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.Linear);
-        smokeAlbedoHalfTex.enableRandomWrite = true;
-        smokeAlbedoHalfTex.Create();
-
-        smokeAlbedoQuarterTex = new RenderTexture(Mathf.CeilToInt(Screen.width / 4), Mathf.CeilToInt(Screen.height / 4), 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.Linear);
-        smokeAlbedoQuarterTex.enableRandomWrite = true;
-        smokeAlbedoQuarterTex.Create();
-
-        smokeMaskFullTex = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
-        smokeMaskFullTex.enableRandomWrite = true;
-        smokeMaskFullTex.Create();
-
-        smokeMaskHalfTex = new RenderTexture(Mathf.CeilToInt(Screen.width / 2), Mathf.CeilToInt(Screen.height / 2), 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
-        smokeMaskHalfTex.enableRandomWrite = true;
-        smokeMaskHalfTex.Create();
-
-        smokeMaskQuarterTex = new RenderTexture(Mathf.CeilToInt(Screen.width / 4), Mathf.CeilToInt(Screen.height / 4), 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
-        smokeMaskQuarterTex.enableRandomWrite = true;
-        smokeMaskQuarterTex.Create();
-        
-        depthTex = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.RHalf, RenderTextureReadWrite.Linear);
-        depthTex.enableRandomWrite = true;
-        depthTex.Create();
-
-#if UNITY_EDITOR
-        cam = GetComponent<Camera>();
-        sun = GameObject.Find("Directional Light");
-#endif        
-
-    }
-
-    void OnEnable() {
-        InitializeVariables();
-    }
-
-    void Update() {
-        if (updateNoise) {
-            UpdateNoise();
-        }
-
-        if (smokeVoxelData != null) {
-            smokeVoxelBuffer = smokeVoxelData.GetSmokeVoxelBuffer(); 
-            raymarchCompute.SetBuffer(2, "_SmokeVoxels", smokeVoxelBuffer);
-            raymarchCompute.SetVector("_BoundsExtent", smokeVoxelData.GetBoundsExtent());
-            raymarchCompute.SetVector("_VoxelResolution", smokeVoxelData.GetVoxelResolution());
-        }
-
-        if (gun != null) {
-            raymarchCompute.SetBuffer(2, "_BulletHoles", gun.GetBulletHoles());
-            raymarchCompute.SetFloat("_BulletDepth", gun.GetDepth());
-            raymarchCompute.SetInt("_BulletHoleCount", gun.GetActiveBulletHoleCount());
-        }
-    }
-
-    private RenderTexture GetSmokeAlbedoTex() {
-        switch((int)resolutionScale) {
-            case 0:
-                return smokeAlbedoFullTex;
-            case 1:
-                return smokeAlbedoHalfTex;
-            case 2:
-                return smokeAlbedoQuarterTex;
-        }
-
-        return smokeAlbedoFullTex;
-    }
-
-    private RenderTexture GetSmokeMaskTex() {
-        switch((int)resolutionScale) {
-            case 0:
-                return smokeMaskFullTex;
-            case 1:
-                return smokeMaskHalfTex;
-            case 2:
-                return smokeMaskQuarterTex;
-        }
-
-        return smokeMaskFullTex;
-    }
-
-    void OnRenderImage(RenderTexture source, RenderTexture destination) {
-        RenderTexture smokeTex = GetSmokeAlbedoTex();
-        RenderTexture smokeMaskTex = GetSmokeMaskTex();
-
-        //Create depth tex for compute shader
-        Graphics.Blit(source, depthTex, compositeMaterial, 0);
-
-        Matrix4x4 projMatrix = GL.GetGPUProjectionMatrix(cam.projectionMatrix, false);
-        Matrix4x4 viewProjMatrix = projMatrix * cam.worldToCameraMatrix;
-        raymarchCompute.SetVector("_CameraForward", cam.transform.forward);
-
-
-        raymarchCompute.SetVector("_CameraWorldPos", this.transform.position);
-        raymarchCompute.SetMatrix("_CameraToWorld", cam.cameraToWorldMatrix);
-        raymarchCompute.SetMatrix("_CameraInvProjection", projMatrix.inverse);
-        raymarchCompute.SetMatrix("_CameraInvViewProjection", viewProjMatrix.inverse);
-        raymarchCompute.SetInt("_BufferWidth", smokeTex.width);
-        raymarchCompute.SetInt("_BufferHeight", smokeTex.height);
-        raymarchCompute.SetInt("_StepCount", stepCount);
-        raymarchCompute.SetInt("_LightStepCount", lightStepCount);
-        raymarchCompute.SetFloat("_SmokeSize", smokeSize);
-        raymarchCompute.SetFloat("_FrameTime", Time.time);
-        raymarchCompute.SetFloat("_AbsorptionCoefficient", absorptionCoefficient);
-        raymarchCompute.SetFloat("_ScatteringCoefficient", scatteringCoefficient);
-        raymarchCompute.SetFloat("_DensityFalloff", 1 - densityFalloff);
-        raymarchCompute.SetFloat("_VolumeDensity", volumeDensity * stepSize);
-        raymarchCompute.SetFloat("_StepSize", stepSize);
-        raymarchCompute.SetFloat("_ShadowDensity", shadowDensity * lightStepSize);
-        raymarchCompute.SetFloat("_LightStepSize", lightStepSize);
-        raymarchCompute.SetFloat("_G", scatteringAnisotropy);
-        raymarchCompute.SetVector("_SunDirection", sun.transform.forward);
-        raymarchCompute.SetVector("_AnimationDirection", animationDirection);
-        raymarchCompute.SetInt("_PhaseFunction", (int)phaseFunction);
-        raymarchCompute.SetVector("_CubeParams", cubeParams);
-        raymarchCompute.SetVector("_LightColor", lightColor);
-        raymarchCompute.SetVector("_SmokeColor", smokeColor);
-        raymarchCompute.SetVector("_ExtinctionColor", extinctionColor);
-        raymarchCompute.SetVector("_Radius", smokeVoxelData.GetSmokeRadius());
-        raymarchCompute.SetVector("_SmokeOrigin", smokeVoxelData.GetSmokeOrigin());
-        raymarchCompute.SetFloat("_AlphaThreshold", alphaThreshold);
-
-        if (debugNoise) {
-            raymarchCompute.SetTexture(debugNoisePass, "_NoiseTex", noiseTex);
-            raymarchCompute.SetTexture(debugNoisePass, "_SmokeTex", smokeTex);
-            raymarchCompute.SetInt("_DebugNoiseSlice", debugNoiseSlice);
-            raymarchCompute.SetInt("_DebugAxis", (int)debugNoiseAxis);
-            raymarchCompute.SetInt("_DebugTiledNoise", debugTiledNoise ? 1 : 0);
-            raymarchCompute.SetVector("_NoiseRes", new Vector4(128, 128, 128, 0));
-
-            raymarchCompute.Dispatch(debugNoisePass, Mathf.CeilToInt(Screen.width / 8.0f), Mathf.CeilToInt(Screen.height / 8.0f), 1);
-
-            Graphics.Blit(smokeTex, destination);
+        if (raymarchCompute == null || compositeMaterial == null)
+        {
+            Debug.LogWarning("[Raymarcher] raymarchCompute or compositeMaterial not set — disabling.");
+            enabled = false;
             return;
         }
-        
-        // Render volumes
-        raymarchCompute.SetTexture(raymarchSmokePass, "_SmokeTex", smokeTex);
-        raymarchCompute.SetTexture(raymarchSmokePass, "_SmokeMaskTex", smokeMaskTex);
-        raymarchCompute.SetTexture(raymarchSmokePass, "_NoiseTex", noiseTex);
-        raymarchCompute.SetTexture(raymarchSmokePass, "_DepthTex", depthTex);
-        raymarchCompute.Dispatch(raymarchSmokePass, Mathf.CeilToInt(smokeTex.width / 8.0f), Mathf.CeilToInt(smokeTex.height / 8.0f), 1);
-        
-        if (resolutionScale == Res.HalfResolution) {
-            Graphics.Blit(smokeMaskHalfTex, smokeMaskFullTex);
-            Graphics.Blit(smokeMaskFullTex, smokeMaskHalfTex);
 
-            if (bicubicUpscale) {
-                Graphics.Blit(smokeAlbedoHalfTex, smokeAlbedoFullTex, compositeMaterial, 1);
-            } else {
-                Graphics.Blit(smokeAlbedoHalfTex, smokeAlbedoFullTex);
-            }
-        }
+        _cam = GetComponent<Camera>();
+        // Ensure Unity generates the depth texture so _CameraDepthTexture is valid.
+        _cam.depthTextureMode |= DepthTextureMode.Depth;
 
-        if (resolutionScale == Res.QuarterResolution) {
-            Graphics.Blit(smokeMaskQuarterTex, smokeMaskHalfTex);
-            Graphics.Blit(smokeMaskHalfTex, smokeMaskFullTex);
-            Graphics.Blit(smokeMaskFullTex, smokeMaskHalfTex);
-            Graphics.Blit(smokeMaskHalfTex, smokeMaskQuarterTex);
+        _kGenerateNoise = raymarchCompute.FindKernel("CS_GenerateNoise");
+        _kDebugNoise    = raymarchCompute.FindKernel("CS_DebugNoise");
+        _kRaymarch      = raymarchCompute.FindKernel("CS_RayMarchSmoke");
 
-            if (bicubicUpscale) {
-                Graphics.Blit(smokeAlbedoQuarterTex, smokeAlbedoHalfTex, compositeMaterial, 1);
-                Graphics.Blit(smokeAlbedoHalfTex, smokeAlbedoFullTex, compositeMaterial, 1);
-            } else {
-                Graphics.Blit(smokeAlbedoQuarterTex, smokeAlbedoHalfTex);
-                Graphics.Blit(smokeAlbedoHalfTex, smokeAlbedoFullTex);
-            }
-        }
+        AllocateRTs(_cam.pixelWidth, _cam.pixelHeight);
+        InitializeNoise();
 
-        // Composite volumes with source buffer
-        compositeMaterial.SetTexture("_SmokeTex", smokeAlbedoFullTex);
-        compositeMaterial.SetTexture("_SmokeMaskTex", smokeMaskTex);
-        compositeMaterial.SetTexture("_DepthTex", depthTex);
-        compositeMaterial.SetFloat("_Sharpness", sharpness);
-        compositeMaterial.SetFloat("_DebugView", (int)debugView);
-
-        Graphics.Blit(source, destination, compositeMaterial, 2);
+        _cmd = new CommandBuffer { name = "SmokeRaymarch" };
+        _cam.AddCommandBuffer(CameraEvent.BeforeImageEffects, _cmd);
     }
+
+    void OnDisable()
+    {
+        if (_cam != null && _cmd != null)
+            _cam.RemoveCommandBuffer(CameraEvent.BeforeImageEffects, _cmd);
+
+        _cmd?.Dispose();
+        _cmd = null;
+
+        ReleaseRTs();
+    }
+
+    void LateUpdate()
+    {
+        if (_cam == null || raymarchCompute == null || compositeMaterial == null)
+            return;
+
+        // ── Resize detection ────────────────────────────────────────────────
+        int w = _cam.pixelWidth;
+        int h = _cam.pixelHeight;
+        if (w != _allocWidth || h != _allocHeight)
+        {
+            _cam.RemoveCommandBuffer(CameraEvent.BeforeImageEffects, _cmd);
+            _cmd?.Dispose();
+            ReleaseRTs();
+            AllocateRTs(w, h);
+            _cmd = new CommandBuffer { name = "SmokeRaymarch" };
+            _cam.AddCommandBuffer(CameraEvent.BeforeImageEffects, _cmd);
+        }
+
+        // ── Noise update (direct dispatch, not via cmd buffer) ───────────────
+        if (updateNoise)
+            UpdateNoise();
+
+        // ── Per-frame compute buffer bindings ────────────────────────────────
+        // These are set on the compute shader object directly because they are
+        // struct buffer handles that don't change format, only content.
+        if (smokeVoxelData != null)
+        {
+            ComputeBuffer voxelBuf = smokeVoxelData.GetSmokeVoxelBuffer();
+            if (voxelBuf != null)
+            {
+                raymarchCompute.SetBuffer(_kRaymarch, "_SmokeVoxels", voxelBuf);
+                raymarchCompute.SetVector("_BoundsExtent",   smokeVoxelData.GetBoundsExtent());
+                raymarchCompute.SetVector("_VoxelResolution", smokeVoxelData.GetVoxelResolution());
+            }
+        }
+
+        if (gun != null)
+        {
+            ComputeBuffer holeBuf = gun.GetBulletHoles();
+            if (holeBuf != null)
+            {
+                raymarchCompute.SetBuffer(_kRaymarch, "_BulletHoles", holeBuf);
+                raymarchCompute.SetFloat("_BulletDepth", gun.GetDepth());
+                raymarchCompute.SetInt("_BulletHoleCount", gun.GetActiveBulletHoleCount());
+            }
+        }
+
+        // ── (Re)build command buffer for this frame ──────────────────────────
+        RebuildCommandBuffer();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // RT allocation / release
+    // ════════════════════════════════════════════════════════════════════════
+
+    private void AllocateRTs(int width, int height)
+    {
+        _allocWidth  = width;
+        _allocHeight = height;
+
+        int hw = Mathf.CeilToInt(width  * 0.5f);
+        int hh = Mathf.CeilToInt(height * 0.5f);
+        int qw = Mathf.CeilToInt(width  * 0.25f);
+        int qh = Mathf.CeilToInt(height * 0.25f);
+
+        _albedoFull    = MakeRT(width,  height, RenderTextureFormat.ARGB64);
+        _albedoHalf    = MakeRT(hw,     hh,     RenderTextureFormat.ARGB64);
+        _albedoQuarter = MakeRT(qw,     qh,     RenderTextureFormat.ARGB64);
+
+        _maskFull    = MakeRT(width, height, RenderTextureFormat.RFloat);
+        _maskHalf    = MakeRT(hw,    hh,     RenderTextureFormat.RFloat);
+        _maskQuarter = MakeRT(qw,    qh,     RenderTextureFormat.RFloat);
+
+        _depthTex = MakeRT(width, height, RenderTextureFormat.RHalf);
+    }
+
+    private static RenderTexture MakeRT(int w, int h, RenderTextureFormat fmt)
+    {
+        var rt = new RenderTexture(w, h, 0, fmt, RenderTextureReadWrite.Linear)
+        {
+            enableRandomWrite = true
+        };
+        rt.Create();
+        return rt;
+    }
+
+    private void ReleaseRTs()
+    {
+        SafeRelease(ref _albedoFull);
+        SafeRelease(ref _albedoHalf);
+        SafeRelease(ref _albedoQuarter);
+        SafeRelease(ref _maskFull);
+        SafeRelease(ref _maskHalf);
+        SafeRelease(ref _maskQuarter);
+        SafeRelease(ref _depthTex);
+        SafeRelease(ref _noiseTex);
+    }
+
+    private static void SafeRelease(ref RenderTexture rt)
+    {
+        if (rt == null) return;
+        rt.Release();
+        DestroyImmediate(rt);
+        rt = null;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Noise (direct dispatch — one-shot or on-demand, never in the cmd buffer)
+    // ════════════════════════════════════════════════════════════════════════
+
+    private void InitializeNoise()
+    {
+        if (_noiseTex != null)
+        {
+            UpdateNoise();
+            return;
+        }
+
+        _noiseTex = new RenderTexture(128, 128, 0, RenderTextureFormat.RHalf, RenderTextureReadWrite.Linear)
+        {
+            enableRandomWrite = true,
+            dimension         = UnityEngine.Rendering.TextureDimension.Tex3D,
+            volumeDepth       = 128
+        };
+        _noiseTex.Create();
+        UpdateNoise();
+    }
+
+    private void UpdateNoise()
+    {
+        raymarchCompute.SetTexture(_kGenerateNoise, "_RWNoiseTex", _noiseTex);
+        raymarchCompute.SetInt("_Octaves",     octaves);
+        raymarchCompute.SetInt("_CellSize",    cellSize);
+        raymarchCompute.SetInt("_AxisCellCount", axisCellCount);
+        raymarchCompute.SetFloat("_Amplitude", amplitude);
+        raymarchCompute.SetFloat("_Warp",      warp);
+        raymarchCompute.SetFloat("_Add",       add);
+        raymarchCompute.SetInt("_InvertNoise", invertNoise ? 1 : 0);
+        raymarchCompute.SetInt("_Seed",        seed);
+        raymarchCompute.SetVector("_NoiseRes", new Vector4(128, 128, 128, 0));
+        // 128 / 8 = 16 thread groups per axis
+        raymarchCompute.Dispatch(_kGenerateNoise, 16, 16, 16);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Command buffer construction — called every LateUpdate
+    // ════════════════════════════════════════════════════════════════════════
+
+    private void RebuildCommandBuffer()
+    {
+        _cmd.Clear();
+
+        RenderTexture albedoTex = ActiveAlbedoTex();
+        RenderTexture maskTex   = ActiveMaskTex();
+
+        // ── 1. Extract depth from Unity's depth texture into our own RT ──────
+        // Pass 0 of CompositeEffects reads _CameraDepthTexture (global) and
+        // ignores _MainTex, so the source is a dummy.
+        _cmd.Blit(BuiltinRenderTextureType.CurrentActive, _depthTex, compositeMaterial, 0);
+
+        // ── 2. Snapshot the scene colour buffer ──────────────────────────────
+        // We can't read and write CameraTarget simultaneously, so we copy it.
+        _cmd.GetTemporaryRT(_tempColorID, _allocWidth, _allocHeight, 0,
+            FilterMode.Point,
+            _cam.allowHDR ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32);
+        _cmd.Blit(BuiltinRenderTextureType.CameraTarget, _tempColorID);
+
+        // ── 3. Build per-frame camera matrices ───────────────────────────────
+        Matrix4x4 proj     = GL.GetGPUProjectionMatrix(_cam.projectionMatrix, false);
+        Matrix4x4 viewProj = proj * _cam.worldToCameraMatrix;
+
+        // ── 4. Record all compute shader parameters ──────────────────────────
+        int k = _kRaymarch;
+
+        // Textures
+        _cmd.SetComputeTextureParam(raymarchCompute, k, "_SmokeTex",     albedoTex);
+        _cmd.SetComputeTextureParam(raymarchCompute, k, "_SmokeMaskTex", maskTex);
+        _cmd.SetComputeTextureParam(raymarchCompute, k, "_NoiseTex",     _noiseTex);
+        _cmd.SetComputeTextureParam(raymarchCompute, k, "_DepthTex",     _depthTex);
+
+        // Camera
+        _cmd.SetComputeVectorParam(raymarchCompute, "_CameraForward",            _cam.transform.forward);
+        _cmd.SetComputeVectorParam(raymarchCompute, "_CameraWorldPos",           _cam.transform.position);
+        _cmd.SetComputeMatrixParam(raymarchCompute, "_CameraToWorld",            _cam.cameraToWorldMatrix);
+        _cmd.SetComputeMatrixParam(raymarchCompute, "_CameraInvProjection",      proj.inverse);
+        _cmd.SetComputeMatrixParam(raymarchCompute, "_CameraInvViewProjection",  viewProj.inverse);
+        _cmd.SetComputeIntParam(   raymarchCompute, "_BufferWidth",              albedoTex.width);
+        _cmd.SetComputeIntParam(   raymarchCompute, "_BufferHeight",             albedoTex.height);
+
+        // Lighting / phase
+        Vector4 sunDir = sunTransform != null
+            ? new Vector4(sunTransform.forward.x, sunTransform.forward.y, sunTransform.forward.z, 0f)
+            : Vector4.zero;
+        _cmd.SetComputeVectorParam(raymarchCompute, "_SunDirection",  sunDir);
+        _cmd.SetComputeVectorParam(raymarchCompute, "_LightColor",    lightColor);
+        _cmd.SetComputeIntParam(   raymarchCompute, "_PhaseFunction", (int)phaseFunction);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_G",             scatteringAnisotropy);
+
+        // Smoke volume
+        _cmd.SetComputeVectorParam(raymarchCompute, "_SmokeColor",             smokeColor);
+        _cmd.SetComputeVectorParam(raymarchCompute, "_ExtinctionColor",        extinctionColor);
+        _cmd.SetComputeVectorParam(raymarchCompute, "_AnimationDirection",     animationDirection);
+        _cmd.SetComputeVectorParam(raymarchCompute, "_CubeParams",             cubeParams);
+        _cmd.SetComputeIntParam(   raymarchCompute, "_StepCount",              stepCount);
+        _cmd.SetComputeIntParam(   raymarchCompute, "_LightStepCount",         lightStepCount);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_StepSize",               stepSize);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_LightStepSize",          lightStepSize);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_SmokeSize",              smokeSize);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_FrameTime",              Time.time);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_VolumeDensity",          volumeDensity * stepSize);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_ShadowDensity",          shadowDensity * lightStepSize);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_AbsorptionCoefficient",  absorptionCoefficient);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_ScatteringCoefficient",  scatteringCoefficient);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_DensityFalloff",         1f - densityFalloff);
+        _cmd.SetComputeFloatParam( raymarchCompute, "_AlphaThreshold",         alphaThreshold);
+
+        // Smoke voxel / spatial
+        if (smokeVoxelData != null)
+        {
+            Vector3 radius = smokeVoxelData.GetSmokeRadius();
+            Vector3 origin = smokeVoxelData.GetSmokeOrigin();
+            _cmd.SetComputeVectorParam(raymarchCompute, "_Radius",
+                new Vector4(radius.x, radius.y, radius.z, 0f));
+            _cmd.SetComputeVectorParam(raymarchCompute, "_SmokeOrigin",
+                new Vector4(origin.x, origin.y, origin.z, 0f));
+        }
+
+        // ── 5. Dispatch the raymarcher ────────────────────────────────────────
+        _cmd.DispatchCompute(raymarchCompute, k,
+            Mathf.CeilToInt(albedoTex.width  / 8f),
+            Mathf.CeilToInt(albedoTex.height / 8f),
+            1);
+
+        // ── 6. Upscale to full resolution (if running at reduced res) ─────────
+        switch (resolutionScale)
+        {
+            case Res.HalfResolution:
+                // Ping-pong the mask so the full-res mask is up-to-date
+                _cmd.Blit(_maskHalf, _maskFull);
+                _cmd.Blit(_maskFull, _maskHalf);
+
+                if (bicubicUpscale)
+                    _cmd.Blit(_albedoHalf, _albedoFull, compositeMaterial, 1);
+                else
+                    _cmd.Blit(_albedoHalf, _albedoFull);
+                break;
+
+            case Res.QuarterResolution:
+                _cmd.Blit(_maskQuarter, _maskHalf);
+                _cmd.Blit(_maskHalf,    _maskFull);
+                _cmd.Blit(_maskFull,    _maskHalf);
+                _cmd.Blit(_maskHalf,    _maskQuarter);
+
+                if (bicubicUpscale)
+                {
+                    _cmd.Blit(_albedoQuarter, _albedoHalf, compositeMaterial, 1);
+                    _cmd.Blit(_albedoHalf,    _albedoFull, compositeMaterial, 1);
+                }
+                else
+                {
+                    _cmd.Blit(_albedoQuarter, _albedoHalf);
+                    _cmd.Blit(_albedoHalf,    _albedoFull);
+                }
+                break;
+        }
+
+        // ── 7. Composite smoke onto scene colour → write back to CameraTarget ─
+        // Pass 2 reads _MainTex (= scene snapshot) + globals below.
+        _cmd.SetGlobalTexture("_SmokeTex",     _albedoFull);
+        _cmd.SetGlobalTexture("_SmokeMaskTex", _maskFull);
+        _cmd.SetGlobalTexture("_DepthTex",     _depthTex);
+        _cmd.SetGlobalFloat(  "_Sharpness",    sharpness);
+        _cmd.SetGlobalInt(    "_DebugView",    (int)debugView);
+        _cmd.Blit(_tempColorID, BuiltinRenderTextureType.CameraTarget, compositeMaterial, 2);
+
+        _cmd.ReleaseTemporaryRT(_tempColorID);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private RenderTexture ActiveAlbedoTex() => resolutionScale switch
+    {
+        Res.HalfResolution    => _albedoHalf,
+        Res.QuarterResolution => _albedoQuarter,
+        _                     => _albedoFull,
+    };
+
+    private RenderTexture ActiveMaskTex() => resolutionScale switch
+    {
+        Res.HalfResolution    => _maskHalf,
+        Res.QuarterResolution => _maskQuarter,
+        _                     => _maskFull,
+    };
 }

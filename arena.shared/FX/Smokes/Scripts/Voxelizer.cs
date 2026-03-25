@@ -31,6 +31,8 @@ public class Voxelizer : MonoBehaviour
     public bool debugSmokeVoxels = false;
     public bool debugEdgeVoxels = false;
 
+    public Camera cam;
+
     private ComputeBuffer staticVoxelsBuffer, smokeVoxelsBuffer, smokePingVoxelsBuffer, argsBuffer;
     public ComputeShader voxelizeCompute;
     private Material debugVoxelMaterial;
@@ -80,19 +82,6 @@ public class Voxelizer : MonoBehaviour
         smokeVoxelsBuffer = new ComputeBuffer(totalVoxels, sizeof(int));
         smokePingVoxelsBuffer = new ComputeBuffer(totalVoxels, sizeof(int));
 
-        voxelizeCompute.SetBuffer(0, "_Voxels", smokeVoxelsBuffer);
-        voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
-        voxelizeCompute.SetBuffer(0, "_Voxels", smokePingVoxelsBuffer);
-        voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
-
-        voxelizeCompute.SetBuffer(2, "_SmokeVoxels", smokeVoxelsBuffer);
-        voxelizeCompute.SetBuffer(3, "_StaticVoxels", staticVoxelsBuffer);
-        voxelizeCompute.SetBuffer(3, "_SmokeVoxels", smokeVoxelsBuffer);
-        voxelizeCompute.SetBuffer(3, "_PingVoxels", smokePingVoxelsBuffer);
-        voxelizeCompute.SetBuffer(4, "_Voxels", smokeVoxelsBuffer);
-        voxelizeCompute.SetBuffer(4, "_PingVoxels", smokePingVoxelsBuffer);
-        voxelizeCompute.SetBuffer(4, "_StaticVoxels", staticVoxelsBuffer);
-
         // Debug instancing args
         argsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
         uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
@@ -101,6 +90,36 @@ public class Voxelizer : MonoBehaviour
         args[2] = (uint)debugMesh.GetIndexStart(0);
         args[3] = (uint)debugMesh.GetBaseVertex(0);
         argsBuffer.SetData(args);
+
+        // If the compute shader was already injected (e.g. in the editor), run
+        // the GPU-side initialisation immediately.  At runtime the compute shader
+        // is injected externally after OnEnable, so the caller must invoke
+        // InitializeComputeDispatches() once voxelizeCompute has been set.
+        if (voxelizeCompute != null)
+            InitializeComputeDispatches();
+    }
+
+    /// <summary>
+    /// Clears the smoke/ping buffers and binds them to every kernel that needs
+    /// them.  Must be called after <see cref="voxelizeCompute"/> is assigned and
+    /// after the CPU-side buffers have been allocated in <see cref="OnEnable"/>.
+    /// </summary>
+    public void InitializeComputeDispatches()
+    {
+        // Clear smoke and ping buffers
+        voxelizeCompute.SetBuffer(0, "_Voxels", smokeVoxelsBuffer);
+        voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
+        voxelizeCompute.SetBuffer(0, "_Voxels", smokePingVoxelsBuffer);
+        voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
+
+        // Bind buffers for the fill / ping-pong kernels
+        voxelizeCompute.SetBuffer(2, "_SmokeVoxels", smokeVoxelsBuffer);
+        voxelizeCompute.SetBuffer(3, "_StaticVoxels", staticVoxelsBuffer);
+        voxelizeCompute.SetBuffer(3, "_SmokeVoxels", smokeVoxelsBuffer);
+        voxelizeCompute.SetBuffer(3, "_PingVoxels", smokePingVoxelsBuffer);
+        voxelizeCompute.SetBuffer(4, "_Voxels", smokeVoxelsBuffer);
+        voxelizeCompute.SetBuffer(4, "_PingVoxels", smokePingVoxelsBuffer);
+        voxelizeCompute.SetBuffer(4, "_StaticVoxels", staticVoxelsBuffer);
     }
 
     float Easing(float x)
@@ -111,6 +130,16 @@ public class Voxelizer : MonoBehaviour
         return Mathf.Min(1.0f, ease);
     }
 
+    public void SpawnSmoke(Vector3 pos)
+    {
+        smokeOrigin = pos;
+        voxelizeCompute.SetVector("_SmokeOrigin", smokeOrigin);
+        radius = 0;
+        voxelizeCompute.SetBuffer(0, "_Voxels", smokeVoxelsBuffer);
+        voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
+        voxelizeCompute.Dispatch(2, 1, 1, 1);
+    }
+
     void Update()
     {
         if (staticVoxelsBuffer == null) return;
@@ -119,7 +148,7 @@ public class Voxelizer : MonoBehaviour
 
         if (Input.GetMouseButtonDown(2))
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 50))
             {
                 smokeOrigin = hit.point;
