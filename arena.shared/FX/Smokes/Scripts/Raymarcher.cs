@@ -129,8 +129,8 @@ public class Raymarcher : MonoBehaviour {
     private GameObject sun;
     private Camera cam;
 
-    private Material compositeMaterial;
-    private ComputeShader raymarchCompute;
+    public Material compositeMaterial;
+    public ComputeShader raymarchCompute;
 
     private int generateNoisePass, debugNoisePass, raymarchSmokePass;
     
@@ -174,8 +174,11 @@ public class Raymarcher : MonoBehaviour {
     }
 
     void InitializeVariables() {
+
+#if UNITY_EDITOR
         compositeMaterial = new Material(Shader.Find("Hidden/CompositeEffects"));
         raymarchCompute = (ComputeShader)Resources.Load("RenderSmoke");
+#endif
 
         generateNoisePass = raymarchCompute.FindKernel("CS_GenerateNoise");
         debugNoisePass = raymarchCompute.FindKernel("CS_DebugNoise");
@@ -211,8 +214,11 @@ public class Raymarcher : MonoBehaviour {
         depthTex.enableRandomWrite = true;
         depthTex.Create();
 
+#if UNITY_EDITOR
         cam = GetComponent<Camera>();
         sun = GameObject.Find("Directional Light");
+#endif        
+
     }
 
     void OnEnable() {
