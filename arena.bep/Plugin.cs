@@ -180,11 +180,11 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<FXHandler>();
         RegisterSingleton<AudioHandler>();
         RegisterSingleton<MusicHandler>();
-        RegisterSingleton<BombHandler>();
         // RegisterSingleton<RaymarchHandler>();
 
         var warmup = typeof(Ladder);
         RegisterSingletonInRaid<LadderEventManager>().Forget(); // this lifecycle needs refactor asap
+        RegisterSingletonInRaid<BombHandler>().Forget();
 
 
 #if DEBUG

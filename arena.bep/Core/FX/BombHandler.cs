@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Core.FX
         public BetterSource LastBombTickSource { get; private set; }
 
         public GameObject bombVisuals { get; private set; }
-        public Vector3 BombPlantedPosition { get; private set; }
+        public Vector3 BombPlantedPosition { get; set; } // yes it's not really supposed to be public set;
 
         private CancellationTokenSource _bombTickCancellationSource;
 
@@ -42,7 +42,7 @@ namespace ifp.arena.bep.Core.FX
             if (H.Arena.ActiveRules is not SnDModeRules) return;
 
             if (_beforeExplodingPlayed) return;
-            if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length)
+            if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.roundState is MatchState.RoundPlanted)
             {
                 H.AudioHandler.PlayAtPoint(BombPlantedPosition, H.Sounds.BeforeExploding);
                 _beforeExplodingPlayed = true;
@@ -120,7 +120,7 @@ namespace ifp.arena.bep.Core.FX
 
             _bombTickCancellationSource = new CancellationTokenSource();
             Vector3 slightUpPos = pos;
-            slightUpPos.y += 3f;
+            slightUpPos.y += 0.5f;
             PlayEverySecondAsync(slightUpPos, H.Sounds.Tick, _bombTickCancellationSource.Token).Forget();
         }
 

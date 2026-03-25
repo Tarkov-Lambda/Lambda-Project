@@ -55,13 +55,20 @@ namespace ifp.arena.bep.networking
 
         protected override void LocalPredictApproved(BombStatePacket packet)
         {
+            // idk how I feel about mutating the state like this locally as a general practice
+            // but it shouldn't be an issue here at least
+            if (packet.state == BombState.Planted)
+            {
+                H.BombHandler.BombPlantedPosition = packet.position;
+                H.BombHandler.bombVisuals.transform.position = packet.position;
+            }
+
             H.BombHandler.PlayBombAudio(packet);
         }
 
         protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
         {
             H.Session.bombState = packet.state;
-            // D.Notify(packet.state);
 
             Player player = H.GetPlayer(packet.playerId);
             if (!player.IsYourPlayer)
@@ -83,7 +90,7 @@ namespace ifp.arena.bep.networking
                     H.Arena.LastObjectivePlayerId = packet.playerId;
             }
 
-            Singleton<BombHandler>.Instance.SetBombVisuals(packet);
+            H.BombHandler.SetBombVisuals(packet);
             EventBus.OnBombStateChange(packet.state);
         }
     }

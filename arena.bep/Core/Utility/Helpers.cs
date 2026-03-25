@@ -34,7 +34,7 @@ namespace ifp.arena.bep.Core
 
         public static BombHandler BombHandler => isInRaid() ? Singleton<BombHandler>.Instance : null;
 
-        public static FXHandler FXHandler => isInRaid() ? H.FXHandler : null;
+        public static FXHandler FXHandler => isInRaid() ? Singleton<FXHandler>.Instance : null;
 
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();
         public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
