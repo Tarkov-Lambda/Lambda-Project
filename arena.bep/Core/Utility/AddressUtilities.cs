@@ -19,7 +19,7 @@ namespace ifp.arena.bep.Core
 
         public static ItemPlacement ForSlot(EquipmentSlot slot, ItemAddress address) => new(PlacementKind.EquipmentSlot, slot: slot, address: address);
         public static ItemPlacement ForAddress(ItemAddress address) => new(PlacementKind.VestAddress, address: address);
-        public static ItemPlacement ForArmorPlate() => new(PlacementKind.ArmorPlate); // I really should pass address into this
+        public static ItemPlacement ForArmorPlate(ItemAddress address) => new(PlacementKind.ArmorPlate, address: address);
         public static readonly ItemPlacement None = new(PlacementKind.None);
     }
 
@@ -59,7 +59,21 @@ namespace ifp.arena.bep.Core
 
         private static ItemPlacement ResolveArmorPlatePlacement(Player player)
         {
-            return GetPlateHolder(player) != null ? ItemPlacement.ForArmorPlate() : ItemPlacement.None;
+            var plateHolder = AU.GetPlateHolder(player);
+            foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
+            {
+                foreach (var slot in armorHolder.ArmorSlots)
+                {
+                    if (slot.ContainedItem is not null)
+                        continue;
+                    if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    return ItemPlacement.ForArmorPlate(slot.CreateItemAddress());
+                }
+            }
+            
+            return ItemPlacement.None;
         }
 
         private static ItemPlacement ResolveSlotAddress(EquipmentSlot slotType, Player player)
