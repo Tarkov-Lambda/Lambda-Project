@@ -3,10 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using ifp.arena.bep.Core;
 using UnityEngine;
 
-namespace ifp.arena.bep
+namespace ifp.tracer
 {
     public struct TracedCallRecord
     {
@@ -180,11 +179,11 @@ namespace ifp.arena.bep
                                                       : (isVoid ? harmonyPostfixVoid : harmonyPostfix);
 
                     _harmony.Patch(method, prefix: prefix, postfix: postfix);
-                    D.Log($"[TRACER] Patched {_typeName}.{method.Name}{(hasRefOut ? " (ref-safe)" : "")}");
+                    Plugin.Logger.LogInfo($"[TRACER] Patched {_typeName}.{method.Name}{(hasRefOut ? " (ref-safe)" : "")}");
                 }
                 catch (Exception ex)
                 {
-                    D.Log($"[TRACER] Failed to patch {_typeName}.{method.Name}: {ex.Message}");
+                    Plugin.Logger.LogInfo($"[TRACER] Failed to patch {_typeName}.{method.Name}: {ex.Message}");
                 }
             }
         }
@@ -252,7 +251,7 @@ namespace ifp.arena.bep
                 if (key.StartsWith(_typeName + "."))
                     TracedData.TryRemove(key, out _);
             TracerLabels.TryRemove(_typeName, out _);
-            D.Log($"[TRACER] Unpatched all methods for {_harmonyId}");
+            Plugin.Logger.LogInfo($"[TRACER] Unpatched all methods for {_harmonyId}");
         }
 
         private static void GenericPrefix(MethodBase __originalMethod)

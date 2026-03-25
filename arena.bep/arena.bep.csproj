@@ -83,6 +83,8 @@
     <ProjectReference Include="..\arena.ui\arena.ui.csproj">
       <Private>False</Private>
     </ProjectReference>
+
+    <ProjectReference Include="..\Tracer\tracer.csproj" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
@@ -93,6 +95,7 @@
       <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
 
       <DebugDependencies Include="../deps/ScriptEngine.dll" />
+      <DebugDependencies Include="$(OutputPath)\tracer.dll" />
 
       <Configs Include="../deps/configs/*.cfg" />
       <JSON Include="../deps/configs/*.jsonc" />

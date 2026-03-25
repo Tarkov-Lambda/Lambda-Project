@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ifp.arena.bep
+namespace ifp.tracer
 {
     public partial class TracerOverlay
     {

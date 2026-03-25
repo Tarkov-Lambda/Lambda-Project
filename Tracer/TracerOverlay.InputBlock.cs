@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace ifp.arena.bep
+namespace ifp.tracer
 {
     // unity legacy input patcher 
     internal static class InputBlockPatches

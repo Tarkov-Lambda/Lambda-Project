@@ -19,6 +19,7 @@ using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
+using ifp.tracer;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -198,10 +199,7 @@ public class Plugin : BaseUnityPlugin
 
 
 #if DEBUG
-        // _disposables.Add(new DynamicClassTracer(typeof(ProceduralWeaponAnimation)));
-        TracerOverlay = new GameObject("Arena Gamesession");
-        TracerOverlay.AddComponent<TracerOverlay>();
-        DontDestroyOnLoad(TracerOverlay);
+        _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
 #endif
 
     }
