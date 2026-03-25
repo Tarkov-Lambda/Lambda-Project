@@ -233,6 +233,18 @@ namespace ifp.arena.bep.Core.Dying
 
             return clone;
         }
+
+        public void ClearAllCorpses()
+        {
+            foreach (var kvp in regsitry)
+            {
+                if (kvp.Value != null)
+                {
+                    GameObject.Destroy(kvp.Value.gameObject);
+                }
+            }
+            regsitry.Clear();
+        }
     }
 
 }

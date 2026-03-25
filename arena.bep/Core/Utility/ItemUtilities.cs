@@ -119,7 +119,7 @@ namespace ifp.arena.bep.Core
                 // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
                 D.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
-                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement.Address);
+                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem); // , placement.Address
                 return true;
             }
             catch (OperationCanceledException)
@@ -132,15 +132,14 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
-        // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryPopContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
             => await TryOperateOnSlot(equipmentSlot, player, TryPopItem, waitUntilStationary, extraBackpackWait: true);
 
         public static async UniTask<bool> TryThrowContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
             => await TryOperateOnSlot(equipmentSlot, player, TryThrowItem, waitUntilStationary);
 
-
+        // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
+        // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         private static async UniTask<bool> TryOperateOnSlot(
             EquipmentSlot equipmentSlot,
             Player player,

@@ -171,6 +171,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit()
         {
             IU.GarbageCollectWorldLoot();
+            Singleton<RagdollCreator>.Instance.ClearAllCorpses();
             H.BombHandler.bombVisuals?.SetActive(false);
         }
     }
