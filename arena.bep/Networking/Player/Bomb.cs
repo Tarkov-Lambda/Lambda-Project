@@ -61,7 +61,7 @@ namespace ifp.arena.bep.networking
         protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
         {
             H.Session.bombState = packet.state;
-            D.Notify(packet.state);
+            // D.Notify(packet.state);
 
             Player player = H.GetPlayer(packet.playerId);
             if (!player.IsYourPlayer)

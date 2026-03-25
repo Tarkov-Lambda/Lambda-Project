@@ -51,7 +51,7 @@ namespace ifp.arena.bep.Core.FX
 
         public void OnEnter(MatchState state)
         {
-            if (state is MatchState.RoundPlanted)
+            if (state is MatchState.RoundPlanted or MatchState.RoundPrepare)
             {
                 _beforeExplodingPlayed = false;
             }
@@ -59,10 +59,7 @@ namespace ifp.arena.bep.Core.FX
 
         public void OnEnd(MatchState state)
         {
-            if (state is MatchState.RoundPlanted)
-            {
-                _beforeExplodingPlayed = false;
-            }
+
         }
 
         public void PlayBombAudio(BombStatePacket packet)
