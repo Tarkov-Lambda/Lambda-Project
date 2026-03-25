@@ -49,9 +49,8 @@ namespace ifp.arena.bep.networking
 
         protected override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
         {
-
-            Singleton<RaymarchHandler>.Instance.Raymarcher.smokeVoxelData.SpawnSmoke(packet.explosionPos);
-            // Molotov.Spawn(packet).Forget();
+            // Singleton<RaymarchHandler>.Instance.Raymarcher.smokeVoxelData.HandleSmokeThrow(packet.explosionPos);
+            Molotov.Spawn(packet).Forget();
         }
     }
 }
