@@ -111,6 +111,16 @@ public class Voxelizer : MonoBehaviour
         return Mathf.Min(1.0f, ease);
     }
 
+    public void SpawnSmoke(Vector3 pos)
+    {
+        smokeOrigin = pos;
+        voxelizeCompute.SetVector("_SmokeOrigin", smokeOrigin);
+        radius = 0;
+        voxelizeCompute.SetBuffer(0, "_Voxels", smokeVoxelsBuffer);
+        voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
+        voxelizeCompute.Dispatch(2, 1, 1, 1);
+    }
+
     void Update()
     {
         if (staticVoxelsBuffer == null) return;
@@ -122,12 +132,7 @@ public class Voxelizer : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 50))
             {
-                smokeOrigin = hit.point;
-                voxelizeCompute.SetVector("_SmokeOrigin", smokeOrigin);
-                radius = 0;
-                voxelizeCompute.SetBuffer(0, "_Voxels", smokeVoxelsBuffer);
-                voxelizeCompute.Dispatch(0, Mathf.CeilToInt(totalVoxels / 128.0f), 1, 1);
-                voxelizeCompute.Dispatch(2, 1, 1, 1);
+                SpawnSmoke(hit.point);
             }
         }
 

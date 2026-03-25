@@ -43,7 +43,8 @@ namespace ifp.arena.bep.Core.UI
                 MongoID mongoId = new MongoID(bsgId);
                 return mongoId.LocalizedShortName();
             }
-            catch (Exception ex){
+            catch (Exception ex)
+            {
                 Plugin.Logger.LogInfo(ex);
             }
 
@@ -52,6 +53,14 @@ namespace ifp.arena.bep.Core.UI
 
         public void RequestIcon(string bsgId, Action<Sprite> onRendered)
         {
+            if (string.IsNullOrEmpty(bsgId))
+            {
+                if (emptySprite == null)
+                    emptySprite = Sprite.Create(Texture2D.blackTexture, new Rect(0, 0, 1, 1), Vector2.zero, 100);
+                onRendered?.Invoke(emptySprite);
+                return;
+            }
+
             Item immutableItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(bsgId);
 
             if (immutableItem == null)
@@ -69,7 +78,7 @@ namespace ifp.arena.bep.Core.UI
                 onRendered?.Invoke(itemIcon.Sprite);
                 return;
             }
-            
+
             itemIcon.Changed.Bind(() => onRendered?.Invoke(itemIcon.Sprite));
         }
     }

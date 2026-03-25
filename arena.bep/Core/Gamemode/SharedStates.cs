@@ -64,7 +64,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             H.Session.InitializeScoreBoard();
             InventoryResetter.ResetInventory().Forget();
-            H.Session.ResetRoundScopeFields();
+            H.Session.ResetSessionScopeFields(); // full reset
         }
     }
 
@@ -87,6 +87,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public MatchState StateType => MatchState.RoundPrepare;
         public void OnEnter()
         {
+            H.Session.ResetRoundScopeFields(); // I've lost the plot and I have no clue how to sync states correctly anymore
             IU.GarbageCollectWorldLoot();
 
             if (!H.MainPlayerScore.isAlive)
@@ -139,6 +140,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (FikaBackendUtils.IsServer)
             {
+
                 H.Arena.OnRoundEnd();
             }
         }

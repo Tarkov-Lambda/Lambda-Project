@@ -25,6 +25,10 @@ namespace ifp.arena.bep.networking
         public int money;
         public bool isAlive;
         public bool isReady;
+
+        public int s_roundDamage;
+        public int roundKills;
+        public int roundHeadshots;
     }
 
     [MemoryPackable]
@@ -78,7 +82,10 @@ namespace ifp.arena.bep.networking
                     money = kvp.Value.money,
                     isAlive = kvp.Value.isAlive,
                     isReady = kvp.Value.isMapReady,
-                    musicKit = kvp.Value.musicKit
+                    
+                    s_roundDamage = kvp.Value.s_roundDamage,
+                    roundKills = kvp.Value.roundKills,
+                    roundHeadshots = kvp.Value.roundHeadshots
                 }).ToArray()
             };
 

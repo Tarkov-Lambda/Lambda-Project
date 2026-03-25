@@ -96,26 +96,27 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementState_BlindFire()); // Force Blindfire state regardless of movement state
 
         RegisterPatch(new Patch_MovementContext_ManualUpdate()); // Smooth Speed Tweak
-                                                                 // RegisterPatch(new NostalgiaPatrolFixExitPatch());
-                                                                 // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
+        // RegisterPatch(new NostalgiaPatrolFixExitPatch());
+        // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
         RegisterPatch(new Patch_MovementContext_GetNewState()); // Change Movement State Classes
-                                                                // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // Do not slow down during aiming
-                                                                // RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
+        // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // Do not slow down during aiming
+        // RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
 
         RegisterPatch(new Patch_CanWalk()); // For controller locking
         RegisterPatch(new Patch_CanJump()); // For controller locking
         RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
-                                                    // RegisterPatch(new Patch_ApplyShot());
+        // RegisterPatch(new Patch_ApplyShot());
 
         RegisterPatch(new Patch_ActiveHealthController_ApplyDamage()); // Caching last damage packet for death
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
 
         // RegisterPatch(new Patch_BackendConfigSettingsClass_AimPunchMagnitude()); // Set aimpunch to 0
 
-        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Planting/Defusing
+        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger()); // Planting (PlaceItem)
+        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Defusing (Tripwire)
 
         RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
-                                              // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
+        // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
         RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon()); // Other players see you inspecting hands
 
@@ -127,8 +128,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_BaseGrenadeHandsController_Drop()); // Instant Grenade Unequip
                                                                     // RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop()); // Instant Weapon Unequip
-                                                           // RegisterPatch(new Patch_FirearmController_InitiateOperation());
-                                                           //------------------------------------------ //
+        // RegisterPatch(new Patch_FirearmController_InitiateOperation());
+        //------------------------------------------ //
 
         RegisterPatch(new Patch_CommonUI_Awake()); // Action Hook
         RegisterPatch(new Patch_ItemsTabController_Show()); // Action Hook

@@ -39,16 +39,16 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action<BombState> OnBombStateChange;
         public static Action<PlayerKilledPacket> OnPlayerKill;
 
-        public static Action OnUpdate;
-        public static Action OnLateUpdate;
-        public static Action OnFixedUpdate;
-
         public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
         public static Action<int> OnSelfMoneyChanged;
 
         public static Action OnItemBuy;
 
         public static Action OnSelfRespawn;
+
+        public static Action OnUpdate;
+        public static Action OnLateUpdate;
+        public static Action OnFixedUpdate;
     }
 
     [MemoryPackable]
@@ -68,8 +68,6 @@ namespace ifp.arena.bep.Core.Gamemode
 
         public float StateTimer;
         public double ServerPhaseStartSeconds, PhaseDurationSeconds;
-
-        public event Action OnUpdateTick;
 
         // This here is absolute bullshit
         public RoundActionPhaseEnd? PendingRoundActionEnd;
@@ -160,8 +158,6 @@ namespace ifp.arena.bep.Core.Gamemode
                     ChangeState(nextState.Value);
                 }
             }
-
-            OnUpdateTick?.Invoke();
         }
 
         // Server sends this

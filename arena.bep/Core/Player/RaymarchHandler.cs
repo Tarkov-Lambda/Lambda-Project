@@ -16,73 +16,84 @@ namespace ifp.arena.bep.Core
     {
         public GameObject RaymarchHandlerObject { get; private set; }
         public Raymarcher Raymarcher { get; private set; }
-
+        public GameObject GunObject { get; private set; }
         public Gun Gun { get; private set; }
+
+        private bool _raymarcherWasActive;
+        private Voxelizer _cachedVoxelizer;
 
         private AssetBundle fxbundle => H.FXHandler.fxbundle;
         private GameObject FPSCameraGameObject => CameraClass.Instance.Camera.gameObject;
 
-
         public RaymarchHandler()
         {
             Patch_Gameworld_OnGameStarted.OnGameStarted += OnGameStarted;
-            Patch_Gameworld_OnDispose.OnDispose += OnGameDispose;
-            MapAssetBundleHandler.OnSuccessfulLoad += TryEnableRaymarcher;
-            MapAssetBundleHandler.OnBeginUnload += ClearRaymarcher; // MapAssetBundleHandler will call this on game dispose
-            // GameModeTicker.onUpdate += OnUpdate;
-            // GameModeTicker.onLateUpdate += OnLateUpdate;
+            Patch_Gameworld_OnDispose.OnDispose         += OnGameDispose;
+            MapAssetBundleHandler.OnSuccessfulLoad      += TryEnableRaymarcher;
+            MapAssetBundleHandler.OnBeginUnload         += ClearRaymarcher;
         }
 
         public void Dispose()
         {
-            // GameObject.DestroyImmediate(RaymarchHandlerObject);
             Patch_Gameworld_OnGameStarted.OnGameStarted -= OnGameStarted;
-            Patch_Gameworld_OnDispose.OnDispose -= OnGameDispose;
-            MapAssetBundleHandler.OnSuccessfulLoad -= TryEnableRaymarcher;
-            MapAssetBundleHandler.OnBeginUnload -= ClearRaymarcher; // MapAssetBundleHandler will call this on game dispose
-            // GameModeTicker.onUpdate -= OnUpdate;
-            // GameModeTicker.onLateUpdate -= OnLateUpdate;
+            Patch_Gameworld_OnDispose.OnDispose         -= OnGameDispose;
+            MapAssetBundleHandler.OnSuccessfulLoad      -= TryEnableRaymarcher;
+            MapAssetBundleHandler.OnBeginUnload         -= ClearRaymarcher;
+
+            UnsubscribeCameraChanged();
             Release(this);
-        }
-
-        private void OnUpdate()
-        {
-
-        }
-
-        private void OnLateUpdate()
-        {
-
         }
 
         private void OnGameStarted(GameWorld gWorld)
         {
-            var RaymarchHandlerPrefab = fxbundle.LoadAsset<GameObject>("Packages/com.ifp.arena.shared/FX/Smoke/Prefabs/RaymarcherHandler.prefab");
-            // RaymarchHandlerObject = GameObject.Instantiate(RaymarchHandlerPrefab, CameraClass.Instance.Camera.transform);
+            SetupOnCamera(FPSCameraGameObject);
 
-            // RaymarchHandlerObject.GetComponent<Raymarcher>().cam = CameraClass.Instance.Camera;
-
-            RaymarchHandlerObject = new GameObject("VoxelHandlerObject");
-            RaymarchHandlerObject.SetActive(false);
-
-            Raymarcher = FPSCameraGameObject.AddComponent<Raymarcher>();
-            Raymarcher.enabled = false;
-
-            Gun = FPSCameraGameObject.AddComponent<Gun>();
-            Gun.enabled = false;
-
-            Raymarcher.compositeMaterial = new Material(fxbundle.LoadAsset<Shader>("Packages/com.ifp.arena.shared/FX/Smoke/Shaders/CompositeEffects.shader"));
-            Raymarcher.raymarchCompute = fxbundle.LoadAsset<ComputeShader>("Packages/com.ifp.arena.shared/FX/Smoke/Resources/RenderSmoke.compute");
-
-            // RaymarchHandlerObject.SetActive(false);
-
-
-            // UnityEngine.Object.DontDestroyOnLoad(RaymarchHandlerObject);
+            CameraClass.Instance.OnCameraChanged += OnTarkovCameraChanged;
         }
 
         private void OnGameDispose(GameWorld gWorld)
         {
+            GameObject.Destroy(GunObject);
+            UnsubscribeCameraChanged();
+            _raymarcherWasActive = false;
+            _cachedVoxelizer     = null;
+        }
 
+        private void OnTarkovCameraChanged()
+        {
+            SetupOnCamera(FPSCameraGameObject);
+
+            if (_raymarcherWasActive && _cachedVoxelizer != null)
+            {
+                Raymarcher.smokeVoxelData = _cachedVoxelizer;
+                Raymarcher.enabled        = true;
+                Gun.enabled               = true;
+            }
+        }
+
+        private void UnsubscribeCameraChanged()
+        {
+            if (CameraClass.Exist)
+                CameraClass.Instance.OnCameraChanged -= OnTarkovCameraChanged;
+        }
+
+        private void SetupOnCamera(GameObject cameraGO)
+        {
+            Raymarcher = cameraGO.AddComponent<Raymarcher>();
+            Raymarcher.compositeMaterial =
+                new Material(fxbundle.LoadAsset<Shader>(
+                    "Packages/com.ifp.arena.shared/FX/Smokes/Shaders/CompositeEffects.shader"));
+            Raymarcher.raymarchCompute =
+                fxbundle.LoadAsset<ComputeShader>(
+                    "Packages/com.ifp.arena.shared/FX/Smokes/Resources/RenderSmoke.compute");
+            Raymarcher.enabled = false;
+
+
+
+            GunObject = new GameObject("Gun");
+            Gun = GunObject.AddComponent<Gun>();
+            Raymarcher.gun = Gun;
+            Gun.enabled = false;
         }
 
         private void TryEnableRaymarcher()
@@ -91,22 +102,29 @@ namespace ifp.arena.bep.Core
 
             if (localVoxelizer != null)
             {
-                localVoxelizer.voxelizeCompute = fxbundle.LoadAsset<ComputeShader>("Packages/com.ifp.arena.shared/FX/Smoke/Resources/Voxelize.compute");
+                localVoxelizer.voxelizeCompute =
+                    fxbundle.LoadAsset<ComputeShader>(
+                        "Packages/com.ifp.arena.shared/FX/Smokes/Resources/Voxelize.compute");
+
+                // localVoxelizer.cam = CameraClass.Instance.Camera;
+
+
                 Raymarcher.smokeVoxelData = localVoxelizer;
-                Raymarcher.enabled = true;
-                Gun.enabled = true;
-                // RaymarchHandlerObject.SetActive(true);
+                Raymarcher.enabled        = true;
+                Gun.enabled               = true;
+
+                _cachedVoxelizer     = localVoxelizer;
+                _raymarcherWasActive = true;
             }
         }
 
         private void ClearRaymarcher()
         {
-            // RaymarchHandlerObject.SetActive(false);
-            Raymarcher.enabled = false;
-            Gun.enabled = false;
+            Raymarcher.enabled        = false;
+            Gun.enabled               = false;
+            Raymarcher.smokeVoxelData = null;
 
-            Raymarcher.GetComponent<Raymarcher>().smokeVoxelData = null;
+            _raymarcherWasActive = false;
         }
-
     }
 }

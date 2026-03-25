@@ -43,7 +43,7 @@ namespace ifp.arena.bep.networking
         private void MakeLadderNoise(Player player)
         {
             Vector3 pos = player.PlayerBody.transform.position;
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Singleton<AudioHandler>.Instance.prefabSounds.LadderNoise, CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Environment, 1000000, 1f);
+            H.AudioHandler.PlayAtPoint(pos, H.Sounds.LadderNoise);
         }
     }
 }

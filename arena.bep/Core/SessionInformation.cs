@@ -52,7 +52,7 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.Warmup, 40},
             {MatchState.WarmupEnd, 1},
             {MatchState.Pause, 45},
-            {MatchState.RoundPrepare, 15},
+            {MatchState.RoundPrepare, 3},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},
@@ -78,6 +78,20 @@ namespace ifp.arena.bep.GameTypes
                 if (!scoreboard.ContainsKey(p.Id))
                 {
                     scoreboard[p.Id] = new PlayerScore(p.Id);
+                }
+            }
+        }
+
+        public void ResetSessionScopeFields()
+        {
+            if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
+                return;
+
+            foreach (var p in H.AllPlayers)
+            {
+                if (scoreboard.ContainsKey(p.Id))
+                {
+                    scoreboard[p.Id].SessionReset();
                 }
             }
         }
@@ -128,17 +142,22 @@ namespace ifp.arena.bep.GameTypes
 
         // Round scope
         public int kills { get; private set; }
+        public int damage { get; private set; }
         public int headshots { get; private set; }
         public int assists { get; private set; }
         public int deaths { get; private set; }
         public int mvps { get; private set; }
 
+        // only the server knows this value
+        public int s_roundDamage { get; private set; }
+
+        public int roundKills { get; private set; }
+        public int roundHeadshots { get; private set; }
+
         public bool isAlive { get; private set; }
         public int money { get; private set; } = 0;
 
         // meta gaming (previously known as facebook gaming)
-        public string musicKit = "";
-
         public bool isMapReady;
         public int ping;
         public bool IsAdmin;
@@ -155,8 +174,17 @@ namespace ifp.arena.bep.GameTypes
         public void AddFrag(bool isHeadshot)
         {
             kills++;
+            roundKills++;
             if (isHeadshot)
+            {
                 headshots++;
+                roundHeadshots++;
+            }
+        }
+
+        public void AddDamage(int newDamage)
+        {
+            s_roundDamage += newDamage;
         }
 
         public void Kill()
@@ -171,14 +199,27 @@ namespace ifp.arena.bep.GameTypes
             EventBus.OnSelfRespawn?.Invoke();
         }
 
-        public void RoundReset()
+        public void SessionReset()
         {
             mvps = 0;
             kills = 0;
+            damage = 0;
             headshots = 0;
             assists = 0;
             deaths = 0;
             isAlive = true;
+
+            s_roundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
+            roundHeadshots = 0;
+            roundKills = 0;
+        }
+
+        public void RoundReset()
+        {
+            damage += s_roundDamage; // apply damage to the total counter after round
+            s_roundDamage = 0;
+            roundHeadshots = 0;
+            roundKills = 0;
         }
 
         public void Sync(PlayerScoreSyncData packet)
@@ -192,7 +233,9 @@ namespace ifp.arena.bep.GameTypes
             money = packet.money;
             isAlive = packet.isAlive;
             isMapReady = packet.isReady;
-            musicKit = packet.musicKit;
+
+            roundKills = packet.roundKills;
+            roundHeadshots = packet.roundHeadshots;
         }
 
         public void AddMoney(int amount)

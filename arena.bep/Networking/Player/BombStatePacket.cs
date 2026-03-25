@@ -35,7 +35,7 @@ namespace ifp.arena.bep.networking
 
     public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
-        public void Send(EFT.Player player, BombState state, Vector3 position)
+        public void Send(Player player, BombState state, Vector3 position)
         {
             var packet = new BombStatePacket
             {

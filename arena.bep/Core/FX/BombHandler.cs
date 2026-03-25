@@ -2,7 +2,9 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.CameraControl;
+using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.SynchronizableObjects;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
@@ -27,6 +29,7 @@ namespace ifp.arena.bep.Core.FX
         private CancellationTokenSource _bombTickCancellationSource;
 
         private bool _beforeExplodingPlayed = false;
+        private bool _isAlreadyPlanted = false;
 
         public BombHandler()
         {
@@ -60,7 +63,8 @@ namespace ifp.arena.bep.Core.FX
 
         public void OnEnd(MatchState state)
         {
-
+            if (state is MatchState.RoundPlanted)
+                _isAlreadyPlanted = false;
         }
 
         public void PlayBombAudio(BombStatePacket packet)
@@ -90,9 +94,14 @@ namespace ifp.arena.bep.Core.FX
                     StopBombTick();
                     break;
                 case BombState.Planted:
-                    pos = H.BombHandler.BombPlantedPosition;
-                    clip = H.Sounds.Planted;
-                    StartBombTick(pos);
+                    if (!_isAlreadyPlanted)
+                    {
+                        pos = H.BombHandler.BombPlantedPosition;
+                        clip = H.Sounds.Planted;
+                        StartBombTick(pos);
+                        _isAlreadyPlanted = true;
+                    }
+                    else shouldPlay = false;
                     break;
                 case BombState.Exploded:
                     pos = H.BombHandler.BombPlantedPosition;
@@ -161,6 +170,15 @@ namespace ifp.arena.bep.Core.FX
             await IU.LoadBundlesForItem(bombItem);
             bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
             bombVisuals?.SetActive(false);
+
+            foreach (var component in bombVisuals.GetComponentsInChildren<Component>(true))
+            {
+                if (component is Renderer or Transform or LODGroup or MeshFilter) continue;
+                Component.Destroy(component);
+            }
+
+            bombVisuals.GetOrAddComponent<bombasik>();
+
             UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
         }
 
@@ -206,6 +224,18 @@ namespace ifp.arena.bep.Core.FX
         {
             Reset();
             Release(this);
+        }
+    }
+
+    public class bombasik : InteractableObject
+    {
+        void Awake()
+        {
+            Mesh sharedMesh = this.GetComponentInChildren<MeshFilter>().sharedMesh;
+            var collider = this.GetOrAddComponent<BoxCollider>();
+            collider.size = sharedMesh.bounds.size;
+            collider.center = sharedMesh.bounds.center;
+            gameObject.layer = 22;
         }
     }
 }

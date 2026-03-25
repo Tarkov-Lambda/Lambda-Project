@@ -3,15 +3,7 @@ using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using ifp.arena.shared;
-using System;
 
-using InteractionContextHelper = GetActionsClass;
-using AvailableInteractionState = ActionsReturnClass;
-
-using LocalizationExtensions = GClass2348;
-
-using ArmorSlot = GClass3125;
-using IInteractive = GInterface177;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using System.Linq;
@@ -21,10 +13,12 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.GameTypes;
+using EFT.SynchronizableObjects;
+using ifp.arena.bep.Core.FX;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
-    internal class Patch_InteractionContextHelper_GetAvailableActions : ModulePatch
+    internal class Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger : ModulePatch
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.smethod_3));
 
@@ -42,9 +36,9 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (bomb != null && roundState == MatchState.RoundAction)
             {
-                BombPlantZone plantZone = itemTrigger as BombPlantZone;
-                if (plantZone == null)
-                    return true;
+                BombPlantZone plantZone = itemTrigger as BombPlantZone; // check if the interaction state is the bomb plant zone
+                if (plantZone == null) return true;
+
                 float plantingTime = SnDModeRules.platingTime;
 
                 actionsReturnClass.Actions.Add(new ActionsTypesClass
@@ -57,7 +51,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                             Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planting, GetBombPlantPosition(player));
 
                             owner.ShowObjectivesPanel("Planting {0:F1}", plantingTime);
-                            owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, async (bool successful) =>
+                            owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, async (successful) =>
                             {
                                 owner.Player.vmethod_6(bomb.TemplateId, itemTrigger.Id, successful);
                                 owner.CloseObjectivesPanel();
@@ -79,53 +73,6 @@ namespace ifp.arena.bep.Patches.Tarkov
                     }
                 });
             }
-            // bomb == null && H.MainPlayerScore?.faction != Faction.T &&
-            else if ((H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) && Vector3.Distance(H.MainPlayer.Position, H.BombHandler.BombPlantedPosition) <= SnDModeRules.defuseRadius)
-            {
-                // RaycastHit hit;
-                // Ray ray = CameraClass.Instance.Camera.ScreenPointToRay(Input.mousePosition);
-
-                // if (Physics.Raycast(ray, out hit))
-                // {
-                //     D.Log(hit.collider.gameObject.name);
-                //     if (hit.collider.gameObject != H.Arena.bombVisuals)
-                //         return true;
-                // }
-
-                float defusingTime = SnDModeRules.defusingTime;
-
-                actionsReturnClass.Actions.Add(new ActionsTypesClass
-                {
-                    Name = "DEFUSE",
-                    Action = delegate
-                    {
-                        if (owner.Player.CurrentState is IdleStateClass)
-                        {
-                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.BombHandler.BombPlantedPosition);
-
-                            owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
-                            owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, (bool successful) =>
-                            {
-                                owner.CloseObjectivesPanel();
-                                // Re-read in case another defuser already changed state
-                                Vector3 pos = H.BombHandler.BombPlantedPosition;
-                                if (!successful)
-                                {
-                                    // Revert state for all clients so another CT can try
-                                    Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, pos);
-                                    return;
-                                }
-                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defused, pos);
-                                owner.ClearInteractionState();
-                            });
-                        }
-                        else
-                        {
-                            owner.DisplayPreloaderUiNotification("You can't defuse while moving");
-                        }
-                    }
-                });
-            }
 
             __result = actionsReturnClass;
             return false;
@@ -142,6 +89,61 @@ namespace ifp.arena.bep.Patches.Tarkov
             if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 0))
                 return hit.point;
             return player.Position;
+        }
+    }
+
+    internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.GetAvailableActions), [typeof(GamePlayerOwner), typeof(IInteractive)]);
+
+        [PatchPrefix]
+        private static bool PatchPrefix(ref ActionsReturnClass __result, GamePlayerOwner owner, IInteractive interactive)
+        {
+            if (interactive == null) return true;
+            if (interactive is not bombasik bombanilovich) return true;
+            if (H.Session.matchState is not MatchState.RoundPlanted) return true;
+
+            Player player = owner.Player;
+            AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
+
+            float defusingTime = SnDModeRules.defusingTime;
+
+            actionsReturnClass.Actions.Add(new ActionsTypesClass
+            {
+                Name = "DEFUSE",
+                Action = delegate
+                {
+                    if (H.Session.matchState is not MatchState.RoundPlanted) return;
+                    if (owner.Player.CurrentState is IdleStateClass)
+                    {
+                        Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.BombHandler.BombPlantedPosition);
+
+                        owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
+                        owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, async (successful) =>
+                        {
+                            owner.CloseObjectivesPanel();
+                            // Re-read in case another defuser already changed state
+                            Vector3 pos = H.BombHandler.BombPlantedPosition;
+                            if (!successful)
+                            {
+                                // Revert state for all clients so another CT can try
+                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, pos);
+                                return;
+                            }
+                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defused, pos);
+                            owner.ClearInteractionState();
+                        });
+                    }
+                    else
+                    {
+                        owner.DisplayPreloaderUiNotification("You can't defuse while moving");
+                    }
+                }
+            });
+
+            __result = actionsReturnClass;
+            return false;
         }
     }
 }

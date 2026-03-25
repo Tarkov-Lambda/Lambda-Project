@@ -15,6 +15,12 @@ global using ItemExtensions = GClass3380;
 global using OperationResult = GStruct153;
 global using EquipmentBuildClass = GClass3953;
 
+global using InteractionContextHelper = GetActionsClass;
+global using AvailableInteractionState = ActionsReturnClass;
+global using LocalizationExtensions = GClass2348;
+global using ArmorSlot = GClass3125;
+global using IInteractive = GInterface177;
+
 // To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {
