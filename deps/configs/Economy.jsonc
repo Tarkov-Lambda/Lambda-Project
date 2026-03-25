@@ -1,29 +1,29 @@
 [
-  {
-    "name": "Debug",
-    "items": [
-      {
-        "bsgId": "67ab3f146d7ece17bf0096ff",
-        "price": 650
-      },
-      {
-        "bsgId": "5b44d0de86f774503d30cba8",
-        "price": 350
-      },
-      {
-        "bsgId": "66b5f6985891c84aab75ca76",
-        "price": 400
-      },
-      {
-        "bsgId": "67ab4b2d6f7ae4aa550bbcf6",
-        "price": 400
-      },
-      {
-        "bsgId": "67a9cd6ecade15e0f00123b8",
-        "price": 400
-      }
-    ]
-  },
+  // {
+  //   "name": "Debug",
+  //   "items": [
+  //     {
+  //       "bsgId": "67ab3f146d7ece17bf0096ff",
+  //       "price": 650
+  //     },
+  //     {
+  //       "bsgId": "5b44d0de86f774503d30cba8",
+  //       "price": 350
+  //     },
+  //     {
+  //       "bsgId": "66b5f6985891c84aab75ca76",
+  //       "price": 400
+  //     },
+  //     {
+  //       "bsgId": "67ab4b2d6f7ae4aa550bbcf6",
+  //       "price": 400
+  //     },
+  //     {
+  //       "bsgId": "67a9cd6ecade15e0f00123b8",
+  //       "price": 400
+  //     }
+  //   ]
+  // },
   {
     "name": "Equipment",
     "items": [
