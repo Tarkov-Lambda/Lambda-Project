@@ -18,9 +18,6 @@ namespace ifp.arena.bep.Core.FX
 {
     public class BombHandler : Singleton<BombHandler>, IDisposable
     {
-        public AssetBundle audioBundle { get; private set; }
-        public LambdaSounds prefabSounds { get; private set; }
-
         public BetterSource LastBombSource { get; private set; }
         public BetterSource LastBombTickSource { get; private set; }
 
@@ -210,6 +207,7 @@ namespace ifp.arena.bep.Core.FX
         public void Dispose()
         {
             Reset();
+            Release(this);
         }
     }
 }

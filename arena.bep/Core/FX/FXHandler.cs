@@ -59,6 +59,7 @@ namespace ifp.arena.bep.Core.FX
 
             fxbundle.Unload(false);
             molotovPool.Clear();
+            Release(this);
         }
     }
 }

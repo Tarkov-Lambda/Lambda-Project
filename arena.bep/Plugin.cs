@@ -179,6 +179,7 @@ public class Plugin : BaseUnityPlugin
 
         RegisterSingleton<FXHandler>();
         RegisterSingleton<AudioHandler>();
+        RegisterSingleton<MusicHandler>();
         RegisterSingleton<BombHandler>();
         // RegisterSingleton<RaymarchHandler>();
 

@@ -37,6 +37,7 @@ namespace ifp.arena.bep.Core.FX
         public void Dispose()
         {
             audioBundle.Unload(false);
+            Release(this);
         }
     }
 }
