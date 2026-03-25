@@ -25,7 +25,7 @@ public static class Molotov
         float elapsed = 0f;
 
         FlameDamageTrigger flameDamageTrigger = molotov.AddComponent<FlameDamageTrigger>();
-        MolotovFXController molotovFX = Singleton<FXHandler>.Instance.SpawnMolotov(packet.explosionPos, startRadius, endRadius, duration);
+        MolotovFXController molotovFX = H.FXHandler.SpawnMolotov(packet.explosionPos, startRadius, endRadius, duration);
 
         while (elapsed < duration)
         {

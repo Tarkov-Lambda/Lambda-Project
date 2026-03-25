@@ -171,6 +171,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit()
         {
             IU.GarbageCollectWorldLoot();
+            H.Arena.bombVisuals.SetActive(false);
         }
     }
 

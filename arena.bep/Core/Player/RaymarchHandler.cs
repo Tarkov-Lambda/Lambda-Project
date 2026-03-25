@@ -19,7 +19,7 @@ namespace ifp.arena.bep.Core
 
     //     public Gun Gun { get; private set; }
 
-    //     private AssetBundle fxbundle => Singleton<FXHandler>.Instance.fxbundle;
+    //     private AssetBundle fxbundle => H.FXHandler.fxbundle;
     //     private GameObject FPSCameraGameObject => CameraClass.Instance.Camera.gameObject;
 
 

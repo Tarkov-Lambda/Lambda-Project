@@ -1,6 +1,8 @@
-﻿using Fika.Core.Networking.LiteNetLib;
+﻿using Comfort.Common;
+using EFT;
+using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
@@ -51,15 +53,75 @@ namespace ifp.arena.bep.networking
             return base.ServerValidation(ref packet, peer);
         }
 
+        protected override void LocalPredictApproved(BombStatePacket packet)
+        {
+            PlayBombAudio(packet);
+        }
+
+        private void PlayBombAudio(BombStatePacket packet)
+        {
+            Player player = H.GetPlayer(packet.playerId);
+
+            Vector3 pos = Vector3.zero;
+            AudioClip clip = null;
+            bool shouldPlay = true;
+
+            switch (packet.state)
+            {
+                case BombState.None:
+                    H.AudioHandler.CancelBombAudio();
+                    break;
+                case BombState.Planting:
+                    pos = player.PlayerBody.transform.position;
+                    clip = H.Sounds.Planting;
+                    break;
+                case BombState.Defusing:
+                    pos = player.PlayerBody.transform.position;
+                    clip = H.Sounds.Defusing;
+                    break;
+                case BombState.Defused:
+                    pos = H.Arena.BombPlantedPosition;
+                    clip = H.Sounds.Defused;
+                    H.AudioHandler.StopBombTick();
+                    break;
+                case BombState.Planted:
+                    pos = H.Arena.BombPlantedPosition;
+                    clip = H.Sounds.Planted;
+                    H.AudioHandler.StartBombTick(pos);
+                    break;
+                case BombState.Exploded:
+                    pos = H.Arena.BombPlantedPosition;
+                    clip = H.Sounds.Planted;
+                    H.AudioHandler.StopBombTick();
+                    break;
+                default:
+                    shouldPlay = false;
+                    break;
+            }
+
+            if (shouldPlay && pos != Vector3.zero && clip != null)
+            {
+                H.AudioHandler.PlayBombAudio(pos, clip);
+            }
+        }
+
         protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
         {
             H.Session.bombState = packet.state;
+            D.Notify(packet.state);
 
-            if (packet.state == BombState.Planted)
+            Player player = H.GetPlayer(packet.playerId);
+            if (!player.IsYourPlayer)
+            {
+                PlayBombAudio(packet);
+            }
+
+            if (packet.state is BombState.Planted)
             {
                 H.Arena.LastObjectivePlayerId = packet.playerId;
             }
-            D.Notify(packet.state);
+
+
 
             if (packet.state is BombState.Defused or BombState.Exploded)
             {
@@ -68,8 +130,7 @@ namespace ifp.arena.bep.networking
                     H.Arena.LastObjectivePlayerId = packet.playerId;
             }
 
-            Comfort.Common.Singleton<ArenaController>.Instance.SetBombVisuals(packet);
-
+            Singleton<ArenaController>.Instance.SetBombVisuals(packet);
             EventBus.OnBombStateChange(packet.state);
         }
     }

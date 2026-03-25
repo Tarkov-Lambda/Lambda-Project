@@ -42,6 +42,10 @@ namespace ifp.arena.bep.Core.Gamemode
         public static Action<BombState> OnBombStateChange;
         public static Action<PlayerKilledPacket> OnPlayerKill;
 
+        public static Action OnUpdate;
+        public static Action OnLateUpdate;
+        public static Action OnFixedUpdate;
+
         public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
         public static Action<int> OnSelfMoneyAdded;
 
@@ -82,7 +86,7 @@ namespace ifp.arena.bep.Core.Gamemode
         private GameObject _tickerObject;
         public GameObject _musicObject;
 
-        private GameObject bombVisuals;
+        public GameObject bombVisuals { get; private set; }
         public Vector3 BombPlantedPosition { get; private set; }
 
         public ArenaController()
@@ -207,7 +211,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
             session.roundState = packet.matchState;
             _currentState = ActiveRules.CreateState(packet.matchState);
-            
+
             D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
 
             StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
@@ -274,11 +278,20 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             onUpdate?.Invoke();
             Singleton<ArenaController>.Instance.Update();
+            EventBus.OnUpdate?.Invoke();
+        }
+
+        private void FixedUpdate()
+        {
+            onUpdate?.Invoke();
+            Singleton<ArenaController>.Instance.Update();
+            EventBus.OnFixedUpdate?.Invoke();
         }
 
         private void LateUpdate()
         {
             onLateUpdate?.Invoke();
+            EventBus.OnLateUpdate?.Invoke();
         }
     }
 }

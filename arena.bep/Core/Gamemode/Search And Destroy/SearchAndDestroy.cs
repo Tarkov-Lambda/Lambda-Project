@@ -38,17 +38,19 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SnDPlanted : IGameState
     {
         public MatchState StateType => MatchState.RoundPlanted;
+
         public void OnEnter() { }
+
         public MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
 
             // If all CT are dead before timer runs out
-            if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))
-            {
-                H.Arena.Award(Faction.T, RoundWinReason.Elimination);
-                return MatchState.RoundEnd;
-            }
+            // if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))
+            // {
+            //     H.Arena.Award(Faction.T, RoundWinReason.Elimination);
+            //     return MatchState.RoundEnd;
+            // }
 
             if (H.Session.bombState == BombState.Defused)
             {
@@ -65,10 +67,8 @@ namespace ifp.arena.bep.Core.Gamemode
 
             return null;
         }
-        public void OnExit()
-        {
 
-        }
+        public void OnExit() { }
     }
 
     public class SnDModeRules : GameModeRules

@@ -1,9 +1,12 @@
+using Comfort.Common;
 using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.networking.Base;
 using MemoryPack;
+using UnityEngine;
 
 namespace ifp.arena.bep.networking
 {
@@ -16,6 +19,7 @@ namespace ifp.arena.bep.networking
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<LadderNoisePacket>(reader);
     }
 
+    // I mean I could do this the tarkov way but who gives a fuck
     public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
     {
         public void Send()
@@ -28,7 +32,6 @@ namespace ifp.arena.bep.networking
             MakeLadderNoise(H.MainPlayer);
         }
 
-
         protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
         {
             Player player = H.GetPlayer(packet.id);
@@ -39,7 +42,8 @@ namespace ifp.arena.bep.networking
 
         private void MakeLadderNoise(Player player)
         {
-            D.Notify("Ladder Noise");
+            Vector3 pos = player.PlayerBody.transform.position;
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Singleton<AudioHandler>.Instance.prefabSounds.LadderNoise, CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Environment, 1000000, 1f);
         }
     }
 }

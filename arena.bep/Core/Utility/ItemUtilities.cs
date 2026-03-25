@@ -316,8 +316,8 @@ namespace ifp.arena.bep.Core
 
         private static void PlayEquipSound(Item item)
         {
-            AudioClip clip = H.GUISounds.GetItemClip(item.ItemSound, EInventorySoundType.drop);
-            if (clip != null) H.GUISounds.PlaySound(clip);
+            AudioClip clip = H.EFTGUISounds.GetItemClip(item.ItemSound, EInventorySoundType.drop);
+            if (clip != null) H.EFTGUISounds.PlaySound(clip);
         }
 
 

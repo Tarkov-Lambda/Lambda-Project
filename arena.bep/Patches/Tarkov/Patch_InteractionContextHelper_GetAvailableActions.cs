@@ -31,10 +31,6 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         private static bool PatchPrefix(ref ActionsReturnClass __result, GamePlayerOwner owner, PlaceItemTrigger itemTrigger)
         {
-            BombPlantZone plantZone = itemTrigger as BombPlantZone;
-            if (plantZone == null)
-                return true;
-
             var roundState = H.Session.roundState;
 
             if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted)
@@ -46,7 +42,9 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (bomb != null && roundState == MatchState.RoundAction)
             {
-
+                BombPlantZone plantZone = itemTrigger as BombPlantZone;
+                if (plantZone == null)
+                    return true;
                 float plantingTime = SnDModeRules.platingTime;
 
                 actionsReturnClass.Actions.Add(new ActionsTypesClass
@@ -81,12 +79,19 @@ namespace ifp.arena.bep.Patches.Tarkov
                     }
                 });
             }
-
-            else if (bomb == null &&
-                     H.MainPlayerScore?.faction != Faction.T &&
-                     (H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) &&
-                     Vector3.Distance(player.Position, Singleton<ArenaController>.Instance.BombPlantedPosition) <= SnDModeRules.defuseRadius)
+            // bomb == null && H.MainPlayerScore?.faction != Faction.T &&
+            else if ((H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defusing) && Vector3.Distance(H.MainPlayer.Position, H.Arena.BombPlantedPosition) <= SnDModeRules.defuseRadius)
             {
+                // RaycastHit hit;
+                // Ray ray = CameraClass.Instance.Camera.ScreenPointToRay(Input.mousePosition);
+
+                // if (Physics.Raycast(ray, out hit))
+                // {
+                //     D.Log(hit.collider.gameObject.name);
+                //     if (hit.collider.gameObject != H.Arena.bombVisuals)
+                //         return true;
+                // }
+
                 float defusingTime = SnDModeRules.defusingTime;
 
                 actionsReturnClass.Actions.Add(new ActionsTypesClass
@@ -96,15 +101,14 @@ namespace ifp.arena.bep.Patches.Tarkov
                     {
                         if (owner.Player.CurrentState is IdleStateClass)
                         {
-                            Vector3 bombPos = Singleton<ArenaController>.Instance.BombPlantedPosition;
-                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, bombPos);
+                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.Arena.BombPlantedPosition);
 
                             owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
                             owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, (bool successful) =>
                             {
                                 owner.CloseObjectivesPanel();
                                 // Re-read in case another defuser already changed state
-                                Vector3 pos = Singleton<ArenaController>.Instance.BombPlantedPosition;
+                                Vector3 pos = H.Arena.BombPlantedPosition;
                                 if (!successful)
                                 {
                                     // Revert state for all clients so another CT can try
@@ -135,7 +139,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
         static Vector3 GetBombPlantPosition(Player player)
         {
-            if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 1 << 18))
+            if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 0))
                 return hit.point;
             return player.Position;
         }

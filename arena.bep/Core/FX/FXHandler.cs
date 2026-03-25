@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.FX
 {
-    internal class FXHandler : Singleton<FXHandler>, IDisposable
+    public class FXHandler : Singleton<FXHandler>, IDisposable
     {
         public AssetBundle fxbundle { get; private set; }
         private MolotovFXController prefabFire;
