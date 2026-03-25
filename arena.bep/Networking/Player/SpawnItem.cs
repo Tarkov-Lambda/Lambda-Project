@@ -165,13 +165,13 @@ namespace ifp.arena.bep.networking
         }
 
         // local client, server, remote clients all execute this packet on arrival (synchronization of weapon generation)
-        protected override void WhenApproved(SpawnItemPacket packet, NetPeer peer)
+        protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
             if (packet.flatItems == null || packet.flatItems.Length == 0) return;
 
             var itemStruct = FU.ItemFactory.FlatItemsToTree(packet.flatItems);
             Item rootItem = null;
-
+     
             foreach (var flatItem in packet.flatItems)
             {
                 if (!flatItem.parentId.HasValue || !itemStruct.Items.ContainsKey(flatItem.parentId.Value.ToString()))
@@ -197,12 +197,11 @@ namespace ifp.arena.bep.networking
                 // Get the existing chain tail for this player, or start fresh
                 UniTask prev = _chains.TryGetValue(playerId, out var existing) ? existing : UniTask.CompletedTask;
 
-
                 // even though we are in a chain, this doesn't stop the player from moving something in their inventory
                 // can definitely cause major issues
                 _chains[playerId] = prev.ContinueWith(async () =>
                 {
-                    try
+                   try
                     {
                         await IU.LoadBundlesForItem(captured);
 
@@ -216,13 +215,14 @@ namespace ifp.arena.bep.networking
                             address = player.InventoryController.ToItemAddress(descriptor);
                         }
 
-                        await IU.WhenApprovedGiveItem(captured, player);
+                        captured.StackObjectsCount = 1; // WHAT THE FUCK
+                        await IU.WhenApprovedGiveItem(captured, player, address);
                     }
                     catch (Exception ex)
                     {
                         D.Log($"[SpawnItem] Chain step failed for player {playerId}");
                         D.Dump(ex);
-                    }
+                    } 
                 });
             }
         }

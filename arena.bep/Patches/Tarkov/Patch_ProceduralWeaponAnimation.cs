@@ -9,6 +9,69 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
+
+    public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
+
+        private static readonly float PistolADSMotionScale = 0.1f;
+
+        [PatchPrefix]
+        static bool Prefix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 motion, ref Vector3 velocity)
+        {
+            if (!H.isInRaid()) return true;
+            if (!Patch_Player_VisualPass.PwaToPlayer.TryGetValue(__instance, out Player player)) return true;
+            if (player is null) return true;
+            if (____firearmController is null) return true;
+            if (____firearmController.Item is not PistolItemClass) return true;
+
+            if (__instance.IsAiming)
+            {
+                motion *= PistolADSMotionScale;
+                velocity *= PistolADSMotionScale;
+                __instance.Mask &= ~EProceduralAnimationMask.Walking; // no bobbing effect        
+            }
+            else
+            {
+                if (player.MovementContext.CurrentState is RunStateClass and not SprintStateClass)
+                {
+                    __instance.Mask |= EProceduralAnimationMask.Walking;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.UpdateSwayFactors));
+
+        private static readonly float PistolDisplacementStrScale = 0.25f;
+
+        [PatchPostfix]
+        static void Prefix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController,
+        ref float ____displacementStr,
+        ref float ____swayStrength,
+        ref float ____aimSwayStrength)
+        {
+            if (!H.isInRaid()) return;
+            if (____firearmController is null) return;
+            if (____firearmController.Item is not PistolItemClass) return;
+
+            __instance.AimingDisplacementStr *= PistolDisplacementStrScale;
+            __instance.MotionReact.SwayFactors *= PistolDisplacementStrScale;
+
+            ____displacementStr *= PistolDisplacementStrScale;
+            ____swayStrength *= PistolDisplacementStrScale;
+            ____aimSwayStrength *= PistolDisplacementStrScale;
+
+        }
+    }
+
+
     // Do blindfire procedure manually
     public class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
     {
@@ -27,10 +90,10 @@ namespace ifp.arena.bep.Patches.Tarkov
             }
 
             // Update PositionZeroSum and RotationZeroSum
-            __instance.PositionZeroSum.y = (__instance._shouldMoveWeaponCloser ? 0.05f : 0f);
+            __instance.PositionZeroSum.y = __instance._shouldMoveWeaponCloser ? 0.05f : 0f;
             __instance.RotationZeroSum.y = __instance.SmoothedTilt * __instance.PossibleTilt;
 
-            float value = __instance.BlindfireBlender.Value;
+            float value = __instance.BlindfireBlender.Value; 
             float num = Mathf.Abs(value);
 
             float blindfireStrengthNew = 0f;

@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.Animations;
 using EFT.HealthSystem;
 using EFT.UI;
 using Fika.Core.Main.Components;
@@ -12,13 +13,34 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
+    // For Patch_ProceduralWeaponAnimation_ProcessEffectors
+    public class Patch_Player_VisualPass : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.VisualPass));
+
+        public static readonly ConditionalWeakTable<ProceduralWeaponAnimation, Player> PwaToPlayer = new ConditionalWeakTable<ProceduralWeaponAnimation, Player>();
+        
+        [PatchPrefix]
+        static void Prefix(Player __instance)
+        {
+            var pwa = __instance.ProceduralWeaponAnimation;
+            if (pwa != null)
+            {
+                PwaToPlayer.Remove(pwa);
+                PwaToPlayer.Add(pwa, __instance);
+            }
+        }
+    }
+
     public class Patch_PlayerMove : ModulePatch
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.Move));

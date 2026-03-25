@@ -74,19 +74,18 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
         {
-            if (templateItem == null)
-                return false;
+            if (templateItem == null) return false;
 
             // if another call is already in progress, wait for it to finish
             // before we check or mutate any slot state.
-            try
-            {
-                await _giveItemLock.WaitAsync(_sessionCts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                return false; // Session ended
-            }
+            // try
+            // {
+            //     await _giveItemLock.WaitAsync(_sessionCts.Token);
+            // }
+            // catch (OperationCanceledException)
+            // {
+            //     return false; // Session ended
+            // }
 
             try
             {
@@ -119,7 +118,7 @@ namespace ifp.arena.bep.Core
                 // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
                 D.LogTransaction($"Player {H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id})");
-                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem); // , placement.Address
+                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement.Address);
                 return true;
             }
             catch (OperationCanceledException)
@@ -266,8 +265,8 @@ namespace ifp.arena.bep.Core
                     break;
 
                 case PlacementKind.EquipmentSlot:
-                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     var slot = player.Equipment.GetSlot(placement.Slot);
+                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {slot.CreateItemAddress()}");
                     player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
                     break;
 

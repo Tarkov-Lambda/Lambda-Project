@@ -103,8 +103,6 @@ namespace ifp.arena.bep.networking
 
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            // D.Dump(packet);
-
             PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
 
@@ -114,9 +112,6 @@ namespace ifp.arena.bep.networking
                 victimScore.Kill();
             }
 
-            // D.Dump(killerScore);
-            // D.Dump(victimScore);
-
             if (killerScore != null && killerScore != victimScore && killerScore.faction != victimScore.faction)
             {
                 killerScore.AddFrag(packet.IsHeadshot);
@@ -125,7 +120,7 @@ namespace ifp.arena.bep.networking
             // The server will preemptively decide that we are dead
             // if another client sends a damage packet directed at us
             // and it ends up being fatal
-            // also, we do not ever run this on the server because the server decides its own death
+            // also, we do not ever run this on the server because the server decides its own death (natively in AHC)
             if (packet.victimId == H.MainPlayer.Id && FikaBackendUtils.IsClient)
             {
                 H.MainPlayer.ActiveHealthController.Kill(packet.damageType);

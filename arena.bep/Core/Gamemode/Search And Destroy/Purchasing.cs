@@ -68,7 +68,7 @@ namespace ifp.arena.bep.Core.Gamemode
             {
                 H.EFTGUISounds.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
                 EventBus.OnItemBuy?.Invoke();
-            }
+            } else H.MainPlayerScore.AddMoney(request.price);
         }
     }
 }

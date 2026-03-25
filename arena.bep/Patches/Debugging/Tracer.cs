@@ -167,7 +167,7 @@ namespace ifp.arena.bep
             var harmonyPostfixRefSafe = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixRefSafe)));
             var harmonyPostfixVoidRefSafe = new HarmonyMethod(AccessTools.Method(typeof(DynamicClassTracer), nameof(GenericPostfixVoidRefSafe)));
 
-            foreach (var method in AccessTools.GetDeclaredMethods(targetType))
+            foreach (var method in targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
             {
                 if (method.IsGenericMethodDefinition) continue;
                 try

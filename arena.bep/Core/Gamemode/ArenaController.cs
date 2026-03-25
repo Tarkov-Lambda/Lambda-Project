@@ -1,7 +1,9 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.Animations;
 using Fika.Core.Main.Utils;
+using HarmonyLib;
 using ifp.arena.bep;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -222,6 +224,15 @@ namespace ifp.arena.bep.Core.Gamemode
 
         private void Update()
         {
+            // AccessTools.Field(typeof(ProceduralWeaponAnimation), "_displacementStr").SetValue(H.MainPlayer.ProceduralWeaponAnimation, 0f);
+            // AccessTools.Field(typeof(ProceduralWeaponAnimation), "_swayStrength").SetValue(H.MainPlayer.ProceduralWeaponAnimation, 0f);
+
+            // H.MainPlayer.ProceduralWeaponAnimation.AimingDisplacementStr = 0f;
+            // H.MainPlayer.ProceduralWeaponAnimation.MotionReact.SwayFactors = Vector3.zero;
+            // H.MainPlayer.ProceduralWeaponAnimation.WalkEffectorEnabled = false;
+            // H.MainPlayer.ProceduralWeaponAnimation.Mask &= ~EProceduralAnimationMask.Walking;
+
+
             onUpdate?.Invoke();
             Singleton<ArenaController>.Instance.Update();
             EventBus.OnUpdate?.Invoke();
@@ -238,6 +249,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             onLateUpdate?.Invoke();
             EventBus.OnLateUpdate?.Invoke();
+
         }
     }
 }
