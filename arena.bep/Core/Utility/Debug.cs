@@ -2,6 +2,8 @@ using System;
 using System.Reflection;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ifp.arena.bep.Core
 {
@@ -85,12 +87,114 @@ namespace ifp.arena.bep.Core
             sb.Append("\n}");
         }
 
+        public static string Diff(object a, object b, int maxDepth = 5,
+        [CallerArgumentExpression("a")] string nameA = null,
+        [CallerArgumentExpression("b")] string nameB = null)
+        {
+            var sb = new StringBuilder();
+            var visited = new HashSet<(object, object)>();
+
+            Compare(a, b, sb, nameA ?? "A", 0, maxDepth, visited);
+
+            return sb.Length == 0 ? "No differences." : sb.ToString();
+        }
+
+        private static void Compare(object a, object b, StringBuilder sb,
+            string path, int depth, int maxDepth,
+            HashSet<(object, object)> visited)
+        {
+            if (depth > maxDepth)
+                return;
+
+            if (ReferenceEquals(a, b))
+                return;
+
+            if (a == null || b == null)
+            {
+                sb.AppendLine($"{path}: {Format(a)} != {Format(b)}");
+                return;
+            }
+
+            var typeA = a.GetType();
+            var typeB = b.GetType();
+
+            if (typeA != typeB)
+            {
+                sb.AppendLine($"{path}: Type mismatch {typeA.Name} != {typeB.Name}");
+                return;
+            }
+
+            if (IsSimple(typeA))
+            {
+                if (!Equals(a, b))
+                    sb.AppendLine($"{path}: {a} != {b}");
+                return;
+            }
+
+            // Prevent circular reference infinite loops
+            if (visited.Contains((a, b)))
+                return;
+
+            visited.Add((a, b));
+
+            // Handle collections
+            if (typeof(IEnumerable).IsAssignableFrom(typeA) && typeA != typeof(string))
+            {
+                var enumA = ((IEnumerable)a).GetEnumerator();
+                var enumB = ((IEnumerable)b).GetEnumerator();
+
+                int i = 0;
+                bool hasA, hasB;
+
+                while (true)
+                {
+                    hasA = enumA.MoveNext();
+                    hasB = enumB.MoveNext();
+
+                    if (!hasA && !hasB)
+                        break;
+
+                    if (hasA != hasB)
+                    {
+                        sb.AppendLine($"{path}[{i}]: Length mismatch");
+                        break;
+                    }
+
+                    Compare(enumA.Current, enumB.Current, sb,
+                        $"{path}[{i}]", depth + 1, maxDepth, visited);
+
+                    i++;
+                }
+
+                return;
+            }
+
+            // Compare fields
+            var fields = typeA.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            foreach (var f in fields)
+            {
+                var valA = f.GetValue(a);
+                var valB = f.GetValue(b);
+
+                Compare(valA, valB, sb,
+                    $"{path}.{f.Name}", depth + 1, maxDepth, visited);
+            }
+        }
+
         private static bool IsSimple(Type type)
         {
             return type.IsPrimitive
                 || type.IsEnum
                 || type == typeof(string)
-                || type == typeof(decimal);
+                || type == typeof(decimal)
+                || type == typeof(DateTime)
+                || type == typeof(Guid);
+        }
+
+        private static string Format(object obj)
+        {
+            return obj == null ? "null" : obj.ToString();
         }
     }
 }

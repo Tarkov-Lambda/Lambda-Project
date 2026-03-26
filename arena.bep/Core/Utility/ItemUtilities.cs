@@ -89,36 +89,36 @@ namespace ifp.arena.bep.Core
 
             // try
             // {
-                var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
+            var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
 
-                if (placement.Kind == PlacementKind.EquipmentSlot)
+            if (placement.Kind == PlacementKind.EquipmentSlot)
+            {
+                if (PU.GetPlayerSlotItem(H.MainPlayer, placement.Slot) is not null)
                 {
-                    if (PU.GetPlayerSlotItem(H.MainPlayer, placement.Slot) is not null)
+                    bool removed;
+                    if (templateItem is BackpackItemClass) // gotta wait for backpack otherwise we get fucked
+                        removed = await TryPopContainedItem(placement.Slot, H.MainPlayer, true);
+                    else
                     {
-                        bool removed;
-                        if (templateItem is BackpackItemClass) // gotta wait for backpack otherwise we get fucked
-                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer, true);
+                        if (templateItem is Weapon)
+                            removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
                         else
-                        {
-                            if (templateItem is Weapon)
-                                removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
-                            else
-                                removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
-                        }
+                            removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
+                    }
 
-                        if (!removed)
-                        {
-                            D.Notify("Failed to allocate slot space in the inventory.");
-                            return false;
-                        }
+                    if (!removed)
+                    {
+                        D.Notify("Failed to allocate slot space in the inventory.");
+                        return false;
                     }
                 }
+            }
 
-                // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
-                Item clonedItem = ItemExtensions.CloneItem(templateItem);
-                D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
-                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
-                return true;
+            // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
+            Item clonedItem = ItemExtensions.CloneItem(templateItem);
+            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+            Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
+            return true;
             // }
             // catch (OperationCanceledException)
             // {
@@ -132,7 +132,8 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
         {
-            await PlaceItem(item, player, placement);
+            var localPlacement = AU.GetItemPlacement(item, player);
+            await PlaceItem(item, player, localPlacement);
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
             if (player.IsYourPlayer) PlayEquipSound(item);
@@ -269,9 +270,14 @@ namespace ifp.arena.bep.Core
             switch (placement.Kind)
             {
                 case PlacementKind.VestAddress:
-                case PlacementKind.EquipmentSlot:
                     D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
+                    break;
+
+                case PlacementKind.EquipmentSlot:
+                    D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
+                    var slot = PU.GetPlayerSlotItem(player, placement.Slot);
+                    player.InventoryController.AddAndRaiseEvents(item, slot.CurrentAddress);
                     break;
 
                 case PlacementKind.ArmorPlate:

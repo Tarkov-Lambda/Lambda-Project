@@ -6,6 +6,7 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
+using Fika.Core;
 using ifp.arena.bep.networking;
 
 namespace ifp.arena.bep.Core
@@ -45,7 +46,7 @@ namespace ifp.arena.bep.Core
                 ReplenishGun(weapon, ammo);
 
                 // Only the local player's machine should create and broadcast vest magazines.
-                if (player.IsYourPlayer) ReplenishVestMagazines(weapon, ammo, player);
+                if (player.IsYourPlayer) ReplenishVestMagazines(weapon, ammo, player).Forget();
             }
 
             var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
@@ -58,6 +59,7 @@ namespace ifp.arena.bep.Core
         // Local only, sends spawn item packets
         public static async Task ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
         {
+            await UniTask.Delay(25);
             Slot vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
 
             if (vest?.ContainedItem is not CompoundItem vestCompound)

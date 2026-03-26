@@ -4,14 +4,11 @@ using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using Fika.Core.Networking.Pooling;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.Base.RateLimiting;
-using Newtonsoft.Json;
 
 namespace ifp.arena.bep.networking
 {
@@ -25,13 +22,15 @@ namespace ifp.arena.bep.networking
         {
             writer.Put(playerId);
             writer.Put(placement);
-            writer.PutItem(item);
+            writer.Put(item);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             playerId = reader.GetInt();
-            placement = reader.GetItemPlacement(H.GetPlayer(playerId));
+            Player player = H.GetPlayer(playerId);
+            // D.Log(player.Profile.Nickname);
+            placement = reader.GetItemPlacement(player);
             item = reader.GetItem();
         }
     }
@@ -61,29 +60,38 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
+        protected override async void LocalPredictApproved(SpawnItemPacket packet)
+        {
+            // SpawnItem(packet, H.MainPlayer);
+        }
+
         protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
             Player player = H.GetPlayer(packet.playerId);
-            
+            // if (player.IsYourPlayer) return;
+
+            SpawnItem(packet, player);
+        }
+
+        private async void SpawnItem(SpawnItemPacket packet, Player player)
+        {
             UniTask prev = _chains.TryGetValue(packet.playerId, out var existing) ? existing : UniTask.CompletedTask;
 
-            // even though we are in a chain, this doesn't stop the player from moving something in their inventory
-            // can definitely cause major issues
             _chains[packet.playerId] = prev.ContinueWith(async () =>
             {
+                await UniTask.Delay(25);
                 try
                 {
                     await IU.LoadBundlesForItem(packet.item);
-
-                    packet.item.StackObjectsCount = 1;
+                    if (!player.IsYourPlayer) return;
 
                     await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
                 }
                 catch (Exception ex)
                 {
-                    D.Log($"[SpawnItem] Chain step failed for player {packet.playerId}");
+                    D.Notify($"[SpawnItem] Chain step failed for player {player.Profile.Nickname}");
                     D.Dump(ex);
-                    // D.LogError(ex.StackTrace);
+                    D.LogError(ex.StackTrace);
                 }
             });
         }

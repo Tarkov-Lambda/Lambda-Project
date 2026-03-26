@@ -36,12 +36,12 @@ namespace ifp.arena.bep.Patches
 
             if (!coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
 
-            D.Log(peer.Id.ToString());
-            D.Log(damage.ProfileId);
+            // D.Log(peer.Id.ToString());
+            // D.Log(damage.ProfileId);
             var damagePlayer = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
 
-            D.Log(damagePlayer.Profile.Nickname);
-            D.Log(damagePlayer.Id.ToString());
+            // D.Log(damagePlayer.Profile.Nickname);
+            // D.Log(damagePlayer.Id.ToString());
 
             // we handle the server owner player natively
             if (victim.IsYourPlayer) return;
@@ -64,7 +64,7 @@ namespace ifp.arena.bep.Patches
             // Instead of waiting for healthsync, we apply a damage packet directly on the server on a player that's not ours.
             // I can't vouch as per how accurate this is going to be
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
-            ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
+            Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
 
             victim.HandleDamagePacket(damage);
         }
@@ -72,7 +72,7 @@ namespace ifp.arena.bep.Patches
         // This is fucking retarded but the alternative is to create activehealthcontroller for each player and that's even more retarded
         // Intended to be a lightweight damage simulation so that killing still feels quite responsive
         // Hopefully this does not cause too much desync server side (at the end of the day we are still fully healing the player after death)
-        public static float ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+        public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
             if (!H.GetPlayerScore(victim.Id).isAlive) return 0f;
 
@@ -182,7 +182,8 @@ namespace ifp.arena.bep.Patches
             var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
             var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
-            // D.Dump(victim.Profile.Nickname);
+            D.Dump(headHP);
+            D.Dump(chestHP);
             if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id); // Client dies
