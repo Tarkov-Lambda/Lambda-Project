@@ -116,7 +116,7 @@ namespace ifp.arena.bep.Core
 
                 // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
-                D.LogTransaction($"{H.MainPlayer.Profile.Nickname} is requesting {clonedItem.LocalizedName()} ({clonedItem.Id}) into ({placement.Address})");
+                D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
                 Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement.Address);
                 return true;
             }
@@ -128,6 +128,15 @@ namespace ifp.arena.bep.Core
             {
                 _giveItemLock.Release();
             }
+        }
+
+        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedPlacement)
+        {
+            D.Dump(precomputedPlacement);
+            await PlaceItem(item, player, ItemPlacement.ForAddress(precomputedPlacement));
+
+            if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
+            if (player.IsYourPlayer) PlayEquipSound(item);
         }
 
         public static async UniTask<bool> TryPopContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
@@ -256,27 +265,18 @@ namespace ifp.arena.bep.Core
             return removed;
         }
 
-        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedAddress = null)
-        {
-            ItemPlacement placement = precomputedAddress != null ? ItemPlacement.ForAddress(precomputedAddress) : AU.GetItemPlacement(item, player);
-            await PlaceItem(item, player, placement);
-
-            if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
-            if (player.IsYourPlayer) PlayEquipSound(item);
-        }
-
         private static async UniTask PlaceItem(Item item, Player player, ItemPlacement placement)
         {
             switch (placement.Kind)
             {
                 case PlacementKind.VestAddress:
                 case PlacementKind.EquipmentSlot:
-                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.ArmorPlate:
-                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Slot}");
+                    D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
                     await PlaceArmorPlate(item, player, placement);
                     break;
             }
@@ -312,7 +312,7 @@ namespace ifp.arena.bep.Core
             placement.Address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
             placement.Address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
             parentSlot.ApplyContainedItem();
-            
+
             return true;
         }
 

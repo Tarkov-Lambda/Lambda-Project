@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -54,7 +55,7 @@ namespace ifp.arena.bep.Core
         }
 
         // Local only, sends spawn item packets
-        public static void ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
+        public static async Task ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
         {
             Slot vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
 
@@ -96,7 +97,7 @@ namespace ifp.arena.bep.Core
                     continue;
                 }
 
-                Singleton<SpawnItemPacketHandler>.Instance.Send(newMag);
+                await IU.ClientRequestGiveItem(newMag);
             }
         }
 

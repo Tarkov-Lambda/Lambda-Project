@@ -20,7 +20,6 @@ namespace ifp.arena.bep.networking
         public int playerId;
         public FlatItemsDataClass[] flatItems;
 
-        // optional (for now)
         public ItemAddress address;
 
         // length == 0 means we don't provide an address
@@ -144,14 +143,14 @@ namespace ifp.arena.bep.networking
         // preventing concurrent WhenApproved calls from racing over the same slot.
         private readonly Dictionary<int, UniTask> _chains = new();
 
-        protected override RateLimitConfig ServerRateLimit => new(
-            enabled: true,
-            refillPerSecond: 5,
-            burst: 20,
-            costPerPacket: 1,
-            action: RateLimitAction.Reject,
-            stateTtlSeconds: 60,
-            rejectCooldownSeconds: 1.0);
+        // protected override RateLimitConfig ServerRateLimit => new(
+        //     enabled: true,
+        //     refillPerSecond: 5,
+        //     burst: 20,
+        //     costPerPacket: 1,
+        //     action: RateLimitAction.Reject,
+        //     stateTtlSeconds: 60,
+        //     rejectCooldownSeconds: 1.0);
 
         public void Send(Item item, ItemAddress targetAddress = null)
         {
@@ -168,6 +167,7 @@ namespace ifp.arena.bep.networking
         // local client, server, remote clients all execute this packet on arrival (synchronization of weapon generation)
         protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
+            D.Dump(packet);
             if (packet.flatItems == null || packet.flatItems.Length == 0) return;
 
             var itemStruct = FU.ItemFactory.FlatItemsToTree(packet.flatItems);
@@ -208,22 +208,23 @@ namespace ifp.arena.bep.networking
 
                         // address reconstruction
                         Player player = H.GetPlayer(playerId);
-                        ItemAddress address = null;
+
                         if (locationDescription != null && locationDescription.Length != 0 && player != null)
                         {
                             using var eftReader = PacketToEFTReaderAbstractClass.Get(locationDescription);
                             var descriptor = eftReader.ReadPolymorph<GClass1950>();
-                            address = player.InventoryController.ToItemAddress(descriptor);
+                            packet.address = player.InventoryController.ToItemAddress(descriptor);
                         }
 
                         captured.StackObjectsCount = 1; // idfk why but some guns just set themselves to 999999...
 
-                        await IU.WhenApprovedGiveItem(captured, player, address);
+                        await IU.WhenApprovedGiveItem(captured, player, packet.address);
                     }
                     catch (Exception ex)
                     {
                         D.Log($"[SpawnItem] Chain step failed for player {playerId}");
                         D.Dump(ex);
+                        // D.LogError(ex.StackTrace);
                     }
                 });
             }
