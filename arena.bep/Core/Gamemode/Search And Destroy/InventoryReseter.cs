@@ -141,7 +141,8 @@ namespace ifp.arena.bep.Core.Gamemode
                         }
                     }
                 }
-
+                
+                itemsToRemove = [];
                 // Finally remove all the plates.
                 AddRange(ref itemsToRemove, AU.GetArmorPlates(player));
                 await IU.TryPopItems(itemsToRemove, player);

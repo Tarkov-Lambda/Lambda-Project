@@ -78,17 +78,17 @@ namespace ifp.arena.bep.Core
 
             // if another call is already in progress, wait for it to finish
             // before we check or mutate any slot state.
-            try
-            {
-                await _giveItemLock.WaitAsync(_sessionCts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                return false; // Session ended
-            }
+            // try
+            // {
+            //     await _giveItemLock.WaitAsync(_sessionCts.Token);
+            // }
+            // catch (OperationCanceledException)
+            // {
+            //     return false; // Session ended
+            // }
 
-            try
-            {
+            // try
+            // {
                 var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
 
                 if (placement.Kind == PlacementKind.EquipmentSlot)
@@ -117,23 +117,22 @@ namespace ifp.arena.bep.Core
                 // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = ItemExtensions.CloneItem(templateItem);
                 D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
-                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement.Address);
+                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
                 return true;
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
-            finally
-            {
-                _giveItemLock.Release();
-            }
+            // }
+            // catch (OperationCanceledException)
+            // {
+            //     return false;
+            // }
+            // finally
+            // {
+            //     _giveItemLock.Release();
+            // }
         }
 
-        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedPlacement)
+        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
         {
-            D.Dump(precomputedPlacement);
-            await PlaceItem(item, player, ItemPlacement.ForAddress(precomputedPlacement));
+            await PlaceItem(item, player, placement);
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
             if (player.IsYourPlayer) PlayEquipSound(item);

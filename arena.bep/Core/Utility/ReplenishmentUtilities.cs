@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using ifp.arena.bep.networking;
@@ -98,6 +99,7 @@ namespace ifp.arena.bep.Core
                 }
 
                 await IU.ClientRequestGiveItem(newMag);
+                await UniTask.Delay(25);
             }
         }
 
