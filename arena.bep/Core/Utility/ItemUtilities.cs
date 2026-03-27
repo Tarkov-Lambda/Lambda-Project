@@ -18,17 +18,17 @@ namespace ifp.arena.bep.Core
     // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
     public static class ItemUtilities
     {
-        private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
-        private static CancellationTokenSource _sessionCts = new CancellationTokenSource();
+        // private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
+        // private static CancellationTokenSource _sessionCts = new CancellationTokenSource();
 
-        // OnGameStarted / OnGameDispose
-        public static void ResetInventoryLock()
-        {
-            _sessionCts.Cancel();
-            _sessionCts.Dispose();
-            _sessionCts = new CancellationTokenSource();
-            _giveItemLock = new SemaphoreSlim(1, 1);
-        }
+        // // OnGameStarted / OnGameDispose
+        // public static void ResetInventoryLock()
+        // {
+        //     _sessionCts.Cancel();
+        //     _sessionCts.Dispose();
+        //     _sessionCts = new CancellationTokenSource();
+        //     _giveItemLock = new SemaphoreSlim(1, 1);
+        // }
 
         public static Item CreateItemFromTemplateId(string templateId) => FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
@@ -79,17 +79,17 @@ namespace ifp.arena.bep.Core
 
             // if another call is already in progress, wait for it to finish
             // before we check or mutate any slot state.
-            try
-            {
-                await _giveItemLock.WaitAsync(_sessionCts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                return false; // Session ended
-            }
+                // try
+                // {
+                //     await _giveItemLock.WaitAsync(_sessionCts.Token);
+                // }
+                // catch (OperationCanceledException)
+                // {
+                //     return false; // Session ended
+                // }
 
-            try
-            {
+                // try
+                // {
                 var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
 
                 if (placement.Kind == PlacementKind.EquipmentSlot)
@@ -116,28 +116,28 @@ namespace ifp.arena.bep.Core
                     }
                 }
 
-                await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
+                // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
                 Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
                 clonedItem.StackObjectsCount = 1;
                 // D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
                 Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
                 return true;
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
-            finally
-            {
-                _giveItemLock.Release();
-            }
+            // }
+            // catch (OperationCanceledException)
+            // {
+            //     return false;
+            // }
+            // finally
+            // {
+            //     _giveItemLock.Release();
+            // }
         }
 
 
         public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
         {
-            var localPlacement = AU.GetItemPlacement(item, player);
-            await PlaceItem(item, player, localPlacement);
+            // var localPlacement = AU.GetItemPlacement(item, player);
+            await PlaceItem(item, player, placement);
 
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
@@ -274,14 +274,14 @@ namespace ifp.arena.bep.Core
             {
                 case PlacementKind.VestAddress: // if we have an address, it means the space is free.
                     // D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
-                    D.Dump(placement.Address.Add(item, false));
-                    player.InventoryController.AddAndRaiseEvents(item, placement.Address);
+                    D.Dump(placement.Address.Add(item, false), 2);
+                    // player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.EquipmentSlot:
                     // D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     // var slot = player.Equipment.GetSlot(placement.Slot);
-                    D.Dump(placement.Address.Add(item, false));
+                    D.Dump(placement.Address.Add(item, false), 2);
                     // player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
@@ -293,42 +293,45 @@ namespace ifp.arena.bep.Core
 
         private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
         {
+            D.Dump(placement.Address.AddWithoutRestrictions(item), 2);
+            (placement.Address.Container as Slot).ApplyContainedItem();
+            return true;
             // var plateHolder = PU.GetPlayerSlotItem(player, placement.Slot) as CompoundItem;
-            var plateHolder = AU.GetPlateHolder(player);
+            // var plateHolder = AU.GetPlateHolder(player);
 
-            var plate = item as ArmorPlateItemClass;
-            foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
-            {
-                foreach (var slot in armorHolder.ArmorSlots)
-                {
-                    if (slot.ContainedItem is not null)
-                        continue;
-                    if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
-                        continue;
+            // var plate = item as ArmorPlateItemClass;
+            // foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
+            // {
+            //     foreach (var slot in armorHolder.ArmorSlots)
+            //     {
+            //         if (slot.ContainedItem is not null)
+            //             continue;
+            //         if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+            //             continue;
 
-                    var addResult = slot.AddWithoutRestrictions(plate);
+            //         var addResult = slot.AddWithoutRestrictions(plate);
 
-                    if (addResult.Failed)
-                    {
-                        // D.Dump(addResult);
-                        return false;
-                    }
+            //         if (addResult.Failed)
+            //         {
+            //             // D.Dump(addResult);
+            //             return false;
+            //         }
 
-                    // This is an extremely manual way of adding armor
-                    // however after spending an entire day throwing myself against the wall I must give up
-                    // whilst this plate is registered correctly when the player is shot at
-                    // the ui does not display any durability changes
-                    // this is very likely due to me missing a listener somewhere that happens
-                    // in the normal network transaction pipeline
-                    // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
-                    plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
-                    plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
-                    slot.ApplyContainedItem();
+            //         // This is an extremely manual way of adding armor
+            //         // however after spending an entire day throwing myself against the wall I must give up
+            //         // whilst this plate is registered correctly when the player is shot at
+            //         // the ui does not display any durability changes
+            //         // this is very likely due to me missing a listener somewhere that happens
+            //         // in the normal network transaction pipeline
+            //         // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
+            //         plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
+            //         plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
+            //         slot.ApplyContainedItem();
 
-                    return true;
-                }
-            }
-            return false;
+            //         return true;
+            //     }
+            // }
+            // return false;
         }
 
         // private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)

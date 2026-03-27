@@ -62,37 +62,37 @@ namespace ifp.arena.bep.networking
 
         protected override async void LocalPredictApproved(SpawnItemPacket packet)
         {
-            // SpawnItem(packet, H.MainPlayer);
+            SpawnItem(packet, H.MainPlayer);
         }
 
         protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
             Player player = H.GetPlayer(packet.playerId);
-            // if (player.IsYourPlayer) return;
+            if (player.IsYourPlayer) return;
 
             SpawnItem(packet, player);
         }
 
         private async void SpawnItem(SpawnItemPacket packet, Player player)
         {
-            UniTask prev = _chains.TryGetValue(packet.playerId, out var existing) ? existing : UniTask.CompletedTask;
+            // UniTask prev = _chains.TryGetValue(packet.playerId, out var existing) ? existing : UniTask.CompletedTask;
 
-            _chains[packet.playerId] = prev.ContinueWith(async () =>
-            {
-                await UniTask.Delay(25);
-                try
-                {
+            // _chains[packet.playerId] = prev.ContinueWith(async () =>
+            // {
+            //     await UniTask.Delay(25);
+            //     try
+            //     {
                     await IU.LoadBundlesForItem(packet.item);
  
-                    await IU.WhenApprovedGiveItem(packet.item, player);
-                }
-                catch (Exception ex)
-                {
-                    D.Notify($"[SpawnItem] Chain step failed for player {player.Profile.Nickname}");
-                    D.Dump(ex);
-                    D.LogError(ex.StackTrace);
-                }
-            });
+                    await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         D.Notify($"[SpawnItem] Chain step failed for player {player.Profile.Nickname}");
+            //         D.Dump(ex);
+            //         D.LogError(ex.StackTrace);
+            //     }
+            // });
         }
 
         public new void Dispose()

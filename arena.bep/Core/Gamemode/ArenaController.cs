@@ -102,7 +102,7 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (H.GameWorld is HideoutGameWorld) return;
 
-            IU.ResetInventoryLock();
+            // IU.ResetInventoryLock();
 
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.AddComponent<GameModeTicker>();
@@ -135,7 +135,7 @@ namespace ifp.arena.bep.Core.Gamemode
             Physics.simulationMode = SimulationMode.Script;
             // Cancel any in-flight ClientRequestGiveItem calls so they don't touch
             // inventory after the session has been torn down
-            IU.ResetInventoryLock();
+            // IU.ResetInventoryLock();
 
             if (_tickerObject != null)
             {
