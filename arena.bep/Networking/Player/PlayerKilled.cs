@@ -7,6 +7,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
@@ -106,13 +107,9 @@ namespace ifp.arena.bep.networking
             PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
 
+            victimScore.Kill();
 
-            if (victimScore != null)
-            {
-                victimScore.Kill();
-            }
-
-            if (killerScore != null && killerScore != victimScore && killerScore.faction != victimScore.faction)
+            if (killerScore != victimScore && killerScore.faction != victimScore.faction)
             {
                 killerScore.AddFrag(packet.IsHeadshot);
             }
@@ -127,6 +124,7 @@ namespace ifp.arena.bep.networking
             }
 
             EventBus.OnPlayerKill(packet);
+            Teleporter.Teleport(victimScore.player, "lobby", Faction.None);
         }
     }
 }

@@ -60,6 +60,7 @@ namespace ifp.arena.bep.networking
         {
             Slot plateSlot = packet.address.Container as Slot;
             plateSlot.ApplyContainedItem();
+            D.Dump(plateSlot.ContainedItem);
         }
     }
 }

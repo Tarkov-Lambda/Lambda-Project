@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
+using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -22,7 +23,7 @@ namespace ifp.arena.bep.networking
         {
             writer.Put(playerId);
             writer.Put(placement);
-            writer.Put(item);
+            writer.PutItem(item);
         }
 
         public void Deserialize(NetDataReader reader)
@@ -60,6 +61,9 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
+        // we have to blindly accept our packet here otherwise ItemPlacement is not aware
+        // and tries to spawn multiple things in one grid
+        // otherwise we have to rewrite the logic to make the server give us spawn item packages effectivelly (gun + mags, 2 armor plates)
         protected override async void LocalPredictApproved(SpawnItemPacket packet)
         {
             SpawnItem(packet, H.MainPlayer);
@@ -69,30 +73,13 @@ namespace ifp.arena.bep.networking
         {
             Player player = H.GetPlayer(packet.playerId);
             if (player.IsYourPlayer) return;
-
             SpawnItem(packet, player);
         }
 
         private async void SpawnItem(SpawnItemPacket packet, Player player)
         {
-            // UniTask prev = _chains.TryGetValue(packet.playerId, out var existing) ? existing : UniTask.CompletedTask;
-
-            // _chains[packet.playerId] = prev.ContinueWith(async () =>
-            // {
-            //     await UniTask.Delay(25);
-            //     try
-            //     {
-                    await IU.LoadBundlesForItem(packet.item);
- 
-                    await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
-            //     }
-            //     catch (Exception ex)
-            //     {
-            //         D.Notify($"[SpawnItem] Chain step failed for player {player.Profile.Nickname}");
-            //         D.Dump(ex);
-            //         D.LogError(ex.StackTrace);
-            //     }
-            // });
+            await IU.LoadBundlesForItem(packet.item);
+            await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
         }
 
         public new void Dispose()

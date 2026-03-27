@@ -18,17 +18,6 @@ namespace ifp.arena.bep.Core
     // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
     public static class ItemUtilities
     {
-        // private static SemaphoreSlim _giveItemLock = new SemaphoreSlim(1, 1);
-        // private static CancellationTokenSource _sessionCts = new CancellationTokenSource();
-
-        // // OnGameStarted / OnGameDispose
-        // public static void ResetInventoryLock()
-        // {
-        //     _sessionCts.Cancel();
-        //     _sessionCts.Dispose();
-        //     _sessionCts = new CancellationTokenSource();
-        //     _giveItemLock = new SemaphoreSlim(1, 1);
-        // }
 
         public static Item CreateItemFromTemplateId(string templateId) => FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
@@ -77,68 +66,46 @@ namespace ifp.arena.bep.Core
             if (templateItem == null)
                 return false;
 
-            // if another call is already in progress, wait for it to finish
-            // before we check or mutate any slot state.
-                // try
-                // {
-                //     await _giveItemLock.WaitAsync(_sessionCts.Token);
-                // }
-                // catch (OperationCanceledException)
-                // {
-                //     return false; // Session ended
-                // }
+            await UniTask.Delay(25);
+            var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
 
-                // try
-                // {
-                var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
-
-                if (placement.Kind == PlacementKind.EquipmentSlot)
+            if (placement.Kind == PlacementKind.EquipmentSlot)
+            {
+                var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
+                if (slot.ContainedItem is not null)
                 {
-                    var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
-                    if (slot.ContainedItem is not null)
+                    bool removed;
+                    if (templateItem is BackpackItemClass) // Backpack is only the bomb
+                        removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
+                    else
                     {
-                        bool removed;
-                        if (templateItem is BackpackItemClass) // Backpack is only the bomb
-                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
+                        if (templateItem is Weapon)
+                            removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
                         else
-                        {
-                            if (templateItem is Weapon)
-                                removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
-                            else
-                                removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
-                        }
+                            removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
+                    }
 
-                        if (!removed)
-                        {
-                            D.Notify("Failed to allocate slot space in the inventory.");
-                            return false;
-                        }
+                    if (!removed)
+                    {
+                        D.Notify("Failed to allocate slot space in the inventory.");
+                        return false;
                     }
                 }
+            }
 
-                // await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
-                Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
-                clonedItem.StackObjectsCount = 1;
-                // D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
-                Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
-                return true;
-            // }
-            // catch (OperationCanceledException)
-            // {
-            //     return false;
-            // }
-            // finally
-            // {
-            //     _giveItemLock.Release();
-            // }
+            Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
+            clonedItem.StackObjectsCount = 1;
+            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+            Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
+            return true;
+
         }
 
 
         public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
         {
-            // var localPlacement = AU.GetItemPlacement(item, player);
+            await UniTask.Delay(25);
             await PlaceItem(item, player, placement);
-
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
             if (player.IsYourPlayer) PlayEquipSound(item);
@@ -165,12 +132,13 @@ namespace ifp.arena.bep.Core
 
             if (waitUntilStationary)
             {
-                await PU.WaitUntilStationary(player);
+                await UniTask.WaitUntil(() =>
+                    player.MovementContext.CurrentState is IdleStateClass ||
+                    player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
                 if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
                 {
-                    await UniTask.WaitUntil(() =>
-                        player.MovementContext.CurrentState is IdleStateClass ||
-                        player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
+                    await PU.WaitUntilStationary(player);
+
                 }
             }
 
@@ -190,14 +158,7 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryPopItem(Item item, Player player)
         {
-            var address = item.CurrentAddress;
-            bool result = await TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
-            if (result && item is ArmorPlateItemClass)
-            {
-                Singleton<RefreshPlateAddressPacketHandler>.Instance.Send(address);
-            }
-
-            return result;
+            return await TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
         }
 
         public static async UniTask TryThrowItems(IEnumerable<Item> items, Player player, int delayMs = 25)
@@ -268,33 +229,37 @@ namespace ifp.arena.bep.Core
         }
 
 
-        private static async UniTask PlaceItem(Item item, Player player, ItemPlacement placement)
+        private static async UniTask<bool> PlaceItem(Item item, Player player, ItemPlacement placement)
         {
+            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
+
             switch (placement.Kind)
             {
-                case PlacementKind.VestAddress: // if we have an address, it means the space is free.
-                    // D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
-                    D.Dump(placement.Address.Add(item, false), 2);
-                    // player.InventoryController.AddAndRaiseEvents(item, placement.Address);
-                    break;
-
+                case PlacementKind.VestAddress:
                 case PlacementKind.EquipmentSlot:
-                    // D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
-                    // var slot = player.Equipment.GetSlot(placement.Slot);
-                    D.Dump(placement.Address.Add(item, false), 2);
-                    // player.InventoryController.AddAndRaiseEvents(item, placement.Address);
+                    if (player.IsYourPlayer)
+                    {
+                        player.InventoryController.AddAndRaiseEvents(item, placement.Address);
+                    }
+                    else
+                    {
+                        placement.Address.Add(item, false);
+                    }
                     break;
 
                 case PlacementKind.ArmorPlate:
-                    await PlaceArmorPlate(item, player, placement);
+                    placement.Address.AddWithoutRestrictions(item);
+                    placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
+                    placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
+
                     break;
             }
+
+            return true;
         }
 
         private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
         {
-            D.Dump(placement.Address.AddWithoutRestrictions(item), 2);
-            (placement.Address.Container as Slot).ApplyContainedItem();
             return true;
             // var plateHolder = PU.GetPlayerSlotItem(player, placement.Slot) as CompoundItem;
             // var plateHolder = AU.GetPlateHolder(player);
