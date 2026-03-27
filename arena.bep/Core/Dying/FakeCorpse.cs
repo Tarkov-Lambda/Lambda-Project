@@ -1,4 +1,6 @@
 ﻿using Comfort.Common;
+using EFT;
+using EFT.Interactive;
 using System.Collections;
 using UnityEngine;
 
@@ -6,11 +8,13 @@ using EasyAssetsExtensions = GClass1857;
 
 namespace ifp.arena.bep.Core.Dying
 {
-    public class FakeCorpse : MonoBehaviour
+    public class FakeCorpse : InteractableObject
     {
         PlayerBones bones;
 
         Collider[] cols;
+
+        public Player OwnerPlayer { get; private set; }
 
         FakeDroppedItem itemInHands;
 
@@ -42,6 +46,11 @@ namespace ifp.arena.bep.Core.Dying
             {
                 col.isTrigger = false;
             }
+        }
+
+        public void SetOwnerPlayer(Player player)
+        {
+            OwnerPlayer = player;
         }
 
         public void SetItemInHands(FakeDroppedItem item)

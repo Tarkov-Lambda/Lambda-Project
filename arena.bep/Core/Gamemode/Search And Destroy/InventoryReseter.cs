@@ -142,8 +142,8 @@ namespace ifp.arena.bep.Core.Gamemode
                     }
                 }
                 
+                // plate removal in case the player just got a fresh plate carrier
                 itemsToRemove = [];
-                // Finally remove all the plates.
                 AddRange(ref itemsToRemove, AU.GetArmorPlates(player));
                 await IU.TryPopItems(itemsToRemove, player);
             }

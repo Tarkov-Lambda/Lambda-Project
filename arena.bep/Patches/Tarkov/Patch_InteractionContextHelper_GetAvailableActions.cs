@@ -101,6 +101,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPrefix]
         private static bool PatchPrefix(ref ActionsReturnClass __result, GamePlayerOwner owner, IInteractive interactive)
         {
+            D.Dump(interactive);
             if (interactive == null) return true;
             if (interactive is bombasik bombanilovich)
             {
@@ -150,8 +151,28 @@ namespace ifp.arena.bep.Patches.Tarkov
             else if (interactive is FakeCorpse fakeCorpse)
             {
                 EftGamePlayerOwner localOwner = H.MainPlayer.GetComponent<EftGamePlayerOwner>();
+                AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
 
-                // localOwner.ShowInventoryScreenLoot(fakeCorpse, delegate { }, false);
+                actionsReturnClass.Actions.Add(new ActionsTypesClass
+                {
+                    Name = "LOOT",
+                    Action = delegate
+                    {
+                        H.MainPlayer.Interact(fakeCorpse.OwnerPlayer.InventoryController, new Callback((IResult result) =>
+                        {
+                            if (result.Failed)
+                            {
+                                return;
+                            }
+
+                            CompoundItem targetRootItem = fakeCorpse.OwnerPlayer.Equipment;
+                            localOwner.ShowInventoryScreenLoot(fakeCorpse.OwnerPlayer.Equipment, delegate { }, false);
+                        }));
+                    }
+                });
+
+                __result = actionsReturnClass;
+                return false;
             }
 
             return true;

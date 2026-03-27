@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Comfort.Common;
 using EFT;
 using EFT.UI;
+using Fika.Core.Main.ObservedClasses;
 using HarmonyLib;
 using UnityEngine;
 
@@ -27,23 +28,23 @@ namespace ifp.arena.bep.Core
         }
 
         // This is really stupid and the amount of replenish shit im doing is really bad
-        public static async Task FixMe()
+        public static async Task HealMe()
         {
-            var aHealth = H.MainPlayer.ActiveHealthController;
+            var healthController = H.MainPlayer.ActiveHealthController;
             RU.Replenish(H.MainPlayer, true);
 
-            aHealth.ChangeHydration(100f);
-            aHealth.ChangeEnergy(100f);
-            aHealth.RestoreFullHealth();
+            healthController.ChangeHydration(100f);
+            healthController.ChangeEnergy(100f);
+            healthController.RestoreFullHealth();
 
             await Task.Delay(500);
 
             foreach (EBodyPart bodyPart in Enum.GetValues(typeof(EBodyPart)))
             {
-                aHealth.RemoveNegativeEffects(bodyPart);
+                healthController.RemoveNegativeEffects(bodyPart);
             }
 
-            aHealth.RestoreFullHealth();
+            healthController.RestoreFullHealth();
         }
     }
 }

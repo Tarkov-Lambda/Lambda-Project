@@ -249,90 +249,14 @@ namespace ifp.arena.bep.Core
 
                 case PlacementKind.ArmorPlate:
                     placement.Address.AddWithoutRestrictions(item);
-                    placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
-                    placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
-
                     break;
             }
 
+            placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
+            placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
+
             return true;
         }
-
-        private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
-        {
-            return true;
-            // var plateHolder = PU.GetPlayerSlotItem(player, placement.Slot) as CompoundItem;
-            // var plateHolder = AU.GetPlateHolder(player);
-
-            // var plate = item as ArmorPlateItemClass;
-            // foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
-            // {
-            //     foreach (var slot in armorHolder.ArmorSlots)
-            //     {
-            //         if (slot.ContainedItem is not null)
-            //             continue;
-            //         if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
-            //             continue;
-
-            //         var addResult = slot.AddWithoutRestrictions(plate);
-
-            //         if (addResult.Failed)
-            //         {
-            //             // D.Dump(addResult);
-            //             return false;
-            //         }
-
-            //         // This is an extremely manual way of adding armor
-            //         // however after spending an entire day throwing myself against the wall I must give up
-            //         // whilst this plate is registered correctly when the player is shot at
-            //         // the ui does not display any durability changes
-            //         // this is very likely due to me missing a listener somewhere that happens
-            //         // in the normal network transaction pipeline
-            //         // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
-            //         plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
-            //         plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
-            //         slot.ApplyContainedItem();
-
-            //         return true;
-            //     }
-            // }
-            // return false;
-        }
-
-        // private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
-        // {
-        //     var parentSlot = placement.Address.Container as Slot;
-        //     var plate = item as ArmorPlateItemClass;
-
-        //     if (parentSlot is null)
-        //     {
-        //         D.NotifyLong("Major Error: Can't find a slot to put a plate into");
-        //         return false;
-        //     }
-
-        //     parentSlot.ApplyContainedItem();
-        //     var addResult = parentSlot.AddWithoutRestrictions(item);
-
-        //     if (addResult.Failed)
-        //     {
-        //         // D.Dump(addResult);
-        //         return false;
-        //     }
-
-        //     // This is an extremely manual way of adding armor
-        //     // however after spending an entire day throwing myself against the wall I must give up
-        //     // whilst this plate is registered correctly when the player is shot at
-        //     // the ui does not display any durability changes
-        //     // this is very likely due to me missing a listener somewhere that happens
-        //     // in the normal network transaction pipeline
-        //     // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
-        //     placement.Address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
-        //     placement.Address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
-        //     parentSlot.ApplyContainedItem();
-
-        //     return true;
-        // }
-
 
         private static void PlayEquipSound(Item item)
         {

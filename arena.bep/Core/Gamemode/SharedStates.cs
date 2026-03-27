@@ -90,6 +90,8 @@ namespace ifp.arena.bep.Core.Gamemode
             H.Session.ResetRoundScopeFields(); // I've lost the plot and I have no clue how to sync states correctly anymore
             IU.GarbageCollectWorldLoot();
 
+            // H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+
             if (!H.MainPlayerScore.isAlive)
             {
                 InventoryResetter.ResetInventory().Forget();
@@ -101,11 +103,8 @@ namespace ifp.arena.bep.Core.Gamemode
                 p.Spawn();
             }
 
-            if (H.GameWorld?.MainPlayer != null)
-            {
-                Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
-                HU.FixMe().Forget();
-            }
+            Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
+            HU.HealMe().Forget();
 
             H.Session.bombState = BombState.None;
 

@@ -59,7 +59,7 @@ namespace ifp.arena.bep.Core
 
         private static ItemPlacement ResolveArmorPlatePlacement(Player player)
         {
-            var plateHolder = AU.GetPlateHolder(player);
+            var plateHolder = AU.GetPlateCarrier(player);
             foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
             {
                 foreach (var slot in armorHolder.ArmorSlots)
@@ -113,7 +113,7 @@ namespace ifp.arena.bep.Core
             return FindPlacement(allContainers, _ => true);
         }
 
-        public static CompoundItem GetPlateHolder(Player player)
+        public static CompoundItem GetPlateCarrier(Player player)
         {
             VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
             if (tacRig != null)
@@ -140,7 +140,7 @@ namespace ifp.arena.bep.Core
 
         public static IEnumerable<Item> GetArmorPlates(Player player)
         {
-            var plateHolder = GetPlateHolder(player);
+            var plateHolder = GetPlateCarrier(player);
             if (plateHolder == null)
                 yield break;
 

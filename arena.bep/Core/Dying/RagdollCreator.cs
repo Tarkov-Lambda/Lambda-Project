@@ -101,6 +101,7 @@ namespace ifp.arena.bep.Core.Dying
             UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
 
             FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
+            fakeCorpse.SetOwnerPlayer(player);
             fakeCorpse.SetBones(playerClone.GetComponentInChildren<PlayerBones>());
 
             RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();

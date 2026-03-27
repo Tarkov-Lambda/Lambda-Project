@@ -74,7 +74,7 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (__instance.Player.IsYourPlayer)
             {
-                HU.FixMe().Forget();
+                HU.HealMe().Forget();
                 Singleton<ReplenishPacketHandler>.Instance.Send();
 
                 __instance.Player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
