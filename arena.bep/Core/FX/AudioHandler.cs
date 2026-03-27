@@ -22,14 +22,14 @@ namespace ifp.arena.bep.Core.FX
             prefabSounds = audioBundle.LoadAsset<LambdaSounds>("Assets/Sounds/SoundData.asset");
         }
 
-        public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip)
+        public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 10000, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Environment)
         {
             return Singleton<BetterAudio>.Instance.PlayAtPoint(
                 pos,
                 clip,
                 distance: CameraClass.Instance.Distance(pos),
-                sourceGroup: BetterAudio.AudioSourceGroupType.Environment,
-                rolloff: 100000,
+                sourceGroup: overrideSourceGroup,
+                rolloff: rolloff,
                 volume: 1f
             );
         }

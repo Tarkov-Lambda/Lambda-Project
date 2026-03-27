@@ -31,12 +31,12 @@ namespace ifp.arena.bep.Patches
             if (packet.Type is ECommonSubPacketType.HealthSync)
             {
                 HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
-                if (subPacket.Packet.SyncType is NetworkHealthSyncPacketStruct.ESyncType.BodyHealth)
-                {
-                    D.Log(packet.NetId.ToString());
-                    D.Log(packet.Type.GetType().ToString());
-                    D.Dump(packet.SubPacket);
-                }
+                // if (subPacket.Packet.SyncType is NetworkHealthSyncPacketStruct.ESyncType.BodyHealth)
+                // {
+                //     D.Log(packet.NetId.ToString());
+                //     D.Log(packet.Type.GetType().ToString());
+                //     D.Dump(packet.SubPacket);
+                // }
 
             }
 

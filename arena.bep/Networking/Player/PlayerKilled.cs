@@ -121,6 +121,9 @@ namespace ifp.arena.bep.networking
             if (packet.victimId == H.MainPlayer.Id && FikaBackendUtils.IsClient)
             {
                 H.MainPlayer.ActiveHealthController.Kill(packet.damageType);
+                H.MainPlayer.SetEmptyHands(delegate {});
+                
+                // H.MainPlayer.HandsController;
             }
 
             EventBus.OnPlayerKill(packet);

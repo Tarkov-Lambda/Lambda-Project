@@ -115,6 +115,8 @@ namespace ifp.arena.bep.Core.Gamemode
             H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
 
             IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
+
+            HU.ResetObservedPlayersHealth();
         }
 
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

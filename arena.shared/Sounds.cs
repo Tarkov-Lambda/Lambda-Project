@@ -8,6 +8,9 @@ public class LambdaSounds : ScriptableObject
     [Header("Noises")]
     public AudioClip LadderNoise;
     public AudioClip LandedOnFreefallReseter;
+    public AudioClip[] HeadshotHelmet;
+    public AudioClip[] HeadshotFlesh;
+
 
     [Header("Bomb SFX")]
     public AudioClip Tick;

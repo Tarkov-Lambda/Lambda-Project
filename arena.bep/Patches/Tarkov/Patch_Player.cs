@@ -14,6 +14,7 @@ using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -28,7 +29,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.VisualPass));
 
         public static readonly ConditionalWeakTable<ProceduralWeaponAnimation, Player> PwaToPlayer = new ConditionalWeakTable<ProceduralWeaponAnimation, Player>();
-        
+
         [PatchPrefix]
         static void Prefix(Player __instance)
         {
@@ -41,41 +42,40 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
     }
 
-    public class Patch_PlayerMove : ModulePatch
+    public class Patch_Player_ShotReactions : ModulePatch, IDisposable
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.Move));
+        private static Dictionary<int, long> _lastShotTimeDict = new();
+        private const int CooldownMs = 15;
+
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.ShotReactions));
 
         [PatchPostfix]
-        static void Postfix(Player __instance, Vector2 direction)
+        static void Postfix(Player __instance, DamageInfoStruct shot, EBodyPart bodyPart)
         {
-            // Only apply input snapping when walking/strafing, as sprinting 
-            // uses a different forward-locked animation blend tree.
-            if (__instance.MovementContext != null && !__instance.MovementContext.IsSprintEnabled)
+            D.Dump(shot);
+            int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;
+            if (killerId != H.MainPlayer.Id) return;
+
+            long now = Stopwatch.GetTimestamp();
+
+            if (_lastShotTimeDict.TryGetValue(__instance.PlayerId, out long lastShotTime))
             {
-                __instance.MovementContext.MovementDirection = direction;
+                long elapsedMs = (now - lastShotTime) * 1000 / Stopwatch.Frequency;
+                if (elapsedMs < CooldownMs) return;
             }
+
+            // Only update AFTER passing cooldown (or if new)
+            _lastShotTimeDict[__instance.PlayerId] = now;
+
+            bool didHitHelmet = shot.BlockedBy is not null;
+
+            AudioClip[] clips = didHitHelmet ? H.Sounds.HeadshotHelmet : H.Sounds.HeadshotFlesh;
+            H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 50, BetterAudio.AudioSourceGroupType.Character);
         }
-    }
 
-    public class Patch_MoveSideInertia : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.MoveSideInertia));
-
-        [PatchPostfix]
-        static void Postfix(ref float __result)
+        public void Dispose()
         {
-            __result = 0f;
-        }
-    }
-
-    public class Patch_MoveDiagonalInertia : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.MoveDiagonalInertia));
-
-        [PatchPostfix]
-        static void Postfix(ref float __result)
-        {
-            __result = 0f;
+            _lastShotTimeDict = null;
         }
     }
 }

@@ -5,6 +5,7 @@ using Comfort.Common;
 using EFT;
 using EFT.UI;
 using Fika.Core.Main.ObservedClasses;
+using Fika.Core.Main.Utils;
 using HarmonyLib;
 using UnityEngine;
 
@@ -24,6 +25,22 @@ namespace ifp.arena.bep.Core
             if (!hasPainkiller)
             {
                 aHealth.DoPainKiller();
+            }
+        }
+
+        public static void ResetObservedPlayersHealth()
+        {
+            if (!FikaBackendUtils.IsServer) return;
+
+            foreach (var player in H.AllPlayers)
+            {
+                if (player.IsYourPlayer) continue;
+                if (player.HealthController is not ObservedHealthController observedHC) continue;
+
+                foreach (var kvp in observedHC.Dictionary_0)
+                {
+                    kvp.Value.Health.Current = kvp.Value.Health.Maximum;
+                }
             }
         }
 
