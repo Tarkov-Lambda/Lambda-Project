@@ -100,10 +100,6 @@ namespace ifp.arena.bep.Core.Dying
             UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<Rigidbody>());
             UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
 
-            FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
-            fakeCorpse.SetOwnerPlayer(player);
-            fakeCorpse.SetBones(playerClone.GetComponentInChildren<PlayerBones>());
-
             RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();
             foreach (var rbs in rigidbodySpawners)
             {
@@ -117,6 +113,37 @@ namespace ifp.arena.bep.Core.Dying
             }
 
             List<PlayerRigidbodySleepHierarchy> rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(rigidbodySpawners);
+
+            playerClone.SetActive(false);
+
+            FakeCorpse fakeCorpse = playerClone.AddComponent<FakeCorpse>();
+
+            fakeCorpse.PreInitRagdollData(rigidbodySpawners, jointSpawners, rigidbodySleepHierarchy);
+            fakeCorpse.SetOwnerPlayer(player);
+            fakeCorpse.SetBones(playerClone.GetComponentInChildren<PlayerBones>());
+
+            playerClone.SetActive(true);
+
+            // if you call this shit on local player your inv controller is fucked
+            if (!player.IsYourPlayer)
+            {
+                PlayerBones cloneBones = playerClone.GetComponentInChildren<PlayerBones>();
+                fakeCorpse.method_17(
+                    player.ProfileId,
+                    player.Inventory.Equipment as InventoryEquipment,
+                    player.Profile.Customization,
+                    reinitBody: false,
+                    Singleton<GameWorld>.Instance,
+                    player.Side,
+                    player.Velocity,
+                    cloneBones.Pelvis.Original,
+                    ragdollEnabled: false,
+                    new BindableStateClass<Item>(null),
+                    foreStillCorpse: false
+                );
+
+            }
+
             Vector3 velocity = player.Velocity;
             float maxDepenetrationVelocity = EFTHardSettings.Instance.CorpseMaxDepenetrationVelocity;
             CollisionDetectionMode collisionDetectionMode = CollisionDetectionMode.Discrete;

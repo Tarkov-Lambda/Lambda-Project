@@ -5,6 +5,7 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.Animations;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -96,12 +97,14 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_Player_VisualPass()); // Mapping ProceduralWeaponAnimation instances to players
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors()); // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors()); // Reduce Sway for pistols
+        RegisterPatch(new Patch_ProceduralWeaponAnimation_CalculateCameraPosition()); // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments()); // Procedural Blindfire Position
         RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire()); // Override Blindfire Animation
         RegisterPatch(new Patch_MovementContext_SetBlindFire()); // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementState_BlindFire()); // Force Blindfire state regardless of movement state
 
 
+        RegisterPatch(new Patch_Player_ShotReactions()); // Smooth Speed Tweak
 
         RegisterPatch(new Patch_MovementContext_ManualUpdate()); // Smooth Speed Tweak
         // RegisterPatch(new NostalgiaPatrolFixExitPatch());
@@ -120,10 +123,12 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_BackendConfigSettingsClass_AimPunchMagnitude()); // Set aimpunch to 0
 
+        // RegisterPatch(new Patch_SearchableItemItemClass_IsSearched()); // Planting (PlaceItem)
+
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger()); // Planting (PlaceItem)
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Defusing (Tripwire)
 
-    
+
         RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
         // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
 
@@ -199,7 +204,7 @@ public class Plugin : BaseUnityPlugin
 
 
 #if DEBUG
-        _disposables.Add(new DynamicClassTracer(typeof(MovementContext)));
+        _disposables.Add(new DynamicClassTracer(typeof(Slot)));
 #endif
 
     }
@@ -248,7 +253,7 @@ public class Plugin : BaseUnityPlugin
             Teleporter.Teleport(H.MainPlayer, "lobby");
         }
 
-        foreach (var patch in _patches) 
+        foreach (var patch in _patches)
             patch.Disable();
 
         _patches.Clear();

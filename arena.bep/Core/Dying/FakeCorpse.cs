@@ -1,18 +1,20 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.AssetsManager;
 using EFT.Interactive;
-using System.Collections;
+using EFT.InventoryLogic;
+using HarmonyLib;
+using RootMotion.FinalIK;
+using System.Collections.Generic;
 using UnityEngine;
 
 using EasyAssetsExtensions = GClass1857;
 
 namespace ifp.arena.bep.Core.Dying
 {
-    public class FakeCorpse : InteractableObject
+    public class FakeCorpse : Corpse
     {
         PlayerBones bones;
-
-        Collider[] cols;
 
         public Player OwnerPlayer { get; private set; }
 
@@ -24,28 +26,25 @@ namespace ifp.arena.bep.Core.Dying
         Vector3 attacthedCameraLocalPos;
         Quaternion attacthedCameraLocalRot;
 
-        void Start()
+        RigidbodySpawner[] _preInitRbSpawners;
+        CharacterJointSpawner[] _preInitJointSpawners;
+        List<PlayerRigidbodySleepHierarchy> _preInitSleepHierarchy;
+
+        public void PreInitRagdollData(
+            RigidbodySpawner[] rigidbodySpawners,
+            CharacterJointSpawner[] jointSpawners,
+            List<PlayerRigidbodySleepHierarchy> sleepHierarchy)
         {
-            cols = GetComponentsInChildren<Collider>();
-
-            // disable collisions
-            foreach (var col in cols)
-            {
-                col.isTrigger = true;
-            }
-
-            StartCoroutine(Delay());
+            _preInitRbSpawners = rigidbodySpawners;
+            _preInitJointSpawners = jointSpawners;
+            _preInitSleepHierarchy = sleepHierarchy;
         }
 
-        // wait one frame (avoid colliding with real body until its teleportation is synced up with physics)
-        IEnumerator Delay()
+        public new void Awake()
         {
-            yield return new WaitForEndOfFrame();
-
-            foreach (var col in cols)
-            {
-                col.isTrigger = false;
-            }
+            AccessTools.Field(typeof(Corpse), "rigidbodySpawner_0").SetValue(this, _preInitRbSpawners);
+            AccessTools.Field(typeof(Corpse), "characterJointSpawner_0").SetValue(this, _preInitJointSpawners);
+            AccessTools.Field(typeof(Corpse), "list_0").SetValue(this, _preInitSleepHierarchy);
         }
 
         public void SetOwnerPlayer(Player player)
@@ -125,7 +124,6 @@ namespace ifp.arena.bep.Core.Dying
 
         public void OnRigidbodyStopped()
         {
-
         }
 
         void OnDestroy()
