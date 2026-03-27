@@ -117,8 +117,9 @@ namespace ifp.arena.bep.Core
                 }
 
                 await UniTask.Delay(100, cancellationToken: _sessionCts.Token);
-                Item clonedItem = ItemExtensions.CloneItem(templateItem);
-                D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+                Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
+                clonedItem.StackObjectsCount = 1;
+                // D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
                 Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
                 return true;
             }
@@ -133,10 +134,11 @@ namespace ifp.arena.bep.Core
         }
 
 
-        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedAddress = null)
+        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
         {
-            ItemPlacement placement = AU.GetItemPlacement(item, player);
-            await PlaceItem(item, player, placement);
+            var localPlacement = AU.GetItemPlacement(item, player);
+            await PlaceItem(item, player, localPlacement);
+
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
             if (player.IsYourPlayer) PlayEquipSound(item);
@@ -186,9 +188,16 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        public static UniTask<bool> TryPopItem(Item item, Player player)
+        public static async UniTask<bool> TryPopItem(Item item, Player player)
         {
-            return TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
+            var address = item.CurrentAddress;
+            bool result = await TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
+            if (result && item is ArmorPlateItemClass)
+            {
+                Singleton<RefreshPlateAddressPacketHandler>.Instance.Send(address);
+            }
+
+            return result;
         }
 
         public static async UniTask TryThrowItems(IEnumerable<Item> items, Player player, int delayMs = 25)
@@ -264,15 +273,16 @@ namespace ifp.arena.bep.Core
             switch (placement.Kind)
             {
                 case PlacementKind.VestAddress: // if we have an address, it means the space is free.
-                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    // D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    D.Dump(placement.Address.Add(item, false));
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.EquipmentSlot:
-                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
-                    var slot = player.Equipment.GetSlot(placement.Slot);
-
-                    player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
+                    // D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    // var slot = player.Equipment.GetSlot(placement.Slot);
+                    D.Dump(placement.Address.Add(item, false));
+                    // player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.ArmorPlate:
@@ -297,8 +307,6 @@ namespace ifp.arena.bep.Core
                         continue;
 
                     var addResult = slot.AddWithoutRestrictions(plate);
-                    D.Log(slot.CreateItemAddress().ContainerName);
-                    D.Log(plate.CurrentAddress.ContainerName);
 
                     if (addResult.Failed)
                     {
