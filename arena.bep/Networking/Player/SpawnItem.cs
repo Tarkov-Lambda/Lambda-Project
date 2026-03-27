@@ -83,9 +83,8 @@ namespace ifp.arena.bep.networking
                 try
                 {
                     await IU.LoadBundlesForItem(packet.item);
-                    if (!player.IsYourPlayer) return;
-
-                    await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
+ 
+                    await IU.WhenApprovedGiveItem(packet.item, player);
                 }
                 catch (Exception ex)
                 {

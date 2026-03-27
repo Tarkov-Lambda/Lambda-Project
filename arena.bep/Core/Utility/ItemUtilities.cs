@@ -74,7 +74,8 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
         {
-            if (templateItem == null) return false;
+            if (templateItem == null)
+                return false;
 
             // if another call is already in progress, wait for it to finish
             // before we check or mutate any slot state.
@@ -93,11 +94,12 @@ namespace ifp.arena.bep.Core
 
                 if (placement.Kind == PlacementKind.EquipmentSlot)
                 {
-                    if (PU.GetPlayerSlotItem(H.MainPlayer, placement.Slot) is not null)
+                    var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
+                    if (slot.ContainedItem is not null)
                     {
                         bool removed;
-                        if (templateItem is BackpackItemClass) // gotta wait for backpack otherwise we get fucked
-                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer, true);
+                        if (templateItem is BackpackItemClass) // Backpack is only the bomb
+                            removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
                         else
                         {
                             if (templateItem is Weapon)
@@ -130,23 +132,25 @@ namespace ifp.arena.bep.Core
             }
         }
 
-        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
+
+        public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemAddress precomputedAddress = null)
         {
-            var localPlacement = AU.GetItemPlacement(item, player);
-            await PlaceItem(item, player, localPlacement);
+            ItemPlacement placement = AU.GetItemPlacement(item, player);
+            await PlaceItem(item, player, placement);
 
             if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
             if (player.IsYourPlayer) PlayEquipSound(item);
         }
 
+        // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
+        // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
         public static async UniTask<bool> TryPopContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
             => await TryOperateOnSlot(equipmentSlot, player, TryPopItem, waitUntilStationary, extraBackpackWait: true);
 
         public static async UniTask<bool> TryThrowContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
             => await TryOperateOnSlot(equipmentSlot, player, TryThrowItem, waitUntilStationary);
 
-        // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
-        // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
+
         private static async UniTask<bool> TryOperateOnSlot(
             EquipmentSlot equipmentSlot,
             Player player,
@@ -159,12 +163,12 @@ namespace ifp.arena.bep.Core
 
             if (waitUntilStationary)
             {
-                await UniTask.WaitUntil(() =>
-                        player.MovementContext.CurrentState is IdleStateClass ||
-                        player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
+                await PU.WaitUntilStationary(player);
                 if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
                 {
-                    await PU.WaitUntilStationary(player);
+                    await UniTask.WaitUntil(() =>
+                        player.MovementContext.CurrentState is IdleStateClass ||
+                        player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
                 }
             }
 
@@ -224,17 +228,6 @@ namespace ifp.arena.bep.Core
                 D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
                 D.LogTransaction($"Reason: {result.Error}");
             }
-            else
-            {
-                // if (item is ArmorPlateItemClass)
-                // {
-                //     Slot parentSlot = item.CurrentAddress.Container as Slot;
-                //     if (parentSlot is not null)
-                //     {
-                //         parentSlot.ApplyContainedItem();
-                //     }
-                // }
-            }
 
             return !result.Failed;
         }
@@ -265,23 +258,24 @@ namespace ifp.arena.bep.Core
             return removed;
         }
 
+
         private static async UniTask PlaceItem(Item item, Player player, ItemPlacement placement)
         {
             switch (placement.Kind)
             {
-                case PlacementKind.VestAddress:
-                    // D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
+                case PlacementKind.VestAddress: // if we have an address, it means the space is free.
+                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
                     player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                     break;
 
                 case PlacementKind.EquipmentSlot:
-                    // D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
-                    var slot = PU.GetPlayerSlotItem(player, placement.Slot);
-                    player.InventoryController.AddAndRaiseEvents(item, slot.CurrentAddress);
+                    D.LogTransaction($"Placing item {item.LocalizedName()} ({item.Id}) in {player.Profile.Nickname} inventory at {placement.Address}");
+                    var slot = player.Equipment.GetSlot(placement.Slot);
+
+                    player.InventoryController.AddAndRaiseEvents(item, slot.CreateItemAddress());
                     break;
 
                 case PlacementKind.ArmorPlate:
-                    // D.LogTransaction($"{player.Profile.Nickname} placing {item.LocalizedShortName()} ({item.Id}) at {placement.Address}");
                     await PlaceArmorPlate(item, player, placement);
                     break;
             }
@@ -289,37 +283,80 @@ namespace ifp.arena.bep.Core
 
         private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
         {
-            var parentSlot = placement.Address.Container as Slot;
+            // var plateHolder = PU.GetPlayerSlotItem(player, placement.Slot) as CompoundItem;
+            var plateHolder = AU.GetPlateHolder(player);
+
             var plate = item as ArmorPlateItemClass;
-
-            if (parentSlot is null)
+            foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
             {
-                D.NotifyLong("Major Error: Can't find a slot to put a plate into");
-                return false;
+                foreach (var slot in armorHolder.ArmorSlots)
+                {
+                    if (slot.ContainedItem is not null)
+                        continue;
+                    if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var addResult = slot.AddWithoutRestrictions(plate);
+                    D.Log(slot.CreateItemAddress().ContainerName);
+                    D.Log(plate.CurrentAddress.ContainerName);
+
+                    if (addResult.Failed)
+                    {
+                        // D.Dump(addResult);
+                        return false;
+                    }
+
+                    // This is an extremely manual way of adding armor
+                    // however after spending an entire day throwing myself against the wall I must give up
+                    // whilst this plate is registered correctly when the player is shot at
+                    // the ui does not display any durability changes
+                    // this is very likely due to me missing a listener somewhere that happens
+                    // in the normal network transaction pipeline
+                    // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
+                    plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
+                    plate.CurrentAddress.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
+                    slot.ApplyContainedItem();
+
+                    return true;
+                }
             }
-
-            parentSlot.ApplyContainedItem();
-            var addResult = parentSlot.AddWithoutRestrictions(item);
-
-            if (addResult.Failed)
-            {
-                // D.Dump(addResult);
-                return false;
-            }
-
-            // This is an extremely manual way of adding armor
-            // however after spending an entire day throwing myself against the wall I must give up
-            // whilst this plate is registered correctly when the player is shot at
-            // the ui does not display any durability changes
-            // this is very likely due to me missing a listener somewhere that happens
-            // in the normal network transaction pipeline
-            // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
-            placement.Address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
-            placement.Address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
-            parentSlot.ApplyContainedItem();
-
-            return true;
+            return false;
         }
+
+        // private static async UniTask<bool> PlaceArmorPlate(Item item, Player player, ItemPlacement placement)
+        // {
+        //     var parentSlot = placement.Address.Container as Slot;
+        //     var plate = item as ArmorPlateItemClass;
+
+        //     if (parentSlot is null)
+        //     {
+        //         D.NotifyLong("Major Error: Can't find a slot to put a plate into");
+        //         return false;
+        //     }
+
+        //     parentSlot.ApplyContainedItem();
+        //     var addResult = parentSlot.AddWithoutRestrictions(item);
+
+        //     if (addResult.Failed)
+        //     {
+        //         // D.Dump(addResult);
+        //         return false;
+        //     }
+
+        //     // This is an extremely manual way of adding armor
+        //     // however after spending an entire day throwing myself against the wall I must give up
+        //     // whilst this plate is registered correctly when the player is shot at
+        //     // the ui does not display any durability changes
+        //     // this is very likely due to me missing a listener somewhere that happens
+        //     // in the normal network transaction pipeline
+        //     // Sidenote: I could lowkey patch out Slot.Add() specifically for plates to bypass "locked slot" error
+        //     placement.Address.RaiseAddEvent(plate, CommandStatus.Begin, player.InventoryController);
+        //     placement.Address.RaiseAddEvent(plate, CommandStatus.Succeed, player.InventoryController);
+        //     parentSlot.ApplyContainedItem();
+
+        //     return true;
+        // }
+
 
         private static void PlayEquipSound(Item item)
         {

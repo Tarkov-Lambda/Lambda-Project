@@ -136,8 +136,8 @@ namespace ifp.arena.bep.Core.Gamemode
                         var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
                         if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
                         {
-                            await IU.ClientRequestGiveItem(kvp.Value);
                             await UniTask.Delay(25);
+                            await IU.ClientRequestGiveItem(kvp.Value);
                         }
                     }
                 }
