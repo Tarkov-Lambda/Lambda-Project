@@ -52,7 +52,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         [PatchPostfix]
         static void Postfix(Player __instance, DamageInfoStruct shot, EBodyPart bodyPart)
         {
-            D.Dump(shot);
+            // D.Dump(shot);
             if(shot.OverDamageFrom is not null) return;
             if(bodyPart is not EBodyPart.Head) return;
             

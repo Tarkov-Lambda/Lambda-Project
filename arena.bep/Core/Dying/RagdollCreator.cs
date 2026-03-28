@@ -23,15 +23,8 @@ namespace ifp.arena.bep.Core.Dying
     {
         readonly Dictionary<Player, FakeCorpse> regsitry = new Dictionary<Player, FakeCorpse>();
 
-        public RagdollCreator()
-        {
-            EventBus.OnPlayerKill += OnPacket;
-        }
-
         public void Dispose()
         {
-            EventBus.OnPlayerKill -= OnPacket;
-
             foreach (var kvp in regsitry)
             {
                 if (kvp.Value != null)
@@ -42,11 +35,9 @@ namespace ifp.arena.bep.Core.Dying
             regsitry.Clear();
         }
 
-        void OnPacket(PlayerKilledPacket playerKilledPacket)
+        // I need to rename this
+        public void OnPacket(Player player)
         {
-            var player = H.GetPlayer(playerKilledPacket.victimId);
-            if (player == null || player.IsYourPlayer) return;
-
             CreateRagdollFromPlayer(player);
             if (!player.IsYourPlayer)
             {

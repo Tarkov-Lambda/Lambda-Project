@@ -117,6 +117,8 @@ namespace ifp.arena.bep.Core.Gamemode
             IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
 
             HU.ResetObservedPlayersHealth();
+
+            H.spectatorManager.StopSpectating();
         }
 
         public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

@@ -68,19 +68,6 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
         _lastKillTime = now;
 
         if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
-        H.GetPlayerScore(__instance.Player.Id).Kill();
-
-        if (__instance.Player.IsYourPlayer)
-        {
-            HU.HealMe().Forget();
-            Singleton<ReplenishPacketHandler>.Instance.Send();
-
-            __instance.Player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-            Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
-
-            _ = PU.CloseEyes(true, true);
-            Teleporter.Teleport(__instance.Player);
-        }
 
         if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
         // if (__instance.Player.IsYourPlayer )

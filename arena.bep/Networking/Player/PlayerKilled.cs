@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using Fika.Core;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -102,32 +104,52 @@ namespace ifp.arena.bep.networking
             RequestSend(packet);
         }
 
+        protected override void LocalPredictApproved(PlayerKilledPacket packet)
+        {
+
+        }
+
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
             PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
 
-            victimScore.Kill();
+            // victimScore.Kill();
 
             if (killerScore != victimScore && killerScore.faction != victimScore.faction)
             {
                 killerScore.AddFrag(packet.IsHeadshot);
             }
 
-            // The server will preemptively decide that we are dead
-            // if another client sends a damage packet directed at us
-            // and it ends up being fatal
-            // also, we do not ever run this on the server because the server decides its own death (natively in AHC)
-            if (packet.victimId == H.MainPlayer.Id && FikaBackendUtils.IsClient)
+            // create corpse before anything else happens
+            // Die(victimScore.player);
+
+            if (victimScore.player.IsYourPlayer)
             {
-                H.MainPlayer.ActiveHealthController.Kill(packet.damageType);
-                H.MainPlayer.SetEmptyHands(delegate {});
-                
-                // H.MainPlayer.HandsController;
+                H.spectatorManager.SpectatePlayer(killerScore.player);
             }
 
-            EventBus.OnPlayerKill(packet);
-            Teleporter.Teleport(victimScore.player, "lobby", Faction.None);
+        }
+
+        private void Die(Player player)
+        {
+            Singleton<RagdollCreator>.Instance.OnPacket(player);
+
+            if (player.IsYourPlayer)
+            {
+
+                HU.HealMe().Forget();
+                Singleton<ReplenishPacketHandler>.Instance.Send();
+
+                player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+                Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
+
+                _ = PU.CloseEyes(true, true);
+
+                H.MainPlayer.SetEmptyHands(delegate { });
+            }
+
+            Teleporter.Teleport(player, "lobby", Faction.None);
         }
     }
 }

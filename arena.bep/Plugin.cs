@@ -197,6 +197,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterSingleton<RaymarchHandler>();
         RegisterSingleton<UIManager>();
         RegisterSingleton<ArenaController>();
+        RegisterSingleton<SpectatorManager>();
 
         var warmup = typeof(Ladder);
         await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap

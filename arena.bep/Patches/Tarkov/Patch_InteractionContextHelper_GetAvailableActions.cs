@@ -102,6 +102,12 @@ namespace ifp.arena.bep.Patches.Tarkov
         private static bool PatchPrefix(InteractionContextHelper __instance, ref ActionsReturnClass __result, GamePlayerOwner owner, IInteractive interactive)
         {
             if (interactive == null) return true;
+            
+            if (interactive is Corpse corpse)
+            {
+                if (corpse.PlayerProfileID == H.MainPlayer.ProfileId) return false;
+            }
+
             if (interactive is bombasik bombanilovich)
             {
                 if (H.Session.matchState is not MatchState.RoundPlanted) return true;
