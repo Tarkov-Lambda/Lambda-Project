@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Diz.Skinning;
 using EFT;
 using EFT.Animations;
 using EFT.HealthSystem;
@@ -53,9 +54,9 @@ namespace ifp.arena.bep.Patches.Tarkov
         static void Postfix(Player __instance, DamageInfoStruct shot, EBodyPart bodyPart)
         {
             // D.Dump(shot);
-            if(shot.OverDamageFrom is not null) return;
-            if(bodyPart is not EBodyPart.Head) return;
-            
+            if (shot.OverDamageFrom is not null) return;
+            if (bodyPart is not EBodyPart.Head) return;
+
             int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;
             if (killerId != H.MainPlayer.Id) return;
 

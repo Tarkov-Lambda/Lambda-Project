@@ -19,9 +19,7 @@ namespace ifp.arena.bep.Core.FX
         public FXHandler()
         {
             fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "fx"));
-
-            prefabFire = fxbundle.LoadAsset<GameObject>("Assets/FX/FLAMES/MolotovFX.prefab").GetComponent<MolotovFXController>();
-
+            prefabFire = fxbundle.LoadAsset<GameObject>("Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab").GetComponent<MolotovFXController>();
             parentEffects = new GameObject("FX").transform;
             GameObject.DontDestroyOnLoad(parentEffects.gameObject);
         }

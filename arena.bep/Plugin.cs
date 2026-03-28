@@ -94,6 +94,8 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_ActiveHealthController_Kill()); // Bypass Dying entirely
 
+        // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders()); // For hands models for spectator
+
         RegisterPatch(new Patch_Player_VisualPass()); // Mapping ProceduralWeaponAnimation instances to players
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors()); // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors()); // Reduce Sway for pistols
@@ -186,26 +188,34 @@ public class Plugin : BaseUnityPlugin
         //------------------------------------------ //
 
         // Internal Classses (order matters)
+
         RegisterSingleton<MapAssetBundleHandler>();
         RegisterSingleton<RagdollCreator>();
         RegisterSingleton<ImmutableItemsCache>();
         RegisterSingleton<PresetManager>();
 
-        RegisterSingleton<FXHandler>();
-        RegisterSingleton<AudioHandler>();
-        RegisterSingleton<MusicHandler>();
-        // RegisterSingleton<RaymarchHandler>();
-        RegisterSingleton<UIManager>();
-        RegisterSingleton<ArenaController>();
-        RegisterSingleton<SpectatorManager>();
+        try
+        {
+            RegisterSingleton<FXHandler>();
+            RegisterSingleton<AudioHandler>();
+            RegisterSingleton<MusicHandler>();
+            // RegisterSingleton<RaymarchHandler>();
+            RegisterSingleton<UIManager>();
+            RegisterSingleton<ArenaController>();
+            RegisterSingleton<SpectatorManager>();
 
-        var warmup = typeof(Ladder);
-        await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap
-        await RegisterSingletonInRaid<BombHandler>();
-
+            var warmup = typeof(Ladder);
+            await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap
+            await RegisterSingletonInRaid<BombHandler>();
+        }
+        catch (Exception ex)
+        {
+            D.Dump(ex);
+            D.Log(ex.StackTrace);
+        }
 
 #if DEBUG
-        _disposables.Add(new DynamicClassTracer(typeof(Slot)));
+        // _disposables.Add(new DynamicClassTracer(typeof(Slot)));
 #endif
 
     }

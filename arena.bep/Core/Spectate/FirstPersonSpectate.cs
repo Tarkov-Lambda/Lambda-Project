@@ -4,14 +4,34 @@ using EFT;
 using EFT.Animations;
 using UnityEngine;
 using EFT.CameraControl;
+using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+using ifp.arena.bep.Core.Gamemode;
 
 
 namespace ifp.arena.bep.Core
 {
     public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
-        private bool isObserving = false;
         private Player observedPlayer = null;
+
+        public SpectatorManager()
+        {
+            EventBus.OnLateUpdate += onUpdate;
+        }
+
+        public void onUpdate()
+        {
+            if (observedPlayer == null) return;
+
+            Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
+            BifacialTransform observedPlayerCameraTransform = observedPlayer.PlayerBones.Head;
+            Quaternion offset = Quaternion.Euler(-90f, 180f, -90f); // try -90 if wrong direction
+
+            mainCameraTransform.transform.position = observedPlayerCameraTransform.position;
+            mainCameraTransform.rotation = observedPlayerCameraTransform.rotation * offset;
+        }
 
         public void SpectatePlayer(Player player)
         {
@@ -21,7 +41,18 @@ namespace ifp.arena.bep.Core
             }
 
             observedPlayer = player;
-            isObserving = true;
+
+            if (H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID handsId))
+            {
+                var customizationSolver = Singleton<CustomizationSolverClass>.Instance;
+                ResourceKey handsBundle = customizationSolver.GetBundle(handsId);
+
+                if (handsBundle != null)
+                {
+                    var handsKvp = new KeyValuePair<EBodyModelPart, ResourceKey>(EBodyModelPart.Hands, handsBundle);
+                    observedPlayer.PlayerBody.SetSkin(handsKvp, observedPlayer.PlayerBody.SkeletonHands);
+                }
+            }
 
             UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
 
@@ -32,12 +63,8 @@ namespace ifp.arena.bep.Core
         {
             CameraClass.Instance.SetPlayer(player);
 
-            Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
-            Transform targetEyeBone = player.PlayerBones.Ribcage.Original; // Or targetPlayer.MovementContext.PlayerRealWeaponRoot, etc.
-
-            mainCameraTransform.SetParent(targetEyeBone, false);
-            mainCameraTransform.localPosition = Vector3.zero;
-            mainCameraTransform.localRotation = Quaternion.identity;
+            PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
+            playerCameraController.enabled = player.IsYourPlayer;
         }
 
 
@@ -49,7 +76,6 @@ namespace ifp.arena.bep.Core
             }
 
             observedPlayer = null;
-            isObserving = false;
 
             ChangeCameraPOV(H.MainPlayer);
         }
