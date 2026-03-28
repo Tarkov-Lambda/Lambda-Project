@@ -25,6 +25,12 @@ namespace arena.ui
         {
             SetGraphicColor(testwin);
         }
+
+        [ContextMenu("test pop")]
+        void TestPop()
+        {
+            Pop(true, "tset", "subtitle");
+        }
 #endif
 
         private void Awake()
