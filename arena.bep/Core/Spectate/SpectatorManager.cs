@@ -16,14 +16,7 @@ namespace ifp.arena.bep.Core
     public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         private Player observedPlayer = null;
-
-        // interpolation
-        private Vector3 _prevPosition;
-        private Quaternion _prevRotation;
-        private Vector3 _targetPosition;
-        private Quaternion _targetRotation;
-        private float _interpTime;
-        private const float PacketInterval = 1f / 20f;
+        Transform observedPlayerCameraTransform = null;
 
         public SpectatorManager()
         {
@@ -35,36 +28,8 @@ namespace ifp.arena.bep.Core
             if (observedPlayer == null) return;
 
             Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
-            Transform observedPlayerCameraTransform = observedPlayer.Transform.Original.FindTransform("Cam");
-
-            if (observedPlayerCameraTransform != null)
-            {
-                // Direct assignment! The bone is smoothed automatically by the local Animator & PWA.
-                mainCameraTransform.position = observedPlayerCameraTransform.position;
-                mainCameraTransform.rotation = observedPlayerCameraTransform.rotation;
-            }
-
-            // Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
-            // Transform observedPlayerCameraTransform = observedPlayer.Transform.Original.FindTransform("Cam");
-
-            // Vector3 snapshotPos = observedPlayerCameraTransform.position;
-            // Quaternion snapshotRot = observedPlayerCameraTransform.rotation;
-
-            // // Detect a new network snapshot arriving (transform changed from what we last knew)
-            // if (snapshotPos != _targetPosition || snapshotRot != _targetRotation)
-            // {
-            //     // Start the next blend from wherever the camera currently sits (no pop)
-            //     _prevPosition = mainCameraTransform.position;
-            //     _prevRotation = mainCameraTransform.rotation;
-            //     _targetPosition = snapshotPos;
-            //     _targetRotation = snapshotRot;
-            //     _interpTime = 0f;
-            // }
-
-            // _interpTime = Mathf.Min(_interpTime + Time.deltaTime / PacketInterval, 1f);
-
-            // mainCameraTransform.position = Vector3.Lerp(_prevPosition, _targetPosition, _interpTime);
-            // mainCameraTransform.rotation = Quaternion.Slerp(_prevRotation, _targetRotation, _interpTime);
+            mainCameraTransform.position = observedPlayerCameraTransform.position;
+            mainCameraTransform.rotation = observedPlayerCameraTransform.rotation;
         }
 
         public void SpectatePlayer(Player player)
@@ -89,19 +54,7 @@ namespace ifp.arena.bep.Core
             }
 
             UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
-
             ChangeCameraPOV(observedPlayer);
-
-            // Seed snapshot state so interpolation starts from the current position
-            Transform camTransform = observedPlayer.Transform.Original.FindTransform("Cam");
-            if (camTransform != null)
-            {
-                _prevPosition = camTransform.position;
-                _prevRotation = camTransform.rotation;
-                _targetPosition = camTransform.position;
-                _targetRotation = camTransform.rotation;
-                _interpTime = 1f;
-            }
         }
 
         private void ChangeCameraPOV(Player player)
@@ -110,6 +63,7 @@ namespace ifp.arena.bep.Core
 
             PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
             playerCameraController.enabled = player.IsYourPlayer;
+            observedPlayerCameraTransform = player.IsYourPlayer ? null : observedPlayer.Transform.Original.FindTransform("Cam");
         }
 
 
@@ -233,24 +187,10 @@ namespace ifp.arena.bep.Core
         // Token: 0x06018A7D RID: 100989 RVA: 0x00837DDC File Offset: 0x00835FDC
         private void method_24(Player player, EPointOfView pointOfView)
         {
-            bool isThirdPerson = pointOfView == EPointOfView.ThirdPerson;
-
-            // Grab the base Animator
-            Animator bodyAnimator = player.GetComponentInChildren<Animator>();
-            if (bodyAnimator != null)
-            {
-                D.Dump(bodyAnimator);
-                // In EFT, Layer 1 is the Third-Person layer. 
-                // We MUST set it to 0 for First-Person, otherwise it pushes the gun off-center!
-                bodyAnimator.SetLayerWeight(1, isThirdPerson ? 1f : 0f);
-
-                // Standard EFT animator hashes for point of view
-                int tpHash = Animator.StringToHash("IsThirdPerson");
-                int tpFloatHash = Animator.StringToHash("ThirdPerson");
-
-                bodyAnimator.SetBool(tpHash, isThirdPerson);
-                bodyAnimator.SetFloat(tpFloatHash, isThirdPerson ? 1f : 0f);
-            }
+            // bool isThirdPerson = pointOfView == EPointOfView.ThirdPerson;
+            // player.BundleAnimationBones.BodyAnimator.SetBool(PlayerAnimator.THIRDPERSON_HASH, flag);
+            // player.BundleAnimationBones.BodyAnimator.SetFloat(PlayerAnimator.THIRDPERSON_FLOAT_HASH, flag ? 1f : 0f);
+            // player.BundleAnimationBones.BodyAnimator.SetLayerWeight(1, (float)(flag ? 1 : 0));
         }
 
         // Token: 0x06018A7E RID: 100990 RVA: 0x002BACDD File Offset: 0x002B8EDD
