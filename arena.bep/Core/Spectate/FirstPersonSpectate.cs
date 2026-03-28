@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
 using ifp.arena.bep.Core.Gamemode;
+using Fika.Core.Main.Players;
 
 
 namespace ifp.arena.bep.Core
@@ -15,6 +16,14 @@ namespace ifp.arena.bep.Core
     public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         private Player observedPlayer = null;
+
+        // interpolation
+        private Vector3 _prevPosition;
+        private Quaternion _prevRotation;
+        private Vector3 _targetPosition;
+        private Quaternion _targetRotation;
+        private float _interpTime;
+        private const float PacketInterval = 1f / 20f;
 
         public SpectatorManager()
         {
@@ -26,11 +35,36 @@ namespace ifp.arena.bep.Core
             if (observedPlayer == null) return;
 
             Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
-            BifacialTransform observedPlayerCameraTransform = observedPlayer.PlayerBones.Head;
-            Quaternion offset = Quaternion.Euler(-90f, 180f, -90f); // try -90 if wrong direction
+            Transform observedPlayerCameraTransform = observedPlayer.Transform.Original.FindTransform("Cam");
 
-            mainCameraTransform.transform.position = observedPlayerCameraTransform.position;
-            mainCameraTransform.rotation = observedPlayerCameraTransform.rotation * offset;
+            if (observedPlayerCameraTransform != null)
+            {
+                // Direct assignment! The bone is smoothed automatically by the local Animator & PWA.
+                mainCameraTransform.position = observedPlayerCameraTransform.position;
+                mainCameraTransform.rotation = observedPlayerCameraTransform.rotation;
+            }
+
+            // Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
+            // Transform observedPlayerCameraTransform = observedPlayer.Transform.Original.FindTransform("Cam");
+
+            // Vector3 snapshotPos = observedPlayerCameraTransform.position;
+            // Quaternion snapshotRot = observedPlayerCameraTransform.rotation;
+
+            // // Detect a new network snapshot arriving (transform changed from what we last knew)
+            // if (snapshotPos != _targetPosition || snapshotRot != _targetRotation)
+            // {
+            //     // Start the next blend from wherever the camera currently sits (no pop)
+            //     _prevPosition = mainCameraTransform.position;
+            //     _prevRotation = mainCameraTransform.rotation;
+            //     _targetPosition = snapshotPos;
+            //     _targetRotation = snapshotRot;
+            //     _interpTime = 0f;
+            // }
+
+            // _interpTime = Mathf.Min(_interpTime + Time.deltaTime / PacketInterval, 1f);
+
+            // mainCameraTransform.position = Vector3.Lerp(_prevPosition, _targetPosition, _interpTime);
+            // mainCameraTransform.rotation = Quaternion.Slerp(_prevRotation, _targetRotation, _interpTime);
         }
 
         public void SpectatePlayer(Player player)
@@ -57,6 +91,17 @@ namespace ifp.arena.bep.Core
             UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
 
             ChangeCameraPOV(observedPlayer);
+
+            // Seed snapshot state so interpolation starts from the current position
+            Transform camTransform = observedPlayer.Transform.Original.FindTransform("Cam");
+            if (camTransform != null)
+            {
+                _prevPosition = camTransform.position;
+                _prevRotation = camTransform.rotation;
+                _targetPosition = camTransform.position;
+                _targetRotation = camTransform.rotation;
+                _interpTime = 1f;
+            }
         }
 
         private void ChangeCameraPOV(Player player)
@@ -90,74 +135,134 @@ namespace ifp.arena.bep.Core
                     player.PlayerBody.PointOfView.Value = pointOfView;
                     player.PlayerBody.UpdatePlayerRenders(pointOfView, player.Side);
                     // player.\uE003();
-                    UpdateSomething(player);
+                    method_22(player);
                     return true;
                 }
             }
             return false;
         }
 
-        // \uE003
-        // Token: 0x06018A7B RID: 100987 RVA: 0x00724D0C File Offset: 0x00722F0C
-        private void UpdateSomething(Player player)
+        // Token: 0x06018A7B RID: 100987 RVA: 0x00837C04 File Offset: 0x00835E04
+        private void method_22(Player player)
         {
-            // player.\uE004((float) Singleton<\uEB6A>.Instance.Game.Settings.FieldOfView);
-            // player.\uE006(false);
+            // Default FOV fallback
+            // Note: BSG FOV is vertical, 75 vertical is insanely high (like 105 horizontal). Default is ~50.
+            float targetFov = CameraClass.Instance.Camera.fieldOfView;
+
+            // Set Ribcage / FOV Compensators
+            player.ProceduralWeaponAnimation.SetFovParams(1f);
+
             if (player.PlayerBody.PointOfView.Value == EPointOfView.ThirdPerson)
             {
                 player.PlayerBones.Ribcage.Original.localScale = new Vector3(1f, 1f, 1f);
             }
-            // player.\uE005(player.PlayerBody.PointOfView.Value);
+
+            // THIS is where we fix the misaligned ADS
+            method_24(player, player.PlayerBody.PointOfView.Value);
+
             player.ProceduralWeaponAnimation.Overweight = 0f;
             player.ProceduralWeaponAnimation.PointOfView = player.PlayerBody.PointOfView;
-            if (player.HealthController.IsAlive)
 
+            if (player.HealthController.IsAlive && player.PlayerBody.PointOfView.Value.IsFirstPerson())
             {
-                // if (player.PlayerBody.PointOfView.Value == EPointOfView.ThirdPerson && player.IsOutToIdleAnimatorState())
-                // {
-                //     player.SetOutToIdleEndAnimatorState();
-                // }
-                if (player.PlayerBody.PointOfView.Value.IsFirstPerson())
+                player.ProceduralWeaponAnimation.UpdateWeaponVariables();
+                player.ProceduralWeaponAnimation.ResetSpring();
+
+                // DO NOT comment these out, or red dots/scopes won't turn on or align
+                // player.ProceduralWeaponAnimation.ResetOptics();
+                player.ProceduralWeaponAnimation.FindAimTransforms();
+
+                if (player.ProceduralWeaponAnimation.ScopeAimTransforms.Count > 0)
                 {
-                    player.ProceduralWeaponAnimation.UpdateWeaponVariables();
-                    player.ProceduralWeaponAnimation.ResetSpring();
-                    // player.ProceduralWeaponAnimation.ResetOptics();
-                    player.ProceduralWeaponAnimation.FindAimTransforms();
-                    if (player.ProceduralWeaponAnimation.ScopeAimTransforms.Count > 0)
-                    {
-                        player.ProceduralWeaponAnimation.OnScopesModeUpdated();
-                    }
+                    player.ProceduralWeaponAnimation.OnScopesModeUpdated();
                 }
-                // WeaponPrefab currentWeaponPrefab = player.ObservedPlayerController.HandsController.CurrentWeaponPrefab;
-                // if (currentWeaponPrefab != null)
+
+                // // Force the weapon prefab to swap its LODs to First-Person mode
+                // if (player.HandsController is EFT.Player.FirearmController firearmController)
                 // {
-                //     currentWeaponPrefab.OnChangePointOfView(player);
+                //     if (firearmController.WeaponPrefab != null)
+                //     {
+                //         // This swaps the weapon from 3rd person LODs to 1st person LODs
+                //         firearmController.WeaponPrefab.OnChangePointOfView(player);
+                //     }
                 // }
-                player.LateUpdate();
             }
         }
 
-        // \uE005
-        // Token: 0x06018A7D RID: 100989 RVA: 0x00724F1C File Offset: 0x0072311C
-        private void changeBundleAnimationBones(Player player, EPointOfView pointOfView)
+
+        // Token: 0x0600EF88 RID: 61320 RVA: 0x0064F7E0 File Offset: 0x0064D9E0
+        // public void ResetOptics(Player player)
+        // {
+        //     foreach (ProceduralWeaponAnimation.SightNBone sightNBone in player.ProceduralWeaponAnimation._optics)
+        //     {
+        //         global::UnityEngine.Object @object;
+        //         if (sightNBone == null)
+        //         {
+        //             @object = null;
+        //         }
+        //         else
+        //         {
+        //             ScopePrefabCache scopePrefabCache = sightNBone.ScopePrefabCache;
+        //             @object = ((scopePrefabCache != null) ? scopePrefabCache.CurrentModOpticSight : null);
+        //         }
+        //         if (@object != null)
+        //         {
+        //             sightNBone.ScopePrefabCache.CurrentModOpticSight.enabled = false;
+        //             sightNBone.ScopePrefabCache.CurrentModOpticSight.LensFade(true);
+        //         }
+        //     }
+        // }
+
+
+        // Token: 0x06018A7C RID: 100988 RVA: 0x00837D70 File Offset: 0x00835F70
+        private void method_23(Player player, float fov)
         {
-            bool flag = pointOfView == EPointOfView.ThirdPerson;
-            // player.BundleAnimationBones.BodyAnimator.SetBool(PlayerAnimator.THIRDPERSON_HASH, flag);
-            // player.BundleAnimationBones.BodyAnimator.SetFloat(PlayerAnimator.THIRDPERSON_FLOAT_HASH, flag ? 1f : 0f);
-            // player.BundleAnimationBones.BodyAnimator.SetLayerWeight(1, (float)(flag ? 1 : 0));
+            // float num = Mathf.InverseLerp((float)GClass1155.MinFieldOfView, (float)GClass1155.MaxFieldOfView, fov);
+            // float num2 = 1f;
+            // float num3 = 0.65f;
+            // ArenaSessionStaticData arenaSessionStaticData;
+            // if (GClass3310.TryGetData<ArenaSessionStaticData>(out arenaSessionStaticData) && arenaSessionStaticData.GraphicSettings != null)
+            // {
+            //     num2 = arenaSessionStaticData.GraphicSettings.RibcageScaleCompensatedByMinFov;
+            //     num3 = arenaSessionStaticData.GraphicSettings.RibcageScaleCompensatedByMaxFov;
+            // }
+            // player.float_6 = Mathf.Lerp(num2, num3, num);
+            // player.float_7 = num;
         }
 
-        // \uE006
-        // Token: 0x06018A7E RID: 100990 RVA: 0x00724F88 File Offset: 0x00723188
-        private void fovSomething(Player player, bool force = false)
+        // Token: 0x06018A7D RID: 100989 RVA: 0x00837DDC File Offset: 0x00835FDC
+        private void method_24(Player player, EPointOfView pointOfView)
         {
-            player.RibcageScaleCurrentTarget = 1f; // player.\uE034
-            if (force)
+            bool isThirdPerson = pointOfView == EPointOfView.ThirdPerson;
+
+            // Grab the base Animator
+            Animator bodyAnimator = player.GetComponentInChildren<Animator>();
+            if (bodyAnimator != null)
             {
-                player.RibcageScaleCurrent = player.RibcageScaleCurrentTarget;
-                player.ProceduralWeaponAnimation.ResetFovAdjustments(player);
+                D.Dump(bodyAnimator);
+                // In EFT, Layer 1 is the Third-Person layer. 
+                // We MUST set it to 0 for First-Person, otherwise it pushes the gun off-center!
+                bodyAnimator.SetLayerWeight(1, isThirdPerson ? 1f : 0f);
+
+                // Standard EFT animator hashes for point of view
+                int tpHash = Animator.StringToHash("IsThirdPerson");
+                int tpFloatHash = Animator.StringToHash("ThirdPerson");
+
+                bodyAnimator.SetBool(tpHash, isThirdPerson);
+                bodyAnimator.SetFloat(tpFloatHash, isThirdPerson ? 1f : 0f);
             }
-            // player.ProceduralWeaponAnimation.SetFovParams(player.\uE034, player.\uE035); // player.\uE034, player.\uE035
+        }
+
+        // Token: 0x06018A7E RID: 100990 RVA: 0x002BACDD File Offset: 0x002B8EDD
+        private void method_25(Player player, bool force = false)
+        {
+            // player.RibcageScaleCurrentTarget = player.float_6;
+            // if (force)
+            // {
+            //     player.RibcageScaleCurrent = player.RibcageScaleCurrentTarget;
+            //     player.ProceduralWeaponAnimation.ResetFovAdjustments(player);
+            // }
+            // player.ProceduralWeaponAnimation.SetFovParams(player.float_6, player.float_7);
         }
 
         public void Dispose()
@@ -167,3 +272,4 @@ namespace ifp.arena.bep.Core
         }
     }
 }
+
