@@ -24,7 +24,9 @@ namespace arena.ui
                 {
                     if (graphic == null)
                         continue;
-                    graphic.color = color;
+
+
+                    graphic.SetColorKeepGraphicAlpha(color);
                 }
             }
         }
