@@ -8,8 +8,10 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
+using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.Base.RateLimiting;
+using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.networking
 {
@@ -67,6 +69,7 @@ namespace ifp.arena.bep.networking
         protected override async void LocalPredictApproved(SpawnItemPacket packet)
         {
             SpawnItem(packet, H.MainPlayer);
+            // we already spend money locally before requesting to begin with.
         }
 
         protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
@@ -74,6 +77,11 @@ namespace ifp.arena.bep.networking
             Player player = H.GetPlayer(packet.playerId);
             if (player.IsYourPlayer) return;
             SpawnItem(packet, player);
+
+            if (BuyMenu.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+            {
+                H.GetPlayerScore(player.Id).SpendMoney(itemData.price);
+            }
         }
 
         private async void SpawnItem(SpawnItemPacket packet, Player player)

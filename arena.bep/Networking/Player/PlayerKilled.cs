@@ -114,7 +114,7 @@ namespace ifp.arena.bep.networking
             PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
 
-            // victimScore.Kill();
+            victimScore.Kill();
 
             if (killerScore != victimScore && killerScore.faction != victimScore.faction)
             {
@@ -122,7 +122,7 @@ namespace ifp.arena.bep.networking
             }
 
             // create corpse before anything else happens
-            // Die(victimScore.player);
+            Die(victimScore.player);
 
             if (victimScore.player.IsYourPlayer)
             {

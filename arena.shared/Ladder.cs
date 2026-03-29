@@ -10,11 +10,19 @@ namespace ifp.arena.shared
         public Ladder ladder;
     }
 
+    public enum LadderMaterial
+    {
+        Metal,
+        Wood
+    }
+
     [RequireComponent(typeof(BoxCollider))]
     public class Ladder : MonoBehaviour
     {
         public static Action<LadderEventPayload> onPlayerEnterLadder;
         public static Action<LadderEventPayload> onPlayerExitLadder;
+
+        public LadderMaterial ladderMaterial = LadderMaterial.Metal;
 
         private BoxCollider _collider;
 

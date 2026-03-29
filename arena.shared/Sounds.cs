@@ -6,7 +6,8 @@ using UnityEngine;
 public class LambdaSounds : ScriptableObject
 {
     [Header("Noises")]
-    public AudioClip LadderNoise;
+    public AudioClip[] LadderNoiseWood;
+    public AudioClip[] LadderNoiseMetal;
     public AudioClip LandedOnFreefallReseter;
     public AudioClip[] HeadshotHelmet;
     public AudioClip[] HeadshotFlesh;

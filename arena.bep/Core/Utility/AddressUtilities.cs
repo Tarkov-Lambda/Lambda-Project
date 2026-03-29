@@ -47,7 +47,7 @@ namespace ifp.arena.bep.Core
             BarterItemItemClass _ => ResolveVestAddress(item, player),
             KeycardItemClass _ => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
 
-            _ => ItemPlacement.None
+            _ => ResolveVestAddress(item, player)
         };
 
         // revolver shotgun is fucked gg

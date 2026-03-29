@@ -34,6 +34,8 @@ namespace ifp.arena.bep.Core
 
         public void SpectatePlayer(Player player)
         {
+            if(player.IsYourPlayer) return;
+
             if (observedPlayer != null)
             {
                 StopSpectating();

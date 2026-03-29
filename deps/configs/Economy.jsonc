@@ -1,29 +1,37 @@
 [
-  // {
-  //   "name": "Debug",
-  //   "items": [
-  //     {
-  //       "bsgId": "67ab3f146d7ece17bf0096ff",
-  //       "price": 650
-  //     },
-  //     {
-  //       "bsgId": "5b44d0de86f774503d30cba8",
-  //       "price": 350
-  //     },
-  //     {
-  //       "bsgId": "66b5f6985891c84aab75ca76",
-  //       "price": 400
-  //     },
-  //     {
-  //       "bsgId": "67ab4b2d6f7ae4aa550bbcf6",
-  //       "price": 400
-  //     },
-  //     {
-  //       "bsgId": "67a9cd6ecade15e0f00123b8",
-  //       "price": 400
-  //     }
-  //   ]
-  // },
+  {
+    "name": "Debug",
+    "items": [
+      {
+        "bsgId": "67ab3f146d7ece17bf0096ff",
+        "price": 650
+      },
+      {
+        "bsgId": "5b44d0de86f774503d30cba8",
+        "price": 350
+      },
+      {
+        "bsgId": "66b5f6985891c84aab75ca76",
+        "price": 400
+      },
+      {
+        "bsgId": "67ab4b2d6f7ae4aa550bbcf6",
+        "price": 400
+      },
+      {
+        "bsgId": "67a9cd6ecade15e0f00123b8",
+        "price": 400
+      },
+      {
+        "bsgId": "5c0558060db834001b735271",
+        "price": 400
+      },
+      {
+        "bsgId": "5f60b34a41e30a4ab12a6947",
+        "price": 400
+      }
+    ]
+  },
   {
     "name": "Equipment",
     "items": [
@@ -88,7 +96,7 @@
   },
   {
     "name": "Mid-Tier",
-    "verticalLayout" : true,
+    "verticalLayout": true,
     "items": [
       {
         "bsgId": "5fc3e272f8b6a877a729eac5",
@@ -126,7 +134,7 @@
   },
   {
     "name": "Rifles",
-    "verticalLayout" : true,
+    "verticalLayout": true,
     "items": [
       {
         "bsgId": "5a367e5dc4a282000e49738f",

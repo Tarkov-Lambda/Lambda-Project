@@ -30,13 +30,13 @@ namespace ifp.arena.bep.Patches.Tarkov
             {
                 motion *= PistolADSMotionScale;
                 velocity *= PistolADSMotionScale;
-                // __instance.Mask &= ~EProceduralAnimationMask.Walking; // no bobbing effect        
+                __instance.Mask &= ~EProceduralAnimationMask.Walking; // no bobbing effect
             }
             else
             {
                 if (player.MovementContext.CurrentState is RunStateClass and not SprintStateClass)
                 {
-                    // __instance.Mask |= EProceduralAnimationMask.Walking;
+                    __instance.Mask |= EProceduralAnimationMask.Walking;
                 }
             }
 
