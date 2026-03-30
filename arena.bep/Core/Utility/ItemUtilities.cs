@@ -75,7 +75,7 @@ namespace ifp.arena.bep.Core
                 if (slot.ContainedItem is not null)
                 {
                     bool removed;
-                    if (templateItem is BackpackItemClass) // Backpack is only the bomb
+                    if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
                         removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
                     else
                     {

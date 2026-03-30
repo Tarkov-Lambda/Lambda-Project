@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
+using ifp.arena.bep.Core.Gamemode;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core
@@ -68,6 +69,10 @@ namespace ifp.arena.bep.Core
             if (openAfter)
             {
                 await Task.Delay(openDelay);
+                if (H.Arena.ActiveRules is SND_ModeRules)
+                {
+                    // H.SpectatorManager.SpectatePlayer()bи
+                }
                 OpenEyes();
             }
         }

@@ -36,7 +36,7 @@ namespace ifp.arena.bep.Core
 
         public static FXHandler FXHandler => isInRaid() ? Singleton<FXHandler>.Instance : null;
 
-        public static SpectatorManager spectatorManager => isInRaid() ? Singleton<SpectatorManager>.Instance : null;
+        public static SpectatorManager SpectatorManager => isInRaid() ? Singleton<SpectatorManager>.Instance : null;
 
 
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();

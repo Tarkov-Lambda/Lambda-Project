@@ -92,7 +92,7 @@ namespace ifp.arena.bep.networking
                     H.Arena.ActiveRules = new FFAModeRules();
                     break;
                 case GameModes.SND:
-                    H.Arena.ActiveRules = new SnDModeRules();
+                    H.Arena.ActiveRules = new SND_ModeRules();
                     break;
             }
 

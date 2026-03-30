@@ -126,7 +126,7 @@ namespace ifp.arena.bep.networking
 
             if (victimScore.player.IsYourPlayer)
             {
-                H.spectatorManager.SpectatePlayer(killerScore.player);
+                H.SpectatorManager.SpectatePlayer(killerScore.player);
             }
 
         }

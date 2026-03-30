@@ -14,10 +14,11 @@ namespace ifp.arena.bep.Core
         public static bool wasOriginallyGrounded;
         public static Collider ladderCollider;
 
-        private float _climbSpeed = 4f;
+        private float _climbSpeed = 3f;
 
-        private float _ladderStepDistanceThreshold = 1.2f; 
+        private float _ladderStepDistanceThreshold = 3f;
         private float _ladderDistanceAccumulator = 0f;
+        private Ladder _currentLader;
 
         public LadderEventManager()
         {
@@ -46,9 +47,11 @@ namespace ifp.arena.bep.Core
             isOnLadder = true;
             wasOriginallyGrounded = H.MainPlayer.MovementContext.IsGrounded;
             ladderCollider = ladderEvent.other;
-            
+
             // Reset the audio accumulator when we grab the ladder
             _ladderDistanceAccumulator = 0f;
+            _currentLader = ladderEvent.ladder;
+            Singleton<LadderNoisePacketHandler>.Instance.Send(_currentLader.ladderMaterial);
         }
 
         private void OnTriggerExit(LadderEventPayload ladderEvent)
@@ -77,6 +80,7 @@ namespace ifp.arena.bep.Core
             ladderCollider = null;
             H.MainPlayer.MovementContext.IsGrounded = false; // idk if needed
             _ladderDistanceAccumulator = 0f;
+            _currentLader = null;
 
             // Vector3 motion = CameraClass.Instance.Camera.transform.forward * 3;
             // H.MainPlayer.MovementContext.ApplyMotion(motion, 1f);
@@ -95,12 +99,12 @@ namespace ifp.arena.bep.Core
                 Vector3 sideMove = camTransform.right * input.x;
 
                 Vector3 moveDirection = forwardMove + sideMove;
-                Vector3 motionThisFrame = moveDirection * _climbSpeed * Time.deltaTime;
-                
+                Vector3 motionThisFrame = moveDirection * _climbSpeed * H.MainPlayer.MovementContext.PoseLevel * Time.deltaTime;
+
                 H.MainPlayer.MovementContext.PlatformMotion = motionThisFrame;
 
                 float distanceMovedThisFrame = motionThisFrame.magnitude;
-                
+
                 if (distanceMovedThisFrame > 0f)
                 {
                     _ladderDistanceAccumulator += distanceMovedThisFrame;
@@ -108,7 +112,7 @@ namespace ifp.arena.bep.Core
                     if (_ladderDistanceAccumulator >= _ladderStepDistanceThreshold)
                     {
                         _ladderDistanceAccumulator %= _ladderStepDistanceThreshold;
-                        Singleton<LadderNoisePacketHandler>.Instance.Send(); 
+                        Singleton<LadderNoisePacketHandler>.Instance.Send(_currentLader.ladderMaterial);
                     }
                 }
             }

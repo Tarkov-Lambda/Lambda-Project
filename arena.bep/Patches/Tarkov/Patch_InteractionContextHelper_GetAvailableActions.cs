@@ -19,28 +19,35 @@ using ifp.arena.bep.Core.Dying;
 
 namespace ifp.arena.bep.Patches.Tarkov
 {
-    internal class Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger : ModulePatch
+    internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.smethod_3));
+        protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.GetAvailableActions), [typeof(GamePlayerOwner), typeof(IInteractive)]);
 
         [PatchPrefix]
-        private static bool PatchPrefix(ref ActionsReturnClass __result, GamePlayerOwner owner, PlaceItemTrigger itemTrigger)
+        private static bool PatchPrefix(InteractionContextHelper __instance, ref ActionsReturnClass __result, GamePlayerOwner owner, IInteractive interactive)
         {
-            var roundState = H.Session.matchState;
+            if (interactive == null) return true;
 
-            if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted)
-                return true;
+            if (interactive is Corpse corpse)
+            {
+                if (corpse.PlayerProfileID == H.MainPlayer.ProfileId) return false;
+            }
+
+            var roundState = H.Session.matchState;
+            if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted) return true;
 
             Player player = owner.Player;
             AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
-            Item bomb = FindBombItemInPlayer(player);
 
-            if (bomb != null && roundState == MatchState.RoundAction)
+            if (interactive is BombPlantZone)
             {
-                BombPlantZone plantZone = itemTrigger as BombPlantZone; // check if the interaction state is the bomb plant zone
-                if (plantZone == null) return true;
+                if (roundState == MatchState.RoundAction) return true;
 
-                float plantingTime = SnDModeRules.platingTime;
+                Item bomb = FindBombItemInPlayer(player);
+                if (bomb != null) return true;
+
+                float plantingTime = SND_ModeRules.platingTime;
 
                 actionsReturnClass.Actions.Add(new ActionsTypesClass
                 {
@@ -54,7 +61,6 @@ namespace ifp.arena.bep.Patches.Tarkov
                             owner.ShowObjectivesPanel("Planting {0:F1}", plantingTime);
                             owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, async (successful) =>
                             {
-                                owner.Player.vmethod_6(bomb.TemplateId, itemTrigger.Id, successful);
                                 owner.CloseObjectivesPanel();
                                 if (!successful)
                                 {
@@ -75,47 +81,11 @@ namespace ifp.arena.bep.Patches.Tarkov
                 });
             }
 
-            __result = actionsReturnClass;
-            return false;
-        }
-
-        static Item FindBombItemInPlayer(Player player)
-        {
-            Item[] playerInventory = player.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
-            return playerInventory.FirstOrDefault((Item nextItem) => nextItem.TemplateId == SnDModeRules.bombTemplateId);
-        }
-
-        static Vector3 GetBombPlantPosition(Player player)
-        {
-            if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 0))
-                return hit.point;
-            return player.Position;
-        }
-    }
-
-    internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() =>
-        AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.GetAvailableActions), [typeof(GamePlayerOwner), typeof(IInteractive)]);
-
-        [PatchPrefix]
-        private static bool PatchPrefix(InteractionContextHelper __instance, ref ActionsReturnClass __result, GamePlayerOwner owner, IInteractive interactive)
-        {
-            if (interactive == null) return true;
-            
-            if (interactive is Corpse corpse)
-            {
-                if (corpse.PlayerProfileID == H.MainPlayer.ProfileId) return false;
-            }
-
             if (interactive is bombasik bombanilovich)
             {
                 if (H.Session.matchState is not MatchState.RoundPlanted) return true;
 
-                Player player = owner.Player;
-                AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
-
-                float defusingTime = SnDModeRules.defusingTime;
+                float defusingTime = SND_ModeRules.defusingTime;
 
                 actionsReturnClass.Actions.Add(new ActionsTypesClass
                 {
@@ -155,5 +125,20 @@ namespace ifp.arena.bep.Patches.Tarkov
             }
             return true;
         }
+
+
+        static Item FindBombItemInPlayer(Player player)
+        {
+            Item[] playerInventory = player.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
+            return playerInventory.FirstOrDefault((Item nextItem) => nextItem.TemplateId == SND_ModeRules.bombTemplateId);
+        }
+
+        static Vector3 GetBombPlantPosition(Player player)
+        {
+            if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 0))
+                return hit.point;
+            return player.Position;
+        }
     }
+
 }

@@ -1,4 +1,6 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
+using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
@@ -11,7 +13,31 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode
 {
-    public class SnDAction : IGameState
+    public class SND_Prepare : SharedPrepare
+    {
+        public override void OnEnter()
+        {
+            H.Session.bombState = BombState.None;
+
+            H.Arena.LastObjectivePlayerId = -1;
+            H.Arena.LastObjectiveBombState = BombState.None;
+
+            // Hide any leftover bomb visual from the previous round
+            H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
+
+            IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
+
+            base.OnEnter();
+        }
+
+        public override void OnExit()
+        {
+            base.OnExit();
+        }
+
+    }
+
+    public class SND_Action : IGameState
     {
         public MatchState StateType => MatchState.RoundAction;
         public void OnEnter() { }
@@ -35,7 +61,7 @@ namespace ifp.arena.bep.Core.Gamemode
         }
     }
 
-    public class SnDPlanted : IGameState
+    public class SND_Planted : IGameState
     {
         public MatchState StateType => MatchState.RoundPlanted;
 
@@ -71,15 +97,41 @@ namespace ifp.arena.bep.Core.Gamemode
         public void OnExit() { }
     }
 
-    public class SnDModeRules : GameModeRules
+    public class SND_End : SharedEnd
+    {
+        public override void OnExit()
+        {
+            int currentRound = H.Session.factionWins.Values.Sum();
+            int maxRounds = SND_ModeRules.maxRoundsToWin * 2 - 1;
+            double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
+            Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
+            base.OnExit();
+        }
+    }
+
+    public class SND_SideSwap : SharedSideSwap
+    {
+        public override void OnExit()
+        {
+            (H.Arena.ActiveRules as SND_ModeRules).hasSideSwapped = true;
+            base.OnExit();
+        }
+    }
+
+    public class SND_ModeRules : GameModeRules
     {
         public static int maxRoundsToWin = 13;
-
         public static float platingTime = 4.5f;
-        public static float defusingTime = 5f;
+        public static float defusingTime = 10f;
         public static float defuseRadius = 2.5f;
-
         public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
+
+        public bool hasSideSwapped;
+
+        public SND_ModeRules()
+        {
+            hasSideSwapped = false;
+        }
 
         public override IGameState CreateState(MatchState state) => state switch
         {
@@ -89,12 +141,12 @@ namespace ifp.arena.bep.Core.Gamemode
             MatchState.WarmupEnd => new SharedWarmupEnd(),
 
             MatchState.Pause => new SharedPause(),
-            MatchState.RoundPrepare => new SharedPrepare(),
-            MatchState.RoundAction => new SnDAction(),
-            MatchState.RoundPlanted => new SnDPlanted(),
-            MatchState.RoundEnd => new SharedEnd(),
+            MatchState.RoundPrepare => new SND_Prepare(),
+            MatchState.RoundAction => new SND_Action(),
+            MatchState.RoundPlanted => new SND_Planted(),
+            MatchState.RoundEnd => new SND_End(),
 
-            MatchState.SideSwap => new SharedSideSwap(),
+            MatchState.SideSwap => new SND_SideSwap(),
             MatchState.MatchEnd => new SharedFinish(),
             _ => null
         };

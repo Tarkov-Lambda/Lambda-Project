@@ -21,6 +21,8 @@ namespace ifp.arena.bep.Core
         public SpectatorManager()
         {
             EventBus.OnLateUpdate += onUpdate;
+            // EventBus.OnFireClicked += nextPlayer;
+            // EventBus.OnADSTriggered += nextPlayer;
         }
 
         public void onUpdate()
@@ -28,13 +30,16 @@ namespace ifp.arena.bep.Core
             if (observedPlayer == null) return;
 
             Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
-            mainCameraTransform.position = observedPlayerCameraTransform.position;
+            Vector3 offset = observedPlayerCameraTransform.position;
+            offset.y += 0.2f;
+
+            mainCameraTransform.position = offset;
             mainCameraTransform.rotation = observedPlayerCameraTransform.rotation;
         }
 
         public void SpectatePlayer(Player player)
         {
-            if(player.IsYourPlayer) return;
+            if (player.IsYourPlayer) return;
 
             if (observedPlayer != null)
             {
@@ -59,14 +64,6 @@ namespace ifp.arena.bep.Core
             ChangeCameraPOV(observedPlayer);
         }
 
-        private void ChangeCameraPOV(Player player)
-        {
-            CameraClass.Instance.SetPlayer(player);
-
-            PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
-            playerCameraController.enabled = player.IsYourPlayer;
-            observedPlayerCameraTransform = player.IsYourPlayer ? null : observedPlayer.Transform.Original.FindTransform("Cam");
-        }
 
 
         public void StopSpectating()
@@ -79,6 +76,16 @@ namespace ifp.arena.bep.Core
             observedPlayer = null;
 
             ChangeCameraPOV(H.MainPlayer);
+        }
+
+
+        private void ChangeCameraPOV(Player player)
+        {
+            CameraClass.Instance.SetPlayer(player);
+
+            PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
+            playerCameraController.enabled = player.IsYourPlayer;
+            observedPlayerCameraTransform = player.IsYourPlayer ? null : observedPlayer.Transform.Original.FindTransform("Cam");
         }
 
         // Token: 0x06018A7A RID: 100986 RVA: 0x00724CA4 File Offset: 0x00722EA4

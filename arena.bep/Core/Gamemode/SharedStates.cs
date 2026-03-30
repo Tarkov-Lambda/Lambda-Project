@@ -18,18 +18,18 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedNone : IGameState
     {
         public MatchState StateType => MatchState.None;
-        public void OnEnter() { }
-        public MatchState? OnUpdate()
+        public virtual void OnEnter() { }
+        public virtual MatchState? OnUpdate()
         {
             return null;
         }
-        public void OnExit() { }
+        public virtual void OnExit() { }
     }
 
     public class SharedWarmup : IGameState
     {
         public MatchState StateType => MatchState.Warmup;
-        public void OnEnter()
+        public virtual void OnEnter()
         {
             foreach (var p in H.Arena.session.scoreboard.Values)
             {
@@ -38,14 +38,14 @@ namespace ifp.arena.bep.Core.Gamemode
             IU.GarbageCollectWorldLoot();
         }
 
-        public MatchState? OnUpdate()
+        public virtual MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
             if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.isMapReady))
                 return MatchState.WarmupEnd;
             return null;
         }
-        public void OnExit()
+        public virtual void OnExit()
         {
 
 
@@ -55,12 +55,12 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedWarmupEnd : IGameState
     {
         public MatchState StateType => MatchState.WarmupEnd;
-        public void OnEnter()
+        public virtual void OnEnter()
         {
 
         }
-        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-        public void OnExit()
+        public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+        public virtual void OnExit()
         {
             H.Session.InitializeScoreBoard();
             InventoryResetter.ResetInventory().Forget();
@@ -71,21 +71,21 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedPause : IGameState
     {
         public MatchState StateType => MatchState.Warmup;
-        public void OnEnter() { }
+        public virtual void OnEnter() { }
 
-        public MatchState? OnUpdate()
+        public virtual MatchState? OnUpdate()
         {
             if (!FikaBackendUtils.IsServer) return null;
             if (H.Arena.StateTimer <= 0) return MatchState.RoundPrepare;
             return null;
         }
-        public void OnExit() { }
+        public virtual void OnExit() { }
     }
 
     public class SharedPrepare : IGameState
     {
         public MatchState StateType => MatchState.RoundPrepare;
-        public void OnEnter()
+        public virtual void OnEnter()
         {
             H.Session.ResetRoundScopeFields(); // I've lost the plot and I have no clue how to sync states correctly anymore
             IU.GarbageCollectWorldLoot();
@@ -106,40 +106,29 @@ namespace ifp.arena.bep.Core.Gamemode
             Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
             HU.HealMe().Forget();
 
-            H.Session.bombState = BombState.None;
 
-            H.Arena.LastObjectivePlayerId = -1;
-            H.Arena.LastObjectiveBombState = BombState.None;
-
-            // Hide any leftover bomb visual from the previous round
-            H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
-
-            IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
 
             HU.ResetObservedPlayersHealth();
 
-            H.spectatorManager.StopSpectating();
+            H.SpectatorManager.StopSpectating();
         }
 
-        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
+        public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
 
-        public void OnExit()
+        public virtual void OnExit()
         {
-            if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SnDModeRules)
+            if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SND_ModeRules)
             {
                 Singleton<BombAssignmentPacketHandler>.Instance.SendDelayed().Forget();
             }
-            // int currentRound = H.Session.factionWins.Values.Sum();
-            // int maxRounds = SnDModeRules.maxRoundsToWin * 2 - 1;
-            // double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
-            // Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
+
         }
     }
 
     public class SharedEnd : IGameState
     {
         public MatchState StateType => MatchState.RoundEnd;
-        public void OnEnter()
+        public virtual void OnEnter()
         {
             if (FikaBackendUtils.IsServer)
             {
@@ -147,23 +136,23 @@ namespace ifp.arena.bep.Core.Gamemode
                 H.Arena.OnRoundEnd();
             }
         }
-        public MatchState? OnUpdate()
+        public virtual MatchState? OnUpdate()
         {
             if (FikaBackendUtils.IsClient) return null;
 
             if (H.Arena.StateTimer <= 0)
             {
-                if (H.Arena.ActiveRules is SnDModeRules)
+                if (H.Arena.ActiveRules is SND_ModeRules)
                 {
-                    SnDModeRules snd = H.Arena.ActiveRules as SnDModeRules;
+                    SND_ModeRules snd = H.Arena.ActiveRules as SND_ModeRules;
                     var wins = H.Session.factionWins;
 
-                    if (wins[Faction.CT] + wins[Faction.T] == SnDModeRules.maxRoundsToWin - 1)
+                    if (wins[Faction.CT] + wins[Faction.T] == SND_ModeRules.maxRoundsToWin - 1)
                     {
                         return MatchState.SideSwap;
                     }
 
-                    if (wins[Faction.CT] >= SnDModeRules.maxRoundsToWin || wins[Faction.T] >= SnDModeRules.maxRoundsToWin)
+                    if (wins[Faction.CT] >= SND_ModeRules.maxRoundsToWin || wins[Faction.T] >= SND_ModeRules.maxRoundsToWin)
                     {
                         return MatchState.MatchEnd;
                     }
@@ -173,7 +162,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
             return null;
         }
-        public void OnExit()
+        public virtual void OnExit()
         {
             IU.GarbageCollectWorldLoot();
             Singleton<RagdollCreator>.Instance.ClearAllCorpses();
@@ -184,7 +173,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class SharedSideSwap : IGameState
     {
         public MatchState StateType => MatchState.SideSwap;
-        public void OnEnter()
+        public virtual void OnEnter()
         {
             if (FikaBackendUtils.IsServer)
             {
@@ -197,17 +186,17 @@ namespace ifp.arena.bep.Core.Gamemode
                 Singleton<SessionInfoPacketHandler>.Instance.Send();
             }
         }
-        public MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-        public void OnExit() { }
+        public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+        public virtual void OnExit() { }
     }
 
     // Really only used for UI and actions so doesn't really matter ig
     public class SharedFinish : IGameState
     {
         public MatchState StateType => MatchState.MatchEnd;
-        public void OnEnter() { }
-        public MatchState? OnUpdate() => null;
-        public void OnExit() { }
+        public virtual void OnEnter() { }
+        public virtual MatchState? OnUpdate() => null;
+        public virtual void OnExit() { }
 
     }
 }

@@ -12,7 +12,7 @@ namespace ifp.arena.shared
     [RequireComponent(typeof(BoxCollider))]
     public class BombPlantZone :
 #if EFT_RUNTIME
-        PlaceItemTrigger
+        InteractableObject
 #else
         MonoBehaviour
 #endif

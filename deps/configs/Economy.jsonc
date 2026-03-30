@@ -35,8 +35,12 @@
   {
     "name": "Equipment",
     "items": [
+      // {
+      //   "bsgId": "655746010177119f4a097ff7",
+      //   "price": 650
+      // },
       {
-        "bsgId": "655746010177119f4a097ff7",
+        "bsgId": "5b44d0de86f774503d30cba8",
         "price": 650
       },
       {

@@ -65,7 +65,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         public SessionInfo session;
-        public GameModeRules ActiveRules { get; set; } = new SnDModeRules();
+        public GameModeRules ActiveRules { get; set; } = new SND_ModeRules();
         public EconomyManager EconomyManager = new();
 
         public float StateTimer;

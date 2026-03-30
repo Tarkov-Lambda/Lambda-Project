@@ -43,7 +43,7 @@ namespace ifp.arena.bep.Core.FX
         public void Update()
         {
             if (H.Arena is null) return;
-            if (H.Arena.ActiveRules is not SnDModeRules) return;
+            if (H.Arena.ActiveRules is not SND_ModeRules) return;
 
             if (_beforeExplodingPlayed) return;
             if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.matchState is MatchState.RoundPlanted)
@@ -166,7 +166,7 @@ namespace ifp.arena.bep.Core.FX
 
         private async UniTaskVoid InitBombVisualsAsync()
         {
-            Item bombItem = IU.CreateItemFromTemplateId(SnDModeRules.bombTemplateId);
+            Item bombItem = IU.CreateItemFromTemplateId(SND_ModeRules.bombTemplateId);
             await IU.LoadBundlesForItem(bombItem);
             bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
             bombVisuals?.SetActive(false);

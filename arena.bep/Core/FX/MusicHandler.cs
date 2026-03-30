@@ -30,6 +30,7 @@ namespace ifp.arena.bep.Core.FX
 
         public void OnEnter(MatchState state)
         {
+            // return;
             if (state is MatchState.RoundPrepare)
             {
                 PlayMusicEvent(H.Sounds.RoundPrepare.RandomElement());

@@ -5,6 +5,7 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.networking.Base;
+using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace ifp.arena.bep.networking
     public partial struct LadderNoisePacket : INetSerializable
     {
         public int id;
+        public LadderMaterial ladderMaterial;
 
         public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
         public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<LadderNoisePacket>(reader);
@@ -22,14 +24,18 @@ namespace ifp.arena.bep.networking
     // I mean I could do this the tarkov way but who gives a fuck
     public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
     {
-        public void Send()
+        public void Send(LadderMaterial ladderMaterial)
         {
-            RequestSend(new LadderNoisePacket { id = H.MainPlayer.Id });
+            RequestSend(new LadderNoisePacket
+            {
+                id = H.MainPlayer.Id,
+                ladderMaterial = ladderMaterial
+            });
         }
 
         protected override void LocalPredictApproved(LadderNoisePacket packet)
         {
-            MakeLadderNoise(H.MainPlayer);
+            MakeLadderNoise(H.MainPlayer, packet);
         }
 
         protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
@@ -37,13 +43,15 @@ namespace ifp.arena.bep.networking
             Player player = H.GetPlayer(packet.id);
             if (player.IsYourPlayer) return;
 
-            MakeLadderNoise(player);
+            MakeLadderNoise(player, packet);
         }
 
-        private void MakeLadderNoise(Player player)
+        private void MakeLadderNoise(Player player, LadderNoisePacket packet)
         {
             Vector3 pos = player.PlayerBody.transform.position;
-            H.AudioHandler.PlayAtPoint(pos, H.Sounds.LadderNoise);
+            AudioClip[] audioClips = packet.ladderMaterial == LadderMaterial.Metal ? H.Sounds.LadderNoiseMetal : H.Sounds.LadderNoiseWood;
+
+            H.AudioHandler.PlayAtPoint(pos, audioClips.RandomElement());
         }
     }
 }
