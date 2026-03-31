@@ -24,7 +24,7 @@
     <None Include=".\configs\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include=".\deps\*">
+    <None Include=".\deps\libraries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -61,6 +61,13 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.AudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Meta.XR.Audio.dll">
+      <Private>False</Private>
+    </Reference>
+
 
     <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
@@ -70,7 +77,7 @@
       <Private>False</Private>
     </Reference>
 
-    <Reference Include="..\deps\*.dll">
+    <Reference Include="..\deps\libraries\*.dll">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -94,7 +101,7 @@
       <Dependencies Include="$(OutputPath)\MemoryPack.Core.dll" />
       <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
 
-      <DebugDependencies Include="../deps/ScriptEngine.dll" />
+      <DebugDependencies Include="../deps/libraries/ScriptEngine.dll" />
       <DebugDependencies Include="$(OutputPath)\tracer.dll" />
 
       <Configs Include="../deps/configs/*.cfg" />

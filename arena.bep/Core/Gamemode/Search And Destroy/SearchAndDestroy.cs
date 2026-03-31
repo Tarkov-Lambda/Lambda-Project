@@ -144,7 +144,7 @@ namespace ifp.arena.bep.Core.Gamemode
             MatchState.RoundPrepare => new SND_Prepare(),
             MatchState.RoundAction => new SND_Action(),
             MatchState.RoundPlanted => new SND_Planted(),
-            MatchState.RoundEnd => new SND_End(),
+            MatchState.RoundEnd => new SharedEnd(),
 
             MatchState.SideSwap => new SND_SideSwap(),
             MatchState.MatchEnd => new SharedFinish(),

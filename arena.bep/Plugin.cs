@@ -7,6 +7,7 @@ using EFT;
 using EFT.Animations;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using ifp.arena.bep.Audio;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -18,6 +19,7 @@ using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
+using ifp.arena.bep.Patches.Tarkov.Audio;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
 using ifp.tracer;
@@ -88,6 +90,14 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
+        // Audio
+        // RegisterPatch(new Patch_AudioSettings_GetSpatializerPluginName());
+        SteamAudioInitializer.Initialize(Logger);
+        RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
+        RegisterPatch(new Patch_BetterSource_Init()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
+        RegisterPatch(new Patch_BetterAudio_SetProtagonist()); // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        // D.Log(AudioSettings.GetSpatializerPluginName());
+
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted()); // Hooks
         RegisterPatch(new Patch_Gameworld_OnDispose()); // Hooks
@@ -127,7 +137,7 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_SearchableItemItemClass_IsSearched()); // Planting (PlaceItem)
 
-        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger()); // Planting (PlaceItem)
+        // RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger()); // Planting (PlaceItem)
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Defusing (Tripwire)
 
 
@@ -215,7 +225,7 @@ public class Plugin : BaseUnityPlugin
         }
 
 #if DEBUG
-        // _disposables.Add(new DynamicClassTracer(typeof(Slot)));
+        _disposables.Add(new DynamicClassTracer(typeof(AudioSettings)));
 #endif
 
     }
@@ -258,11 +268,11 @@ public class Plugin : BaseUnityPlugin
         _cts?.Dispose();
         _cts = null;
 
-        if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
-        {
-            H.Session.matchState = MatchState.None;
-            Teleporter.Teleport(H.MainPlayer, "lobby");
-        }
+        // if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
+        // {
+        //     H.Session.matchState = MatchState.None;
+        //     Teleporter.Teleport(H.MainPlayer, "lobby");
+        // }
 
         foreach (var patch in _patches)
             patch.Disable();
