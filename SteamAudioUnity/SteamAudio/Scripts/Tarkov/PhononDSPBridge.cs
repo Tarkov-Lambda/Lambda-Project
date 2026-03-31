@@ -68,9 +68,9 @@ namespace ifp.arena.shared
         private PVec3 _dir               = new PVec3 { z = 1f };
         private float _distAtten         = 1f;
         private float _occlusion         = 1f;
-        private float _transLow          = 1f;
-        private float _transMid          = 1f;
-        private float _transHigh         = 1f;
+        private float _transLow          = 0f;   // safe default: walls block all bleed-through
+        private float _transMid          = 0f;
+        private float _transHigh         = 0f;
         private readonly object _lock    = new object();
 
         // ── Pre-allocated DSP scratch buffers ─────────────────────────────────
@@ -79,6 +79,22 @@ namespace ifp.arena.shared
         private float[] _monoOut;
         private float[] _leftOut;
         private float[] _rightOut;
+
+        // ── Occlusion / Transmission control ─────────────────────────────────
+
+        /// <summary>
+        /// Apply frequency-dependent transmission through occluders.
+        /// Only enable when SteamAudioSource transmission simulation is actually running.
+        /// With the flag off, the direct-effect formula is simply: output = occlusion × input,
+        /// so occ=0 gives silence. With it on and un-simulated transmission values (default 1.0),
+        /// the formula becomes: output = 0×direct + 1×1.0×input = input — full volume passthrough
+        /// regardless of occlusion, which is the bug this setting prevents.
+        /// </summary>
+        [Header("Occlusion / Transmission")]
+        [Tooltip("Apply transmission filtering through occluders. " +
+                 "Only enable when SteamAudioSource.transmission simulation is active. " +
+                 "When OFF (default), occlusion alone gates the signal: occ=0 → silence.")]
+        public bool applyTransmission = false;
 
         // ── Logging control ───────────────────────────────────────────────────
 
@@ -358,14 +374,19 @@ namespace ifp.arena.shared
             float maxDist = (_src != null && _src.maxDistance > 0f) ? _src.maxDistance : 50f;
             float atten   = Mathf.Clamp01(1f - dist / maxDist);
 
-            float occ = 1f, tLow = 1f, tMid = 1f, tHigh = 1f;
+            // Transmission defaults to 0 (walls block all bleed-through) unless
+            // applyTransmission is explicitly enabled and simulation is running.
+            float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
 #if STEAMAUDIO_ENABLED
             if (_steamSrc != null)
             {
-                occ   = Mathf.Clamp01(_steamSrc.occlusionValue);
-                tLow  = Mathf.Clamp01(_steamSrc.transmissionLow);
-                tMid  = Mathf.Clamp01(_steamSrc.transmissionMid);
-                tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
+                occ = Mathf.Clamp01(_steamSrc.occlusionValue);
+                if (applyTransmission)
+                {
+                    tLow  = Mathf.Clamp01(_steamSrc.transmissionLow);
+                    tMid  = Mathf.Clamp01(_steamSrc.transmissionMid);
+                    tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
+                }
             }
 #endif
 
@@ -518,9 +539,18 @@ namespace ifp.arena.shared
                     // ── 2. Direct effect: occlusion + transmission ────────────
                     if (_direct != IntPtr.Zero)
                     {
+                        // IPL_DIRECTEFFECTFLAGS_APPLYOCCLUSION   = 1 << 3 = 0x08
+                        // IPL_DIRECTEFFECTFLAGS_APPLYTRANSMISSION = 1 << 4 = 0x10
+                        // Only add APPLYTRANSMISSION when the inspector toggle is on AND
+                        // transmission simulation is actually providing meaningful values.
+                        // Without it, the blend formula: output = occ*direct + (1-occ)*trans*input
+                        // collapses to full-volume passthrough when trans=1 (the unsimulated default).
+                        int directFlags = (1 << 3);
+                        if (applyTransmission) directFlags |= (1 << 4);
+
                         var dp = new PDirectEffectParams
                         {
-                            flags            = (1 << 3) | (1 << 4),
+                            flags            = directFlags,
                             transmissionType = 1,
                             distanceAttenuation = 1f,
                             airAbsorptionLow = 1f, airAbsorptionMid = 1f, airAbsorptionHigh = 1f,

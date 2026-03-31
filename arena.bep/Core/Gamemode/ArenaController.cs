@@ -128,6 +128,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 Singleton<AdminLoginPacketHandler>.Instance.Send();
             }
 
+            SteamAudioInitializer.AttachListenerIfNeeded();
         }
 
         public void EndSession(GameWorld gameWorld)
