@@ -21,6 +21,9 @@
     <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Include="..\deps\libraries\*.dll">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

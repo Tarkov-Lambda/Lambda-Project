@@ -103,7 +103,15 @@ namespace ifp.arena.bep.Core.Dying
                 AccessTools.Field(typeof(CharacterJointSpawner), "_joint").SetValue(js, js.GetComponent<Joint>());
             }
 
-            List<PlayerRigidbodySleepHierarchy> rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(rigidbodySpawners);
+            List<PlayerRigidbodySleepHierarchy> rigidbodySleepHierarchy;
+            try
+            {
+                rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(rigidbodySpawners);
+            }
+            catch (InvalidOperationException)
+            {
+                rigidbodySleepHierarchy = new List<PlayerRigidbodySleepHierarchy>();
+            }
 
             playerClone.SetActive(false);
 

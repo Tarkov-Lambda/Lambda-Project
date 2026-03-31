@@ -15,10 +15,6 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
         public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
         private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
 
-        public static event Action OnBeginLoad; // Does not include lobby load
-        public static event Action OnSuccessfulLoad; // Does not include lobby load
-        public static event Action OnBeginUnload;
-        public static event Action OnUnload;
 
 
         public MapAssetBundleHandler()
@@ -28,7 +24,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
         public async UniTask LoadMap(string mapName)
         {
-            if (mapName != "lobby") OnBeginLoad?.Invoke();
+            if (mapName != "lobby") MapLoadEvent.OnBeginLoad?.Invoke();
 
             AssetBundle MapBundle = await LoadAssetBundle(mapName);
             if (MapBundle == null) return;
@@ -50,7 +46,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
                 await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
             }
 
-            if (mapName != "lobby") OnSuccessfulLoad?.Invoke();
+            if (mapName != "lobby") MapLoadEvent.OnSuccessfulLoad?.Invoke();
         }
 
         public async UniTask<AssetBundle> LoadAssetBundle(string name)
@@ -92,7 +88,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
 
         void UnloadAll(bool includingLobby = false)
         {
-            OnBeginUnload?.Invoke();
+            MapLoadEvent.OnBeginUnload?.Invoke();
             foreach (var kvp in loadedAssetBundles)
             {
                 AssetBundle bundle = kvp.Value;
@@ -114,7 +110,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling
             }
 
             loadedAssetBundles.Clear();
-            OnUnload?.Invoke();
+            MapLoadEvent.OnUnload?.Invoke();
         }
 
         public void Dispose()

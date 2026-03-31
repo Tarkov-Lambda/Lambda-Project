@@ -71,7 +71,7 @@ namespace ifp.arena.bep.Core
                 await Task.Delay(openDelay);
                 if (H.Arena.ActiveRules is SND_ModeRules)
                 {
-                    // H.SpectatorManager.SpectatePlayer()bи
+                    // H.SpectatorManager.SpectatePlayer()
                 }
                 OpenEyes();
             }

@@ -17,8 +17,10 @@ namespace ifp.arena.bep.Audio
     /// <see cref="Patches.Tarkov.Audio.Patch_BetterSource_Init"/>, which replaces whatever
     /// BaseSpatialAudioSource was on the prefab (the Meta XR component) after BetterSource.Init() runs.
     ///
-    /// Phase 1: binaural HRTF only (direct sound path). Occlusion and reflections require scene geometry
-    /// tagged with SteamAudioGeometry and are left disabled until Phase 2.
+    /// Phase 1 (no map geometry): HRTF binaural only.
+    /// Phase 2 (map with SteamAudioStaticMesh loaded): occlusion, material transmission, and
+    /// real-time reflections are automatically enabled when <see cref="SteamAudioSceneTracker"/>
+    /// fires <c>OnSceneReady</c>, and disabled again on <c>OnSceneCleared</c>.
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
@@ -29,16 +31,23 @@ namespace ifp.arena.bep.Audio
 
         // ── cached backing fields so setters work even before SA is initialised ──
 
-        private bool _enableSpatialization = true;
-        private float _hrtfIntensity       = 1f;
-        private float _directivity         = 0f;
-        private bool  _enableReverb        = false;
-        private bool  _enableDirectSound   = true;
-        private float _reverbSendDB        = -80f;
-        private float _earlyReflDB         = -80f;
-        private float _reverbReach         = 1f;
-        private float _volumetricRadius    = 0f;
-        private bool  _directSoundEnabled  = true;
+        private bool  _enableSpatialization       = true;
+        private float _hrtfIntensity              = 1f;
+        private float _directivity                = 0f;
+        private bool  _enableReverb               = false;
+        private bool  _enableDirectSound          = true;
+        private float _reverbSendDB               = -80f;
+        private float _earlyReflDB                = -80f;
+        private float _reverbReach                = 1f;
+        private float _volumetricRadius           = 0f;
+        private bool  _directSoundEnabled         = true;
+
+        /// <summary>
+        /// Phase 2 reflections mix level [0, 1].  Default 0.5 keeps the reverb present without
+        /// overwhelming direct sound.  Override via <see cref="ReverbSendDB"/> / <see cref="EarlyReflectionsSendDB"/>
+        /// or set directly if you want a fixed level regardless of preset.
+        /// </summary>
+        private float _reflectionsMixLevelOverride = 0.5f;
 
         // ─────────────────────────────────────────────────────────────────────────
         //  Unity lifetime
@@ -48,6 +57,11 @@ namespace ifp.arena.bep.Audio
         {
             base.Awake();   // sets ParentSource = GetComponent<AudioSource>()
             TryInit();
+
+#if DEBUG // STEAMAUDIO
+            SteamAudioSceneTracker.OnSceneReady   += UpgradeToPhase2;
+            SteamAudioSceneTracker.OnSceneCleared += DowngradeToPhase1;
+#endif
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -60,11 +74,11 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _enableSpatialization = value;
-                if (ParentSource != null)
-                    ParentSource.spatialize = value;
+                // PhononDSPBridge owns spatialize/spatialBlend – toggle its enabled flag instead
+                // so HRTF is bypassed when spatialization is disabled (e.g. 2-D UI sounds).
 #if DEBUG // STEAMAUDIO
-                if (_steamSource != null)
-                    _steamSource.directBinaural = value;
+                var bridge = GetComponent<PhononDSPBridge>();
+                if (bridge != null) bridge.enabled = value;
 #endif
             }
         }
@@ -129,8 +143,9 @@ namespace ifp.arena.bep.Audio
             {
                 _reverbSendDB = value;
 #if DEBUG // STEAMAUDIO
+                _reflectionsMixLevelOverride = Mathf.Clamp01((value + 80f) / 80f);
                 if (_steamSource != null)
-                    _steamSource.reflectionsMixLevel = Mathf.Clamp01((value + 80f) / 80f);
+                    _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 #endif
             }
         }
@@ -147,12 +162,10 @@ namespace ifp.arena.bep.Audio
             {
                 _earlyReflDB = value;
 #if DEBUG // STEAMAUDIO
+                // Use the stronger of reverb/early-refl to drive Steam Audio's single mix level
+                _reflectionsMixLevelOverride = Mathf.Clamp01((Mathf.Max(_reverbSendDB, value) + 80f) / 80f);
                 if (_steamSource != null)
-                {
-                    // Use the stronger of reverb/early-refl to drive Steam Audio's single mix level
-                    float combined = Mathf.Clamp01((Mathf.Max(_reverbSendDB, value) + 80f) / 80f);
-                    _steamSource.reflectionsMixLevel = combined;
-                }
+                    _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 #endif
             }
         }
@@ -190,9 +203,9 @@ namespace ifp.arena.bep.Audio
             {
                 _directSoundEnabled = value;
 #if DEBUG // STEAMAUDIO
-                // In Steam Audio, disabling direct sound means enabling occlusion that blocks it fully.
-                // Keeping this simple: just track the value; full occlusion is Phase 2.
-                if (_steamSource != null)
+                // When there is committed scene geometry, honour the flag via Steam Audio's
+                // occlusion system.  Without geometry we cannot do meaningful ray casts.
+                if (_steamSource != null && SteamAudioSceneTracker.IsSceneReady)
                     _steamSource.occlusion = !value;
 #endif
             }
@@ -209,18 +222,24 @@ namespace ifp.arena.bep.Audio
 #if DEBUG // STEAMAUDIO
             if (_steamSource == null) return;
 
-            // Binaural switch comes straight from the preset
-            _steamSource.directBinaural = preset.DirectBinaural;
-            _enableSpatialization       = preset.DirectBinaural && preset.SteamSpatialize;
+            // PhononDSPBridge handles binaural – enable/disable it based on the preset.
+            _enableSpatialization = preset.DirectBinaural && preset.SteamSpatialize;
+            var dspBridge = GetComponent<PhononDSPBridge>();
+            if (dspBridge != null) dspBridge.enabled = _enableSpatialization;
 
-            if (ParentSource != null)
-                ParentSource.spatialize = _enableSpatialization;
-
-            // Phase 1: leave occlusion/reflections/pathing disabled until geometry is present
-            _steamSource.occlusion    = false;
-            _steamSource.transmission = false;
-            _steamSource.reflections  = false;
-            _steamSource.pathing      = false;
+            // Occlusion / reflections are only meaningful once scene geometry is committed.
+            // UpgradeToPhase2() / DowngradeToPhase1() handle the transitions.
+            if (!SteamAudioSceneTracker.IsSceneReady)
+            {
+                _steamSource.occlusion    = false;
+                _steamSource.transmission = false;
+                _steamSource.reflections  = false;
+                _steamSource.pathing      = false;
+            }
+            else
+            {
+                ApplyPhase2Settings();
+            }
 #endif
         }
 
@@ -247,6 +266,14 @@ namespace ifp.arena.bep.Audio
 #endif
         }
 
+        private void OnDestroy()
+        {
+#if DEBUG // STEAMAUDIO
+            SteamAudioSceneTracker.OnSceneReady   -= UpgradeToPhase2;
+            SteamAudioSceneTracker.OnSceneCleared -= DowngradeToPhase1;
+#endif
+        }
+
         // ─────────────────────────────────────────────────────────────────────────
         //  Internal
         // ─────────────────────────────────────────────────────────────────────────
@@ -257,24 +284,110 @@ namespace ifp.arena.bep.Audio
             if (_steamSource != null) return;
             if (SteamAudioManager.Singleton == null) return;
 
+            // ── SteamAudioSource: drives the simulator (occlusion rays, reflection IRs).
             // AddComponent triggers SteamAudioSource.Awake() immediately – SteamAudioManager must
             // already be up (guaranteed by SteamAudioInitializer which runs in Plugin.Start()).
             _steamSource = gameObject.GetOrAddComponent<SteamAudioSource>();
 
-            // Phase 1 defaults: clean binaural HRTF, no occlusion, no reflections.
-            _steamSource.directBinaural       = true;
-            _steamSource.distanceAttenuation  = false;  // Tarkov controls rolloff via its own curves
-            _steamSource.airAbsorption        = false;
-            _steamSource.directivity          = false;
-            _steamSource.occlusion            = false;
-            _steamSource.transmission         = false;
-            _steamSource.reflections          = false;
-            _steamSource.pathing              = false;
-            _steamSource.directMixLevel       = 1f;
-            _steamSource.reflectionsMixLevel  = 1f;
+            // Simulation-only settings: binaural/DSP is handled by PhononDSPBridge, not
+            // audioplugin_phonon, so we disable the Unity spatializer on this source.
+            _steamSource.directBinaural      = false; // PhononDSPBridge does HRTF
+            _steamSource.distanceAttenuation = false;  // PhononDSPBridge does distance atten
+            _steamSource.airAbsorption       = false;
+            _steamSource.directivity         = false;
+            _steamSource.directMixLevel      = 1f;
+            _steamSource.reflectionsMixLevel = 1f;
 
-            if (ParentSource != null)
-                ParentSource.spatialize = _enableSpatialization;
+            if (SteamAudioSceneTracker.IsSceneReady)
+            {
+                ApplyPhase2Settings();
+            }
+            else
+            {
+                _steamSource.occlusion    = false;
+                _steamSource.transmission = false;
+                _steamSource.reflections  = false;
+                _steamSource.pathing      = false;
+            }
+
+            // ── PhononDSPBridge: drives the DSP (HRTF + occlusion/transmission).
+            // Its Awake() will set spatialize=false and spatialBlend=0 immediately.
+            gameObject.GetOrAddComponent<PhononDSPBridge>();
+#endif
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Phase transitions
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Called by <see cref="SteamAudioSceneTracker.OnSceneReady"/> when the phonon scene
+        /// has been committed with geometry from the loaded map asset bundle.
+        /// Enables occlusion, material-based transmission, and real-time reflections.
+        /// </summary>
+        private void UpgradeToPhase2()
+        {
+#if DEBUG // STEAMAUDIO
+            if (_steamSource == null) return;
+
+            ApplyPhase2Settings();
+            D.Log($"[SteamAudioSpatialAudioSource] '{gameObject.name}' upgraded to Phase 2 " +
+                  "(occlusion + transmission + reflections).");
+#endif
+        }
+
+        /// <summary>
+        /// Called by <see cref="SteamAudioSceneTracker.OnSceneCleared"/> before the map scene
+        /// is unloaded.  Disables simulation features that require scene geometry.
+        /// </summary>
+        private void DowngradeToPhase1()
+        {
+#if DEBUG // STEAMAUDIO
+            if (_steamSource == null) return;
+
+            _steamSource.occlusion    = false;
+            _steamSource.transmission = false;
+            _steamSource.reflections  = false;
+            _steamSource.pathing      = false;
+            D.Log($"[SteamAudioSpatialAudioSource] '{gameObject.name}' downgraded to Phase 1.");
+#endif
+        }
+
+        /// <summary>
+        /// Applies the full Phase 2 simulation settings to the underlying
+        /// <see cref="SteamAudioSource"/>. Called from both <see cref="TryInit"/>
+        /// (when geometry is already available) and <see cref="UpgradeToPhase2"/>.
+        /// </summary>
+        private void ApplyPhase2Settings()
+        {
+#if DEBUG // STEAMAUDIO
+            if (_steamSource == null) return;
+
+            // ── Occlusion ─────────────────────────────────────────────────────
+            // Raycast: single shadow ray per source per sim frame – very cheap.
+            // Use OcclusionType.Volumetric + occlusionSamples > 1 for soft transitions
+            // through doorways / thin cover if needed later.
+            _steamSource.occlusion      = true;
+            _steamSource.occlusionType  = OcclusionType.Raycast;
+            _steamSource.occlusionSamples = 1;
+
+            // ── Transmission ──────────────────────────────────────────────────
+            // FrequencyDependent: applies the material's per-band transmission EQ
+            // so different wall materials muffle differently (concrete vs wood etc.)
+            _steamSource.transmission        = true;
+            _steamSource.transmissionType    = TransmissionType.FrequencyDependent;
+            _steamSource.maxTransmissionSurfaces = 1; // penetrate at most 1 wall
+
+            // ── Reflections ───────────────────────────────────────────────────
+            // Real-time convolution IR computed by SteamAudioManager's reflection thread.
+            // HRTF-binauralised for immersive reverb.
+            _steamSource.reflections          = true;
+            _steamSource.reflectionsType      = ReflectionsType.Realtime;
+            _steamSource.applyHRTFToReflections = true;
+            _steamSource.reflectionsMixLevel  = Mathf.Clamp01(_reflectionsMixLevelOverride);
+
+            // Pathing requires pre-baked probe batches – leave disabled unless set externally.
+            _steamSource.pathing = false;
 #endif
         }
     }

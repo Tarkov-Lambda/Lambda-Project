@@ -152,7 +152,7 @@ public class Plugin : BaseUnityPlugin
         //--------------- ANIMATIONS --------------- //
         // RegisterPatch(new Patch_GClass2963_Spawn());
         RegisterPatch(new Patch_BaseGrenadeHandsController_Drop()); // Instant Grenade Unequip
-                                                                    // RegisterPatch(new Patch_FirearmController_Spawn());
+        // RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop()); // Instant Weapon Unequip
         // RegisterPatch(new Patch_FirearmController_InitiateOperation());
         //------------------------------------------ //
@@ -163,7 +163,7 @@ public class Plugin : BaseUnityPlugin
 
 
         //--------------- FIKA --------------- //
-        RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
+        // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());
 
@@ -225,7 +225,7 @@ public class Plugin : BaseUnityPlugin
         }
 
 #if DEBUG
-        _disposables.Add(new DynamicClassTracer(typeof(AudioSettings)));
+        // _disposables.Add(new DynamicClassTracer(typeof(AudioSettings)));
 #endif
 
     }

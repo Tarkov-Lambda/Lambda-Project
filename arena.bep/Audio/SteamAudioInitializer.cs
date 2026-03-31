@@ -12,40 +12,11 @@ using SteamAudio;
 
 namespace ifp.arena.bep.Audio
 {
-    /// <summary>
-    /// Bootstraps Steam Audio into a running Tarkov session.
-    ///
-    /// Call <see cref="Initialize"/> once from <c>Plugin.Start()</c> – before any BetterAudio
-    /// source pools are created.  Subsequent calls are safe (idempotent).
-    ///
-    /// Responsibilities
-    /// ─────────────────
-    ///  0. Pre-load native phonon.dll via kernel32 LoadLibraryW so Mono's P/Invoke
-    ///     resolver can find it even when it lives in a BepInEx sub-folder.
-    ///
-    ///  1. Create a runtime <c>SteamAudioSettings</c> ScriptableObject so
-    ///     <c>SteamAudioManager</c> doesn't try to load one from Resources (which doesn't
-    ///     exist in a mod context).
-    ///
-    ///  2. Switch Unity's spatializer plugin from Meta XR to Steam Audio at runtime via
-    ///     <c>AudioSettings.Reset()</c>.
-    ///
-    ///  3. Call <c>SteamAudioManager.Initialize()</c> if it hasn't already been called
-    ///     (SPT/Fika uses Mono; <c>[RuntimeInitializeOnLoadMethod]</c> may fire for the
-    ///     injected assembly but it's safer to call it explicitly).
-    ///
-    ///  4. Subscribe to <c>BetterAudio.ListenerSpawned</c> so we can attach
-    ///     <c>SteamAudioListener</c> to the player's audio listener transform.
-    /// </summary>
     public static class SteamAudioInitializer
     {
         private static ManualLogSource _log;
         private static bool _initialized;
 
-        /// <summary>Name Unity expects for the Steam Audio spatializer plugin.</summary>
-        private const string SteamAudioSpatializerName = "Steam Audio Spatializer";
-
-        // ── Windows kernel32 – force-load a native DLL by absolute path ───────────
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibraryW(string lpFileName);
 
@@ -64,7 +35,6 @@ namespace ifp.arena.bep.Audio
             {
                 PreloadNativeDlls();   // ← must run first; EnsureManager P/Invokes phonon
                 EnsureSettings();
-                SwitchSpatializerPlugin();
                 EnsureManager();
                 SubscribeToListenerEvents();
 
@@ -102,7 +72,7 @@ namespace ifp.arena.bep.Audio
 
             // phonon.dll is the core Phonon/Steam Audio native library that SteamAudioUnity.dll
             // P/Invokes into.  It must be loaded BEFORE audioplugin_phonon.dll.
-            string[] libs = { "phonon.dll", "audioplugin_phonon.dll" };
+            string[] libs = { "TrueAudioNext.dll", "phonon.dll", "audioplugin_phonon.dll" };
 
             foreach (string libName in libs)
             {
@@ -210,76 +180,32 @@ namespace ifp.arena.bep.Audio
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────────
-        //  2. Switch spatializer plugin
-        // ─────────────────────────────────────────────────────────────────────────
-
-        private static void SwitchSpatializerPlugin()
+        private static void EnsureManager()
         {
-            // GetSpatializerPluginName() is an [InternalCall] extern – safe against the stub.
-            string currentPlugin = UnityEngine.AudioSettings.GetSpatializerPluginName();
-
-            if (currentPlugin == SteamAudioSpatializerName)
+            if (SteamAudioManager.Singleton == null)
             {
-                _log.LogInfo("[SteamAudio] Spatializer plugin already set to Steam Audio.");
-                return;
-            }
-
-            AudioConfiguration cfg = UnityEngine.AudioSettings.GetConfiguration();
-
-            // AudioConfiguration.spatializerPlugin exists at runtime in Unity 2022.3 but is
-            // absent from the NuGet compile-time stub (UnityEngine.Modules 2022.3.43 only
-            // exposes the 5 primitive fields).  Set it via reflection so the code compiles
-            // against the stub while still working at runtime.
-            // The struct must be boxed before FieldInfo.SetValue can mutate it – a direct
-            // SetValue on an unboxed struct would silently modify a copy and discard it.
-            var spatializerField = typeof(AudioConfiguration).GetField(
-                "spatializerPlugin",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (spatializerField == null)
-            {
-                _log.LogError("[SteamAudio] AudioConfiguration.spatializerPlugin field not found " +
-                              "at runtime – cannot switch spatializer. Wrong Unity version?");
-                return;
-            }
-
-            object boxed = cfg;
-            spatializerField.SetValue(boxed, SteamAudioSpatializerName);
-            cfg = (AudioConfiguration)boxed;
-
-            if (UnityEngine.AudioSettings.Reset(cfg))
-            {
-                _log.LogInfo($"[SteamAudio] Spatializer switched: '{currentPlugin}' → '{SteamAudioSpatializerName}'.");
+                // This creates the "Steam Audio Manager" DontDestroyOnLoad GameObject and starts the
+                // simulation thread.  Equivalent to [RuntimeInitializeOnLoadMethod] AutoInitialize().
+                SteamAudioManager.Initialize(ManagerInitReason.Playing);
+                _log.LogInfo("[SteamAudio] SteamAudioManager.Initialize() called.");
             }
             else
             {
-                _log.LogWarning("[SteamAudio] AudioSettings.Reset() returned false – spatializer may not have changed. " +
-                                "Ensure audioplugin_phonon.dll is in EscapeFromTarkov_Data/Plugins/x86_64/.");
+                _log.LogInfo("[SteamAudio] SteamAudioManager already running.");
             }
-        }
 
-        // ─────────────────────────────────────────────────────────────────────────
-        //  3. SteamAudioManager init
-        // ─────────────────────────────────────────────────────────────────────────
-
-        private static void EnsureManager()
-        {
+            // Attach the scene tracker to the SteamAudioManager GameObject so it can bridge
+            // MapAssetBundleHandler load/unload events → Phase 1 / Phase 2 transitions.
             if (SteamAudioManager.Singleton != null)
             {
-                _log.LogInfo("[SteamAudio] SteamAudioManager already running.");
-                return;
+                SteamAudioSceneTracker.Register(SteamAudioManager.Singleton.gameObject);
             }
-
-            // This creates the "Steam Audio Manager" DontDestroyOnLoad GameObject and starts the
-            // simulation thread.  Equivalent to [RuntimeInitializeOnLoadMethod] AutoInitialize().
-            SteamAudioManager.Initialize(ManagerInitReason.Playing);
-            _log.LogInfo("[SteamAudio] SteamAudioManager.Initialize() called.");
+            else
+            {
+                _log.LogError("[SteamAudio] SteamAudioManager.Singleton is still null after Initialize() – " +
+                              "SteamAudioSceneTracker will not be registered. Occlusion/reflections disabled.");
+            }
         }
-
-        // ─────────────────────────────────────────────────────────────────────────
-        //  4. Listener hookup
-        // ─────────────────────────────────────────────────────────────────────────
 
         private static void SubscribeToListenerEvents()
         {
@@ -298,15 +224,6 @@ namespace ifp.arena.bep.Audio
 
 #endif
 
-        // ─────────────────────────────────────────────────────────────────────────
-        //  Public API – always accessible
-        // ─────────────────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Attaches <c>SteamAudioListener</c> to whatever transform currently has the
-        /// Unity <c>AudioListener</c>.  Safe to call multiple times – won't add duplicates.
-        /// No-op when Steam Audio is compiled out.
-        /// </summary>
         public static void AttachListenerIfNeeded()
         {
 #if DEBUG // STEAMAUDIO

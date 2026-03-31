@@ -67,10 +67,10 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 
         _lastKillTime = now;
 
-        if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
+        // if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
 
-        if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
-        // if (__instance.Player.IsYourPlayer )
+        // if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+        if (__instance.Player.IsYourPlayer )
         {
             Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo);
         }

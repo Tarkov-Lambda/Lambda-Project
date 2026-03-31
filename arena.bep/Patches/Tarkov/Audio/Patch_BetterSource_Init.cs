@@ -47,10 +47,11 @@ namespace ifp.arena.bep.Patches.Tarkov.Audio
             // ── 4. Write the new spatializer back into the protected field ─────
             spatializerField?.SetValue(__instance, steamSpatializer);
 
-            // ── 5. Make sure the AudioSource has spatialize enabled ────────────
-            // BetterSource.source1 is a public field.
-            if (__instance.source1 != null)
-                __instance.source1.spatialize = true;
+            // NOTE: Do NOT set source1.spatialize = true here.
+            // PhononDSPBridge (added inside SteamAudioSpatialAudioSource.TryInit) sets
+            // spatialize = false and spatialBlend = 0 so it can handle all DSP via
+            // OnAudioFilterRead.  Forcing spatialize = true here would route audio through
+            // the active Unity spatializer plugin (Meta XR) instead, producing silence.
         }
     }
 }

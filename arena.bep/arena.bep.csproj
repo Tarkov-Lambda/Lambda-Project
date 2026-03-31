@@ -7,6 +7,7 @@
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);SPT_4_0</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -123,18 +123,10 @@ namespace ifp.arena.bep.networking
 
             // create corpse before anything else happens
             Die(victimScore.player);
-
-            if (victimScore.player.IsYourPlayer)
-            {
-                H.SpectatorManager.SpectatePlayer(killerScore.player);
-            }
-
         }
 
         private void Die(Player player)
         {
-            Singleton<RagdollCreator>.Instance.OnPacket(player);
-
             if (player.IsYourPlayer)
             {
 
@@ -148,8 +140,14 @@ namespace ifp.arena.bep.networking
 
                 H.MainPlayer.SetEmptyHands(delegate { });
             }
+            else
+            {
+                Singleton<RagdollCreator>.Instance.OnPacket(player);
+            }
 
-            Teleporter.Teleport(player, "lobby", Faction.None);
+            player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
+
+            // Teleporter.Teleport(player, "lobby", Faction.None);
         }
     }
 }
