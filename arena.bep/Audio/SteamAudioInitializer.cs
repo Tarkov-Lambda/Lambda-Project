@@ -1,56 +1,49 @@
-using BepInEx.Logging;
 using Comfort.Common;
+using SteamAudio;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
 using SteamAudio;
 #endif
 
-namespace ifp.arena.bep.Audio
+namespace ifp.arena.shared
 {
     public static class SteamAudioInitializer
     {
-        private static ManualLogSource _log;
         private static bool _initialized;
 
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibraryW(string lpFileName);
 
-        public static void Initialize(ManualLogSource log)
+        public static void Initialize()
         {
-            _log = log;
 
             if (_initialized)
             {
-                _log.LogInfo("[SteamAudio] Already initialized, skipping.");
+                Debug.Log("[SteamAudio] Already initialized, skipping.");
                 return;
             }
 
-#if DEBUG // STEAMAUDIO
             try
             {
-                PreloadNativeDlls();   // ← must run first; EnsureManager P/Invokes phonon
+                PreloadNativeDlls();
                 EnsureSettings();
                 EnsureManager();
                 SubscribeToListenerEvents();
 
                 _initialized = true;
-                _log.LogInfo("[SteamAudio] Initialization complete.");
+                Debug.Log("[SteamAudio] Initialization complete.");
             }
             catch (Exception ex)
             {
-                _log.LogError($"[SteamAudio] Initialization failed: {ex}");
+                Debug.LogError($"[SteamAudio] Initialization failed: {ex}");
             }
-#else
-            _log.LogWarning("[SteamAudio] Steam Audio support is compiled out (DEBUG not defined).");
-#endif
         }
 
-#if DEBUG // STEAMAUDIO
 
         // ─────────────────────────────────────────────────────────────────────────
         //  0. Native DLL pre-load
@@ -68,7 +61,7 @@ namespace ifp.arena.bep.Audio
             // Resolve the folder that BepInEx loaded SteamAudioUnity.dll from.
             string dir = Path.GetDirectoryName(typeof(SteamAudioManager).Assembly.Location) ?? AppDomain.CurrentDomain.BaseDirectory;
 
-            _log.LogInfo($"[SteamAudio] Pre-loading native DLLs from: {dir}");
+            Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {dir}");
 
             // phonon.dll is the core Phonon/Steam Audio native library that SteamAudioUnity.dll
             // P/Invokes into.  It must be loaded BEFORE audioplugin_phonon.dll.
@@ -77,10 +70,10 @@ namespace ifp.arena.bep.Audio
             foreach (string libName in libs)
             {
                 string fullPath = Path.Combine(dir, libName);
-                D.Log(fullPath);
+                Debug.Log(fullPath);
                 if (!File.Exists(fullPath))
                 {
-                    _log.LogWarning($"[SteamAudio] Native library not found: '{fullPath}' – skipping.");
+                    Debug.LogWarning($"[SteamAudio] Native library not found: '{fullPath}' – skipping.");
                     continue;
                 }
 
@@ -88,13 +81,13 @@ namespace ifp.arena.bep.Audio
                 if (handle == IntPtr.Zero)
                 {
                     int err = Marshal.GetLastWin32Error();
-                    _log.LogError($"[SteamAudio] LoadLibraryW failed for '{libName}' " +
+                    Debug.LogError($"[SteamAudio] LoadLibraryW failed for '{libName}' " +
                                   $"(Win32 error {err} – see https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes). " +
                                   "Missing a dependency DLL?");
                 }
                 else
                 {
-                    _log.LogInfo($"[SteamAudio] Pre-loaded: {fullPath}");
+                    Debug.Log($"[SteamAudio] Pre-loaded: {fullPath}");
                 }
             }
         }
@@ -116,16 +109,16 @@ namespace ifp.arena.bep.Audio
                 if (existing.SOFAFiles == null)
                 {
                     existing.SOFAFiles = Array.Empty<SOFAFile>();
-                    _log.LogInfo("[SteamAudio] Patched null SOFAFiles on existing SteamAudioSettings.");
+                    Debug.Log("[SteamAudio] Patched null SOFAFiles on existing SteamAudioSettings.");
                 }
 
                 if (existing.defaultMaterial == null)
                 {
                     existing.defaultMaterial = ScriptableObject.CreateInstance<SteamAudioMaterial>();
-                    _log.LogInfo("[SteamAudio] Patched null defaultMaterial on existing SteamAudioSettings.");
+                    Debug.Log("[SteamAudio] Patched null defaultMaterial on existing SteamAudioSettings.");
                 }
 
-                _log.LogInfo("[SteamAudio] SteamAudioSettings already exists.");
+                Debug.Log("[SteamAudio] SteamAudioSettings already exists.");
                 return;
             }
 
@@ -171,11 +164,11 @@ namespace ifp.arena.bep.Audio
             if (field != null)
             {
                 field.SetValue(null, settings);
-                _log.LogInfo("[SteamAudio] SteamAudioSettings created at runtime.");
+                Debug.Log("[SteamAudio] SteamAudioSettings created at runtime.");
             }
             else
             {
-                _log.LogError("[SteamAudio] Could not find SteamAudioSettings.sSingleton field – " +
+                Debug.LogError("[SteamAudio] Could not find SteamAudioSettings.sSingleton field – " +
                               "check SteamAudio.dll version.");
             }
         }
@@ -185,13 +178,13 @@ namespace ifp.arena.bep.Audio
             if (SteamAudioManager.Singleton == null)
             {
                 // This creates the "Steam Audio Manager" DontDestroyOnLoad GameObject and starts the
-                // simulation thread.  Equivalent to [RuntimeInitializeOnLoadMethod] AutoInitialize().
+                // simulation threaDebug.  Equivalent to [RuntimeInitializeOnLoadMethod] AutoInitialize().
                 SteamAudioManager.Initialize(ManagerInitReason.Playing);
-                _log.LogInfo("[SteamAudio] SteamAudioManager.Initialize() called.");
+                Debug.Log("[SteamAudio] SteamAudioManager.Initialize() calleDebug.");
             }
             else
             {
-                _log.LogInfo("[SteamAudio] SteamAudioManager already running.");
+                Debug.Log("[SteamAudio] SteamAudioManager already running.");
             }
 
             // Attach the scene tracker to the SteamAudioManager GameObject so it can bridge
@@ -202,19 +195,19 @@ namespace ifp.arena.bep.Audio
             }
             else
             {
-                _log.LogError("[SteamAudio] SteamAudioManager.Singleton is still null after Initialize() – " +
-                              "SteamAudioSceneTracker will not be registered. Occlusion/reflections disabled.");
+                Debug.LogError("[SteamAudio] SteamAudioManager.Singleton is still null after Initialize() – " +
+                              "SteamAudioSceneTracker will not be registereDebug. Occlusion/reflections disableDebug.");
             }
         }
 
         private static void SubscribeToListenerEvents()
         {
             // BetterAudio.ListenerSpawned fires when SetProtagonist() is called for the local
-            // player.  At that point ListenerTransform is already valid.
+            // player.  At that point ListenerTransform is already valiDebug.
             //
             // We also patch BetterAudio.SetProtagonist() directly (see
             // Patch_BetterAudio_SetProtagonist) as a belt-and-suspenders approach.
-            Singleton<BetterAudio>.Instance?.AudioControllerInitialized += OnAudioControllerInitialized;
+            // Singleton<BetterAudio>.Instance.AudioControllerInitialized += OnAudioControllerInitialized;
         }
 
         private static void OnAudioControllerInitialized()
@@ -222,22 +215,19 @@ namespace ifp.arena.bep.Audio
             AttachListenerIfNeeded();
         }
 
-#endif
 
         public static void AttachListenerIfNeeded()
         {
-#if DEBUG // STEAMAUDIO
             if (SteamAudioManager.Singleton == null) return;
 
             var betterAudio = Singleton<BetterAudio>.Instance;
             if (betterAudio == null) return;
 
-            Transform listenerTransform = betterAudio.ListenerTransform
-                                       ?? betterAudio.AudioListener?.transform;
+            Transform listenerTransform = betterAudio.ListenerTransform ?? betterAudio.AudioListener?.transform;
 
             if (listenerTransform == null)
             {
-                _log?.LogWarning("[SteamAudio] ListenerTransform is null – SteamAudioListener not attached yet.");
+                Debug.LogWarning("[SteamAudio] ListenerTransform is null – SteamAudioListener not attached yet.");
                 return;
             }
 
@@ -246,8 +236,7 @@ namespace ifp.arena.bep.Audio
 
             listenerTransform.gameObject.AddComponent<SteamAudioListener>();
             SteamAudioManager.NotifyAudioListenerChangedTo(listenerTransform);
-            _log?.LogInfo($"[SteamAudio] SteamAudioListener attached to '{listenerTransform.gameObject.name}'.");
-#endif
+            Debug.Log($"[SteamAudio] SteamAudioListener attached to '{listenerTransform.gameObject.name}'.");
         }
     }
 }

@@ -1,13 +1,12 @@
-using Audio.SpatialSystem;
 using UnityEngine;
 using EFT;
+using Audio.SpatialSystem;
 
-
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
 using SteamAudio;
 #endif
 
-namespace ifp.arena.bep.Audio
+namespace ifp.arena.shared
 {
     /// <summary>
     /// Implements <see cref="BaseSpatialAudioSource"/> using Steam Audio as the spatial DSP backend,
@@ -25,7 +24,7 @@ namespace ifp.arena.bep.Audio
     [RequireComponent(typeof(AudioSource))]
     public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
     {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
         private SteamAudioSource _steamSource;
 #endif
 
@@ -58,7 +57,7 @@ namespace ifp.arena.bep.Audio
             base.Awake();   // sets ParentSource = GetComponent<AudioSource>()
             TryInit();
 
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             SteamAudioSceneTracker.OnSceneReady   += UpgradeToPhase2;
             SteamAudioSceneTracker.OnSceneCleared += DowngradeToPhase1;
 #endif
@@ -76,7 +75,7 @@ namespace ifp.arena.bep.Audio
                 _enableSpatialization = value;
                 // PhononDSPBridge owns spatialize/spatialBlend – toggle its enabled flag instead
                 // so HRTF is bypassed when spatialization is disabled (e.g. 2-D UI sounds).
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 var bridge = GetComponent<PhononDSPBridge>();
                 if (bridge != null) bridge.enabled = value;
 #endif
@@ -89,7 +88,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _hrtfIntensity = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 if (_steamSource != null)
                     _steamSource.directMixLevel = Mathf.Clamp01(value);
 #endif
@@ -102,7 +101,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _directivity = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 if (_steamSource != null)
                     _steamSource.dipoleWeight = Mathf.Clamp01(value);
 #endif
@@ -115,7 +114,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _enableReverb = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 if (_steamSource != null)
                     _steamSource.reflections = value;
 #endif
@@ -128,7 +127,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _enableDirectSound = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 if (_steamSource != null)
                     _steamSource.distanceAttenuation = value;
 #endif
@@ -142,7 +141,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _reverbSendDB = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 _reflectionsMixLevelOverride = Mathf.Clamp01((value + 80f) / 80f);
                 if (_steamSource != null)
                     _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
@@ -161,7 +160,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _earlyReflDB = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 // Use the stronger of reverb/early-refl to drive Steam Audio's single mix level
                 _reflectionsMixLevelOverride = Mathf.Clamp01((Mathf.Max(_reverbSendDB, value) + 80f) / 80f);
                 if (_steamSource != null)
@@ -176,7 +175,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _reverbReach = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 if (_steamSource != null)
                     _steamSource.occlusionRadius = Mathf.Max(0f, value);
 #endif
@@ -189,7 +188,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _volumetricRadius = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 if (_steamSource != null)
                     _steamSource.occlusionRadius = Mathf.Max(0f, value);
 #endif
@@ -202,7 +201,7 @@ namespace ifp.arena.bep.Audio
             set
             {
                 _directSoundEnabled = value;
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
                 // When there is committed scene geometry, honour the flag via Steam Audio's
                 // occlusion system.  Without geometry we cannot do meaningful ray casts.
                 if (_steamSource != null && SteamAudioSceneTracker.IsSceneReady)
@@ -219,7 +218,7 @@ namespace ifp.arena.bep.Audio
         {
             TryInit();
 
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (_steamSource == null) return;
 
             // PhononDSPBridge handles binaural – enable/disable it based on the preset.
@@ -260,7 +259,7 @@ namespace ifp.arena.bep.Audio
 
         public override void SetActive(bool active)
         {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (_steamSource != null)
                 _steamSource.enabled = active;
 #endif
@@ -268,7 +267,7 @@ namespace ifp.arena.bep.Audio
 
         private void OnDestroy()
         {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             SteamAudioSceneTracker.OnSceneReady   -= UpgradeToPhase2;
             SteamAudioSceneTracker.OnSceneCleared -= DowngradeToPhase1;
 #endif
@@ -280,7 +279,7 @@ namespace ifp.arena.bep.Audio
 
         private void TryInit()
         {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (_steamSource != null) return;
             if (SteamAudioManager.Singleton == null) return;
 
@@ -327,11 +326,11 @@ namespace ifp.arena.bep.Audio
         /// </summary>
         private void UpgradeToPhase2()
         {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (_steamSource == null) return;
 
             ApplyPhase2Settings();
-            D.Log($"[SteamAudioSpatialAudioSource] '{gameObject.name}' upgraded to Phase 2 " +
+            Debug.Log($"[SteamAudioSpatialAudioSource] '{gameObject.name}' upgraded to Phase 2 " +
                   "(occlusion + transmission + reflections).");
 #endif
         }
@@ -342,14 +341,14 @@ namespace ifp.arena.bep.Audio
         /// </summary>
         private void DowngradeToPhase1()
         {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (_steamSource == null) return;
 
             _steamSource.occlusion    = false;
             _steamSource.transmission = false;
             _steamSource.reflections  = false;
             _steamSource.pathing      = false;
-            D.Log($"[SteamAudioSpatialAudioSource] '{gameObject.name}' downgraded to Phase 1.");
+            Debug.Log($"[SteamAudioSpatialAudioSource] '{gameObject.name}' downgraded to Phase 1.");
 #endif
         }
 
@@ -360,7 +359,7 @@ namespace ifp.arena.bep.Audio
         /// </summary>
         private void ApplyPhase2Settings()
         {
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (_steamSource == null) return;
 
             // ── Occlusion ─────────────────────────────────────────────────────

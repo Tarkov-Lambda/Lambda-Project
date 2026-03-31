@@ -6,7 +6,7 @@ global using PU = ifp.arena.bep.Core.PlayerUtilities;
 global using AU = ifp.arena.bep.Core.AddressUtilities;
 
 global using RU = ifp.arena.bep.Core.ReplenishmentUtilities;
-global using D = ifp.arena.bep.Core.Debugging;
+global using D = ifp.arena.shared.Debugging;
 
 
 // Tarkov

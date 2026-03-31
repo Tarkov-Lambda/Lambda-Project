@@ -4,8 +4,9 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Collections.Generic;
+using ifp.arena.bep;
 
-namespace ifp.arena.bep.Core
+namespace ifp.arena.shared
 {
     // Helper class for singleton refences & helper functions
     public static class Debugging
@@ -47,7 +48,7 @@ namespace ifp.arena.bep.Core
 
             DumpObject(obj, sb, name, 0, depth);
 
-            D.Log(sb.ToString());
+            Log(sb.ToString());
         }
 
         private static void DumpObject(object obj, StringBuilder sb, string name, int currentDepth, int maxDepth)

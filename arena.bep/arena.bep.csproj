@@ -92,6 +92,11 @@
       <Private>False</Private>
     </ProjectReference>
 
+    <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj">
+      <Private>False</Private>
+    </ProjectReference>
+
+
     <ProjectReference Include="..\Tracer\tracer.csproj" />
   </ItemGroup>
 

@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
-using ifp.arena.bep.Core.AssetBundleHandling;
 using UnityEngine;
 
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
 using SteamAudio;
 #endif
 
-namespace ifp.arena.bep.Audio
+namespace ifp.arena.shared
 {
     /// <summary>
     /// Tracks Steam Audio scene geometry readiness and bridges
@@ -42,7 +41,7 @@ namespace ifp.arena.bep.Audio
         public static event Action OnSceneReady;
 
         /// <summary>
-        /// Raised just before a map scene is unloaded.
+        /// Raised just before a map scene is unloadeDebug.
         /// Handlers should disable Phase 2 features and return to Phase 1.
         /// </summary>
         public static event Action OnSceneCleared;
@@ -61,14 +60,14 @@ namespace ifp.arena.bep.Audio
         {
             if (host == null)
             {
-                D.Log("[SteamAudioSceneTracker] Register() called with null host – skipping.");
+                Debug.Log("[SteamAudioSceneTracker] Register() called with null host – skipping.");
                 return;
             }
 
             if (_instance != null) return;
 
             _instance = host.GetOrAddComponent<SteamAudioSceneTracker>();
-            D.Log($"[SteamAudioSceneTracker] Registered on '{host.name}'.");
+            Debug.Log($"[SteamAudioSceneTracker] Registered on '{host.name}'.");
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -116,23 +115,23 @@ namespace ifp.arena.bep.Audio
             // Wait for SteamAudioManager to commit the scene with the newly-loaded geometry.
             yield return null;
 
-#if DEBUG // STEAMAUDIO
+#if STEAMAUDIO_ENABLED
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Simulator == null)
             {
-                D.Log("[SteamAudioSceneTracker] SteamAudioManager not ready one frame after map load. " +
+                Debug.Log("[SteamAudioSceneTracker] SteamAudioManager not ready one frame after map loaDebug. " +
                              "Staying in Phase 1 (no occlusion/reflections).");
                 yield break;
             }
 #endif
 
             IsSceneReady = true;
-            D.Log("[SteamAudioSceneTracker] Steam Audio scene geometry committed – " +
+            Debug.Log("[SteamAudioSceneTracker] Steam Audio scene geometry committed – " +
                   "upgrading to Phase 2 (occlusion + transmission + reflections).");
             OnSceneReady?.Invoke();
         }
 
         /// <summary>
-        /// Called before the map scene is unloaded.  We must disable Phase 2 features
+        /// Called before the map scene is unloadeDebug.  We must disable Phase 2 features
         /// before the geometry is removed from the phonon scene, otherwise in-flight
         /// ray casts can reference freed memory.
         /// </summary>
@@ -141,7 +140,7 @@ namespace ifp.arena.bep.Audio
             if (!IsSceneReady) return;
 
             IsSceneReady = false;
-            D.Log("[SteamAudioSceneTracker] Map unloading – downgrading to Phase 1.");
+            Debug.Log("[SteamAudioSceneTracker] Map unloading – downgrading to Phase 1.");
             OnSceneCleared?.Invoke();
         }
     }

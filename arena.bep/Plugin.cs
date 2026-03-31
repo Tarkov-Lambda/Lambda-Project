@@ -4,25 +4,18 @@ using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using EFT.Animations;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using ifp.arena.bep.Audio;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.UI;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
-using ifp.arena.bep.Patches.Tarkov.Audio;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
-using ifp.tracer;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -90,13 +83,11 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
-        // Audio
         // RegisterPatch(new Patch_AudioSettings_GetSpatializerPluginName());
-        SteamAudioInitializer.Initialize(Logger);
+        SteamAudioInitializer.Initialize();
         RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
         RegisterPatch(new Patch_BetterSource_Init()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
         RegisterPatch(new Patch_BetterAudio_SetProtagonist()); // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        // D.Log(AudioSettings.GetSpatializerPluginName());
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted()); // Hooks
