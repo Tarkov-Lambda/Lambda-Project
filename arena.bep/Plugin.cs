@@ -155,10 +155,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Other players see you inspecting hands
         //------------------------------------------ //
 
-        RegisterPatch(new Patch_CommonUI_Awake());                                  // UI Action Hook
-        RegisterPatch(new Patch_ItemsTabController_Show());                         // UI Action Hook
-        RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());// Inventory opening control (for when we reset inv or hold tab for scoreboard)
-
+        UIPatches.Enable();
 
         //--------------- FIKA --------------- //
         // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());      // Server-side preemptive death broadcasting
@@ -294,6 +291,8 @@ public class Plugin : BaseUnityPlugin
 
         foreach (var patch in _patches)
             patch.Disable();
+
+        UIPatches.Disable();
 
         _patches.Clear();
 
