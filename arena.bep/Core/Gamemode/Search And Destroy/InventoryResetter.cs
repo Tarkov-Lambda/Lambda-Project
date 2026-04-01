@@ -103,7 +103,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
 
                 VestItemClass tacRig = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as VestItemClass;
-                if (tacRig != null && AU.IsTacRigArmored(tacRig))
+                if (tacRig is not null && AU.IsTacRigArmored(tacRig))
                 {
                     AddItem(ref itemsToRemove, tacRig);
                 }
@@ -118,7 +118,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 }
 
                 ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
-                if (armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
+                if (armorVest is not null && armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
                 {
                     AddItem(ref itemsToRemove, armorVest);
                 }
@@ -135,6 +135,9 @@ namespace ifp.arena.bep.Core.Gamemode
                 }
 
                 await IU.TryPopItems(itemsToRemove, player);
+
+
+                // GIVING
 
                 if (needsDefaultPistol && defaultPistolBsgId != null)
                 {

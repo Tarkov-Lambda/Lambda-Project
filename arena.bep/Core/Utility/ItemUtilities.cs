@@ -18,7 +18,6 @@ namespace ifp.arena.bep.Core
     // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
     public static class ItemUtilities
     {
-
         public static Item CreateItemFromTemplateId(string templateId) => FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
         public static bool TryCreateItem(string templateId, out Item newItem)

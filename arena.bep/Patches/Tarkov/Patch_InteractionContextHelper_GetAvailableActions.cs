@@ -42,13 +42,11 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (interactive is BombPlantZone)
             {
-                D.Log("inside BombPlantZone");
-                if (roundState == MatchState.RoundAction) return true;
-                D.Log("after roundState == MatchState.RoundAction");
+                __result = actionsReturnClass;
+                if (roundState != MatchState.RoundAction) return false;
 
                 Item bomb = FindBombItemInPlayer(player);
-                if (bomb == null) return true;
-                D.Log("after bomb == null");
+                if (bomb == null) return false;
 
                 float plantingTime = SND_ModeRules.platingTime;
 
@@ -82,9 +80,12 @@ namespace ifp.arena.bep.Patches.Tarkov
                         }
                     }
                 });
+
+                __result = actionsReturnClass;
+                return false;
             }
 
-            if (interactive is bombasik bombanilovich)
+            if (interactive is bombasik)
             {
                 if (H.Session.matchState is not MatchState.RoundPlanted) return true;
 
