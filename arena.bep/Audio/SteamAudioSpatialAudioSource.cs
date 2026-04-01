@@ -1,6 +1,7 @@
 using UnityEngine;
 using EFT;
 using Audio.SpatialSystem;
+using SteamAudio;
 
 #if STEAMAUDIO_ENABLED
 using SteamAudio;
@@ -8,20 +9,11 @@ using SteamAudio;
 
 namespace ifp.arena.shared
 {
-    /// <summary>
-    /// Implements <see cref="BaseSpatialAudioSource"/> using Steam Audio as the spatial DSP backend,
-    /// replacing the Meta XR spatializer that current Tarkov builds ship with.
-    ///
-    /// Each pooled <see cref="BetterSource"/> gets one of these via
-    /// <see cref="Patches.Tarkov.Audio.Patch_BetterSource_Init"/>, which replaces whatever
-    /// BaseSpatialAudioSource was on the prefab (the Meta XR component) after BetterSource.Init() runs.
-    ///
-    /// Phase 1 (no map geometry): HRTF binaural only.
-    /// Phase 2 (map with SteamAudioStaticMesh loaded): occlusion, material transmission, and
-    /// real-time reflections are automatically enabled when <see cref="SteamAudioSceneTracker"/>
-    /// fires <c>OnSceneReady</c>, and disabled again on <c>OnSceneCleared</c>.
-    /// </summary>
+    // Implementation for Spatial Audio Source for Better Source
+    // phase 1 is hrtf only, phase 2 is only available if the level we load has steam audio static mesh
     [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(SteamAudioSource))]
+    [RequireComponent(typeof(PhononDSPBridge))]
     public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
     {
 #if STEAMAUDIO_ENABLED
@@ -30,16 +22,16 @@ namespace ifp.arena.shared
 
         // ── cached backing fields so setters work even before SA is initialised ──
 
-        private bool  _enableSpatialization       = true;
-        private float _hrtfIntensity              = 1f;
-        private float _directivity                = 0f;
-        private bool  _enableReverb               = false;
-        private bool  _enableDirectSound          = true;
-        private float _reverbSendDB               = -80f;
-        private float _earlyReflDB                = -80f;
-        private float _reverbReach                = 1f;
-        private float _volumetricRadius           = 0f;
-        private bool  _directSoundEnabled         = true;
+        private bool _enableSpatialization = true;
+        private float _hrtfIntensity = 0.2f;
+        private float _directivity = 0f;
+        private bool _enableReverb = false;
+        private bool _enableDirectSound = true;
+        private float _reverbSendDB = -80f;
+        private float _earlyReflDB = -80f;
+        private float _reverbReach = 1f;
+        private float _volumetricRadius = 0f;
+        private bool _directSoundEnabled = true;
 
         /// <summary>
         /// Phase 2 reflections mix level [0, 1].  Default 0.5 keeps the reverb present without
@@ -76,8 +68,8 @@ namespace ifp.arena.shared
                 // PhononDSPBridge owns spatialize/spatialBlend – toggle its enabled flag instead
                 // so HRTF is bypassed when spatialization is disabled (e.g. 2-D UI sounds).
 #if STEAMAUDIO_ENABLED
-                var bridge = GetComponent<PhononDSPBridge>();
-                if (bridge != null) bridge.enabled = value;
+                phononDSPBridge = GetComponent<PhononDSPBridge>();
+                if (phononDSPBridge != null) phononDSPBridge.enabled = value;
 #endif
             }
         }
@@ -87,10 +79,9 @@ namespace ifp.arena.shared
             get => _hrtfIntensity;
             set
             {
-                _hrtfIntensity = value;
+                _hrtfIntensity = 0.2f;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null)
-                    _steamSource.directMixLevel = Mathf.Clamp01(value);
+                if (_steamSource != null) _steamSource.directMixLevel = Mathf.Clamp01(0.2f);
 #endif
             }
         }
@@ -102,8 +93,7 @@ namespace ifp.arena.shared
             {
                 _directivity = value;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null)
-                    _steamSource.dipoleWeight = Mathf.Clamp01(value);
+                if (_steamSource != null) _steamSource.dipoleWeight = Mathf.Clamp01(value);
 #endif
             }
         }
@@ -115,8 +105,7 @@ namespace ifp.arena.shared
             {
                 _enableReverb = value;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null)
-                    _steamSource.reflections = value;
+                if (_steamSource != null) _steamSource.reflections = value;
 #endif
             }
         }
@@ -128,8 +117,7 @@ namespace ifp.arena.shared
             {
                 _enableDirectSound = value;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null)
-                    _steamSource.distanceAttenuation = value;
+                if (_steamSource != null) _steamSource.distanceAttenuation = value;
 #endif
             }
         }
@@ -143,8 +131,7 @@ namespace ifp.arena.shared
                 _reverbSendDB = value;
 #if STEAMAUDIO_ENABLED
                 _reflectionsMixLevelOverride = Mathf.Clamp01((value + 80f) / 80f);
-                if (_steamSource != null)
-                    _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
+                if (_steamSource != null) _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 #endif
             }
         }
@@ -163,8 +150,7 @@ namespace ifp.arena.shared
 #if STEAMAUDIO_ENABLED
                 // Use the stronger of reverb/early-refl to drive Steam Audio's single mix level
                 _reflectionsMixLevelOverride = Mathf.Clamp01((Mathf.Max(_reverbSendDB, value) + 80f) / 80f);
-                if (_steamSource != null)
-                    _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
+                if (_steamSource != null) _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 #endif
             }
         }
@@ -176,8 +162,7 @@ namespace ifp.arena.shared
             {
                 _reverbReach = value;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null)
-                    _steamSource.occlusionRadius = Mathf.Max(0f, value);
+                if (_steamSource != null) _steamSource.occlusionRadius = Mathf.Max(0f, value);
 #endif
             }
         }
@@ -189,8 +174,7 @@ namespace ifp.arena.shared
             {
                 _volumetricRadius = value;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null)
-                    _steamSource.occlusionRadius = Mathf.Max(0f, value);
+                if (_steamSource != null) _steamSource.occlusionRadius = Mathf.Max(0f, value);
 #endif
             }
         }
@@ -204,8 +188,7 @@ namespace ifp.arena.shared
 #if STEAMAUDIO_ENABLED
                 // When there is committed scene geometry, honour the flag via Steam Audio's
                 // occlusion system.  Without geometry we cannot do meaningful ray casts.
-                if (_steamSource != null && SteamAudioSceneTracker.IsSceneReady)
-                    _steamSource.occlusion = !value;
+                if (_steamSource != null && SteamAudioSceneTracker.IsSceneReady) _steamSource.occlusion = !value;
 #endif
             }
         }
@@ -223,8 +206,8 @@ namespace ifp.arena.shared
 
             // PhononDSPBridge handles binaural – enable/disable it based on the preset.
             _enableSpatialization = preset.DirectBinaural && preset.SteamSpatialize;
-            var dspBridge = GetComponent<PhononDSPBridge>();
-            if (dspBridge != null) dspBridge.enabled = _enableSpatialization;
+            phononDSPBridge = GetComponent<PhononDSPBridge>();
+            if (phononDSPBridge != null) phononDSPBridge.enabled = _enableSpatialization;
 
             // Occlusion / reflections are only meaningful once scene geometry is committed.
             // UpgradeToPhase2() / DowngradeToPhase1() handle the transitions.
@@ -260,8 +243,10 @@ namespace ifp.arena.shared
         public override void SetActive(bool active)
         {
 #if STEAMAUDIO_ENABLED
-            if (_steamSource != null)
+            if (_steamSource != null) {
                 _steamSource.enabled = active;
+                phononDSPBridge.enable = active;
+            }
 #endif
         }
 

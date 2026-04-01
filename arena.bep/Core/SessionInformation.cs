@@ -49,10 +49,10 @@ namespace ifp.arena.bep.GameTypes
         public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
         {
             {MatchState.None, 0},
-            {MatchState.Warmup, 40},
+            {MatchState.Warmup, 5},
             {MatchState.WarmupEnd, 0},
             {MatchState.Pause, 45},
-            {MatchState.RoundPrepare, 0},
+            {MatchState.RoundPrepare, 3},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},

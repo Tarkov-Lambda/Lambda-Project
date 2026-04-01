@@ -102,19 +102,19 @@ namespace ifp.arena.shared
         /// WARNING: This will flood the console. Use only for short debugging sessions.</summary>
         [Header("Debug Logging")]
         [Tooltip("Master toggle for all verbose logging from this component.")]
-        public bool verboseLogging = true;
+        public bool verboseLogging = false;
 
         [Tooltip("Log per-audio-frame DSP details (very spammy — runs on audio thread).")]
         public bool logAudioThread = false;
 
         [Tooltip("Log per-Update spatial / simulation values every frame.")]
-        public bool logUpdateValues = true;
+        public bool logUpdateValues = false;
 
         [Tooltip("Throttle Update logging to once every N frames (0 = every frame).")]
         public int logUpdateEveryNFrames = 60;
 
         [Tooltip("Log lifecycle events (Awake, Destroy, Init).")]
-        public bool logLifecycle = true;
+        public bool logLifecycle = false;
 
         [Tooltip("Log audio thread buffer statistics (RMS, peak, silence detection).")]
         public bool logBufferStats = false;

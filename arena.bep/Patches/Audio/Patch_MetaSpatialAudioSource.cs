@@ -10,7 +10,7 @@ namespace ifp.arena.shared
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(MetaSpatialAudioSource), "ManualUpdate");
+            return AccessTools.Method(typeof(MetaSpatialAudioSource), nameof(MetaSpatialAudioSource.ManualUpdate));
         }
 
         [PatchPrefix]

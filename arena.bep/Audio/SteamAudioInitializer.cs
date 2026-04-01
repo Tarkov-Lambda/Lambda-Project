@@ -14,7 +14,7 @@ namespace ifp.arena.shared
 {
     public static class SteamAudioInitializer
     {
-        private static bool _initialized;
+        public static bool _initialized { get; private set; }
 
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibraryW(string lpFileName);
@@ -33,7 +33,6 @@ namespace ifp.arena.shared
                 PreloadNativeDlls();
                 EnsureSettings();
                 EnsureManager();
-                SubscribeToListenerEvents();
 
                 _initialized = true;
                 Debug.Log("[SteamAudio] Initialization complete.");
@@ -158,8 +157,7 @@ namespace ifp.arena.shared
             settings.layerMask = LayerMask.GetMask("Default");
 
             // Inject into the private static singleton field via reflection
-            var field = typeof(SteamAudioSettings)
-                .GetField("sSingleton", BindingFlags.NonPublic | BindingFlags.Static);
+            var field = typeof(SteamAudioSettings).GetField("sSingleton", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (field != null)
             {
@@ -199,22 +197,6 @@ namespace ifp.arena.shared
                               "SteamAudioSceneTracker will not be registereDebug. Occlusion/reflections disableDebug.");
             }
         }
-
-        private static void SubscribeToListenerEvents()
-        {
-            // BetterAudio.ListenerSpawned fires when SetProtagonist() is called for the local
-            // player.  At that point ListenerTransform is already valiDebug.
-            //
-            // We also patch BetterAudio.SetProtagonist() directly (see
-            // Patch_BetterAudio_SetProtagonist) as a belt-and-suspenders approach.
-            // Singleton<BetterAudio>.Instance.AudioControllerInitialized += OnAudioControllerInitialized;
-        }
-
-        private static void OnAudioControllerInitialized()
-        {
-            AttachListenerIfNeeded();
-        }
-
 
         public static void AttachListenerIfNeeded()
         {

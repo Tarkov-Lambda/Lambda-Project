@@ -147,7 +147,7 @@ namespace ifp.arena.bep.networking
 
             player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
 
-            // Teleporter.Teleport(player, "lobby", Faction.None);
+            Teleporter.Teleport(player, "lobby", Faction.None);
         }
     }
 }

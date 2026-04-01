@@ -42,10 +42,13 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (interactive is BombPlantZone)
             {
+                D.Log("inside BombPlantZone");
                 if (roundState == MatchState.RoundAction) return true;
+                D.Log("after roundState == MatchState.RoundAction");
 
                 Item bomb = FindBombItemInPlayer(player);
-                if (bomb != null) return true;
+                if (bomb == null) return true;
+                D.Log("after bomb == null");
 
                 float plantingTime = SND_ModeRules.platingTime;
 

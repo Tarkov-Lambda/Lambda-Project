@@ -15,9 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="$(UnityEditorPath)\Editor\Data\Managed\UnityEditor.dll">
-      <Private>False</Private>
-    </Reference>
+    <Compile Remove="SteamAudio/Scripts/Editor/**/*.cs" />
+  </ItemGroup>
+
+
+  <ItemGroup>
 
     <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
       <Private>False</Private>

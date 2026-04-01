@@ -76,6 +76,7 @@ namespace ifp.arena.bep.networking
 
             D.Log(FikaBackendUtils.IsServer.ToString());
             D.LogTransaction("Starting a match");
+            
             if (FikaBackendUtils.IsServer)
             {
                 H.Arena.ChangeState(MatchState.Warmup);

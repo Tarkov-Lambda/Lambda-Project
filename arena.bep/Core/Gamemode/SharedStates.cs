@@ -106,8 +106,6 @@ namespace ifp.arena.bep.Core.Gamemode
             Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
             HU.HealMe().Forget();
 
-
-
             HU.ResetObservedPlayersHealth();
 
             H.SpectatorManager.StopSpectating();

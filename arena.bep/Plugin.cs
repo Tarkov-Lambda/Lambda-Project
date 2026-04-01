@@ -17,6 +17,7 @@ using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
 using SPT.Reflection.Patching;
+using SteamAudio;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -84,10 +85,12 @@ public class Plugin : BaseUnityPlugin
         InitConfiguration();
 
         // RegisterPatch(new Patch_AudioSettings_GetSpatializerPluginName());
-        SteamAudioInitializer.Initialize();
+        if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
+
         RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
         RegisterPatch(new Patch_BetterSource_Init()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
         RegisterPatch(new Patch_BetterAudio_SetProtagonist()); // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        // RegisterPatch(new Patch_MetaSpatialAudioSource_SetActive()); // Proxy SetActive Calls to adjacent SteamAudioSpatialAudioSource
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted()); // Hooks
@@ -215,6 +218,19 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
+        var sources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+        foreach (var source in sources)
+        {
+            source.spatialize = false;
+            source.spatialBlend = 0f;
+            SteamAudioSource asd = source.GetComponent<SteamAudioSource>();
+            if (asd != null)
+            {
+                asd.occlusion = true;
+                asd.transmission = false;
+                
+            }
+        }
 #if DEBUG
         // _disposables.Add(new DynamicClassTracer(typeof(AudioSettings)));
 #endif
