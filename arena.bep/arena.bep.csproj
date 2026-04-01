@@ -65,6 +65,9 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.AudioModule.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Meta.XR.Audio.dll">
       <Private>False</Private>
     </Reference>
