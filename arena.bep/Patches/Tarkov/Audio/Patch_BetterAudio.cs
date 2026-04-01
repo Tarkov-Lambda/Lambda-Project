@@ -4,7 +4,7 @@ using ifp.arena.shared;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace ifp.arena.shared
+namespace ifp.arena.bep.Patches
 {
     // attach steam listener on player
     internal class Patch_BetterAudio_SetProtagonist : ModulePatch

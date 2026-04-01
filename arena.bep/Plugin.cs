@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Triggers;
 using EFT;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -84,82 +85,83 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
-        // RegisterPatch(new Patch_AudioSettings_GetSpatializerPluginName());
+        // STEAM AUDIO
         if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
 
-        RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
-        RegisterPatch(new Patch_BetterSource_Init()); // Swap Meta XR spatializer for our SteamAudioSpatialAudioSource on every BetterSource that is initialized from a prefab pool.
-        RegisterPatch(new Patch_BetterAudio_SetProtagonist()); // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        // RegisterPatch(new Patch_MetaSpatialAudioSource_SetActive()); // Proxy SetActive Calls to adjacent SteamAudioSpatialAudioSource
+        RegisterPatch(new Patch_BetterSource_Init());                               // Attach SteamAudioSource, SteamAudioSpatialAudioSource, PhononDSPBridge to every MetaXRAudioSource
+        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+
+        // MetaXR to SteamAudio Proxies
+        // RegisterPatch(new Patch_BetterSource_get_Spatializer());                    // Proxy enabled calls to SteamAudioSource
+        // RegisterPatch(new Patch_MetaXRAudioSource_enabled());                       // Proxy enabled calls to SteamAudioSource
+        // RegisterPatch(new Patch_MetaSpatialAudioSource_enabled());                  // Proxy enabled calls to SteamAudioSpatialAudioSource
+        RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate());                // no-op + disable
+        RegisterPatch(new Patch_MetaSpatialAudioSource_SetActive());                // Proxy SetActive to SteamAudioSpatialAudioSource
 
         // TARKOV
-        RegisterPatch(new Patch_Gameworld_OnGameStarted()); // Hooks
-        RegisterPatch(new Patch_Gameworld_OnDispose()); // Hooks
+        RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
+        RegisterPatch(new Patch_Gameworld_OnDispose());                             // Hooks
 
-        RegisterPatch(new Patch_ActiveHealthController_Kill()); // Bypass Dying entirely
+        RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
+        // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
-        // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders()); // For hands models for spectator
-
-        RegisterPatch(new Patch_Player_VisualPass()); // Mapping ProceduralWeaponAnimation instances to players
-        RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors()); // Reduce Bobbing/inertia motion for pistols
-        RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors()); // Reduce Sway for pistols
+        RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation instances to players
+        RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
+        RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_CalculateCameraPosition()); // Reduce Bobbing/inertia motion for pistols
-        RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments()); // Procedural Blindfire Position
-        RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire()); // Override Blindfire Animation
-        RegisterPatch(new Patch_MovementContext_SetBlindFire()); // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
-        RegisterPatch(new Patch_MovementState_BlindFire()); // Force Blindfire state regardless of movement state
+        RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments());       // Procedural Blindfire Position
+        RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());      // Override Blindfire Animation
+        RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
+        RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
 
 
-        RegisterPatch(new Patch_Player_ShotReactions()); // Smooth Speed Tweak
-
-        RegisterPatch(new Patch_MovementContext_ManualUpdate()); // Smooth Speed Tweak
+        RegisterPatch(new Patch_Player_ShotReactions());                            // Smooth Speed Tweak
+        RegisterPatch(new Patch_MovementContext_ManualUpdate());                    // Smooth Speed Tweak
         // RegisterPatch(new NostalgiaPatrolFixExitPatch());
         // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
-        RegisterPatch(new Patch_MovementContext_GetNewState()); // Change Movement State Classes
-        // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown()); // Do not slow down during aiming
-        // RegisterPatch(new Patch_MovementContext_method_15()); // Old Leaning
+        RegisterPatch(new Patch_MovementContext_GetNewState());                     // Change Movement State Classes
+        // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());            // Do not slow down during aiming
+        // RegisterPatch(new Patch_MovementContext_method_15());                    // Old Leaning
 
-        RegisterPatch(new Patch_CanWalk()); // For controller locking
-        RegisterPatch(new Patch_CanJump()); // For controller locking
-        RegisterPatch(new Patch_CanPressTrigger()); // For controller locking
+        RegisterPatch(new Patch_CanWalk());                                         // For controller locking
+        RegisterPatch(new Patch_CanJump());                                         // For controller locking
+        RegisterPatch(new Patch_CanPressTrigger());                                 // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
 
-        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage()); // Caching last damage packet for death
-        RegisterPatch(new Patch_AmmoItemClass_RicochetChance()); // Set ricochet chance to 0
+        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for death
+        RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
 
         // RegisterPatch(new Patch_BackendConfigSettingsClass_AimPunchMagnitude()); // Set aimpunch to 0
 
-        // RegisterPatch(new Patch_SearchableItemItemClass_IsSearched()); // Planting (PlaceItem)
+        // RegisterPatch(new Patch_SearchableItemItemClass_IsSearched());           // Planting (PlaceItem)
 
         // RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger()); // Planting (PlaceItem)
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Defusing (Tripwire)
 
 
-        RegisterPatch(new Patch_method_10()); // Fake Ragdoll error silencing
-        // RegisterPatch(new Patch_FikaHealthBar_Awake()); // Very sloppy way to do this and causes errors
+        RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
+        // RegisterPatch(new Patch_FikaHealthBar_Awake());                          // Very sloppy way to do this and causes errors
 
-        RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon()); // Other players see you inspecting hands
-
-
-        RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent()); // Bypassing explosion for custom grenades
+        RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
 
         //--------------- ANIMATIONS --------------- //
         // RegisterPatch(new Patch_GClass2963_Spawn());
-        RegisterPatch(new Patch_BaseGrenadeHandsController_Drop()); // Instant Grenade Unequip
+        RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());                 // Instant Grenade Unequip
         // RegisterPatch(new Patch_FirearmController_Spawn());
-        RegisterPatch(new Patch_FirearmController_Drop()); // Instant Weapon Unequip
+        RegisterPatch(new Patch_FirearmController_Drop());                          // Instant Weapon Unequip
         // RegisterPatch(new Patch_FirearmController_InitiateOperation());
+        RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Other players see you inspecting hands
         //------------------------------------------ //
 
-        RegisterPatch(new Patch_CommonUI_Awake()); // Action Hook
-        RegisterPatch(new Patch_ItemsTabController_Show()); // Action Hook
-        RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput()); // Inventory opening control (for when we reset inv or hold tab for scoreboard)
+        RegisterPatch(new Patch_CommonUI_Awake());                                  // UI Action Hook
+        RegisterPatch(new Patch_ItemsTabController_Show());                         // UI Action Hook
+        RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());// Inventory opening control (for when we reset inv or hold tab for scoreboard)
 
 
         //--------------- FIKA --------------- //
-        // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived()); // Server-side preemptive death broadcasting
-        RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());
-        RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());
+        // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());      // Server-side preemptive death broadcasting
+        RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
+        RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
 
         // RegisterPatch(new ObservedPlayer_CreateObservedPlayer_Transpiler());
         // RegisterPatch(new Patch_ObservedPlayer_HandleDamagePacket());
@@ -218,19 +220,19 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        var sources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
-        foreach (var source in sources)
-        {
-            source.spatialize = false;
-            source.spatialBlend = 0f;
-            SteamAudioSource asd = source.GetComponent<SteamAudioSource>();
-            if (asd != null)
-            {
-                asd.occlusion = true;
-                asd.transmission = false;
-                
-            }
-        }
+        // var sources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+        // foreach (var source in sources)
+        // {
+        //     source.spatialize = false;
+        //     source.spatialBlend = 0f;
+        //     SteamAudioSource steamAudio = source.GetComponent<SteamAudioSource>();
+        //     if (steamAudio != null)
+        //     {
+        //         steamAudio.occlusion = true;
+        //         steamAudio.transmission = false;
+        //         steamAudio.enabled = true;
+        //     }
+        // }
 #if DEBUG
         // _disposables.Add(new DynamicClassTracer(typeof(AudioSettings)));
 #endif

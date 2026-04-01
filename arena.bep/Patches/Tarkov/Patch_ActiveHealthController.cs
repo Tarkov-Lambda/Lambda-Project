@@ -27,7 +27,6 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
 
-
     // Has to be prefix so that we can capture the damageInfo packet before Kill is invoked
     [PatchPrefix]
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
@@ -52,7 +51,6 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     private const int CooldownMs = 500;
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
-
 
     [PatchPrefix]
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
