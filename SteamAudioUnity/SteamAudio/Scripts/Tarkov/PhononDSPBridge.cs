@@ -80,6 +80,24 @@ namespace ifp.arena.shared
         private float[] _leftOut;
         private float[] _rightOut;
 
+        // ── Spatial blend (shadow field) ──────────────────────────────────────
+
+        /// <summary>
+        /// Shadow copy of the AudioSource's intended spatialBlend value.
+        /// The real AudioSource.spatialBlend is kept at 0 to prevent both
+        /// Unity's built-in 3-D panning and the Meta XR native spatializer
+        /// from processing the signal.  This value is fed into Phonon's
+        /// <c>IPLBinauralEffectParams.spatialBlend</c> so the engine smoothly
+        /// crossfades between dry/2-D (0) and fully HRTF-spatialized (1).
+        /// Distance attenuation is also scaled by this value: at 0 the sound
+        /// plays at full volume (true 2-D), at 1 it uses the full 3-D rolloff.
+        /// </summary>
+        [Header("Spatial Blend")]
+        [Range(0f, 1f)]
+        [Tooltip("Mirrors AudioSource.spatialBlend without triggering Meta XR. " +
+                 "0 = fully 2-D (no HRTF, no distance rolloff), 1 = fully 3-D.")]
+        public float spatialBlendOverride = 1f;
+
         // ── Occlusion / Transmission control ─────────────────────────────────
 
         /// <summary>
@@ -182,9 +200,13 @@ namespace ifp.arena.shared
             if (logLifecycle) LogV("  STEAMAUDIO_ENABLED is NOT defined — SteamAudioSource integration disabled");
 #endif
 
+            // Capture the original spatialBlend before zeroing it so Tarkov's
+            // per-source 3D mix is preserved and routed through Phonon instead.
+            spatialBlendOverride = _src.spatialBlend;
+
             _src.spatialize   = false;
             _src.spatialBlend = 0f;
-            if (logLifecycle) LogV("  Set spatialize=false, spatialBlend=0");
+            if (logLifecycle) LogV($"  Captured spatialBlend={spatialBlendOverride:F2}, then set spatialize=false, spatialBlend=0");
 
             _rate    = UnityEngine.AudioSettings.outputSampleRate;
             UnityEngine.AudioSettings.GetDSPBufferSize(out _bufSize, out int numBufs);
@@ -505,10 +527,16 @@ namespace ifp.arena.shared
                 }
 
                 // ── 1. Downmix to mono + distance attenuation ─────────────────
+                // Blend distance attenuation with spatialBlendOverride:
+                //   spatialBlendOverride = 0  →  fully 2-D, no rolloff (effectiveAtten = 1)
+                //   spatialBlendOverride = 1  →  full 3-D rolloff      (effectiveAtten = _distAtten)
+                float blend = Mathf.Clamp01(spatialBlendOverride);
+                float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
+
                 float monoRms = 0f, monoPeak = 0f;
                 for (int i = 0; i < n; i++)
                 {
-                    _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * _distAtten;
+                    _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
                     if (logBufferStats && shouldLogThisCallback)
                     {
                         float abs = Mathf.Abs(_monoIn[i]);
@@ -600,11 +628,13 @@ namespace ifp.arena.shared
                     }
 
                     // ── 3. Binaural effect: HRTF spatialization ───────────────
+                    // spatialBlend drives Phonon's internal dry/wet crossfade:
+                    //   0 = passthrough (2-D), 1 = full HRTF (3-D).
                     var bp = new PBinauralEffectParams
                     {
                         direction    = _dir,
                         interpolation = 1,
-                        spatialBlend = 1f,
+                        spatialBlend = blend,
                         hrtf         = s_hrtf,
                         peakDelays   = IntPtr.Zero,
                     };

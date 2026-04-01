@@ -25,12 +25,8 @@ namespace ifp.arena.bep.Core
             return vestItems.Concat(pocketItems).OfType<T>();
         }
 
-        public static List<MagazineItemClass> GetMatchingMags(Player player, CompoundItem vest, string magTemplateId)
-        {
-            return GetVestAndPocketGridItems<MagazineItemClass>(player, vest)
-                .Where(m => m.TemplateId == magTemplateId)
-                .ToList();
-        }
+        public static List<MagazineItemClass> GetMatchingMags(Player player, CompoundItem vest, string magTemplateId) =>
+        GetVestAndPocketGridItems<MagazineItemClass>(player, vest).Where(m => m.TemplateId == magTemplateId).ToList();
 
         public static List<Weapon> GetPlayerWeapons(Player player)
         {

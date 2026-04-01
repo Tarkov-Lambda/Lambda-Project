@@ -103,7 +103,7 @@ namespace ifp.arena.bep.Core.Gamemode
                 if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
 
                 VestItemClass tacRig = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as VestItemClass;
-                if (AU.IsTacRigArmored(tacRig))
+                if (tacRig != null && AU.IsTacRigArmored(tacRig))
                 {
                     AddItem(ref itemsToRemove, tacRig);
                 }
