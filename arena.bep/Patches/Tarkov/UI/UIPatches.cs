@@ -3,6 +3,7 @@ using SPT.Reflection.Patching;
 using System.Collections.Generic;
 
 using ifp.arena.bep.Patches.Tarkov.UI.BattleStance;
+using Comfort.Common;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI
 {
@@ -23,6 +24,11 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());// Inventory opening control (for when we reset inv or hold tab for scoreboard)
 
             RegisterPatch(new Patch_BattleStancePanel_Awake());
+
+            if (Singleton<EFT.UI.CommonUI>.Instantiated)
+            {
+                Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<EFT.UI.CommonUI>.Instance);
+            }
         }
 
         internal static void Disable()
