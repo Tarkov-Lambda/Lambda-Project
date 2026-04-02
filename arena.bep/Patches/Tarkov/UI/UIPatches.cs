@@ -30,6 +30,10 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             RegisterPatch(new Patch_BoundItemView_Show());
             RegisterPatch(new Patch_QuickSlotView_ShowInfoPanel());
 
+            RegisterPatch(new Patch_QuickSlotView_Awake());
+            RegisterPatch(new Patch_QuickSlotView_SwitchVisualSelection());
+            RegisterPatch(new Patch_QuickSlotView_RefreshMalfunctionForWeapon());
+
             RegisterPatch(new Patch_GrenadeSelector_Awake());
 
             RegisterPatch(new Patch_QuickSlotItemView_UpdateScale()); // remove icon rotation
