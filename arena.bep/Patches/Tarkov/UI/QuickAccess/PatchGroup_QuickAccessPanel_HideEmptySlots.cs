@@ -46,10 +46,31 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
                 => AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.method_2));
 
             [PatchPostfix]
-            private static void PatchPostfix(FastAccessGrenadeItemView __instance)
+            private static void PatchPostfix(FastAccessGrenadeItemView __instance, Item ___Item)
             {
-                // this doesn't do shit half the time
-                __instance.gameObject.SetActive(__instance.ThrowWeapItemClass != null);
+                __instance.gameObject.SetActive(___Item != null);
+            }
+        }
+        private class Patch_FastAccessGrenadeItemView_Show : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+                => AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.Show));
+
+            [PatchPostfix]
+            private static void PatchPostfix(FastAccessGrenadeItemView __instance, Item ___Item)
+            {
+                __instance.gameObject.SetActive(___Item != null);
+            }
+        }
+        private class Patch_QuickSlotView_Show : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+                => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.RemoveItemView));
+
+            [PatchPostfix]
+            private static void PatchPostfix(QuickSlotView __instance)
+            {
+                __instance.gameObject.SetActive(false);
             }
         }
         private class Patch_QuickSlotView_ShowInfoPanel : ModulePatch
