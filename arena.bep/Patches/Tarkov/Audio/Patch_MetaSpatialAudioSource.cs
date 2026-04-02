@@ -10,16 +10,32 @@ namespace ifp.arena.bep.Patches
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MetaSpatialAudioSource), nameof(MetaSpatialAudioSource.SetActive));
 
-        [PatchPrefix]
-        static bool Prefix(MetaSpatialAudioSource __instance, bool active)
+        [PatchPostfix]
+        static void Postfix(MetaSpatialAudioSource __instance, bool active)
         {
-            var steamSpatializer = __instance.gameObject.GetComponent<SteamAudioSpatialAudioSource>();
-            steamSpatializer.SetActive(active);
-            __instance.gameObject.GetComponent<PhononDSPBridge>().enabled = active;
+            // Lazy initialize the Budget Manager onto BetterAudio so it persists
+            if (SteamAudioBudgetManager.Instance == null)
+            {
+                if (BetterAudio.Instance != null && BetterAudio.Instance.gameObject != null)
+                {
+                    BetterAudio.Instance.gameObject.AddComponent<SteamAudioBudgetManager>();
+                }
+                else
+                {
+                    return;
+                }
+            }
 
-            __instance.enabled = false;
-            
-            return false;
+            if (active)
+            {
+                // Add to our tracked pool to be sorted by the budget manager
+                SteamAudioBudgetManager.Instance.RegisterSource(__instance);
+            }
+            else
+            {
+                // Remove from the pool and immediately free the RAM
+                SteamAudioBudgetManager.Instance.UnregisterSource(__instance);
+            }
         }
     }
 

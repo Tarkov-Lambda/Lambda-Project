@@ -98,7 +98,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_MetaXRAudioSource_enabled());                       // Proxy enabled calls to SteamAudioSource
         // RegisterPatch(new Patch_MetaSpatialAudioSource_enabled());                  // Proxy enabled calls to SteamAudioSpatialAudioSource
         // RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate());                // no-op + disable
-        // RegisterPatch(new Patch_MetaSpatialAudioSource_SetActive());                // Proxy SetActive to SteamAudioSpatialAudioSource
+        RegisterPatch(new Patch_MetaSpatialAudioSource_SetActive());                // Proxy SetActive to SteamAudioSpatialAudioSource
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
@@ -227,16 +227,16 @@ public class Plugin : BaseUnityPlugin
             D.Log(source.gameObject.name);
             source.spatialize = false;
             source.spatialBlend = 0f;
-            
+
             SteamAudioSource steamAudio = source.gameObject.GetOrAddComponent<SteamAudioSource>();
             PhononDSPBridge _phonon = source.gameObject.GetOrAddComponent<PhononDSPBridge>();
-            
+
             if (steamAudio != null)
             {
                 steamAudio.occlusion = true;
-                steamAudio.transmission = true;
+                steamAudio.transmission = false;
                 steamAudio.reflections = false;
-                
+
                 steamAudio.enabled = true;
             }
             // SteamAudioSpatialAudioSource spatial = source.GetComponent<SteamAudioSpatialAudioSource>();
