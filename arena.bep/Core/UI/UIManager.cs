@@ -206,7 +206,8 @@ namespace ifp.arena.bep.Core.UI
                     Kills = playerScore.kills,
                     Deaths = playerScore.deaths,
                     Assists = playerScore.assists,
-                    Ping = playerScore.ping
+                    Ping = playerScore.ping,
+                    Headshots = playerScore.headshots
                 });
             }
 

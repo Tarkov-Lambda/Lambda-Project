@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1454894101478578738}
   - component: {fileID: 695303062634706709}
   m_Layer: 0
-  m_Name: Image (4)
+  m_Name: blockHeadshotRatio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -378,7 +378,7 @@ GameObject:
   - component: {fileID: 7875093991439674881}
   - component: {fileID: 3402008829016654284}
   m_Layer: 0
-  m_Name: Image
+  m_Name: blockName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -475,7 +475,7 @@ GameObject:
   - component: {fileID: 7381371446095161398}
   - component: {fileID: 7344188055806131755}
   m_Layer: 0
-  m_Name: Image (2)
+  m_Name: blockDeaths
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -853,6 +853,7 @@ MonoBehaviour:
   textDeaths: {fileID: 7887700850248605664}
   textAssists: {fileID: 4592914259488616229}
   textPing: {fileID: 5579549886948306945}
+  textHeadshotRatio: {fileID: 7762092993602845677}
   bg: {fileID: 1731696568174521912}
 --- !u!114 &5120199069234546112
 MonoBehaviour:
@@ -927,7 +928,7 @@ GameObject:
   - component: {fileID: 8536415934642888475}
   - component: {fileID: 4446678148348389360}
   m_Layer: 0
-  m_Name: Image (3)
+  m_Name: blockAssists
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1024,7 +1025,7 @@ GameObject:
   - component: {fileID: 8163405351252517905}
   - component: {fileID: 1091144957094206560}
   m_Layer: 0
-  m_Name: Image (1)
+  m_Name: blockKills
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

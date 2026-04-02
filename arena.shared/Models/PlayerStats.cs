@@ -10,6 +10,7 @@
         public int Deaths;
         public int Assists;
         public int Ping;
+        public int Headshots;
 
         public override string ToString()
         {
