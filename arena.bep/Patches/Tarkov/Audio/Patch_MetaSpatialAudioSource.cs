@@ -42,7 +42,7 @@ namespace ifp.arena.bep.Patches
         static bool Prefix(MetaSpatialAudioSource __instance, bool value)
         {
             SteamAudioSpatialAudioSource steamAudioSpatial = __instance.gameObject.GetComponent<SteamAudioSpatialAudioSource>();
-            if (steamAudioSpatial is not null) steamAudioSpatial.enabled = value;
+            if (steamAudioSpatial != null) steamAudioSpatial.enabled = value;
 
             return false;
         }

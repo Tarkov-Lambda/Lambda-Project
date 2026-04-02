@@ -64,7 +64,7 @@ namespace ifp.arena.bep.Core
             {
                 foreach (var slot in armorHolder.ArmorSlots)
                 {
-                    if (slot.ContainedItem is not null)
+                    if (slot.ContainedItem != null)
                         continue;
                     if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
                         continue;

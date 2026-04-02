@@ -71,7 +71,7 @@ namespace ifp.arena.bep.Core
             if (placement.Kind == PlacementKind.EquipmentSlot)
             {
                 var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
-                if (slot.ContainedItem is not null)
+                if (slot.ContainedItem != null)
                 {
                     bool removed;
                     if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
@@ -97,7 +97,12 @@ namespace ifp.arena.bep.Core
             D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
             Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
             return true;
+        }
 
+        public static void ClientRequestPopItem(Item item)
+        {
+            Singleton<PopPacketHandler>.Instance.Send(item);
+            // IU.TryPopItemWithoutRestriction(item, H.MainPlayer).Forget();
         }
 
 
@@ -160,6 +165,26 @@ namespace ifp.arena.bep.Core
             return await TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
         }
 
+        // public static async UniTask TryPopItemsWithoutRestriction(IEnumerable<Item> items, Player player, int delayMs = 25)
+        // {
+        //     foreach (var item in items)
+        //     {
+        //         await TryPopItemWithoutRestriction(item, player);
+        //         if (delayMs != 0) await UniTask.Delay(delayMs);
+        //     }
+        // }
+
+        public static async UniTask<bool> TryPopItemWithoutRestriction(Item item, ItemAddress itemAddress, Player player)
+        {
+            // var itemAddress = item.CurrentAddress;
+            itemAddress.RemoveWithoutRestrictions(item);
+
+            itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
+            itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
+
+            return true;
+        }
+
         public static async UniTask TryThrowItems(IEnumerable<Item> items, Player player, int delayMs = 25)
         {
             foreach (var item in items)
@@ -182,6 +207,33 @@ namespace ifp.arena.bep.Core
             D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
 
             var opResult = action(item, player.InventoryController, true);
+
+            if (opResult.Failed)
+            {
+                D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {opResult.Error}");
+                return false;
+            }
+
+            IResult result = await player.InventoryController.TryRunNetworkTransaction(opResult);
+
+            if (result.Failed)
+            {
+                D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
+                D.LogTransaction($"Reason: {result.Error}");
+            }
+
+            return !result.Failed;
+        }
+
+        public static async UniTask<bool> TryDoItemActionWithoutRestriction<T>(
+            Item item,
+            Player player,
+            Func<Item, InventoryController, GStruct154<T>> action, string actionName) where T : IRaiseEvents
+        {
+            D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
+            var address = item.CurrentAddress;
+            var opResult = action(item, player.InventoryController);
 
             if (opResult.Failed)
             {

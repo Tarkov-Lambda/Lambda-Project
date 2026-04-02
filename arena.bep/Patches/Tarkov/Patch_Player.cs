@@ -54,7 +54,7 @@ namespace ifp.arena.bep.Patches.Tarkov
         static void Postfix(Player __instance, DamageInfoStruct shot, EBodyPart bodyPart)
         {
             // D.Dump(shot);
-            if (shot.OverDamageFrom is not null) return;
+            if (shot.OverDamageFrom != null) return;
             if (bodyPart is not EBodyPart.Head) return;
 
             int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;
@@ -71,7 +71,7 @@ namespace ifp.arena.bep.Patches.Tarkov
             // Only update AFTER passing cooldown (or if new)
             _lastShotTimeDict[__instance.PlayerId] = now;
 
-            bool didHitHelmet = shot.BlockedBy is not null;
+            bool didHitHelmet = shot.BlockedBy != null;
 
             AudioClip[] clips = didHitHelmet ? H.Sounds.HeadshotHelmet : H.Sounds.HeadshotFlesh;
             H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 50, BetterAudio.AudioSourceGroupType.Character);

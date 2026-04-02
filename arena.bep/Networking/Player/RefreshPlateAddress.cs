@@ -15,25 +15,28 @@ using Newtonsoft.Json;
 
 namespace ifp.arena.bep.networking
 {
-    public struct RefreshPlateAddressPacket : INetSerializable
+    public struct PopPacket : INetSerializable
     {
         public int playerId;
-        public ItemAddress address;
+        public Item item;
+        public ItemAddress itemAddress;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(playerId);
-            writer.Put(address);
+            writer.PutItem(item);
+            writer.Put(itemAddress);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             playerId = reader.GetInt();
-            address = reader.GetItemAddress(H.GetPlayer(playerId));
+            item = reader.GetItem();
+            itemAddress = reader.GetItemAddress(H.GetPlayer(playerId));
         }
     }
 
-    public class RefreshPlateAddressPacketHandler : PacketHandler<RefreshPlateAddressPacket>
+    public class PopPacketHandler : PacketHandler<PopPacket>
     {
 
         protected override RateLimitConfig ServerRateLimit => new(
@@ -45,22 +48,29 @@ namespace ifp.arena.bep.networking
             stateTtlSeconds: 60,
             rejectCooldownSeconds: 1.0);
 
-        public void Send(ItemAddress address)
+        public void Send(Item item)
         {
-            var packet = new RefreshPlateAddressPacket
+            var packet = new PopPacket
             {
                 playerId = H.MainPlayer.Id,
-                address = address
+                item = item,
+                itemAddress = item.CurrentAddress
             };
 
             RequestSend(packet);
         }
 
-        protected override async void WhenApproved(RefreshPlateAddressPacket packet, NetPeer peer)
+        protected override void LocalPredictApproved(PopPacket packet)
         {
-            Slot plateSlot = packet.address.Container as Slot;
-            plateSlot.ApplyContainedItem();
-            D.Dump(plateSlot.ContainedItem);
+            IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, H.MainPlayer).Forget();
+        }
+
+
+        protected override async void WhenApproved(PopPacket packet, NetPeer peer)
+        {
+            Player player = H.GetPlayer(packet.playerId); 
+            if (player.IsYourPlayer) return;
+            IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, player).Forget();
         }
     }
 }

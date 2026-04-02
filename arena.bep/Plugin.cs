@@ -219,7 +219,7 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        // var sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        var sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         // foreach (var source in sources)
         // {
         //     source.spatialize = false;

@@ -2,11 +2,11 @@
 using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.bep.networking.TimeSync;
+using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
 
@@ -79,6 +79,10 @@ namespace ifp.arena.bep.networking
             if (packet.state is BombState.Planted)
             {
                 H.Arena.LastObjectivePlayerId = packet.playerId;
+                foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
+                {
+                    bombPlantZone.GetComponent<BoxCollider>().enabled = false;
+                }
             }
 
 

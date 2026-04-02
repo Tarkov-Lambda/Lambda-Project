@@ -22,6 +22,7 @@ namespace ifp.arena.bep.Core.Dying
     public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
     {
         readonly Dictionary<Player, FakeCorpse> regsitry = new Dictionary<Player, FakeCorpse>();
+        readonly HashSet<Player> lootRegistered = new HashSet<Player>();
 
         public void Dispose()
         {
@@ -123,8 +124,7 @@ namespace ifp.arena.bep.Core.Dying
 
             playerClone.SetActive(true);
 
-            // if you call this shit on local player your inv controller is fucked
-            if (!player.IsYourPlayer)
+            if (!player.IsYourPlayer && !lootRegistered.Contains(player))
             {
                 PlayerBones cloneBones = playerClone.GetComponentInChildren<PlayerBones>();
                 fakeCorpse.method_17(
@@ -140,7 +140,7 @@ namespace ifp.arena.bep.Core.Dying
                     new BindableStateClass<Item>(null),
                     foreStillCorpse: false
                 );
-
+                lootRegistered.Add(player);
             }
 
             Vector3 velocity = player.Velocity;

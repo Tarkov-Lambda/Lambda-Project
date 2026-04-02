@@ -17,6 +17,11 @@ namespace ifp.arena.bep.Core.Gamemode
     {
         public override void OnEnter()
         {
+            foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
+            {
+                bombPlantZone.GetComponent<BoxCollider>().enabled = true;
+            }
+
             H.Session.bombState = BombState.None;
 
             H.Arena.LastObjectivePlayerId = -1;

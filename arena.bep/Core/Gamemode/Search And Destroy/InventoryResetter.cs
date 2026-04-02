@@ -103,22 +103,22 @@ namespace ifp.arena.bep.Core.Gamemode
                 if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
 
                 VestItemClass tacRig = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as VestItemClass;
-                if (tacRig is not null && AU.IsTacRigArmored(tacRig))
+                // if (tacRig != null && AU.IsTacRigArmored(tacRig))
+                // {
+                //     AddItem(ref itemsToRemove, tacRig);
+                // }
+                // else
+                // {
+                // Remove everything from vest + pockets that isn't the default pistol mag
+                foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
                 {
-                    AddItem(ref itemsToRemove, tacRig);
+                    bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                    if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
                 }
-                else
-                {
-                    // Remove everything from vest + pockets that isn't the default pistol mag
-                    foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
-                    {
-                        bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                        if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
-                    }
-                }
+                // }
 
                 ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
-                if (armorVest is not null && armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
+                if (armorVest != null && armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
                 {
                     AddItem(ref itemsToRemove, armorVest);
                 }
@@ -160,9 +160,14 @@ namespace ifp.arena.bep.Core.Gamemode
                 }
 
                 // plate removal in case the player just got a fresh plate carrier
-                itemsToRemove = [];
-                AddRange(ref itemsToRemove, AU.GetArmorPlates(player));
-                await IU.TryPopItems(itemsToRemove, player);
+                List<Item> platesToRemove = new List<Item>();
+                AddRange(ref platesToRemove, AU.GetArmorPlates(player));
+
+                foreach (Item plateToRemove in platesToRemove)
+                {
+                    IU.ClientRequestPopItem(plateToRemove);
+                    await UniTask.Delay(25);
+                }
             }
             finally
             {

@@ -52,19 +52,20 @@ namespace ifp.arena.bep.Core
                 // When a person enters the raid, their slots override defaults. if a required slot does not have an item, we use default.
                 Item item = H.MainInventory.Equipment.GetSlot(presetInfo.Key).ContainedItem;
                 if (item == null && presetInfo.Value.isRequired 
-                || (presetInfo.Key is EquipmentSlot.TacticalVest && AU.IsTacRigArmored(item as VestItemClass)))
+                // || (presetInfo.Key is EquipmentSlot.TacticalVest && AU.IsTacRigArmored(item as VestItemClass))
+                )
                 {
                     item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(presetInfo.Value.defaultBsgId);
                 }
 
                 // If the tactical rig is armoured, skip armor vest
-                // if (presetInfo.Key is EquipmentSlot.ArmorVest)
-                // {
-                //     if (AU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
-                //     {
-                //         continue;
-                //     }
-                // }
+                if (presetInfo.Key is EquipmentSlot.ArmorVest)
+                {
+                    if (AU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                    {
+                        continue;
+                    }
+                }
             
                 RecordedItems[presetInfo.Key] = item;
             }

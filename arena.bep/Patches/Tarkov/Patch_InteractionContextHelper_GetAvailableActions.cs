@@ -40,6 +40,49 @@ namespace ifp.arena.bep.Patches.Tarkov
             Player player = owner.Player;
             AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
 
+            if (interactive is bombasik)
+            {
+                if (H.Session.matchState is not MatchState.RoundPlanted) return true;
+                if (H.MainPlayer.IsInPronePose) return true;
+                float defusingTime = SND_ModeRules.defusingTime;
+
+                actionsReturnClass.Actions.Add(new ActionsTypesClass
+                {
+                    Name = "DEFUSE",
+                    Action = delegate
+                    {
+                        if (H.Session.matchState is not MatchState.RoundPlanted) return;
+                        if (owner.Player.CurrentState is IdleStateClass)
+                        {
+                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.BombHandler.BombPlantedPosition);
+
+                            owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
+                            owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, async (successful) =>
+                            {
+                                owner.CloseObjectivesPanel();
+                                // Re-read in case another defuser already changed state
+                                Vector3 pos = H.BombHandler.BombPlantedPosition;
+                                if (!successful)
+                                {
+                                    // Revert state for all clients so another CT can try
+                                    Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, pos);
+                                    return;
+                                }
+                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defused, pos);
+                                owner.ClearInteractionState();
+                            });
+                        }
+                        else
+                        {
+                            owner.DisplayPreloaderUiNotification("You can't defuse while moving");
+                        }
+                    }
+                });
+
+                __result = actionsReturnClass;
+                return false;
+            }
+
             if (interactive is BombPlantZone)
             {
                 __result = actionsReturnClass;
@@ -85,48 +128,6 @@ namespace ifp.arena.bep.Patches.Tarkov
                 return false;
             }
 
-            if (interactive is bombasik)
-            {
-                if (H.Session.matchState is not MatchState.RoundPlanted) return true;
-
-                float defusingTime = SND_ModeRules.defusingTime;
-
-                actionsReturnClass.Actions.Add(new ActionsTypesClass
-                {
-                    Name = "DEFUSE",
-                    Action = delegate
-                    {
-                        if (H.Session.matchState is not MatchState.RoundPlanted) return;
-                        if (owner.Player.CurrentState is IdleStateClass)
-                        {
-                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.BombHandler.BombPlantedPosition);
-
-                            owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
-                            owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, async (successful) =>
-                            {
-                                owner.CloseObjectivesPanel();
-                                // Re-read in case another defuser already changed state
-                                Vector3 pos = H.BombHandler.BombPlantedPosition;
-                                if (!successful)
-                                {
-                                    // Revert state for all clients so another CT can try
-                                    Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, pos);
-                                    return;
-                                }
-                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defused, pos);
-                                owner.ClearInteractionState();
-                            });
-                        }
-                        else
-                        {
-                            owner.DisplayPreloaderUiNotification("You can't defuse while moving");
-                        }
-                    }
-                });
-
-                __result = actionsReturnClass;
-                return false;
-            }
             return true;
         }
 
