@@ -44,7 +44,9 @@ namespace ifp.arena.bep.Patches.Tarkov
             {
                 if (H.Session.matchState is not MatchState.RoundPlanted) return true;
                 if (H.MainPlayer.IsInPronePose) return true;
-                float defusingTime = SND_ModeRules.defusingTime;
+
+                bool hasDefuseKit = TryFindItem(SND_ModeRules.defuseKitTemplateId, out Item defuseKit);
+                float defusingTime = hasDefuseKit ? SND_ModeRules.defusingTime / 2 : SND_ModeRules.defusingTime;
 
                 actionsReturnClass.Actions.Add(new ActionsTypesClass
                 {
@@ -88,8 +90,7 @@ namespace ifp.arena.bep.Patches.Tarkov
                 __result = actionsReturnClass;
                 if (roundState != MatchState.RoundAction) return false;
 
-                Item bomb = FindBombItemInPlayer(player);
-                if (bomb == null) return false;
+                if (!TryFindItem(SND_ModeRules.bombTemplateId, out Item bomb)) return false;
 
                 float plantingTime = SND_ModeRules.platingTime;
 
@@ -132,10 +133,11 @@ namespace ifp.arena.bep.Patches.Tarkov
         }
 
 
-        static Item FindBombItemInPlayer(Player player)
+        static bool TryFindItem(string templateId, out Item item)
         {
-            Item[] playerInventory = player.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
-            return playerInventory.FirstOrDefault((Item nextItem) => nextItem.TemplateId == SND_ModeRules.bombTemplateId);
+            Item[] playerInventory = H.MainPlayer.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
+            item = playerInventory.FirstOrDefault(nextItem => nextItem.TemplateId == templateId);
+            return item != null;
         }
 
         static Vector3 GetBombPlantPosition(Player player)

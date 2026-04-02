@@ -130,6 +130,7 @@ namespace ifp.arena.bep.Core.Gamemode
         public static float defusingTime = 10f;
         public static float defuseRadius = 2.5f;
         public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
+        public static string defuseKitTemplateId = "544fb5454bdc2df8738b456a";
 
         public bool hasSideSwapped;
 
