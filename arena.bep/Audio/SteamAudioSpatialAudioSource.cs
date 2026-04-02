@@ -3,10 +3,6 @@ using EFT;
 using Audio.SpatialSystem;
 using SteamAudio;
 
-#if STEAMAUDIO_ENABLED
-using SteamAudio;
-#endif
-
 namespace ifp.arena.shared
 {
     // Implementation for Spatial Audio Source for Better Source
@@ -106,7 +102,7 @@ namespace ifp.arena.shared
             {
                 _enableReverb = value;
 #if STEAMAUDIO_ENABLED
-                if (_steamSource != null) _steamSource.reflections = value;
+                if (_steamSource != null) _steamSource.reflections = false;
 #endif
             }
         }
@@ -298,7 +294,7 @@ namespace ifp.arena.shared
 
             // ── PhononDSPBridge: drives the DSP (HRTF + occlusion/transmission).
             // Its Awake() will set spatialize=false and spatialBlend=0 immediately.
-            gameObject.GetOrAddComponent<PhononDSPBridge>();
+            _phononDSPBridge = gameObject.GetOrAddComponent<PhononDSPBridge>();
 #endif
         }
 
@@ -367,9 +363,9 @@ namespace ifp.arena.shared
             // ── Reflections ───────────────────────────────────────────────────
             // Real-time convolution IR computed by SteamAudioManager's reflection thread.
             // HRTF-binauralised for immersive reverb.
-            _steamSource.reflections = true;
+            _steamSource.reflections = false;
             _steamSource.reflectionsType = ReflectionsType.Realtime;
-            _steamSource.applyHRTFToReflections = true;
+            _steamSource.applyHRTFToReflections = false;
             _steamSource.reflectionsMixLevel = Mathf.Clamp01(_reflectionsMixLevelOverride);
 
             // Pathing requires pre-baked probe batches – leave disabled unless set externally.

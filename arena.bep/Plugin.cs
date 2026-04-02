@@ -88,10 +88,10 @@ public class Plugin : BaseUnityPlugin
         InitConfiguration();
 
         // STEAM AUDIO
-        // if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
+        if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
 
         // RegisterPatch(new Patch_BetterSource_Init());                               // Attach SteamAudioSource, SteamAudioSpatialAudioSource, PhononDSPBridge to every MetaXRAudioSource
-        // RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
 
         // MetaXR to SteamAudio Proxies
         // RegisterPatch(new Patch_AudioSource_spatialBlend());                           // Proxy enabled calls to SteamAudioSource
@@ -221,25 +221,34 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        var sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        // foreach (var source in sources)
-        // {
-        //     source.spatialize = false;
-        //     source.spatialBlend = 0f;
+        var sources = H.GameWorld?.gameObject.GetComponentsInChildren<AudioSource>(true);
+        foreach (var source in sources)
+        {
+            D.Log(source.gameObject.name);
+            source.spatialize = false;
+            source.spatialBlend = 0f;
             
-        //     SteamAudioSource steamAudio = source.gameObject.GetComponent<SteamAudioSource>();
-        //     if (steamAudio != null)
-        //     {
-        //         steamAudio.occlusion = true;
-        //         steamAudio.transmission = false;
-        //         steamAudio.enabled = true;
-        //     }
+            SteamAudioSource steamAudio = source.gameObject.GetOrAddComponent<SteamAudioSource>();
+            PhononDSPBridge _phonon = source.gameObject.GetOrAddComponent<PhononDSPBridge>();
+            
+            if (steamAudio != null)
+            {
+                steamAudio.occlusion = true;
+                steamAudio.transmission = true;
+                steamAudio.reflections = false;
+                
+                steamAudio.enabled = true;
+            }
+            // SteamAudioSpatialAudioSource spatial = source.GetComponent<SteamAudioSpatialAudioSource>();
+            // spatial.EnableReverb = false;
+            // steamAudio.reflections = false;
+            // source.GetComponent<PhononDSPBridge>().enabled = true;;
 
-        //     source.gameObject.GetComponent<MetaXRAudioSource>().enabled = false;
-        //     source.gameObject.GetComponent<MetaXRAudioSourceExperimentalFeatures>().enabled = false;
-        //     source.gameObject.GetComponent<MetaSpatialAudioSource>().enabled = false;
-        //     source.enabled = true;
-        // }
+            // source.gameObject.GetComponent<MetaXRAudioSource>().enabled = false;
+            // source.gameObject.GetComponent<MetaXRAudioSourceExperimentalFeatures>().enabled = false;
+            // source.gameObject.GetComponent<MetaSpatialAudioSource>().enabled = false;
+            // source.enabled = true;
+        }
 
 #if DEBUG
         // _disposables.Add(new DynamicClassTracer(typeof(AudioSource)));

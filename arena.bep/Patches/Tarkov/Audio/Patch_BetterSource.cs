@@ -12,7 +12,7 @@ namespace ifp.arena.bep.Patches
     // and override protected spatializer field in bettersource
     internal class Patch_BetterSource_Init : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.Init));
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SimpleSource), nameof(SimpleSource.Init));
 
         [PatchPostfix]
         static void Postfix(BetterSource __instance, ref BaseSpatialAudioSource ___Spatializer)

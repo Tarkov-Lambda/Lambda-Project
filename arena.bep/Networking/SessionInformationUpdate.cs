@@ -82,7 +82,7 @@ namespace ifp.arena.bep.networking
                     money = kvp.Value.money,
                     isAlive = kvp.Value.isAlive,
                     isReady = kvp.Value.isMapReady,
-                    
+
                     s_roundDamage = kvp.Value.s_roundDamage,
                     roundKills = kvp.Value.roundKills,
                     roundHeadshots = kvp.Value.roundHeadshots
