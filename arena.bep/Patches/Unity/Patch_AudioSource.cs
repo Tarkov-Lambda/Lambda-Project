@@ -1,0 +1,67 @@
+using Audio.SpatialSystem;
+using HarmonyLib;
+using ifp.arena.shared;
+using SPT.Reflection.Patching;
+using SteamAudio;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using UnityEngine;
+
+namespace ifp.arena.bep.Patches
+{
+    public struct SteamSourceData
+    {
+        public SteamAudioSource steam;
+        public PhononDSPBridge bridge;
+
+    }
+
+    internal class SteamSourceDict
+    {
+        public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
+    }
+
+    // Proxying all spatial setter/getters to Steam Audio DSP Bridge
+    internal class Patch_AudioSource_set_spatialBlend : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.spatialBlend));
+
+        [PatchPrefix]
+        public static bool Prefix(AudioSource __instance, ref float value)
+        {
+            if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+
+            var spatCache = SteamSourceDict.cache[__instance];
+
+            spatCache.bridge.spatialBlendOverride = Mathf.Clamp01(value);
+            // D.Log("SETTING spatialBlend");
+
+            __instance.spatialize = false;
+            value = 0f;
+            return true;
+        }
+    }
+
+    internal class Patch_AudioSource_get_spatialBlend : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(AudioSource), nameof(AudioSource.spatialBlend));
+
+        [PatchPrefix]
+        public static bool Prefix(AudioSource __instance, ref float __result)
+        {
+            if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+
+            var spatCache = SteamSourceDict.cache[__instance];
+
+            __result = spatCache.bridge.spatialBlendOverride;
+            // D.Log("Getting spatialBlend");
+
+            return false;
+        }
+    }
+}
+
+

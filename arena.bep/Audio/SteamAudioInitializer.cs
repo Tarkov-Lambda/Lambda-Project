@@ -5,6 +5,10 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using ifp.arena.bep;
+using GPUInstancer;
+
+
 
 #if STEAMAUDIO_ENABLED
 using SteamAudio;
@@ -48,27 +52,18 @@ namespace ifp.arena.shared
         //  0. Native DLL pre-load
         // ─────────────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Mono's P/Invoke resolver does not automatically search BepInEx plugin sub-folders.
-        /// We force Windows to map phonon.dll (and the Unity audio plugin) into the process
-        /// using LoadLibraryW before any managed Steam Audio code executes its first P/Invoke.
-        ///
-        /// The DLLs are located in the same directory as SteamAudioUnity.dll.
-        /// </summary>
         private static void PreloadNativeDlls()
         {
-            // Resolve the folder that BepInEx loaded SteamAudioUnity.dll from.
-            string dir = Path.GetDirectoryName(typeof(SteamAudioManager).Assembly.Location) ?? AppDomain.CurrentDomain.BaseDirectory;
 
-            Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {dir}");
+            Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {Plugin.pathToDeps}");
 
             // phonon.dll is the core Phonon/Steam Audio native library that SteamAudioUnity.dll
             // P/Invokes into.  It must be loaded BEFORE audioplugin_phonon.dll.
-            string[] libs = { "TrueAudioNext.dll", "phonon.dll", "audioplugin_phonon.dll" };
+            string[] libs = { "phonon.dll", "audioplugin_phonon.dll" };
 
             foreach (string libName in libs)
             {
-                string fullPath = Path.Combine(dir, libName);
+                string fullPath = Path.Combine(Plugin.pathToDeps, libName);
                 Debug.Log(fullPath);
                 if (!File.Exists(fullPath))
                 {
@@ -80,9 +75,7 @@ namespace ifp.arena.shared
                 if (handle == IntPtr.Zero)
                 {
                     int err = Marshal.GetLastWin32Error();
-                    Debug.LogError($"[SteamAudio] LoadLibraryW failed for '{libName}' " +
-                                  $"(Win32 error {err} – see https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes). " +
-                                  "Missing a dependency DLL?");
+                    Debug.LogError($"[SteamAudio] LoadLibraryW failed for '{libName}' " + $"(Win32 error {err}" + "Missing a dependency DLL?");
                 }
                 else
                 {
@@ -90,10 +83,6 @@ namespace ifp.arena.shared
                 }
             }
         }
-
-        // ─────────────────────────────────────────────────────────────────────────
-        //  1. Runtime SteamAudioSettings creation
-        // ─────────────────────────────────────────────────────────────────────────
 
         private static void EnsureSettings()
         {
@@ -205,7 +194,7 @@ namespace ifp.arena.shared
             var betterAudio = Singleton<BetterAudio>.Instance;
             if (betterAudio == null) return;
 
-            Transform listenerTransform = betterAudio.ListenerTransform ?? betterAudio.AudioListener?.transform;
+            Transform listenerTransform = betterAudio.ListenerTransform != null ? betterAudio.ListenerTransform : betterAudio.AudioListener?.transform;
 
             if (listenerTransform == null)
             {
@@ -213,10 +202,7 @@ namespace ifp.arena.shared
                 return;
             }
 
-            var existing = listenerTransform.GetComponent<SteamAudioListener>();
-            if (existing != null) return;   // already attached
-
-            listenerTransform.gameObject.AddComponent<SteamAudioListener>();
+            listenerTransform.gameObject.GetOrAddComponent<SteamAudioListener>();
             SteamAudioManager.NotifyAudioListenerChangedTo(listenerTransform);
             Debug.Log($"[SteamAudio] SteamAudioListener attached to '{listenerTransform.gameObject.name}'.");
         }

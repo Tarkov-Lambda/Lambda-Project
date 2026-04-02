@@ -52,7 +52,7 @@ namespace ifp.arena.bep.Core.Dying
             UniTask.Delay(4000).ContinueWith(() =>
             {
                 playerCameraController.enabled = true;
-                
+
                 if (H.Arena.ActiveRules is SND_ModeRules)
                 {
                     H.SpectatorManager.SwitchSpectatePlayer();
@@ -64,6 +64,7 @@ namespace ifp.arena.bep.Core.Dying
                 }
             });
         }
+
 
         private FakeCorpse CreateRagdollFromPlayer(Player player)
         {
@@ -140,6 +141,9 @@ namespace ifp.arena.bep.Core.Dying
                     new BindableStateClass<Item>(null),
                     foreStillCorpse: false
                 );
+
+                // new GClass3385(player.Inventory.Equipment as InventoryEquipment, player.Side, player.Inventory.Equipment.Id, player.ProfileId, canBeLocalized: true, EOwnerType.Profile, default, null);
+                // fakeCorpse.Init(player.Inventory.Equipment as InventoryEquipment, "Corpse", H.GameWorld, randomRotation: false, null);
             }
 
             Vector3 velocity = player.Velocity;

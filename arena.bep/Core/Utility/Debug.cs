@@ -24,7 +24,7 @@ namespace ifp.arena.shared
         // public static void Log(string msg) => null;
         // public static void LogTransaction(string msg) { }
         // public static void LogArenaController(string msg) { }
-        // public static void LogInventory(string msg) => null;
+        // public static void LogInventory(string msg) { }
         // public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) {}};
 #else 
         public static void Log(string msg) {}

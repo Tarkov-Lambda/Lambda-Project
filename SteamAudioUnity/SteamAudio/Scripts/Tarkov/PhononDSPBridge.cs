@@ -39,23 +39,28 @@ namespace ifp.arena.shared
         // ── Per-instance DSP effects ──────────────────────────────────────────
 
         private IntPtr _binaural = IntPtr.Zero;
-        private IntPtr _direct   = IntPtr.Zero;
+        private IntPtr _direct = IntPtr.Zero;
 
         // ── Unity components ──────────────────────────────────────────────────
 
-        private AudioSource      _src;
+        private AudioSource _src;
 #if STEAMAUDIO_ENABLED
         private SteamAudioSource _steamSrc;
 #endif
 
         // ── Audio-thread parameter cache (written on main thread, read on audio thread) ──
 
-        private PVec3  _dir       = new PVec3 { z = 1f };
-        private float  _distAtten = 1f;
-        private float  _occlusion = 1f;
-        private float  _transLow  = 0f;
-        private float  _transMid  = 0f;
-        private float  _transHigh = 0f;
+        private PVec3 _dir = new PVec3 { z = 1f };
+        private float _distAtten = 1f;
+        private float _occlusion = 1f;
+        private float _transLow = 0f;
+        private float _transMid = 0f;
+        private float _transHigh = 0f;
+
+        // ADDED CACHE VARIABLES:
+        private IntPtr _hrtf = IntPtr.Zero;
+        private bool _applyTransmission = false;
+
         private readonly object _lock = new object();
 
         // ── Pre-allocated DSP scratch buffers (avoid per-callback allocations) ──
@@ -107,15 +112,10 @@ namespace ifp.arena.shared
             _steamSrc = GetComponent<SteamAudioSource>();
 #endif
 
-            // Capture the source's intended blend before disabling Unity/Meta XR spatialization.
-            spatialBlendOverride  = _src.spatialBlend;
-            _src.spatialize       = false;
-            _src.spatialBlend     = 0f;
-
             // Allocate scratch buffers sized to 2× the DSP frame so a resize is never needed.
             UnityEngine.AudioSettings.GetDSPBufferSize(out int bufSize, out _);
-            int cap  = bufSize * 2;
-            _monoIn  = new float[cap];
+            int cap = bufSize * 2;
+            _monoIn = new float[cap];
             _monoOut = new float[cap];
             _leftOut = new float[cap];
             _rightOut = new float[cap];
@@ -129,7 +129,7 @@ namespace ifp.arena.shared
             lock (_lock)
             {
                 if (_binaural != IntPtr.Zero) { iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero; }
-                if (_direct   != IntPtr.Zero) { iplDirectEffectRelease(ref _direct);     _direct   = IntPtr.Zero; }
+                if (_direct != IntPtr.Zero) { iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero; }
             }
             LogV("Effects released.");
         }
@@ -146,7 +146,7 @@ namespace ifp.arena.shared
                 return;
             }
 
-            IntPtr ctx  = SteamAudioManager.Context.Get();
+            IntPtr ctx = SteamAudioManager.Context.Get();
             IntPtr hrtf = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
             if (ctx == IntPtr.Zero || hrtf == IntPtr.Zero)
@@ -160,7 +160,7 @@ namespace ifp.arena.shared
 #if STEAMAUDIO_ENABLED
             // Prefer the AudioSettings that SteamAudioManager already resolved via the audio engine.
             var saSettings = SteamAudioManager.AudioSettings;
-            rate      = saSettings.samplingRate;
+            rate = saSettings.samplingRate;
             frameSize = saSettings.frameSize;
 #else
             rate      = UnityEngine.AudioSettings.outputSampleRate;
@@ -196,43 +196,46 @@ namespace ifp.arena.shared
             Transform listener = GetListenerTransform();
             if (listener == null) return;
 
-            UnityEngine.Vector3 d     = listener.InverseTransformPoint(transform.position).normalized;
-            float dist    = (transform.position - listener.position).magnitude;
-            float maxDist = (_src != null && _src.maxDistance > 0f) ? _src.maxDistance : 50f;
-            float atten   = Mathf.Clamp01(1f - dist / maxDist);
+            // FIX 2: Prevent Zero-Vector NaN poisoning
+            UnityEngine.Vector3 localPos = listener.InverseTransformPoint(transform.position);
+            UnityEngine.Vector3 d = localPos.sqrMagnitude < 0.000001f ? UnityEngine.Vector3.forward : localPos.normalized;
 
-            // Occlusion and transmission come from SteamAudioSource simulation outputs.
-            // SteamAudioSpatialAudioSource enables _steamSrc.transmission only in Phase 2
-            // (scene geometry committed), so we don't need a separate scene-state check here.
+            float dist = (transform.position - listener.position).magnitude;
+            float maxDist = (_src != null && _src.maxDistance > 0f) ? _src.maxDistance : 50f;
+            float atten = Mathf.Clamp01(1f - dist / maxDist);
+
             float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
+            bool applyTrans = false;
+
 #if STEAMAUDIO_ENABLED
+            // Safe to check Unity Objects here (Main Thread)
             if (_steamSrc != null)
             {
                 occ = Mathf.Clamp01(_steamSrc.occlusionValue);
+                applyTrans = _steamSrc.transmission;
                 if (_steamSrc.transmission)
                 {
-                    tLow  = Mathf.Clamp01(_steamSrc.transmissionLow);
-                    tMid  = Mathf.Clamp01(_steamSrc.transmissionMid);
+                    tLow = Mathf.Clamp01(_steamSrc.transmissionLow);
+                    tMid = Mathf.Clamp01(_steamSrc.transmissionMid);
                     tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
                 }
             }
 #endif
+            // FIX 1: Fetch HRTF pointer on the Main thread
+            IntPtr hrtfPtr = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
             lock (_lock)
             {
-                // Phonon uses right-hand Z-forward; Unity is left-hand Z-forward → negate Z.
-                _dir       = new PVec3 { x = d.x, y = d.y, z = -d.z };
+                _dir = new PVec3 { x = d.x, y = d.y, z = -d.z };
                 _distAtten = atten;
                 _occlusion = occ;
-                _transLow  = tLow;
-                _transMid  = tMid;
+                _transLow = tLow;
+                _transMid = tMid;
                 _transHigh = tHigh;
+                _applyTransmission = applyTrans;
+                _hrtf = hrtfPtr;
             }
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  OnAudioFilterRead — runs on Unity's dedicated audio thread
-        // ─────────────────────────────────────────────────────────────────────
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
@@ -242,60 +245,53 @@ namespace ifp.arena.shared
             {
                 int n = data.Length / channels;
 
-                // Grow scratch buffers only if somehow the DSP frame size changed at runtime.
                 if (n > _monoIn.Length)
                 {
                     LogW($"Scratch buffer resize: n={n} > cap={_monoIn.Length}");
-                    _monoIn   = new float[n];
-                    _monoOut  = new float[n];
-                    _leftOut  = new float[n];
+                    _monoIn = new float[n];
+                    _monoOut = new float[n];
+                    _leftOut = new float[n];
                     _rightOut = new float[n];
                 }
 
-                // ── 1. Downmix to mono + distance attenuation ─────────────────
-                // spatialBlendOverride lerps between flat (0) and full rolloff (1).
-                float blend          = Mathf.Clamp01(spatialBlendOverride);
+                float blend = Mathf.Clamp01(spatialBlendOverride);
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
                 for (int i = 0; i < n; i++)
                     _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
 
-                fixed (float* pIn    = _monoIn,
-                              pOut   = _monoOut,
-                              pLeft  = _leftOut,
+                fixed (float* pIn = _monoIn,
+                              pOut = _monoOut,
+                              pLeft = _leftOut,
                               pRight = _rightOut)
                 {
-                    IntPtr* inPtrs  = stackalloc IntPtr[1]; inPtrs[0]  = (IntPtr)pIn;
+                    IntPtr* inPtrs = stackalloc IntPtr[1]; inPtrs[0] = (IntPtr)pIn;
                     IntPtr* outPtrs = stackalloc IntPtr[1]; outPtrs[0] = (IntPtr)pOut;
                     IntPtr* binPtrs = stackalloc IntPtr[2]; binPtrs[0] = (IntPtr)pLeft; binPtrs[1] = (IntPtr)pRight;
 
-                    var inBuf  = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)inPtrs  };
+                    var inBuf = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)inPtrs };
                     var outBuf = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)outPtrs };
                     var binBuf = new PAudioBuffer { numChannels = 2, numSamples = n, data = (IntPtr)binPtrs };
 
-                    // ── 2. Direct effect: occlusion + (optional) transmission ────
                     if (_direct != IntPtr.Zero)
                     {
-                        // Transmission is only applied when SteamAudioSource.transmission is
-                        // active. SteamAudioSpatialAudioSource enables it only in Phase 2
-                        // (scene geometry committed), so no separate scene-state check is needed.
-                        bool applyTransmission = false;
-#if STEAMAUDIO_ENABLED
-                        applyTransmission = _steamSrc != null && _steamSrc.transmission;
-#endif
                         int flags = (int)DirectEffectFlags.ApplyOcclusion;
-                        if (applyTransmission) flags |= (int)DirectEffectFlags.ApplyTransmission;
+
+                        // FIX 1: Read cached boolean instead of calling Unity Objects
+                        if (_applyTransmission) flags |= (int)DirectEffectFlags.ApplyTransmission;
 
                         var dp = new PDirectEffectParams
                         {
-                            flags               = flags,
-                            transmissionType    = 1,    // FrequencyDependent
-                            distanceAttenuation = 1f,   // handled by step 1
-                            airAbsorptionLow    = 1f, airAbsorptionMid = 1f, airAbsorptionHigh = 1f,
-                            directivity         = 1f,
-                            occlusion           = _occlusion,
-                            transmissionLow     = _transLow,
-                            transmissionMid     = _transMid,
-                            transmissionHigh    = _transHigh,
+                            flags = flags,
+                            transmissionType = 1,
+                            distanceAttenuation = 1f,
+                            airAbsorptionLow = 1f,
+                            airAbsorptionMid = 1f,
+                            airAbsorptionHigh = 1f,
+                            directivity = 1f,
+                            occlusion = _occlusion,
+                            transmissionLow = _transLow,
+                            transmissionMid = _transMid,
+                            transmissionHigh = _transHigh,
                         };
                         iplDirectEffectApply(_direct, ref dp, ref inBuf, ref outBuf);
                     }
@@ -304,23 +300,33 @@ namespace ifp.arena.shared
                         for (int i = 0; i < n; i++) _monoOut[i] = _monoIn[i];
                     }
 
-                    // ── 3. Binaural: HRTF spatialization ────────────────────────
-                    // spatialBlend = 0 → dry 2-D passthrough; 1 → full HRTF.
-                    var bp = new PBinauralEffectParams
+                    // FIX 3: Safety check on HRTF pointer before invoking Phonon
+                    if (_hrtf != IntPtr.Zero)
                     {
-                        direction     = _dir,
-                        interpolation = 1,   // bilinear
-                        spatialBlend  = blend,
-                        hrtf          = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero,
-                        peakDelays    = IntPtr.Zero,
-                    };
-                    iplBinauralEffectApply(_binaural, ref bp, ref outBuf, ref binBuf);
+                        var bp = new PBinauralEffectParams
+                        {
+                            direction = _dir,
+                            interpolation = 1,
+                            spatialBlend = blend,
+                            hrtf = _hrtf, // Cached pointer
+                            peakDelays = IntPtr.Zero,
+                        };
+                        iplBinauralEffectApply(_binaural, ref bp, ref outBuf, ref binBuf);
+                    }
+                    else
+                    {
+                        // Safety Fallback (2-D bypass) if SteamAudioManager goes missing during hot-swap
+                        for (int i = 0; i < n; i++)
+                        {
+                            _leftOut[i] = _monoOut[i];
+                            _rightOut[i] = _monoOut[i];
+                        }
+                    }
                 }
 
-                // ── 4. Write stereo binaural result back into Unity's output buffer ──
                 for (int i = 0; i < n; i++)
                 {
-                    data[i * channels]     = _leftOut[i];
+                    data[i * channels] = _leftOut[i];
                     data[i * channels + 1] = _rightOut[i];
                 }
             }
@@ -362,9 +368,9 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PBinauralEffectParams
     {
-        public PVec3  direction;
-        public int    interpolation;
-        public float  spatialBlend;
+        public PVec3 direction;
+        public int interpolation;
+        public float spatialBlend;
         public IntPtr hrtf;
         public IntPtr peakDelays;
     }
@@ -375,8 +381,8 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PDirectEffectParams
     {
-        public int   flags;
-        public int   transmissionType;
+        public int flags;
+        public int transmissionType;
         public float distanceAttenuation;
         public float airAbsorptionLow, airAbsorptionMid, airAbsorptionHigh;
         public float directivity;
@@ -387,8 +393,8 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PAudioBuffer
     {
-        public int    numChannels;
-        public int    numSamples;
+        public int numChannels;
+        public int numSamples;
         public IntPtr data;
     }
 }

@@ -87,10 +87,9 @@ namespace ifp.arena.bep.Patches.Tarkov
 
             if (interactive is BombPlantZone)
             {
-                __result = actionsReturnClass;
-                if (roundState != MatchState.RoundAction) return false;
+                if (roundState != MatchState.RoundAction) return true;
 
-                if (!TryFindItem(SND_ModeRules.bombTemplateId, out Item bomb)) return false;
+                if (!TryFindItem(SND_ModeRules.bombTemplateId, out Item bomb)) return true;
 
                 float plantingTime = SND_ModeRules.platingTime;
 

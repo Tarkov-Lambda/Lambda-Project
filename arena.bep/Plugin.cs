@@ -6,6 +6,7 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Triggers;
 using EFT;
+using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -23,6 +24,7 @@ using SPT.Reflection.Patching;
 using SteamAudio;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -31,11 +33,114 @@ using UnityEngine;
 
 namespace ifp.arena.bep;
 
+
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AudioSourceWorldDebug : MonoBehaviour
+{
+    private AudioSource[] audioSources;
+    private Camera cam;
+
+    void FixedUpdate()
+    {
+        return;
+        audioSources = Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (CameraClass.Instance != null) cam = CameraClass.Instance.Camera;
+    }
+
+    void OnGUI()
+    {
+        if (cam == null) return;
+
+        // Group sources by screen position (rounded to reduce jitter)
+        Dictionary<Vector2, List<AudioSource>> grouped = new Dictionary<Vector2, List<AudioSource>>();
+
+        foreach (AudioSource audio in audioSources)
+        {
+            if (audio == null) continue;
+
+            Vector3 screenPos = cam.WorldToScreenPoint(audio.transform.position);
+
+            if (screenPos.z < 0)
+                continue;
+
+            screenPos.y = Screen.height - screenPos.y;
+
+            // Round to group nearby objects together
+            Vector2 key = new Vector2(Mathf.Round(screenPos.x / 5f) * 5f,
+                                      Mathf.Round(screenPos.y / 5f) * 5f);
+
+            if (!grouped.ContainsKey(key))
+                grouped[key] = new List<AudioSource>();
+
+            grouped[key].Add(audio);
+        }
+
+        foreach (var group in grouped)
+        {
+            Vector2 basePos = group.Key;
+            List<AudioSource> list = group.Value;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                AudioSource audio = list[i];
+
+                string status = audio.enabled ? "Enabled" : "Disabled";
+                string dspStat = "";
+
+                if(SteamSourceDict.cache.ContainsKey(audio))
+                {
+                    
+                    dspStat = $"{audio.spatialBlend} {audio.spatialize} {SteamSourceDict.cache[audio].bridge.spatialBlendOverride}";
+                }
+                string text = audio.gameObject.name + " - " + status + " - " + dspStat;
+
+                // Offset each item in the stack
+                Vector2 offsetPos = new Vector2(basePos.x, basePos.y + (i * 15));
+
+                DrawOutlinedLabel(new Rect(offsetPos.x, offsetPos.y, 300, 20), text);
+            }
+        }
+    }
+
+    void DrawOutlinedLabel(Rect rect, string text)
+    {
+        GUIStyle style = new GUIStyle(GUI.skin.label);
+
+        // Outline color (black)
+        style.normal.textColor = Color.black;
+
+        // Draw outline by offsetting text in 4 directions
+        Vector2[] offsets = new Vector2[]
+        {
+            new Vector2(-1, -1),
+            new Vector2(1, -1),
+            new Vector2(-1, 1),
+            new Vector2(1, 1)
+        };
+
+        foreach (var offset in offsets)
+        {
+            Rect offsetRect = new Rect(rect.x + offset.x, rect.y + offset.y, rect.width, rect.height);
+            GUI.Label(offsetRect, text, style);
+        }
+
+        // Draw main text (colored)
+        style.normal.textColor = Color.white;
+        GUI.Label(rect, text, style);
+    }
+}
+
 [BepInDependency("com.fika.core")]
 [BepInPlugin("com.ifp.respawn", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
     public static new ManualLogSource Logger;
+
+    public static readonly string pathToBundles = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
+    public static readonly string pathToDeps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "deps");
+    public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json");
 
     internal static ConfigEntry<GameModes> GameMode;
     internal static ConfigEntry<Faction> PrefferedFaction;
@@ -49,6 +154,8 @@ public class Plugin : BaseUnityPlugin
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
+
+
 
     private CancellationTokenSource _cts;
 
@@ -91,10 +198,11 @@ public class Plugin : BaseUnityPlugin
         if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
 
         // RegisterPatch(new Patch_BetterSource_Init());                               // Attach SteamAudioSource, SteamAudioSpatialAudioSource, PhononDSPBridge to every MetaXRAudioSource
-        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                         // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
 
         // MetaXR to SteamAudio Proxies
-        // RegisterPatch(new Patch_AudioSource_spatialBlend());                           // Proxy enabled calls to SteamAudioSource
+        RegisterPatch(new Patch_AudioSource_set_spatialBlend());                       // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_AudioSource_get_spatialBlend());                       // Proxy spatialBlend calls to PhononDSPBridge
         // RegisterPatch(new Patch_MetaXRAudioSource_enabled());                       // Proxy enabled calls to SteamAudioSource
         // RegisterPatch(new Patch_MetaSpatialAudioSource_enabled());                  // Proxy enabled calls to SteamAudioSpatialAudioSource
         // RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate());                // no-op + disable
@@ -221,46 +329,42 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        var sources = H.GameWorld?.gameObject.GetComponentsInChildren<AudioSource>(true);
-        foreach (var source in sources)
-        {
-            source.spatialize = false;
-            source.spatialBlend = 0f;
+        // var sources = H.GameWorld?.gameObject.GetComponentsInChildren<AudioSource>(true);
+        var sources = Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        // foreach (var audioSource in sources)
+        // {
+        //     var localAudioSources = audioSource.gameObject.GetComponents<AudioSource>();
+        //     var localAudioListeners = audioSource.gameObject.GetComponents<AudioSource>();
+        //     if (localAudioSources.Length > 1)
+        //     {
 
-            SteamAudioSource steamAudio = source.gameObject.GetOrAddComponent<SteamAudioSource>();
-            PhononDSPBridge _phonon = source.gameObject.GetOrAddComponent<PhononDSPBridge>();
+        //     }
 
-            if (steamAudio != null)
-            {
-                steamAudio.occlusion = true;
-                steamAudio.transmission = true;
-                steamAudio.distanceAttenuation = true;
-                steamAudio.distanceAttenuationInput = DistanceAttenuationInput.PhysicsBased;
-                steamAudio.airAbsorption = true;
-                steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+        //     SteamSourceDict.cache[audioSource] = new SteamSourceData
+        //     {
+        //         steam = audioSource.gameObject.GetOrAddComponent<SteamAudioSource>(),
+        //         bridge = audioSource.gameObject.GetOrAddComponent<PhononDSPBridge>()
+        //     };
 
-                steamAudio.occlusionRadius = 1.4f;
-                steamAudio.occlusionSamples = 8;
+        //     SteamAudioSource steamAudio = SteamSourceDict.cache[audioSource].steam;
+        //     steamAudio.occlusion = true;
+        //     steamAudio.transmission = false;
+        //     steamAudio.distanceAttenuation = true;
+        //     steamAudio.distanceAttenuationInput = DistanceAttenuationInput.PhysicsBased;
+        //     steamAudio.airAbsorption = true;
+        //     steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+        //     steamAudio.occlusionType = OcclusionType.Volumetric;
+        //     steamAudio.occlusionRadius = 1.4f;
+        //     steamAudio.occlusionSamples = 8;
+        //     steamAudio.transmissionType = TransmissionType.FrequencyDependent;
+        //     steamAudio.transmissionInput = TransmissionInput.UserDefined;
+        //     steamAudio.transmissionHigh = 0.2f;
+        //     steamAudio.transmissionMid = 0.4f;
+        //     steamAudio.transmissionLow = 0.5f;
 
-
-                steamAudio.transmissionType = TransmissionType.FrequencyDependent;
-                steamAudio.transmissionInput = TransmissionInput.UserDefined;
-                steamAudio.transmissionHigh = 0.2f;
-                steamAudio.transmissionMid = 0.4f;
-                steamAudio.transmissionLow = 0.5f;
-
-                steamAudio.enabled = true;
-            }
-            // SteamAudioSpatialAudioSource spatial = source.GetComponent<SteamAudioSpatialAudioSource>();
-            // spatial.EnableReverb = false;
-            // steamAudio.reflections = false;
-            // source.GetComponent<PhononDSPBridge>().enabled = true;;
-
-            // source.gameObject.GetComponent<MetaXRAudioSource>().enabled = false;
-            // source.gameObject.GetComponent<MetaXRAudioSourceExperimentalFeatures>().enabled = false;
-            // source.gameObject.GetComponent<MetaSpatialAudioSource>().enabled = false;
-            // source.enabled = true;
-        }
+        //     audioSource.spatialize = true;
+        //     audioSource.spatialBlend = 1f;
+        // }
 
 #if DEBUG
         // _disposables.Add(new DynamicClassTracer(typeof(AudioSource)));
