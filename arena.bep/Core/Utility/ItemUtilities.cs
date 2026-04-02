@@ -10,6 +10,9 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using EFT.Interactive;
+using Fika.Core.Main.Players;
+using HarmonyLib;
+using System.Reflection;
 
 namespace ifp.arena.bep.Core
 {
@@ -181,9 +184,9 @@ namespace ifp.arena.bep.Core
             itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
             itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
 
-            Slot slot = itemAddress.Container as Slot;
-            GEventArgs18 refreshEvent = new GEventArgs18(slot.ParentItem, player.InventoryController, false, false);
-            player.InventoryController.RaiseEvent(refreshEvent);
+            FikaPlayer fikaPlayer = player as FikaPlayer;
+            MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
+            method.Invoke(fikaPlayer, [AU.GetPlateCarrier(player)]);
 
             return true;
         }
@@ -311,9 +314,9 @@ namespace ifp.arena.bep.Core
 
             if (placement.Kind == PlacementKind.ArmorPlate)
             {
-                Slot slot = placement.Address.Container as Slot;
-                GEventArgs18 refreshEvent = new GEventArgs18(slot.ParentItem, player.InventoryController, false, false);
-                player.InventoryController.RaiseEvent(refreshEvent);
+                FikaPlayer fikaPlayer = player as FikaPlayer;
+                MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
+                method.Invoke(fikaPlayer, [AU.GetPlateCarrier(player)]);
             }
 
             return true;
