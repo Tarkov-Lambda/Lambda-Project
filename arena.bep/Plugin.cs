@@ -224,19 +224,31 @@ public class Plugin : BaseUnityPlugin
         var sources = H.GameWorld?.gameObject.GetComponentsInChildren<AudioSource>(true);
         foreach (var source in sources)
         {
-            D.Log(source.gameObject.name);
             source.spatialize = false;
             source.spatialBlend = 0f;
-            
+
             SteamAudioSource steamAudio = source.gameObject.GetOrAddComponent<SteamAudioSource>();
             PhononDSPBridge _phonon = source.gameObject.GetOrAddComponent<PhononDSPBridge>();
-            
+
             if (steamAudio != null)
             {
                 steamAudio.occlusion = true;
                 steamAudio.transmission = true;
-                steamAudio.reflections = false;
-                
+                steamAudio.distanceAttenuation = true;
+                steamAudio.distanceAttenuationInput = DistanceAttenuationInput.PhysicsBased;
+                steamAudio.airAbsorption = true;
+                steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+
+                steamAudio.occlusionRadius = 1.4f;
+                steamAudio.occlusionSamples = 8;
+
+
+                steamAudio.transmissionType = TransmissionType.FrequencyDependent;
+                steamAudio.transmissionInput = TransmissionInput.UserDefined;
+                steamAudio.transmissionHigh = 0.2f;
+                steamAudio.transmissionMid = 0.4f;
+                steamAudio.transmissionLow = 0.5f;
+
                 steamAudio.enabled = true;
             }
             // SteamAudioSpatialAudioSource spatial = source.GetComponent<SteamAudioSpatialAudioSource>();

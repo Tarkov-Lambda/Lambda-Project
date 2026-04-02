@@ -168,9 +168,6 @@ namespace SteamAudio
 
         private void Awake()
         {
-            // Guard: SteamAudioManager may not have initialized (e.g. missing settings asset, or
-            // Tarkov stripped the RuntimeInitializeOnLoadMethod callback). Without a Simulator
-            // we cannot create a Source, so skip all SA-specific setup here.
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Simulator == null)
             {
                 Debug.LogWarning("[SteamAudio] SteamAudioSource.Awake: SteamAudioManager not ready, skipping SA source setup.");
@@ -284,6 +281,70 @@ namespace SteamAudio
                 Gizmos.color = Color.red;
                 Gizmos.DrawWireMesh(mDeformedSphereMesh, transform.position, transform.rotation);
                 Gizmos.color = oldColor;
+            }
+
+            // --- ADDED: OCCLUSION VISUALIZER ---
+            if (occlusion && occlusionInput == OcclusionInput.SimulationDefined)
+            {
+                DrawOcclusionVisualizer();
+            }
+        }
+
+        private void DrawOcclusionVisualizer()
+        {
+            // Find the AudioListener to act as the source of the occlusion rays
+            AudioListener listener = FindObjectOfType<AudioListener>();
+            if (listener == null) return;
+
+            UnityEngine.Vector3 listenerPos = listener.transform.position;
+            UnityEngine.Vector3 sourcePos = transform.position;
+
+            if (occlusionType == OcclusionType.Raycast)
+            {
+                // Single Raycast Occlusion Mode
+                UnityEngine.Vector3 direction = sourcePos - listenerPos;
+                bool isOccluded = Physics.Raycast(listenerPos, direction.normalized, direction.magnitude);
+                
+                Gizmos.color = isOccluded ? Color.red : Color.green;
+                Gizmos.DrawLine(listenerPos, sourcePos);
+            }
+            else if (occlusionType == OcclusionType.Volumetric)
+            {
+                // Volumetric Occlusion Mode
+                
+                // 1. Draw the volumetric boundary radius
+                Gizmos.color = new Color(0f, 1f, 1f, 0.4f); // Cyan
+                Gizmos.DrawWireSphere(sourcePos, occlusionRadius);
+
+                // 2. Simulate spatial raycasts mapping (Fibonacci Sphere Distribution)
+                // This visually mimics how Steam Audio distributes mathematical rays in C++ natively.
+                int samples = occlusionSamples;
+                float phi = Mathf.PI * (3f - Mathf.Sqrt(5f)); // Golden angle for even sphere mapping
+
+                for (int i = 0; i < samples; i++)
+                {
+                    float y = 1f;
+                    if (samples > 1) 
+                    {
+                        y = 1f - (i / (float)(samples - 1)) * 2f; // y maps from 1 to -1
+                    }
+                    
+                    float radiusAtY = Mathf.Sqrt(1 - y * y);
+                    float theta = phi * i;
+
+                    float x = Mathf.Cos(theta) * radiusAtY;
+                    float z = Mathf.Sin(theta) * radiusAtY;
+
+                    UnityEngine.Vector3 targetPoint = sourcePos + new UnityEngine.Vector3(x, y, z) * occlusionRadius;
+                    UnityEngine.Vector3 direction = targetPoint - listenerPos;
+
+                    // Standard Unity Physics to mimic SA's internal checks against the scene geometry 
+                    bool isOccluded = Physics.Raycast(listenerPos, direction.normalized, direction.magnitude);
+
+                    // Color code: Red = block (occluded), Green = clear 
+                    Gizmos.color = isOccluded ? new Color(1f, 0f, 0f, 0.5f) : new Color(0f, 1f, 0f, 0.5f);
+                    Gizmos.DrawLine(listenerPos, targetPoint);
+                }
             }
         }
 
