@@ -10,35 +10,38 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 {
     internal static class UIPatches
     {
-        private static readonly List<ModulePatch> patches = new();
+        private static readonly Stack<ModulePatch> patches = new();
+        private static readonly Stack<PatchGroup> patchGroups = new();
 
-        static void RegisterPatch(ModulePatch patch)
+        internal static void RegisterAndEnable(PatchGroup patchGroup)
         {
-            patch.Enable();
-            patches.Add(patch);
+            patchGroups.Push(patchGroup);
+            patchGroups.Peek().Enable();
+        }
+        internal static void RegisterAndEnable(ModulePatch patch)
+        {
+            patches.Push(patch);
+            patches.Peek().Enable();
         }
 
         internal static void Enable()
         {
-            RegisterPatch(new Patch_CommonUI_Awake());
-            RegisterPatch(new Patch_ItemsTabController_Show());
-            RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());// Inventory opening control (for when we reset inv or hold tab for scoreboard)
+            Disable();
 
-            RegisterPatch(new Patch_BattleStancePanel_Awake());
+            RegisterAndEnable(new Patch_CommonUI_Awake());
 
-            RegisterPatch(new Patch_BoundSlotView_Show());
-            RegisterPatch(new Patch_BoundItemView_Show());
-            RegisterPatch(new Patch_QuickSlotView_ShowInfoPanel());
+            // Inventory opening control (for when we reset inv or hold tab for scoreboard)
+            RegisterAndEnable(new Patch_ItemsTabController_Show());
+            RegisterAndEnable(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());
 
-            RegisterPatch(new Patch_QuickSlotView_Awake());
-            RegisterPatch(new Patch_QuickSlotView_SwitchVisualSelection());
-            RegisterPatch(new Patch_QuickSlotView_RefreshMalfunctionForWeapon());
+            RegisterAndEnable(new Patch_BattleStancePanel_Awake());
 
-            RegisterPatch(new Patch_GrenadeSelector_Awake());
+            RegisterAndEnable(new Patch_QuickSlotView_SwitchVisualSelection());
+            RegisterAndEnable(new Patch_GrenadeSelector_Awake());
 
-            RegisterPatch(new Patch_QuickSlotItemView_UpdateInfo());
-            RegisterPatch(new Patch_QuickSlotItemView_UpdateScale());
-            RegisterPatch(new Patch_FastAccessGrenadeItemView_SetNewTopPriorityGrenade());
+            RegisterAndEnable(new PatchGroup_QuickAccessPanel_HideEmptySlots());
+            RegisterAndEnable(new PatchGroup_QuickAccessPanel_HideItemBG());
+            RegisterAndEnable(new PatchGroup_QuickAccessPanel_ModifyItemIcon());
 
             if (Singleton<EFT.UI.CommonUI>.Instantiated)
             {
@@ -48,11 +51,11 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
         internal static void Disable()
         {
-            foreach (var patch in patches)
-            {
-                patch.Disable();
-            }
-            patches.Clear();
+            while (patches.Count > 0)
+                patches.Pop().Disable();
+
+            while (patchGroups.Count > 0)
+                patchGroups.Pop().Disable();
         }
     }
 }
