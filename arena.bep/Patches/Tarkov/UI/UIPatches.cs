@@ -36,7 +36,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
             RegisterPatch(new Patch_GrenadeSelector_Awake());
 
-            RegisterPatch(new Patch_QuickSlotItemView_UpdateScale()); // remove icon rotation
+            RegisterPatch(new Patch_QuickSlotItemView_UpdateInfo()); // remove icon rotation
 
             if (Singleton<EFT.UI.CommonUI>.Instantiated)
             {

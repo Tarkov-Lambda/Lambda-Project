@@ -20,6 +20,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
             ___Caption.gameObject.SetActive(selected);
             ___Caption.color = Color.black;
             ___Caption.horizontalAlignment = TMPro.HorizontalAlignmentOptions.Left;
+            ___Caption.margin = new Vector4(6.5f, 0, 0, 0);
         }
     }
 }

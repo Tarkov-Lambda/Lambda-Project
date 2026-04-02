@@ -3,6 +3,7 @@ using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,9 +44,16 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
             DisableIfFound(slotView, "Background");
             DisableIfFound(slotView, "Border");
 
-            var installPlace = slotView.transform.Find("InstallPlace").GetComponent<Graphic>();
+            var installPlace = slotView.transform.Find("InstallPlace");
             if (installPlace != null && installPlace.TryGetComponent<Graphic>(out var graphic))
                 graphic.enabled = false;
+
+            var bindPanel = slotView.transform.Find("Bind Panel");
+            if (bindPanel != null && bindPanel.TryGetComponent<Graphic>(out var bindgraphic))
+            {
+                bindgraphic.enabled = false;
+                bindgraphic.GetComponentInChildren<TMP_Text>().color = new Color(0, 0, 0, 0.8f);
+            }
         }
 
         static void DisableIfFound(Transform parent, string findChild)

@@ -24,6 +24,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.BattleStance
             ____battleStances[0].StanceObject.transform.parent.gameObject.SetActive(false);
 
             ____stanceSlider.RectTransform().sizeDelta = new Vector2(20, 60);
+            ____stanceSlider.gameObject.SetActive(false);
         }
     }
 }

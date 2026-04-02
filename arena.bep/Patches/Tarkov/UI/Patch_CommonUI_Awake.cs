@@ -53,7 +53,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             quickAccessPanel.RectTransform.pivot = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(29, 180);
+            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(20, 80);
         }
     }
 }
