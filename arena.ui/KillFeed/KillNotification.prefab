@@ -1497,7 +1497,6 @@ GameObject:
   - component: {fileID: 6314026634416771109}
   - component: {fileID: 4974763141041863241}
   - component: {fileID: 2954377768588319476}
-  - component: {fileID: 1698030787155312123}
   m_Layer: 0
   m_Name: middle
   m_TagString: Untagged
@@ -1592,23 +1591,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &1698030787155312123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6077423544933946555}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f6f98fe14d1aaf45951502e1d7168a7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sourceArmatureRoot: {fileID: 0}
-  destinationArmatureRoot: {fileID: 0}
-  mapping: {fileID: 0}
-  GlobalRotationOffset: {x: 0, y: 0, z: 0}
-  GlobalLocationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &6456601181301400188
 GameObject:
   m_ObjectHideFlags: 0
