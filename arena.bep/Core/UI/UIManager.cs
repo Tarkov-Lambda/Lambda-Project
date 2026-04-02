@@ -34,6 +34,8 @@ namespace ifp.arena.bep.Core.UI
 
         NameplateRenderer nameplateRenderer;
 
+        public Material MatteMaterial { get; private set; }
+
         public UIManager()
         {
             Patch_CommonUI_Awake.OnAwake += LoadUI;
@@ -103,6 +105,8 @@ namespace ifp.arena.bep.Core.UI
             nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
             GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
             nameplateRenderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
+
+            MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
         }
 
         private void UpdateTime()
