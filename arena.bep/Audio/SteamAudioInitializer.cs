@@ -143,7 +143,7 @@ namespace ifp.arena.shared
             settings.realTimeBounces = 2;
             settings.realTimeDuration = 1.0f;
             settings.realTimeAmbisonicOrder = 1;
-            settings.realTimeMaxSources = 8;
+            settings.realTimeMaxSources = 32;
             settings.realTimeCPUCoresPercentage = 25;
 
             // Occlusion
