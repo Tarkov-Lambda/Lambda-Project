@@ -25,6 +25,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
             RegisterPatch(new Patch_BattleStancePanel_Awake());
 
+            RegisterPatch(new Patch_QuickSlotItemView_UpdateScale());
+
             if (Singleton<EFT.UI.CommonUI>.Instantiated)
             {
                 Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<EFT.UI.CommonUI>.Instance);
