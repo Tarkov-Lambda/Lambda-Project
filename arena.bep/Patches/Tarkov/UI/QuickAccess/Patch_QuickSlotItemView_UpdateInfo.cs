@@ -20,6 +20,29 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage)
         {
+            UIModifier.ModifyItemIcon(___MainImage);
+        }
+    }
+
+    internal class Patch_QuickSlotItemView_UpdateScale : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.UpdateScale));
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage)
+        {
+            UIModifier.ModifyItemIcon(___MainImage);
+        }
+    }
+
+    internal static class UIModifier
+    {
+        public static void ModifyItemIcon(Image ___MainImage)
+        {
+
             ___MainImage.transform.localRotation = Quaternion.identity;
             ___MainImage.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
             ___MainImage.rectTransform.pivot = new Vector2(0f, 0.5f);
@@ -28,10 +51,11 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
             ___MainImage.gameObject.GetOrAddComponent<Shadow>();
 
             if (Singleton<UIManager>.Instantiated)
-            {       
+            {
                 ___MainImage.material = Singleton<UIManager>.Instance.MatteMaterial;
                 ___MainImage.color = new Color(0, 0, 0, 0.8f);
             }
         }
+    
     }
 }

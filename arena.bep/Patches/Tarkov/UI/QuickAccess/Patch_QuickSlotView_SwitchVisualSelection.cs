@@ -17,10 +17,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance, bool selected, CustomTextMeshProUGUI ___Caption)
         {
-            ___Caption.gameObject.SetActive(selected);
-            ___Caption.color = Color.black;
-            ___Caption.horizontalAlignment = TMPro.HorizontalAlignmentOptions.Left;
-            ___Caption.margin = new Vector4(6.5f, 0, 0, 0);
+            ___Caption.color = selected ? Color.black : new Color(0, 0, 0, 0f);
         }
     }
 }

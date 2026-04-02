@@ -5,6 +5,8 @@ using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
+using TMPro;
+using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
 {
@@ -16,9 +18,12 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(QuickSlotView __instance, Item item)
+        private static void PatchPostfix(QuickSlotView __instance, Item item, TMP_Text ___Caption)
         {
             __instance.gameObject.SetActive(item != null);
+
+            ___Caption.horizontalAlignment = TMPro.HorizontalAlignmentOptions.Left;
+            ___Caption.margin = new Vector4(6.5f, 0, 0, 0);
         }
     }
 }

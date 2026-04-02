@@ -20,8 +20,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
         internal static void Enable()
         {
-            RegisterPatch(new Patch_CommonUI_Awake());                                  // UI Action Hook
-            RegisterPatch(new Patch_ItemsTabController_Show());                         // UI Action Hook
+            RegisterPatch(new Patch_CommonUI_Awake());
+            RegisterPatch(new Patch_ItemsTabController_Show());
             RegisterPatch(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());// Inventory opening control (for when we reset inv or hold tab for scoreboard)
 
             RegisterPatch(new Patch_BattleStancePanel_Awake());
@@ -36,7 +36,9 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
             RegisterPatch(new Patch_GrenadeSelector_Awake());
 
-            RegisterPatch(new Patch_QuickSlotItemView_UpdateInfo()); // remove icon rotation
+            RegisterPatch(new Patch_QuickSlotItemView_UpdateInfo());
+            RegisterPatch(new Patch_QuickSlotItemView_UpdateScale());
+            RegisterPatch(new Patch_FastAccessGrenadeItemView_SetNewTopPriorityGrenade());
 
             if (Singleton<EFT.UI.CommonUI>.Instantiated)
             {
