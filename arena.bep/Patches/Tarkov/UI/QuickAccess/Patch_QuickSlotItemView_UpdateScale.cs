@@ -19,6 +19,9 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
         private static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage)
         {
             ___MainImage.transform.localRotation = Quaternion.identity;
+            ___MainImage.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
+            ___MainImage.rectTransform.pivot = new Vector2(0f, 0.5f);
+            ___MainImage.rectTransform.anchoredPosition = new Vector2(-20f, 0f);
         }
     }
 }
