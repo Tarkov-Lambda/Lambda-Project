@@ -36,6 +36,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
             RegisterAndEnable(new Patch_BattleStancePanel_Awake());
 
+            RegisterAndEnable(new Patch_InventoryScreenQuickAccessPanel_Show());
+
             RegisterAndEnable(new Patch_QuickSlotView_SwitchVisualSelection());
             RegisterAndEnable(new Patch_GrenadeSelector_Awake());
 
@@ -46,6 +48,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             if (Singleton<EFT.UI.CommonUI>.Instantiated)
             {
                 Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<EFT.UI.CommonUI>.Instance);
+                Patch_CommonUI_Awake.StretchItemsPanel(Singleton<EFT.UI.CommonUI>.Instance);
             }
         }
 

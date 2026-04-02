@@ -21,6 +21,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             OnAwake?.Invoke(__instance);
 
             ModifyQuickAccessPanel(__instance);
+
+            StretchItemsPanel(__instance);
         }
 
         public static void ModifyQuickAccessPanel(CommonUI commonUI)
@@ -54,6 +56,15 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchoredPosition = new Vector2(20, 80);
+        }
+
+        public static void StretchItemsPanel(CommonUI commonUI)
+        {
+           Transform itemsPanel = commonUI.InventoryScreen.transform.Find("Items Panel");
+            RectTransform leftSide = itemsPanel.Find("LeftSide") as RectTransform;
+            leftSide.offsetMin = new Vector2(leftSide.offsetMin.x, 40f);
+            RectTransform stashPanel = itemsPanel.Find("Stash Panel") as RectTransform;
+            stashPanel.offsetMin = new Vector2(stashPanel.offsetMin.x, 40f);
         }
     }
 }
