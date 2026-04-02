@@ -1,9 +1,10 @@
 ﻿using BepInEx;
 using SPT.Reflection.Patching;
 using System.Collections.Generic;
+using Comfort.Common;
 
 using ifp.arena.bep.Patches.Tarkov.UI.BattleStance;
-using Comfort.Common;
+using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI
 {
@@ -25,7 +26,11 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
             RegisterPatch(new Patch_BattleStancePanel_Awake());
 
-            RegisterPatch(new Patch_QuickSlotItemView_UpdateScale());
+            RegisterPatch(new Patch_BoundSlotView_Show());
+            RegisterPatch(new Patch_BoundItemView_Show());
+            RegisterPatch(new Patch_QuickSlotView_ShowInfoPanel());
+
+            RegisterPatch(new Patch_QuickSlotItemView_UpdateScale()); // remove icon rotation
 
             if (Singleton<EFT.UI.CommonUI>.Instantiated)
             {

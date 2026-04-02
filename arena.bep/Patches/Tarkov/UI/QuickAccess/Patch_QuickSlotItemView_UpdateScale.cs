@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ifp.arena.bep.Patches.Tarkov.UI
+namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
 {
     internal class Patch_QuickSlotItemView_UpdateScale : ModulePatch
     {
