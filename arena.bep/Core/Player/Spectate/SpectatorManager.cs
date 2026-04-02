@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using UnityEngine.Rendering;
 using ifp.arena.bep.Core.Gamemode;
 using Fika.Core.Main.Players;
+using System.Linq;
+using ifp.arena.shared;
 
 
 namespace ifp.arena.bep.Core
@@ -21,20 +23,61 @@ namespace ifp.arena.bep.Core
         public SpectatorManager()
         {
             EventBus.OnLateUpdate += onUpdate;
-            // EventBus.OnFireClicked += nextPlayer;
-            // EventBus.OnADSTriggered += nextPlayer;
         }
 
         public void onUpdate()
         {
             if (observedPlayer == null) return;
 
+            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                SwitchSpectatePlayer();
+            }
+
+            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                SwitchSpectatePlayer(false);
+            }
+
             Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
             Vector3 offset = observedPlayerCameraTransform.position;
-            offset.y += 0.2f;
+            offset.y += 0.05f;
 
             mainCameraTransform.position = offset;
             mainCameraTransform.rotation = observedPlayerCameraTransform.rotation;
+        }
+
+        public void SwitchSpectatePlayer(bool next = true)
+        {
+            var validPlayersToSpectate = H.AllTeammateScores;
+
+            if (validPlayersToSpectate.Count == 0)
+            {
+                StopSpectating();
+                return;
+            }
+
+            int currentIndex;
+            if (observedPlayer != null)
+            {
+                currentIndex = validPlayersToSpectate.IndexOf(H.GetPlayerScore(observedPlayer.Id));
+            } else currentIndex = 0;
+
+
+            if (next)
+            {
+                currentIndex++;
+                if (currentIndex >= validPlayersToSpectate.Count)
+                    currentIndex = 0;
+            }
+            else
+            {
+                currentIndex--;
+                if (currentIndex < 0)
+                    currentIndex = validPlayersToSpectate.Count - 1;
+            }
+
+            SpectatePlayer(validPlayersToSpectate[currentIndex].player);
         }
 
         public void SpectatePlayer(Player player)
@@ -89,7 +132,7 @@ namespace ifp.arena.bep.Core
         }
 
         // Token: 0x06018A7A RID: 100986 RVA: 0x00724CA4 File Offset: 0x00722EA4
-        public bool UpdatePointOfView(Player player, EPointOfView pointOfView)
+        private bool UpdatePointOfView(Player player, EPointOfView pointOfView)
         {
             if (!(player.PlayerBody == null))
             {

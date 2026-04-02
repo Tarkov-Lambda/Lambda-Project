@@ -52,6 +52,11 @@ namespace ifp.arena.bep.Core.Dying
             UniTask.Delay(4000).ContinueWith(() =>
             {
                 playerCameraController.enabled = true;
+                
+                if (H.Arena.ActiveRules is SND_ModeRules)
+                {
+                    H.SpectatorManager.SwitchSpectatePlayer();
+                }
 
                 if (fakeCorpse != null)
                 {

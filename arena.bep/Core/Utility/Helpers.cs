@@ -40,6 +40,8 @@ namespace ifp.arena.bep.Core
 
 
         public static PlayerScore MainPlayerScore => GetMainPlayerScore();
+        public static List<Player> AllTeammates => H.Session.GetPlayersFromFaction(H.MainPlayerScore.faction);
+        public static List<PlayerScore> AllTeammateScores => H.Session.GetPlayerScoresFromFaction(H.MainPlayerScore.faction);
         public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
 
         public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;

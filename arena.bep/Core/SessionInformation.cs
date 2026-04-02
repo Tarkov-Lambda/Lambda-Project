@@ -128,9 +128,17 @@ namespace ifp.arena.bep.GameTypes
                 return new();
 
             return scoreboard.Values
-                .Where(s => s.faction == faction && s.player != null)
+                .Where(s => s.faction == faction)
                 .Select(s => s.player)
                 .ToList();
+        }
+
+        public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
+        {
+            if (!H.isInRaid())
+                return new();
+
+            return scoreboard.Values.Where(s => s.faction == faction).ToList();
         }
     }
 
