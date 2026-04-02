@@ -107,6 +107,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
         // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
+        RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation instances to players
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
@@ -158,7 +159,7 @@ public class Plugin : BaseUnityPlugin
         UIPatches.Enable();
 
         //--------------- FIKA --------------- //
-        // RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());      // Server-side preemptive death broadcasting
+        RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());      // Server-side preemptive death broadcasting
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
 
@@ -179,6 +180,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<BombAssignmentPacketHandler>();
         RegisterSingleton<CustomGrenadeExplosionPacketHandler>();
         RegisterSingleton<LadderNoisePacketHandler>();
+        RegisterSingleton<PopPacketHandler>();
 
         // Session
         RegisterSingleton<SessionInfoPacketHandler>();

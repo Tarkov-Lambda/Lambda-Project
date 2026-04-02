@@ -71,7 +71,9 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Meta.XR.Audio.dll">
       <Private>False</Private>
     </Reference>
-
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DissonanceVoip.dll">
+      <Private>False</Private>
+    </Reference>
 
     <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>

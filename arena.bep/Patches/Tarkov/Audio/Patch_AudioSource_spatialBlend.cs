@@ -28,16 +28,6 @@ namespace ifp.arena.bep.Patches
                 // Match the callvirt to set_spatialBlend
                 if (instr.Calls(setter))
                 {
-                    /*
-                        Stack at this point:
-
-                        AudioSource
-                        float
-
-                        We replace the call with our method:
-                        static void SpatialBlendHook(AudioSource src, float value)
-                    */
-
                     codes[i] = new CodeInstruction(OpCodes.Call, hook);
 
                     // (Optional) If you want to preserve exact stack behavior, nothing else needed

@@ -72,7 +72,7 @@ namespace ifp.arena.bep.Core
                     return ItemPlacement.ForArmorPlate(slot.CreateItemAddress());
                 }
             }
-            
+
             return ItemPlacement.None;
         }
 
@@ -141,13 +141,11 @@ namespace ifp.arena.bep.Core
         public static IEnumerable<Item> GetArmorPlates(Player player)
         {
             var plateHolder = GetPlateCarrier(player);
-            if (plateHolder == null)
-                yield break;
+            if (plateHolder == null) yield break;
 
             foreach (var component in plateHolder.Components)
             {
-                if (component is not ArmorHolderComponent armorHolder)
-                    continue;
+                if (component is not ArmorHolderComponent armorHolder) continue;
 
                 foreach (var slot in armorHolder.ArmorSlots)
                 {

@@ -109,19 +109,19 @@ namespace ifp.arena.bep.Core.Gamemode
                 // }
                 // else
                 // {
-                // Remove everything from vest + pockets that isn't the default pistol mag
-                foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
-                {
-                    bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                    if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
-                }
+                    // Remove everything from vest + pockets that isn't the default pistol mag
+                    foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
+                    {
+                        bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                        if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
+                    }
                 // }
 
-                ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
-                if (armorVest != null && armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
-                {
-                    AddItem(ref itemsToRemove, armorVest);
-                }
+                // ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
+                // if (armorVest != null && armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
+                // {
+                //     AddItem(ref itemsToRemove, armorVest);
+                // }
 
 
                 // If the currently equipped item doesn't match the recorded preset, remove it.
@@ -160,14 +160,15 @@ namespace ifp.arena.bep.Core.Gamemode
                 }
 
                 // plate removal in case the player just got a fresh plate carrier
-                List<Item> platesToRemove = new List<Item>();
-                AddRange(ref platesToRemove, AU.GetArmorPlates(player));
+                // List<Item> platesToRemove = new List<Item>();
+                // AddRange(ref platesToRemove, AU.GetArmorPlates(player));
 
-                foreach (Item plateToRemove in platesToRemove)
-                {
-                    IU.ClientRequestPopItem(plateToRemove);
-                    await UniTask.Delay(25);
-                }
+                // foreach (Item plateToRemove in platesToRemove)
+                // {
+                //     D.Log(plateToRemove.LocalizedName());
+                //     IU.ClientRequestPopItem(plateToRemove);
+                //     await UniTask.Delay(25);
+                // }
             }
             finally
             {

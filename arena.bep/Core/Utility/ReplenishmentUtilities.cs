@@ -32,7 +32,7 @@ namespace ifp.arena.bep.Core
                                 ReplenishGun(weapon, ammo);
                             }
 
-                            ReplenishVestMagazines(weapon, ammo, player);
+                            ReplenishVestMagazines(weapon, ammo, player).Forget();
                         }
                     }
                 }
@@ -57,7 +57,7 @@ namespace ifp.arena.bep.Core
         }
 
         // Local only, sends spawn item packets
-        public static async Task ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
+        public static async UniTask ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
         {
             await UniTask.Delay(25);
             Slot vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);

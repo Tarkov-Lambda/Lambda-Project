@@ -2,6 +2,7 @@
 using Diz.Skinning;
 using EFT;
 using EFT.Animations;
+using EFT.EnvironmentEffect;
 using EFT.HealthSystem;
 using EFT.UI;
 using Fika.Core.Main.Components;
@@ -39,6 +40,37 @@ namespace ifp.arena.bep.Patches.Tarkov
             {
                 PwaToPlayer.Remove(pwa);
                 PwaToPlayer.Add(pwa, __instance);
+            }
+        }
+    }
+
+    public class Patch_Player_Teleport : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.Teleport));
+
+        [PatchPrefix]
+        static void Prefix(Player __instance, ref float ____dampVelocity, Vector3 position, bool onServerToo = false)
+        {
+            // disable controller 
+            __instance._characterController.isEnabled = false;
+
+            // Hard snap to position
+            __instance.Position = position;
+            __instance.Transform.position = position;
+
+            // enable controller
+            __instance._characterController.isEnabled = true;
+
+            // Set the target for the Movement Context
+            __instance.MovementContext.TransformPosition = position;
+
+            __instance.method_14();
+
+            ____dampVelocity = 0f;
+            __instance.MovementContext.ResetFlying();
+            if (EnvironmentManager.Instance)
+            {
+                EnvironmentManager.Instance.UpdateEnvironmentForPlayer(__instance);
             }
         }
     }

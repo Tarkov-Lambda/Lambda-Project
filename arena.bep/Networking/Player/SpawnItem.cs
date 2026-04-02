@@ -17,22 +17,20 @@ namespace ifp.arena.bep.networking
 {
     public struct SpawnItemPacket : INetSerializable
     {
-        public int playerId;
+        public Player player;
         public ItemPlacement placement;
         public Item item;
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(playerId);
+            writer.PutPlayer(player);
             writer.Put(placement);
             writer.PutItem(item);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            playerId = reader.GetInt();
-            Player player = H.GetPlayer(playerId);
-            // D.Log(player.Profile.Nickname);
+            player = reader.GetPlayer();
             placement = reader.GetItemPlacement(player);
             item = reader.GetItem();
         }
@@ -55,7 +53,7 @@ namespace ifp.arena.bep.networking
         {
             var packet = new SpawnItemPacket
             {
-                playerId = H.MainPlayer.Id,
+                player = H.MainPlayer,
                 item = item,
                 placement = placement
             };
@@ -68,19 +66,18 @@ namespace ifp.arena.bep.networking
         // otherwise we have to rewrite the logic to make the server give us spawn item packages effectivelly (gun + mags, 2 armor plates)
         protected override async void LocalPredictApproved(SpawnItemPacket packet)
         {
-            SpawnItem(packet, H.MainPlayer);
-            // we already spend money locally before requesting to begin with.
+            SpawnItem(packet, packet.player);
+            // we already spent money locally before requesting to begin with.
         }
 
         protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
         {
-            Player player = H.GetPlayer(packet.playerId);
-            if (player.IsYourPlayer) return;
-            SpawnItem(packet, player);
+            if (packet.player.IsYourPlayer) return;
+            SpawnItem(packet, packet.player);
 
             if (BuyMenu.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
-                H.GetPlayerScore(player.Id).SpendMoney(itemData.price);
+                H.GetPlayerScore(packet.player.Id).SpendMoney(itemData.price);
             }
         }
 

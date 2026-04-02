@@ -17,22 +17,22 @@ namespace ifp.arena.bep.networking
 {
     public struct PopPacket : INetSerializable
     {
-        public int playerId;
+        public Player player;
         public Item item;
         public ItemAddress itemAddress;
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(playerId);
+            writer.PutPlayer(player);
             writer.PutItem(item);
             writer.Put(itemAddress);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            playerId = reader.GetInt();
+            player = reader.GetPlayer();
             item = reader.GetItem();
-            itemAddress = reader.GetItemAddress(H.GetPlayer(playerId));
+            itemAddress = reader.GetItemAddress(player);
         }
     }
 
@@ -52,7 +52,7 @@ namespace ifp.arena.bep.networking
         {
             var packet = new PopPacket
             {
-                playerId = H.MainPlayer.Id,
+                player = H.MainPlayer,
                 item = item,
                 itemAddress = item.CurrentAddress
             };
@@ -62,15 +62,14 @@ namespace ifp.arena.bep.networking
 
         protected override void LocalPredictApproved(PopPacket packet)
         {
-            IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, H.MainPlayer).Forget();
+            IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.player).Forget();
         }
 
 
         protected override async void WhenApproved(PopPacket packet, NetPeer peer)
         {
-            Player player = H.GetPlayer(packet.playerId); 
-            if (player.IsYourPlayer) return;
-            IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, player).Forget();
+            if (packet.player.IsYourPlayer) return;
+            IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.player).Forget();
         }
     }
 }

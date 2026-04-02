@@ -151,9 +151,9 @@ namespace ifp.arena.bep.networking.Base
             }
             else
             {
-                H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
-
                 LocalPredictApproved(packet);
+
+                H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
                 if (FikaBackendUtils.IsServer)
                 {
                     // WhenServerReceivesPacket(packet, Singleton<NetPeer>.Instance);

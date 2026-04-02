@@ -102,7 +102,7 @@ namespace ifp.arena.bep.Core
         public static void ClientRequestPopItem(Item item)
         {
             Singleton<PopPacketHandler>.Instance.Send(item);
-            // IU.TryPopItemWithoutRestriction(item, H.MainPlayer).Forget();
+            // IU.TryPopItemWithoutRestriction(item, item.CurrentAddress, H.MainPlayer).Forget();
         }
 
 
@@ -176,11 +176,14 @@ namespace ifp.arena.bep.Core
 
         public static async UniTask<bool> TryPopItemWithoutRestriction(Item item, ItemAddress itemAddress, Player player)
         {
-            // var itemAddress = item.CurrentAddress;
             itemAddress.RemoveWithoutRestrictions(item);
 
             itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
             itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
+
+            Slot slot = itemAddress.Container as Slot;
+            GEventArgs18 refreshEvent = new GEventArgs18(slot.ParentItem, player.InventoryController, false, false);
+            player.InventoryController.RaiseEvent(refreshEvent);
 
             return true;
         }
@@ -282,7 +285,7 @@ namespace ifp.arena.bep.Core
 
         private static async UniTask<bool> PlaceItem(Item item, Player player, ItemPlacement placement)
         {
-            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
+            D.LogTransaction($"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
 
             switch (placement.Kind)
             {
@@ -305,6 +308,13 @@ namespace ifp.arena.bep.Core
 
             placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
             placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
+
+            if (placement.Kind == PlacementKind.ArmorPlate)
+            {
+                Slot slot = placement.Address.Container as Slot;
+                GEventArgs18 refreshEvent = new GEventArgs18(slot.ParentItem, player.InventoryController, false, false);
+                player.InventoryController.RaiseEvent(refreshEvent);
+            }
 
             return true;
         }

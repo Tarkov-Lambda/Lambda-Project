@@ -56,7 +56,6 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
         if (__instance.Player.IsAI) return true;
-        D.Log($"{__instance.Player.Profile.Nickname} died");
 
         long now = Stopwatch.GetTimestamp();
         long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;
@@ -67,9 +66,10 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 
         // if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
 
-        // if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
-        if (__instance.Player.IsYourPlayer )
+        if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+        // if (__instance.Player.IsYourPlayer)
         {
+            D.Log($"{__instance.Player.Profile.Nickname} died");
             Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo);
         }
 

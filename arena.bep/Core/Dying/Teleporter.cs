@@ -46,7 +46,6 @@ namespace ifp.arena.bep.Core.Dying
             }
 
             player.Teleport(nextPlayerPosition);
-            H.MainPlayer.MovementContext.ResetFlying();
         }
 
         public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)

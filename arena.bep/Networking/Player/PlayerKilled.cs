@@ -106,13 +106,26 @@ namespace ifp.arena.bep.networking
 
         protected override void LocalPredictApproved(PlayerKilledPacket packet)
         {
+            PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
+            if (!victimScore.isAlive) return;
+            PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
 
+            victimScore.Kill();
+
+            if (killerScore != victimScore && killerScore.faction != victimScore.faction)
+            {
+                killerScore.AddFrag(packet.IsHeadshot);
+            }
+
+            // create corpse before anything else happens
+            Die(victimScore.player);
         }
 
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
         {
-            PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
             PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
+            if (!victimScore.isAlive) return;
+            PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
 
             victimScore.Kill();
 
@@ -145,8 +158,7 @@ namespace ifp.arena.bep.networking
                 Singleton<RagdollCreator>.Instance.OnPacket(player);
             }
 
-            player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
-
+            // player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
             Teleporter.Teleport(player, "lobby", Faction.None);
         }
     }
