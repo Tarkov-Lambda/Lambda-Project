@@ -27,12 +27,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
         {
             InventoryScreenQuickAccessPanel quickAccessPanel = commonUI.EftBattleUIScreen.QuickAccessPanel;
 
-            HorizontalLayoutGroup horizontalLayoutGroup = quickAccessPanel.GetComponent<HorizontalLayoutGroup>();
-            if (horizontalLayoutGroup == null) // marker that we already modified
-            {
-                return;
-            }
-            Component.DestroyImmediate(horizontalLayoutGroup);
+            var layoutGroup = quickAccessPanel.GetComponent<HorizontalOrVerticalLayoutGroup>();
+            Component.DestroyImmediate(layoutGroup);
 
             var verticalLayoutGroup = quickAccessPanel.gameObject.AddComponent<VerticalLayoutGroup>();
             quickAccessPanel.gameObject.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
@@ -41,8 +37,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             Transform weapon = quickAccessPanel.transform.Find("Weapon");
             Transform quickSlots = quickAccessPanel.transform.Find("QuickSlots");
 
-            Component.DestroyImmediate(weapon.gameObject.GetComponent<HorizontalLayoutGroup>());
-            Component.DestroyImmediate(quickSlots.gameObject.GetComponent<HorizontalLayoutGroup>());
+            Component.DestroyImmediate(weapon.gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>());
+            Component.DestroyImmediate(quickSlots.gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>());
 
             var vlg = weapon.gameObject.AddComponent<VerticalLayoutGroup>();
             vlg.childControlHeight = false;
@@ -51,11 +47,13 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             vlg = quickSlots.gameObject.AddComponent<VerticalLayoutGroup>();
             vlg.childControlHeight = false;
             vlg.childControlWidth = false;
+            vlg.padding.left = 5;
+            vlg.spacing = 30;
 
             quickAccessPanel.RectTransform.pivot = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(30, 170);
+            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(29, 180);
         }
     }
 }
