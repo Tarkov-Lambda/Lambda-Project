@@ -19,7 +19,6 @@ namespace ifp.arena.shared
     {
         // ── P/Invokes: only per-instance effects not exposed by the managed SA API ──
         // Context / HRTF lifecycle is fully owned by SteamAudioManager.
-
         private const string PHONON = "phonon";
 
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
@@ -36,19 +35,13 @@ namespace ifp.arena.shared
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         static extern void iplDirectEffectRelease(ref IntPtr effect);
 
-        // ── Per-instance DSP effects ──────────────────────────────────────────
-
         private IntPtr _binaural = IntPtr.Zero;
         private IntPtr _direct = IntPtr.Zero;
-
-        // ── Unity components ──────────────────────────────────────────────────
 
         private AudioSource _src;
 #if STEAMAUDIO_ENABLED
         private SteamAudioSource _steamSrc;
 #endif
-
-        // ── Audio-thread parameter cache (written on main thread, read on audio thread) ──
 
         private PVec3 _dir = new PVec3 { z = 1f };
         private float _distAtten = 1f;
@@ -57,62 +50,39 @@ namespace ifp.arena.shared
         private float _transMid = 0f;
         private float _transHigh = 0f;
 
-        // ADDED CACHE VARIABLES:
         private IntPtr _hrtf = IntPtr.Zero;
         private bool _applyTransmission = false;
 
         private readonly object _lock = new object();
-
-        // ── Pre-allocated DSP scratch buffers (avoid per-callback allocations) ──
 
         private float[] _monoIn;
         private float[] _monoOut;
         private float[] _leftOut;
         private float[] _rightOut;
 
-        // ── Spatial blend ─────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Shadow copy of the AudioSource's intended spatialBlend.
-        /// The real <c>AudioSource.spatialBlend</c> is forced to 0 so neither Unity's
-        /// built-in panner nor Meta XR processes the signal. This value drives Phonon's
-        /// <c>IPLBinauralEffectParams.spatialBlend</c> (0 = 2-D passthrough, 1 = full HRTF)
-        /// and scales distance attenuation (0 = flat, 1 = full rolloff).
-        /// </summary>
         [Header("Spatial Blend")]
         [Range(0f, 1f)]
-        [Tooltip("Mirrors AudioSource.spatialBlend without triggering Meta XR. " +
-                 "0 = fully 2-D (no HRTF, no distance rolloff), 1 = fully 3-D.")]
         public float spatialBlendOverride = 1f;
 
-        // ── Debug ─────────────────────────────────────────────────────────────
-
         [Header("Debug")]
-        [Tooltip("Enable verbose log output. Disable in production.")]
         public bool verboseLogging = false;
 
-        /// <summary>
-        /// If true, this bridge will bypass all DSP processing and output silence.
-        /// Used for secondary sources like the _reverbSource in ReverbSimpleSource.
-        /// </summary>
         [Header("Bypass")]
-        [Tooltip("When true, OnAudioFilterRead will do nothing and output silence.")]
         public bool IsBypass = false;
 
         private string _instanceId;
+
+        // --- ADDED CACHE VARIABLES FOR DISTANCE ATTENUATION ---
+        private AnimationCurve _cachedRolloffCurve;
+        private AudioRolloffMode _lastRolloffMode = (AudioRolloffMode)(-1);
 
         private void LogV(string msg) { if (verboseLogging) Debug.Log($"[PhononDSPBridge:{_instanceId}] {msg}"); }
         private void LogW(string msg) { Debug.LogWarning($"[PhononDSPBridge:{_instanceId}] {msg}"); }
         private void LogE(string msg) { Debug.LogError($"[PhononDSPBridge:{_instanceId}] {msg}"); }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Lifecycle
-        // ─────────────────────────────────────────────────────────────────────
-
         private void Awake()
         {
             _instanceId = $"{gameObject.name}_{GetInstanceID()}";
-
             _src = GetComponent<AudioSource>();
             if (_src == null) { LogE("No AudioSource found!"); return; }
 
@@ -120,7 +90,6 @@ namespace ifp.arena.shared
             _steamSrc = GetComponent<SteamAudioSource>();
 #endif
 
-            // Allocate scratch buffers sized to 2× the DSP frame so a resize is never needed.
             UnityEngine.AudioSettings.GetDSPBufferSize(out int bufSize, out _);
             int cap = bufSize * 2;
             _monoIn = new float[cap];
@@ -129,7 +98,6 @@ namespace ifp.arena.shared
             _rightOut = new float[cap];
 
             InitEffects();
-            LogV($"Awake complete — blend={spatialBlendOverride:F2}, bufCap={cap}");
         }
 
         private void OnDestroy()
@@ -139,34 +107,20 @@ namespace ifp.arena.shared
                 if (_binaural != IntPtr.Zero) { iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero; }
                 if (_direct != IntPtr.Zero) { iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero; }
             }
-            LogV("Effects released.");
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Effect initialisation — borrows context + HRTF from SteamAudioManager
-        // ─────────────────────────────────────────────────────────────────────
 
         private void InitEffects()
         {
-            if (SteamAudioManager.Singleton == null || SteamAudioManager.Context == null)
-            {
-                LogE("SteamAudioManager not ready — cannot create effects.");
-                return;
-            }
+            if (SteamAudioManager.Singleton == null || SteamAudioManager.Context == null) return;
 
             IntPtr ctx = SteamAudioManager.Context.Get();
             IntPtr hrtf = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
-            if (ctx == IntPtr.Zero || hrtf == IntPtr.Zero)
-            {
-                LogE($"Context or HRTF ptr is Zero (ctx={ctx}, hrtf={hrtf}) — cannot create effects.");
-                return;
-            }
+            if (ctx == IntPtr.Zero || hrtf == IntPtr.Zero) return;
 
             int rate;
             int frameSize;
 #if STEAMAUDIO_ENABLED
-            // Prefer the AudioSettings that SteamAudioManager already resolved via the audio engine.
             var saSettings = SteamAudioManager.AudioSettings;
             rate = saSettings.samplingRate;
             frameSize = saSettings.frameSize;
@@ -176,47 +130,93 @@ namespace ifp.arena.shared
 #endif
             var audio = new PAudioSettings { samplingRate = rate, frameSize = frameSize };
 
-            // Binaural effect
             var binS = new PBinauralEffectSettings { hrtf = hrtf };
             int r = iplBinauralEffectCreate(ctx, ref audio, ref binS, out _binaural);
-            if (r != 0 || _binaural == IntPtr.Zero)
-            {
-                LogE($"iplBinauralEffectCreate FAILED (code={r}) — DSP will be silent.");
-                return;
-            }
-            LogV($"Binaural effect created (0x{_binaural.ToInt64():X})");
+            if (r != 0 || _binaural == IntPtr.Zero) return;
 
-            // Direct effect — non-fatal; occlusion/transmission fall back to passthrough if absent.
             var dirS = new PDirectEffectSettings { numChannels = 1 };
-            r = iplDirectEffectCreate(ctx, ref audio, ref dirS, out _direct);
-            if (r != 0 || _direct == IntPtr.Zero)
-                LogW("iplDirectEffectCreate FAILED — occlusion/transmission will be bypassed.");
-            else
-                LogV($"Direct effect created (0x{_direct.ToInt64():X})");
+            iplDirectEffectCreate(ctx, ref audio, ref dirS, out _direct);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Per-frame: compute listener-relative direction + read simulation outputs
-        // ─────────────────────────────────────────────────────────────────────
+
+        private float _lastMaxDist = -1f;
+
+
+private float CalculateDistanceAttenuation(float dist)
+        {
+            if (_src == null) return 0f;
+
+            float minDist = _src.minDistance;
+            float maxDist = Mathf.Max(_src.maxDistance, minDist + 0.001f);
+
+            // --- DEBUG ---
+            LogV($"  Calculating Attenuation for distance: {dist:F2}m (Min: {minDist:F1}, Max: {maxDist:F1})");
+            LogV($"  AudioSource RolloffMode is: {_src.rolloffMode}");
+
+            if (dist <= minDist) return 1f;
+            if (dist >= maxDist) return 0f;
+
+            if (_src.rolloffMode == AudioRolloffMode.Custom)
+            {
+                if (_cachedRolloffCurve == null || _lastMaxDist != maxDist)
+                {
+                    // --- DEBUG ---
+                    LogV("  -> Recaching custom rolloff curve...");
+                    _cachedRolloffCurve = _src.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+                    _lastMaxDist = maxDist;
+
+                    if (_cachedRolloffCurve == null || _cachedRolloffCurve.length == 0)
+                    {
+                        LogW("  -> Custom curve is NULL or empty! Falling back to Linear.");
+                        return 1f - ((dist - minDist) / (maxDist - minDist));
+                    }
+                }
+
+                float normalizedDist = dist / maxDist;
+                float result = Mathf.Clamp01(_cachedRolloffCurve.Evaluate(normalizedDist));
+                
+                // --- DEBUG ---
+                LogV($"  -> Custom Curve evaluation: Evaluate({normalizedDist:F3}) => {result:F3}");
+                return result;
+            }
+
+            if (_src.rolloffMode == AudioRolloffMode.Linear)
+            {
+                float result = 1f - ((dist - minDist) / (maxDist - minDist));
+                // --- DEBUG ---
+                LogV($"  -> Linear evaluation result: {result:F3}");
+                return result;
+            }
+            
+            if (_src.rolloffMode == AudioRolloffMode.Logarithmic)
+            {
+                float result = minDist / dist;
+                 // --- DEBUG ---
+                LogV($"  -> Logarithmic evaluation result: {result:F3}");
+                return result;
+            }
+
+            LogW("  -> No valid rolloff mode found! Attenuation will be 1.0 (no effect).");
+            return 1f;
+        }
 
         private void Update()
         {
             Transform listener = GetListenerTransform();
             if (listener == null) return;
 
-            // FIX 2: Prevent Zero-Vector NaN poisoning
             UnityEngine.Vector3 localPos = listener.InverseTransformPoint(transform.position);
             UnityEngine.Vector3 d = localPos.sqrMagnitude < 0.000001f ? UnityEngine.Vector3.forward : localPos.normalized;
 
             float dist = (transform.position - listener.position).magnitude;
-            float maxDist = (_src != null && _src.maxDistance > 0f) ? _src.maxDistance : 50f;
-            float atten = Mathf.Clamp01(1f - dist / maxDist);
+
+            // Replaced the buggy 1f - dist / maxDist with correct engine emulation
+            float atten = CalculateDistanceAttenuation(dist);
 
             float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
             bool applyTrans = false;
 
 #if STEAMAUDIO_ENABLED
-            // Safe to check Unity Objects here (Main Thread)
             if (_steamSrc != null)
             {
                 occ = Mathf.Clamp01(_steamSrc.occlusionValue);
@@ -229,7 +229,6 @@ namespace ifp.arena.shared
                 }
             }
 #endif
-            // FIX 1: Fetch HRTF pointer on the Main thread
             IntPtr hrtfPtr = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
             lock (_lock)
@@ -247,18 +246,11 @@ namespace ifp.arena.shared
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
-            // Add this check at the very top!
             if (IsBypass || channels != 2 || _binaural == IntPtr.Zero)
             {
-                // If bypassed, clear the buffer to produce silence and exit immediately.
-                if (IsBypass)
-                {
-                    Array.Clear(data, 0, data.Length);
-                }
+                if (IsBypass) Array.Clear(data, 0, data.Length);
                 return;
             }
-
-            if (channels != 2 || _binaural == IntPtr.Zero) return;
 
             lock (_lock)
             {
@@ -266,7 +258,6 @@ namespace ifp.arena.shared
 
                 if (n > _monoIn.Length)
                 {
-                    LogW($"Scratch buffer resize: n={n} > cap={_monoIn.Length}");
                     _monoIn = new float[n];
                     _monoOut = new float[n];
                     _leftOut = new float[n];
@@ -274,7 +265,10 @@ namespace ifp.arena.shared
                 }
 
                 float blend = Mathf.Clamp01(spatialBlendOverride);
+                // Note: Multiplying `_distAtten` manually like this is actually brilliant,
+                // because native Phonon doesn't support interpolating distance rolloff using a Unity `spatialBlend` equivalent.
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
+
                 for (int i = 0; i < n; i++)
                     _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
 
@@ -294,15 +288,13 @@ namespace ifp.arena.shared
                     if (_direct != IntPtr.Zero)
                     {
                         int flags = (int)DirectEffectFlags.ApplyOcclusion;
-
-                        // FIX 1: Read cached boolean instead of calling Unity Objects
                         if (_applyTransmission) flags |= (int)DirectEffectFlags.ApplyTransmission;
 
                         var dp = new PDirectEffectParams
                         {
                             flags = flags,
                             transmissionType = 1,
-                            distanceAttenuation = 1f,
+                            distanceAttenuation = 1f, // Safe to keep 1f since you pre-multiplied `effectiveAtten` on _monoIn loop
                             airAbsorptionLow = 1f,
                             airAbsorptionMid = 1f,
                             airAbsorptionHigh = 1f,
@@ -319,7 +311,6 @@ namespace ifp.arena.shared
                         for (int i = 0; i < n; i++) _monoOut[i] = _monoIn[i];
                     }
 
-                    // FIX 3: Safety check on HRTF pointer before invoking Phonon
                     if (_hrtf != IntPtr.Zero)
                     {
                         var bp = new PBinauralEffectParams
@@ -327,14 +318,13 @@ namespace ifp.arena.shared
                             direction = _dir,
                             interpolation = 1,
                             spatialBlend = blend,
-                            hrtf = _hrtf, // Cached pointer
+                            hrtf = _hrtf,
                             peakDelays = IntPtr.Zero,
                         };
                         iplBinauralEffectApply(_binaural, ref bp, ref outBuf, ref binBuf);
                     }
                     else
                     {
-                        // Safety Fallback (2-D bypass) if SteamAudioManager goes missing during hot-swap
                         for (int i = 0; i < n; i++)
                         {
                             _leftOut[i] = _monoOut[i];
@@ -350,10 +340,6 @@ namespace ifp.arena.shared
                 }
             }
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Helpers
-        // ─────────────────────────────────────────────────────────────────────
 
         private Transform GetListenerTransform()
         {

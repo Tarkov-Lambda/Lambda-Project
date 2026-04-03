@@ -119,6 +119,7 @@ namespace ifp.arena.bep.networking
 
             // create corpse before anything else happens
             Die(victimScore.player);
+            EventBus.OnPlayerKill.Invoke(packet);
         }
 
         protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
@@ -136,6 +137,7 @@ namespace ifp.arena.bep.networking
 
             // create corpse before anything else happens
             Die(victimScore.player);
+            EventBus.OnPlayerKill.Invoke(packet);
         }
 
         private void Die(Player player)

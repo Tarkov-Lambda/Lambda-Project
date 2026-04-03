@@ -120,19 +120,7 @@ namespace ifp.arena.bep.Core.UI
             bool win = data.winner == H.MainPlayerScore.faction;
             string mainTitle = win ? "ROUND WON" : "ROUND LOST";
 
-            string subTitle = "che";
-            switch (data.roundWinReason)
-            {
-                case RoundWinReason.Elimination:
-                    subTitle = "elinmiant";
-                    break;
-                case RoundWinReason.Timeout:
-                    subTitle = "tiem otu";
-                    break;
-                case RoundWinReason.Objective:
-                    subTitle = "bamba";
-                    break;
-            }
+            string subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
 
             matchUIController.PopupMatchEnd.Pop(win, mainTitle, subTitle);
         }

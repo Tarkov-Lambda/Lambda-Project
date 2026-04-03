@@ -57,6 +57,7 @@ namespace ifp.arena.bep.Core.Gamemode
     public partial struct RoundActionPhaseEnd
     {
         public int mvpId;
+        public string mvpReason;
         public Faction winner;
         public RoundWinReason roundWinReason;
     }
@@ -215,9 +216,9 @@ namespace ifp.arena.bep.Core.Gamemode
                 H.Session.factionWins[w] = 0;
             H.Session.factionWins[w]++;
 
-            int mvpId = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
+            var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
 
-            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, winner = w, roundWinReason = reason };
+            H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
         }
 
         public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();

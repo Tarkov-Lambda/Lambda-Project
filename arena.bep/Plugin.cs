@@ -336,14 +336,8 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        // var sources = H.GameWorld?.gameObject.GetComponentsInChildren<AudioSource>(true);
-        // var sources = Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        // foreach (var audioSource in sources)
-        // {
-        //     if (SteamSourceDict.cache.ContainsKey(audioSource)) continue;
-        // }
-
         List<ReverbSimpleSource> reverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
+        List<ReverbSimpleSource> playerReverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
 
         foreach (Player player in H.AllPlayers)
         {
@@ -353,6 +347,19 @@ public class Plugin : BaseUnityPlugin
         }
 
         FieldInfo _reverbSourceField = AccessTools.Field(typeof(ReverbSimpleSource), "_reverbSource");
+
+        // Separate so I can do some shit later
+        // foreach (ReverbSimpleSource reverbSimpleSource in playerReverbSimpleSources)
+        // {
+        //     AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
+
+        //     var source1Cache = SteamAudioSourceAttacher.GetOrAdd(reverbSimpleSource.source1);
+        //     var reverbCache = SteamAudioSourceAttacher.GetOrAdd(reverbSource);
+
+        //     source1Cache.bridge.IsBypass = false;
+        //     reverbCache.bridge.IsBypass = true;
+        // }
+
         foreach (ReverbSimpleSource reverbSimpleSource in reverbSimpleSources)
         {
             AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;

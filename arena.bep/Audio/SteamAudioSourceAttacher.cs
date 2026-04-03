@@ -21,7 +21,9 @@ public static class SteamAudioSourceAttacher
 {
     public static SteamSourceData GetOrAdd(AudioSource audioSource)
     {
-        if (SteamSourceDict.cache.ContainsKey(audioSource)) return SteamSourceDict.cache[audioSource];
+        if (SteamSourceDict.cache.ContainsKey(audioSource)) SteamSourceDict.cache.Remove(audioSource);
+
+        // if (SteamSourceDict.cache.ContainsKey(audioSource)) return SteamSourceDict.cache[audioSource];
 
         SteamSourceDict.cache[audioSource] = new SteamSourceData
         {
@@ -32,10 +34,14 @@ public static class SteamAudioSourceAttacher
         SteamAudioSource steamAudio = SteamSourceDict.cache[audioSource].steam;
         steamAudio.occlusion = true;
         steamAudio.transmission = true;
+
         steamAudio.distanceAttenuation = true;
         steamAudio.distanceAttenuationInput = DistanceAttenuationInput.CurveDriven;
+        steamAudio.distanceAttenuationValue = 1f;
+
         steamAudio.airAbsorption = true;
         steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+        
         steamAudio.occlusionType = OcclusionType.Raycast;
         steamAudio.occlusionRadius = 1.4f;
         steamAudio.occlusionSamples = 8;
