@@ -44,6 +44,6 @@
       <FilesToCopy Include="$(OutputPath)\*.dll" />
     </ItemGroup>
 
-    <!-- <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
 </Project>

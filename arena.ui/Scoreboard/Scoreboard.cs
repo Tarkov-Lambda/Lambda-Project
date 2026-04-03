@@ -14,7 +14,7 @@ namespace arena.ui.scoreboard
         private readonly List<TeamBoard> pool = new List<TeamBoard>();
         private readonly Dictionary<Faction, List<PlayerStats>> buckets = new Dictionary<Faction, List<PlayerStats>>();
 
-        public void SetPlayers(PlayerStats[] players, Dictionary<Faction, int> teamScores)
+        public void SetPlayers(PlayerStats[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
         {
             buckets.Clear();
 
@@ -46,7 +46,7 @@ namespace arena.ui.scoreboard
 
                 teamScores.TryGetValue(kvp.Key, out int score);
                 board.gameObject.SetActive(true);
-                board.Set(kvp.Value, factionColors.Get(kvp.Key), score);
+                board.Set(kvp.Value, factionColors.Get(kvp.Key), score, mainPlayerFaction);
                 index++;
             }
 

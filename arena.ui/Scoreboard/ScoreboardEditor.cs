@@ -103,13 +103,13 @@ namespace arena.ui.scoreboard.Editor
                 Debug.Log($"  TeamScore: {kvp.Key} = {kvp.Value}");
             }
 
-            scoreboard.SetPlayers(players, teamScores);
+            scoreboard.SetPlayers(players, teamScores, Faction.None);
         }
 
         private void ClearScoreboard()
         {
             Scoreboard scoreboard = (Scoreboard)target;
-            scoreboard.SetPlayers(new PlayerStats[0], new Dictionary<Faction, int>());
+            scoreboard.SetPlayers(new PlayerStats[0], new Dictionary<Faction, int>(), Faction.None);
             Debug.Log("[ScoreboardEditor] Scoreboard cleared.");
         }
     }

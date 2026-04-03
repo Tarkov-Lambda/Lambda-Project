@@ -185,7 +185,7 @@ namespace ifp.arena.bep.Core.UI
 
             matchUIController.TopBar.SetScores(scoreCT, scoreT);
 
-            matchUIController.Scoreboard.SetPlayers(GetAllPlayersStats(), H.Session.factionWins);
+            matchUIController.Scoreboard.SetPlayers(GetAllPlayersStats(), H.Session.factionWins, H.MainPlayerScore.faction);
 
             shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
         }
@@ -201,13 +201,19 @@ namespace ifp.arena.bep.Core.UI
                 playerStats.Add(new PlayerStats
                 {
                     Id = id,
+                    Alive = playerScore.isAlive,
                     Faction = playerScore.faction,
+
                     Name = playerScore.player.Profile.Nickname,
+
+                    Money = playerScore.money,
+
                     Kills = playerScore.kills,
                     Deaths = playerScore.deaths,
                     Assists = playerScore.assists,
                     Ping = playerScore.ping,
-                    Headshots = playerScore.headshots
+                    Headshots = playerScore.headshots,
+                    Damage = playerScore.damage
                 });
             }
 

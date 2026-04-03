@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ifp.arena.shared;
 using ifp.arena.shared.Models;
 using TMPro;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace arena.ui.scoreboard
 
         private readonly List<RowPlayer> pool = new List<RowPlayer>();
 
-        public void Set(List<PlayerStats> players, Color teamColor, int score)
+        public void Set(List<PlayerStats> players, Color teamColor, int score, Faction mainPlayerFaction)
         {
             scoreContainer.SetActive(score >= 0);
             textTeamScore.text = score.ToString();
@@ -43,7 +44,7 @@ namespace arena.ui.scoreboard
                     pool.Add(row);
                 }
 
-                row.Set(players[i], i);
+                row.Set(players[i], players[i].Faction == mainPlayerFaction, i);
             }
 
             // deactivate surplus rows
