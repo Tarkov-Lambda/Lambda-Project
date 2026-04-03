@@ -21,7 +21,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
             }
 
             [PatchPostfix]
-            private static void PatchPostfix(QuickSlotView __instance, Image ___Background, Image ____arrow, TMP_Text ___Caption)
+            private static void PatchPostfix(QuickSlotView __instance, Image ___Background, Image ____arrow, TMP_Text ___Caption, TMP_Text ___HotKey)
             {
                 Transform mainWeapon = __instance.transform.Find("MainWeapon");
                 if (mainWeapon != null)
@@ -41,8 +41,11 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
                     ____arrow.rectTransform.anchoredPosition = new Vector2(2, 0);
                 }
 
+                ___Caption.rectTransform.anchoredPosition = new Vector2(15f, 30f);
                 ___Caption.horizontalAlignment = TMPro.HorizontalAlignmentOptions.Left;
                 ___Caption.margin = new Vector4(6.5f, 0, 0, 0);
+
+                ___HotKey.color = Color.white;
             }
 
             static void DisableBGGraphic(Transform slotView)
@@ -59,7 +62,6 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
                 if (bindPanel != null && bindPanel.TryGetComponent<Graphic>(out var bindgraphic))
                 {
                     bindgraphic.enabled = false;
-                    bindgraphic.GetComponentInChildren<TMP_Text>().color = new Color(0, 0, 0, 0.8f);
                 }
             }
 

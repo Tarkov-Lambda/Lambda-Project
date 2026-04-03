@@ -1,9 +1,12 @@
-﻿using EFT;
+﻿using DG.Tweening;
+using EFT;
 using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
 {
@@ -17,7 +20,11 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance, bool selected, CustomTextMeshProUGUI ___Caption)
         {
-            ___Caption.color = selected ? Color.black : new Color(0, 0, 0, 0f);
+            Color color = selected ? Color.white : new Color(0, 0, 0, 0f);
+
+            ___Caption.color = color;
+
+            __instance.GetOrAddComponent<CanvasGroup>().DOFade(selected ? 0.8f : 0.2f, 0.3f);
         }
     }
 }

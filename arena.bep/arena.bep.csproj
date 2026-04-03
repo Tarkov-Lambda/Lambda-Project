@@ -78,6 +78,13 @@
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DOTween.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DOTween.Modules.dll">
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
     </Reference>

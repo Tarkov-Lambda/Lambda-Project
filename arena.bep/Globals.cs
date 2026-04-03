@@ -21,6 +21,8 @@ global using LocalizationExtensions = GClass2348;
 global using ArmorSlot = GClass3125;
 global using IInteractive = GInterface177;
 
+global using IItemRelatedView = GInterface179;
+
 // To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {

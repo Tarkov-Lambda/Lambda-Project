@@ -45,17 +45,18 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             var vlg = weapon.gameObject.AddComponent<VerticalLayoutGroup>();
             vlg.childControlHeight = false;
             vlg.childControlWidth = false;
+            vlg.spacing = -10;
 
             vlg = quickSlots.gameObject.AddComponent<VerticalLayoutGroup>();
             vlg.childControlHeight = false;
             vlg.childControlWidth = false;
             vlg.padding.left = 5;
-            vlg.spacing = 30;
+            vlg.spacing = 20;
 
             quickAccessPanel.RectTransform.pivot = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(20, 80);
+            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(20, 150);
         }
 
         public static void StretchItemsPanel(CommonUI commonUI)

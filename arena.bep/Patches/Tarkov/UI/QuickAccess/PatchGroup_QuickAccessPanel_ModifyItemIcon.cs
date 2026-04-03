@@ -39,12 +39,10 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
             ___MainImage.rectTransform.pivot = new Vector2(0f, 0.5f);
             ___MainImage.rectTransform.anchoredPosition = new Vector2(-20f, 0f);
 
-            ___MainImage.gameObject.GetOrAddComponent<Shadow>();
-
             if (Singleton<UIManager>.Instantiated)
             {
                 ___MainImage.material = Singleton<UIManager>.Instance.MatteMaterial;
-                ___MainImage.color = new Color(0, 0, 0, 0.8f);
+                ___MainImage.color = new Color(1, 1, 1, 1);
             }
         }
     }
