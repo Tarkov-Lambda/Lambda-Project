@@ -31,7 +31,6 @@ namespace ifp.arena.bep.networking.Base
         }
     }
 
-    // Quick flow explanation of this https://youtu.be/dQw4w9WgXcQ
     // Currently still a lot of pit falls in packet traversal route
     // Note: currently the responsibility between ShouldBroadcastClientPacket and RequestSendToPlayer is kind of blurred
     // this is probably the first place for refactoring

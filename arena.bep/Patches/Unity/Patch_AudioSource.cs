@@ -12,17 +12,6 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches
 {
-    public struct SteamSourceData
-    {
-        public SteamAudioSource steam;
-        public PhononDSPBridge bridge;
-
-    }
-
-    internal class SteamSourceDict
-    {
-        public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
-    }
 
     // Proxying all spatial setter/getters to Steam Audio DSP Bridge
     internal class Patch_AudioSource_set_spatialBlend : ModulePatch
@@ -41,6 +30,22 @@ namespace ifp.arena.bep.Patches
 
             __instance.spatialize = false;
             value = 0f;
+            return true;
+        }
+    }
+
+    internal class Patch_AudioSource_set_spatialize : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.spatialize));
+
+        [PatchPrefix]
+        public static bool Prefix(AudioSource __instance, ref bool value)
+        {
+            if (SteamSourceDict.cache.ContainsKey(__instance))
+            {
+                value = false;
+            }
+
             return true;
         }
     }

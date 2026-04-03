@@ -91,6 +91,14 @@ namespace ifp.arena.shared
         [Tooltip("Enable verbose log output. Disable in production.")]
         public bool verboseLogging = false;
 
+        /// <summary>
+        /// If true, this bridge will bypass all DSP processing and output silence.
+        /// Used for secondary sources like the _reverbSource in ReverbSimpleSource.
+        /// </summary>
+        [Header("Bypass")]
+        [Tooltip("When true, OnAudioFilterRead will do nothing and output silence.")]
+        public bool IsBypass = false;
+
         private string _instanceId;
 
         private void LogV(string msg) { if (verboseLogging) Debug.Log($"[PhononDSPBridge:{_instanceId}] {msg}"); }
@@ -239,6 +247,17 @@ namespace ifp.arena.shared
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
+            // Add this check at the very top!
+            if (IsBypass || channels != 2 || _binaural == IntPtr.Zero)
+            {
+                // If bypassed, clear the buffer to produce silence and exit immediately.
+                if (IsBypass)
+                {
+                    Array.Clear(data, 0, data.Length);
+                }
+                return;
+            }
+
             if (channels != 2 || _binaural == IntPtr.Zero) return;
 
             lock (_lock)

@@ -102,12 +102,16 @@ namespace ifp.arena.bep.Core.Gamemode
         {
             if (H.GameWorld is HideoutGameWorld) return;
 
+
+            foreach(var player in H.AllPlayers)
+            {
+                D.Log($"{player.Equipment.Id} {player.Profile.Nickname} {player.ProfileId}");
+            }
             // IU.ResetInventoryLock();
 
             _tickerObject = new GameObject("Arena Gamesession");
-            _tickerObject.AddComponent<GameModeTicker>();
-            _tickerObject.AddComponent<TimeSyncTicker>();
-            _tickerObject.AddComponent<AudioSourceWorldDebug>();
+            _tickerObject.GetOrAddComponent<GameModeTicker>();
+            _tickerObject.GetOrAddComponent<TimeSyncTicker>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
             HU.ApplyPainkiller();

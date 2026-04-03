@@ -19,7 +19,8 @@ namespace ifp.arena.shared
         public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg); // for stuff that goes over the wire
         public static void LogArenaController(string msg) => Plugin.Logger.LogInfo(msg);
         public static void LogInventory(string msg) => Plugin.Logger.LogInfo(msg); // for inventory item tracking
-        public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, msg, name);
+        public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
+        public static string DumpFile(object obj, int depth = 0, bool log = false, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
 
         // public static void Log(string msg) => null;
         // public static void LogTransaction(string msg) { }
@@ -31,7 +32,7 @@ namespace ifp.arena.shared
         public static void LogArenaController(string msg) {}
         public static void LogTransaction(string msg) {}
         public static void LogInventory(string msg) {}
-        public static void Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { }
+        public static string Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { }
 #endif
 
         public static void LogError(string msg) => Plugin.Logger.LogError(msg);
@@ -39,16 +40,20 @@ namespace ifp.arena.shared
         // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
         // public static void PlayMusic(MusicEvent musicEvent) => D.Notify(musicEvent.ToString());
 
-        private static void _dump(object obj, int depth = 1, string msg = "", [CallerArgumentExpression("obj")] string name = null)
+        private static string _dump(object obj, int depth = 1, bool log = true, [CallerArgumentExpression("obj")] string name = null)
         {
-            if (obj == null) return;
+            if (obj == null) return "";
 
             var sb = new StringBuilder();
-            sb.Append(msg).Append("\n");
 
             DumpObject(obj, sb, name, 0, depth);
 
-            Log(sb.ToString());
+            if (log)
+            {
+                Log(sb.ToString());
+            }
+            
+            return sb.ToString();
         }
 
         private static void DumpObject(object obj, StringBuilder sb, string name, int currentDepth, int maxDepth)
