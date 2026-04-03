@@ -151,6 +151,8 @@ namespace ifp.arena.bep.Core.UI
 
         void OnPlayerKill(PlayerKilledPacket killPacket)
         {
+            Plugin.Logger.LogInfo(killPacket);
+
             try
             {
                 H.Scoreboard.TryGetValue(killPacket.killerId, out PlayerScore playerKiller);
@@ -168,6 +170,8 @@ namespace ifp.arena.bep.Core.UI
                         leftName, leftFaction,
                         rightName, rightFaction,
                         weaponSprite, killPacket.IsHeadshot);
+
+                    matchUIController.DeathInfo.Pop(GetPlayerStats(playerKiller));
                 });
 
                 Refresh();
@@ -198,26 +202,31 @@ namespace ifp.arena.bep.Core.UI
                 int id = kvp.Key;
                 PlayerScore playerScore = kvp.Value;
 
-                playerStats.Add(new PlayerStats
-                {
-                    Id = id,
-                    Alive = playerScore.isAlive,
-                    Faction = playerScore.faction,
-
-                    Name = playerScore.player.Profile.Nickname,
-
-                    Money = playerScore.money,
-
-                    Kills = playerScore.kills,
-                    Deaths = playerScore.deaths,
-                    Assists = playerScore.assists,
-                    Ping = playerScore.ping,
-                    Headshots = playerScore.headshots,
-                    Damage = playerScore.damage
-                });
+                playerStats.Add(GetPlayerStats(playerScore));
             }
 
             return playerStats.ToArray();
+        }
+
+        PlayerStats GetPlayerStats(PlayerScore playerScore)
+        {
+            return new PlayerStats
+            {
+                Id = playerScore.player.Id,
+                Alive = playerScore.isAlive,
+                Faction = playerScore.faction,
+
+                Name = playerScore.player.Profile.Nickname,
+
+                Money = playerScore.money,
+
+                Kills = playerScore.kills,
+                Deaths = playerScore.deaths,
+                Assists = playerScore.assists,
+                Ping = playerScore.ping,
+                Headshots = playerScore.headshots,
+                Damage = playerScore.damage
+            };
         }
 
         void OnInventoryScreenOpen(CompoundItem containerLooting)
