@@ -101,7 +101,11 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
             _customMaterial.SetTexture("_DisplacementMap", displacementMap);
         }
 
+#if UNITY_EDITOR
+        _customMaterial.SetVector("_DisplacementStrength", -displacementStrength); // no idea why it's inverted in editor
+#else
         _customMaterial.SetVector("_DisplacementStrength", displacementStrength);
+#endif
         _customMaterial.SetVector("_DisplacementScale", displacementScale);
 
         return _customMaterial;
