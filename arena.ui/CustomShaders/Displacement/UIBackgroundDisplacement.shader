@@ -111,12 +111,22 @@ Shader "UI/BackgroundDisplacement"
 
                 half4 map = tex2D(_DisplacementMap, dispUV);
                 float2 offset = (map.rg - 0.5) * 2.0;
+                
+                // use graphic alpha as effect strength
+                float effectStrength = IN.color.a;
 
                 float aspect = _ScreenParams.x / _ScreenParams.y;
-                screenUV.x += offset.x * _DisplacementStrength.x;
-                screenUV.y += offset.y * _DisplacementStrength.y * aspect;
+                screenUV.x += offset.x * _DisplacementStrength.x * effectStrength;
+                screenUV.y += offset.y * _DisplacementStrength.y * aspect * effectStrength;
                 
-                half4 color = tex2D(_GlobalScreenGrab, screenUV) * IN.color;
+                half4 color = tex2D(_GlobalScreenGrab, screenUV);
+
+                // lerp tint toward white (no tint) as effect strength decreases
+                fixed3 tint = lerp(fixed3(1, 1, 1), IN.color.rgb, effectStrength);
+                color.rgb *= tint;
+
+                // fade actual alpha only at the very end (when effectStrength < 0.1)
+                color.a = saturate(effectStrength * 10.0);
 
                 half4 mainTex = tex2D(_MainTex, IN.texcoord);
                 color.a *= mainTex.a;
