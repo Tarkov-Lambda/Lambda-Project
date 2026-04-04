@@ -103,7 +103,7 @@ Shader "UI/BackgroundDisplacement"
                 OUT.texcoord = v.texcoord;
                 OUT.color = v.color * _Color;
                 
-                OUT.screenPos = ComputeScreenPos(OUT.vertex);
+                OUT.screenPos = ComputeGrabScreenPos(OUT.vertex); 
                 
                 return OUT;
             }
