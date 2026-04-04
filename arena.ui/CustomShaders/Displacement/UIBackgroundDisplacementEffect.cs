@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
 {
     public Texture2D displacementMap;
+
+    public bool scaleWithRectTransform = true;
+
     [SensitiveVector]
     public Vector2 displacementStrength = new Vector2(0.05f, 0.05f);
     public Vector2 displacementScale = new Vector2(1f, 1f);
@@ -45,6 +48,14 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
         }
 
         if (GraphicComponent != null)
+        {
+            GraphicComponent.SetMaterialDirty();
+        }
+    }
+
+    protected void OnRectTransformDimensionsChange()
+    {
+        if (!scaleWithRectTransform && isActiveAndEnabled && GraphicComponent != null)
         {
             GraphicComponent.SetMaterialDirty();
         }
@@ -96,9 +107,22 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
 
         _customMaterial.CopyPropertiesFromMaterial(baseMaterial);
 
+        Vector2 finalScale = displacementScale;
+
         if (displacementMap != null)
         {
             _customMaterial.SetTexture("_DisplacementMap", displacementMap);
+
+            if (!scaleWithRectTransform)
+            {
+                Rect rect = GraphicComponent.rectTransform.rect;
+
+                float texWidth = Mathf.Max(1f, displacementMap.width);
+                float texHeight = Mathf.Max(1f, displacementMap.height);
+
+                finalScale.x *= (rect.width / texWidth);
+                finalScale.y *= (rect.height / texHeight);
+            }
         }
 
 #if UNITY_EDITOR
@@ -106,7 +130,7 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
 #else
         _customMaterial.SetVector("_DisplacementStrength", displacementStrength);
 #endif
-        _customMaterial.SetVector("_DisplacementScale", displacementScale);
+        _customMaterial.SetVector("_DisplacementScale", finalScale);
 
         return _customMaterial;
     }
