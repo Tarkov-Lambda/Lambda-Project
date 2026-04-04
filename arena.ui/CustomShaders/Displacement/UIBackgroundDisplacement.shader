@@ -85,7 +85,7 @@ Shader "UI/BackgroundDisplacement"
             float2 _DisplacementStrength;
             float2 _DisplacementScale;
             
-            sampler2D _WaterForSSR_SavedG0; 
+            sampler2D _GlobalScreenGrab; 
 
             v2f vert(appdata_t v)
             {
@@ -106,7 +106,6 @@ Shader "UI/BackgroundDisplacement"
             fixed4 frag(v2f IN) : SV_Target
             {
                 float2 screenUV = IN.screenPos.xy / max(IN.screenPos.w, 0.0001);
-                screenUV.y = 1.0 - screenUV.y;
 
                 float2 dispUV = IN.texcoord * _DisplacementScale;
 
@@ -117,7 +116,7 @@ Shader "UI/BackgroundDisplacement"
                 screenUV.x += offset.x * _DisplacementStrength.x;
                 screenUV.y += offset.y * _DisplacementStrength.y * aspect;
                 
-                half4 color = tex2D(_WaterForSSR_SavedG0, screenUV) * IN.color;
+                half4 color = tex2D(_GlobalScreenGrab, screenUV) * IN.color;
 
                 half4 mainTex = tex2D(_MainTex, IN.texcoord);
                 color.a *= mainTex.a;
