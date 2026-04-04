@@ -36,6 +36,8 @@ namespace ifp.arena.bep.Core.UI
 
         public Material MatteMaterial { get; private set; }
 
+        EFTUpscaleChangeHookSetGlobalShaderVector upscaleChangeHook;
+
         public UIManager()
         {
             Patch_CommonUI_Awake.OnAwake += LoadUI;
@@ -56,6 +58,8 @@ namespace ifp.arena.bep.Core.UI
 
             EventBus.OnFixedUpdate += SetInteractable;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
+
+            upscaleChangeHook = new EFTUpscaleChangeHookSetGlobalShaderVector("_GlobalGrabPassScale");
         }
 
         public void SetInteractable()
@@ -237,6 +241,8 @@ namespace ifp.arena.bep.Core.UI
 
             EventBus.OnFixedUpdate -= SetInteractable;
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
+
+            upscaleChangeHook?.Dispose();
 
             if (matchUIController != null)
                 GameObject.Destroy(matchUIController.gameObject);

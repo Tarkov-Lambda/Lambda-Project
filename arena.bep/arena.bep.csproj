@@ -77,6 +77,9 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DissonanceVoip.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Unity.Postprocessing.Runtime.dll">
+      <Private>False</Private>
+    </Reference>
 
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DOTween.dll">
       <Private>False</Private>

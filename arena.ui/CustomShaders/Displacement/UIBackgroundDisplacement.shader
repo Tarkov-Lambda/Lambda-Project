@@ -90,6 +90,8 @@ Shader "UI/BackgroundDisplacement"
             float2 _DisplacementStrength;
             float2 _DisplacementScale;
             
+            float2 _GlobalGrabPassScale;
+
             sampler2D _GrabTex;
 
             v2f vert(appdata_t v)
@@ -111,6 +113,9 @@ Shader "UI/BackgroundDisplacement"
             fixed4 frag(v2f IN) : SV_Target
             {
                 float2 screenUV = IN.screenPos.xy / max(IN.screenPos.w, 0.0001);
+                float2 scale = (_GlobalGrabPassScale.x == 0.0) ? float2(1.0, 1.0) : _GlobalGrabPassScale.xy;
+                screenUV *= scale;
+
                 float2 dispUV = IN.texcoord * _DisplacementScale;
 
                 half4 map = tex2D(_DisplacementMap, dispUV);

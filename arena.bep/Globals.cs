@@ -23,6 +23,8 @@ global using IInteractive = GInterface177;
 
 global using IItemRelatedView = GInterface179;
 
+global using CameraManager = CameraClass;
+
 // To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {
