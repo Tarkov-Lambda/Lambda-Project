@@ -7,6 +7,7 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
 {
     public Texture2D displacementMap;
     public Vector2 displacementStrength = new Vector2(0.05f, 0.05f);
+    public Vector2 displacementScale = new Vector2(1f, 1f);
 
     [SerializeField]
     [HideInInspector]
@@ -100,6 +101,7 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
         }
 
         _customMaterial.SetVector("_DisplacementStrength", displacementStrength);
+        _customMaterial.SetVector("_DisplacementScale", displacementScale);
 
         return _customMaterial;
     }

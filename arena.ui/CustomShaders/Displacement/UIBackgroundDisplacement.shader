@@ -7,6 +7,7 @@ Shader "UI/BackgroundDisplacement"
         
         _DisplacementMap ("Displacement Map", 2D) = "grey" {}
         _DisplacementStrength ("Displacement Strength", Vector) = (0.05, 0.05, 0, 0)
+        _DisplacementScale ("Displacement Scale", Vector) = (1, 1, 0, 0)
 
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -87,6 +88,7 @@ Shader "UI/BackgroundDisplacement"
 
             sampler2D _DisplacementMap;
             float2 _DisplacementStrength;
+            float2 _DisplacementScale;
             
             sampler2D _GrabTex;
 
@@ -109,8 +111,9 @@ Shader "UI/BackgroundDisplacement"
             fixed4 frag(v2f IN) : SV_Target
             {
                 float2 screenUV = IN.screenPos.xy / max(IN.screenPos.w, 0.0001);
+                float2 dispUV = IN.texcoord * _DisplacementScale;
 
-                half4 map = tex2D(_DisplacementMap, IN.texcoord);
+                half4 map = tex2D(_DisplacementMap, dispUV);
                 float2 offset = (map.rg - 0.5) * 2.0;
 
                 float aspect = _ScreenParams.x / _ScreenParams.y;
