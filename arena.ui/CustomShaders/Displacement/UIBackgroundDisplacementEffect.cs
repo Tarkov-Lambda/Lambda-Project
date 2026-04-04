@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
 {
     public Texture2D displacementMap;
+    [SensitiveVector]
     public Vector2 displacementStrength = new Vector2(0.05f, 0.05f);
     public Vector2 displacementScale = new Vector2(1f, 1f);
 
