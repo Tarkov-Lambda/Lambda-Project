@@ -34,9 +34,9 @@ namespace ifp.arena.bep.Core.UI
 
         NameplateRenderer nameplateRenderer;
 
-        public Material MatteMaterial { get; private set; }
+        EFTCameraHook cameraHook;
 
-        EFTUpscaleChangeHookSetGlobalShaderVector upscaleChangeHook;
+        public Material MatteMaterial { get; private set; }
 
         public UIManager()
         {
@@ -59,7 +59,7 @@ namespace ifp.arena.bep.Core.UI
             EventBus.OnFixedUpdate += SetInteractable;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
 
-            upscaleChangeHook = new EFTUpscaleChangeHookSetGlobalShaderVector("_GlobalGrabPassScale");
+            cameraHook = new EFTCameraHook();
         }
 
         public void SetInteractable()
@@ -242,7 +242,7 @@ namespace ifp.arena.bep.Core.UI
             EventBus.OnFixedUpdate -= SetInteractable;
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
 
-            upscaleChangeHook?.Dispose();
+            cameraHook?.Dispose();
 
             if (matchUIController != null)
                 GameObject.Destroy(matchUIController.gameObject);
