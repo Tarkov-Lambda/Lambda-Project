@@ -1,4 +1,6 @@
+using Audio.ReverbSubsystem;
 using Audio.SpatialSystem;
+using EFT;
 using HarmonyLib;
 using ifp.arena.shared;
 using SPT.Reflection.Patching;

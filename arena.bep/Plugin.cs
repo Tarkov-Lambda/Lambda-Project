@@ -1,10 +1,8 @@
-using Audio.SpatialSystem;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Triggers;
 using EFT;
 using HarmonyLib;
 using ifp.arena.bep.Core;
@@ -19,7 +17,6 @@ using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
-using ifp.tracer;
 using SPT.Reflection.Patching;
 using SteamAudio;
 using System;
@@ -27,113 +24,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
-
-
-
-namespace ifp.arena.bep;
-
-
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Audio.ReverbSubsystem;
-using EFT.InventoryLogic;
 using UnityEngine;
 
-public class AudioSourceWorldDebug : MonoBehaviour
-{
-    private AudioSource[] audioSources;
-    private Camera cam;
-
-    void FixedUpdate()
-    {
-        audioSources = Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (CameraClass.Instance != null) cam = CameraClass.Instance.Camera;
-    }
-
-    void OnGUI()
-    {
-        if (cam == null) return;
-
-        // Group sources by screen position (rounded to reduce jitter)
-        Dictionary<Vector2, List<AudioSource>> grouped = new Dictionary<Vector2, List<AudioSource>>();
-
-        foreach (AudioSource audio in audioSources)
-        {
-            if (audio == null) continue;
-
-            Vector3 screenPos = cam.WorldToScreenPoint(audio.transform.position);
-
-            if (screenPos.z < 0)
-                continue;
-
-            screenPos.y = Screen.height - screenPos.y;
-
-            // Round to group nearby objects together
-            Vector2 key = new Vector2(Mathf.Round(screenPos.x / 5f) * 5f,
-                                      Mathf.Round(screenPos.y / 5f) * 5f);
-
-            if (!grouped.ContainsKey(key))
-                grouped[key] = new List<AudioSource>();
-
-            grouped[key].Add(audio);
-        }
-
-        foreach (var group in grouped)
-        {
-            Vector2 basePos = group.Key;
-            List<AudioSource> list = group.Value;
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                AudioSource audio = list[i];
-
-                string status = audio.enabled ? "Enabled" : "Disabled";
-                string dspStat = "";
-
-                if (SteamSourceDict.cache.ContainsKey(audio))
-                {
-
-                    dspStat = $"{audio.spatialBlend} {audio.spatialize} {SteamSourceDict.cache[audio].bridge.spatialBlendOverride}";
-                }
-                string text = audio.gameObject.name + " - " + status + " - " + dspStat;
-
-                // Offset each item in the stack
-                Vector2 offsetPos = new Vector2(basePos.x, basePos.y + (i * 15));
-
-                DrawOutlinedLabel(new Rect(offsetPos.x, offsetPos.y, 500, 20), text);
-            }
-        }
-    }
-
-    void DrawOutlinedLabel(Rect rect, string text)
-    {
-        GUIStyle style = new GUIStyle(GUI.skin.label);
-
-        // Outline color (black)
-        style.normal.textColor = Color.black;
-
-        // Draw outline by offsetting text in 4 directions
-        Vector2[] offsets = new Vector2[]
-        {
-            new Vector2(-1, -1),
-            new Vector2(1, -1),
-            new Vector2(-1, 1),
-            new Vector2(1, 1)
-        };
-
-        foreach (var offset in offsets)
-        {
-            Rect offsetRect = new Rect(rect.x + offset.x, rect.y + offset.y, rect.width, rect.height);
-            GUI.Label(offsetRect, text, style);
-        }
-
-        // Draw main text (colored)
-        style.normal.textColor = Color.white;
-        GUI.Label(rect, text, style);
-    }
-}
+namespace ifp.arena.bep;
 
 [BepInDependency("com.fika.core")]
 [BepInPlugin("com.ifp.respawn", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
@@ -158,8 +54,6 @@ public class Plugin : BaseUnityPlugin
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
-
-
 
     private CancellationTokenSource _cts;
 
@@ -205,15 +99,15 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                         // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
 
         // MetaXR to SteamAudio Proxies
-
-        // RegisterPatch(new Patch_ReverbSimpleSource_Init());                           // Proxy spatialBlend calls to PhononDSPBridge
-        RegisterPatch(new Patch_AudioSource_set_spatialize());                        // Proxy spatialBlend calls to PhononDSPBridge
-        RegisterPatch(new Patch_AudioSource_set_spatialBlend());                      // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_SpatialAudioSystem_method_29());                        // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_AudioSource_set_spatialize());                          // Force spatialize off to bypass MetaXR (if SteamAudioSource Exists on this AudioSource)
+        RegisterPatch(new Patch_AudioSource_set_spatialBlend());                        // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_get_spatialBlend());                        // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_MetaXRAudioSource_enabled());                       // Proxy enabled calls to SteamAudioSource
-        // RegisterPatch(new Patch_MetaSpatialAudioSource_enabled());                  // Proxy enabled calls to SteamAudioSpatialAudioSource
+        // RegisterPatch(new Patch_MetaXRAudioSource_enabled());                        // Proxy enabled calls to SteamAudioSource
+        // RegisterPatch(new Patch_MetaSpatialAudioSource_enabled());                   // Proxy enabled calls to SteamAudioSpatialAudioSource
         // RegisterPatch(new Patch_MetaSpatialAudioSource_ManualUpdate());                // no-op + disable
         // RegisterPatch(new Patch_MetaSpatialAudioSource_SetActive());                // Proxy SetActive to SteamAudioSpatialAudioSource
+
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
@@ -329,59 +223,14 @@ public class Plugin : BaseUnityPlugin
             var warmup = typeof(Ladder);
             await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap
             await RegisterSingletonInRaid<BombHandler>();
+
+            SteamAudioSourceAttacher.Initialize();
         }
         catch (Exception ex)
         {
             D.Dump(ex);
             D.Log(ex.StackTrace);
         }
-
-        List<ReverbSimpleSource> reverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
-        List<ReverbSimpleSource> playerReverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
-
-        foreach (Player player in H.AllPlayers)
-        {
-            if (player.IsYourPlayer) continue; // main player avoiding this is lowkey nicer
-            var playerAudioSources = player.gameObject.GetComponentsInChildren<ReverbSimpleSource>();
-            reverbSimpleSources.AddRange(playerAudioSources);
-        }
-
-        FieldInfo _reverbSourceField = AccessTools.Field(typeof(ReverbSimpleSource), "_reverbSource");
-
-        // Separate so I can do some shit later
-        // foreach (ReverbSimpleSource reverbSimpleSource in playerReverbSimpleSources)
-        // {
-        //     AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
-
-        //     var source1Cache = SteamAudioSourceAttacher.GetOrAdd(reverbSimpleSource.source1);
-        //     var reverbCache = SteamAudioSourceAttacher.GetOrAdd(reverbSource);
-
-        //     source1Cache.bridge.IsBypass = false;
-        //     reverbCache.bridge.IsBypass = true;
-        // }
-
-        foreach (ReverbSimpleSource reverbSimpleSource in reverbSimpleSources)
-        {
-            AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
-
-            var source1Cache = SteamAudioSourceAttacher.GetOrAdd(reverbSimpleSource.source1);
-            var reverbCache = SteamAudioSourceAttacher.GetOrAdd(reverbSource);
-
-            source1Cache.bridge.IsBypass = false;
-            reverbCache.bridge.IsBypass = true;
-        }
-
-
-        List<SuperSource> superSources = H.GameWorld?.gameObject.GetComponentsInChildren<SuperSource>(true).ToList();
-        foreach (SuperSource superSource in superSources)
-        {
-            var source1Cache = SteamAudioSourceAttacher.GetOrAdd(superSource.source1);
-            source1Cache.bridge.IsBypass = false;
-
-            var source2Cache = SteamAudioSourceAttacher.GetOrAdd(superSource.source2);
-            source2Cache.bridge.IsBypass = true;
-        }
-
 
 #if DEBUG
         // _disposables.Add(new DynamicClassTracer(typeof(BetterAudio)));

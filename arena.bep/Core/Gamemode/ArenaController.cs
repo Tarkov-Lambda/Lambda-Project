@@ -81,7 +81,7 @@ namespace ifp.arena.bep.Core.Gamemode
 
         private IGameState _currentState;
 
-        private GameObject _tickerObject;
+        public GameObject _tickerObject;
         public GameObject _musicObject;
 
         public ArenaController()
@@ -113,6 +113,7 @@ namespace ifp.arena.bep.Core.Gamemode
             _tickerObject = new GameObject("Arena Gamesession");
             _tickerObject.GetOrAddComponent<GameModeTicker>();
             _tickerObject.GetOrAddComponent<TimeSyncTicker>();
+            _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
             UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
             HU.ApplyPainkiller();
