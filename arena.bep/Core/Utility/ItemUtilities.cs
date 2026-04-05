@@ -68,7 +68,7 @@ public static class ItemUtilities
         if (templateItem == null)
             return false;
 
-        await UniTask.Delay(25);
+        await UniTask.Delay(50);
         var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
 
         if (placement.Kind == PlacementKind.EquipmentSlot)

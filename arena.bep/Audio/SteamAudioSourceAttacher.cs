@@ -85,15 +85,15 @@ public static class SteamAudioSourceAttacher
 
     private static SteamSourceData GetOrAdd(AudioSource audioSource)
     {
-        if (SteamSourceDict.cache.ContainsKey(audioSource))
-        {
-            Object.Destroy(SteamSourceDict.cache[audioSource].bridge);
-            Object.Destroy(SteamSourceDict.cache[audioSource].steam);
-            SteamSourceDict.cache.Remove(audioSource);
-        }
+        // if (SteamSourceDict.cache.ContainsKey(audioSource))
+        // {
+        //     Object.Destroy(SteamSourceDict.cache[audioSource].bridge);
+        //     Object.Destroy(SteamSourceDict.cache[audioSource].steam);
+        //     SteamSourceDict.cache.Remove(audioSource);
+        // }
 
 
-        // if (SteamSourceDict.cache.ContainsKey(audioSource)) return SteamSourceDict.cache[audioSource];
+        if (SteamSourceDict.cache.ContainsKey(audioSource)) return SteamSourceDict.cache[audioSource];
 
         SteamSourceDict.cache[audioSource] = new SteamSourceData
         {
