@@ -38,7 +38,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess
                     ____arrow.rectTransform.anchorMin = new Vector2(1, 0.5f);
                     ____arrow.rectTransform.anchorMax = new Vector2(1, 0.5f);
                     ____arrow.rectTransform.eulerAngles = new Vector3(0, 0, 90);
-                    ____arrow.rectTransform.anchoredPosition = new Vector2(2, 0);
+                    ____arrow.rectTransform.anchoredPosition = new Vector2(2, 13);
                 }
 
                 ___Caption.rectTransform.anchoredPosition = new Vector2(15f, 30f);

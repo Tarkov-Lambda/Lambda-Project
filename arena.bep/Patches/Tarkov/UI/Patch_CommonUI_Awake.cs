@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
 
             ModifyQuickAccessPanel(__instance);
 
-            StretchItemsPanel(__instance);
+            StretchInventoryScreen(__instance);
         }
 
         public static void ModifyQuickAccessPanel(CommonUI commonUI)
@@ -59,7 +59,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             quickAccessPanel.RectTransform.anchoredPosition = new Vector2(15, 70);
         }
 
-        public static void StretchItemsPanel(CommonUI commonUI)
+        public static void StretchInventoryScreen(CommonUI commonUI)
         {
            Transform itemsPanel = commonUI.InventoryScreen.transform.Find("Items Panel");
             RectTransform leftSide = itemsPanel.Find("LeftSide") as RectTransform;
