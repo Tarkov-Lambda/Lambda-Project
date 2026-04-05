@@ -52,7 +52,7 @@ public static class SteamAudioSourceAttacher
             source1Cache.bridge.IsBypass = false;
             reverbCache.bridge.IsBypass = true;
 
-            MonoBehaviourSingleton<AudioSourceWorldDebug>.Instance.audioSources.Add(reverbSimpleSource.source1);
+            // MonoBehaviourSingleton<AudioSourceWorldDebug>.Instance.audioSources.Add(reverbSimpleSource.source1);
         }
 
         foreach (ReverbSimpleSource reverbSimpleSource in reverbSimpleSources)
@@ -91,14 +91,14 @@ public static class SteamAudioSourceAttacher
         };
 
         SteamAudioSource steamAudio = SteamSourceDict.cache[audioSource].steam;
-        steamAudio.occlusion = true;
-        steamAudio.transmission = true;
+        steamAudio.occlusion = false;
+        steamAudio.transmission = false;
 
         steamAudio.distanceAttenuation = false;
         steamAudio.distanceAttenuationInput = DistanceAttenuationInput.CurveDriven;
         steamAudio.distanceAttenuationValue = 1f;
 
-        steamAudio.airAbsorption = true;
+        steamAudio.airAbsorption = false;
         steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
 
         steamAudio.occlusionType = OcclusionType.Raycast;

@@ -12,6 +12,21 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches
 {
+    internal class Patch_AudioSource_set_volume : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.volume));
+
+        [PatchPrefix]
+        public static bool Prefix(AudioSource __instance, ref float value)
+        {
+            if (SteamSourceDict.cache.ContainsKey(__instance))
+            {
+                value = 1f;
+            }
+
+            return true;
+        }
+    }
 
     // Proxying all spatial setter/getters to Steam Audio DSP Bridge
     internal class Patch_AudioSource_set_spatialBlend : ModulePatch
