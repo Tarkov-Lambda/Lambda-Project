@@ -93,13 +93,15 @@ public class Plugin : BaseUnityPlugin
         InitConfiguration();
 
         // STEAM AUDIO
-        // if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
-        // RegisterPatch(new Patch_BetterAudio_SetProtagonist());                         // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                        // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_AudioSource_set_spatialize());                          // Force spatialize off to bypass MetaXR (if SteamAudioSource Exists on this AudioSource)
-        // RegisterPatch(new Patch_AudioSource_set_spatialBlend());                        // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_AudioSource_get_spatialBlend());                        // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_AudioSource_set_volume());                          // Force spatialize off to bypass MetaXR (if SteamAudioSource Exists on this AudioSource)
+        if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
+        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        RegisterPatch(new Patch_SpatialAudioSystem_method_29());                    // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force spatialize off to bypass MetaXR (if SteamAudioSource Exists on this AudioSource)
+        RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+        // RegisterPatch(new Patch_BetterSource_UpdateSourceVolume());              // Proxy spatialBlend calls to PhononDSPBridge
+        // RegisterPatch(new Patch_MetaSpatialAudioSource_get_EnableReverb());      // Disable Reverb
+        // RegisterPatch(new Patch_AudioSource_set_volume());                       // Force volume to 1f
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
@@ -216,7 +218,7 @@ public class Plugin : BaseUnityPlugin
             await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap
             await RegisterSingletonInRaid<BombHandler>();
 
-            // SteamAudioSourceAttacher.Initialize();
+            SteamAudioSourceAttacher.Initialize();
         }
         catch (Exception ex)
         {
@@ -275,7 +277,12 @@ public class Plugin : BaseUnityPlugin
         // }
 
         foreach (var patch in _patches)
+        {
+            if (patch is IDisposable disposable)
+                disposable.Dispose();
+            
             patch.Disable();
+        }
 
         UIPatches.Disable();
 

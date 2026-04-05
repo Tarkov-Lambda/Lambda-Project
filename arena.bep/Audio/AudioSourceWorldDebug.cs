@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AudioSourceWorldDebug : MonoBehaviourSingleton<AudioSourceWorldDebug>
@@ -8,6 +9,7 @@ public class AudioSourceWorldDebug : MonoBehaviourSingleton<AudioSourceWorldDebu
 
     void FixedUpdate()
     {
+        audioSources = Object.FindObjectsByType<AudioSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).ToList();
         if (CameraClass.Instance != null) cam = CameraClass.Instance.Camera;
     }
 
@@ -62,7 +64,7 @@ public class AudioSourceWorldDebug : MonoBehaviourSingleton<AudioSourceWorldDebu
                     var bridge = cacheData.bridge;
 
                     // Show Phonon's calculated attenuation & occlusion, alongside Unity's blend settings
-                    dspStat = $" | Atten: {bridge.CurrentDistanceAttenuation:F2} | Occ: {bridge.CurrentOcclusion:F2} | Blend: {bridge.spatialBlendOverride:F2} | Spatialize: {audio.spatialize}";
+                    dspStat = $" | Blend: {bridge.spatialBlendOverride:F2} | Spatialize: {audio.spatialize} | SpatialBlend: {audio.spatialBlend}";
                 }
 
                 // Construct formatted text

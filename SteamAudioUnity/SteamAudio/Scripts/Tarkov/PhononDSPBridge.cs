@@ -75,6 +75,7 @@ namespace ifp.arena.shared
         // --- ADDED CACHE VARIABLES FOR DISTANCE ATTENUATION ---
         private AnimationCurve _cachedRolloffCurve;
         private AudioRolloffMode _lastRolloffMode = (AudioRolloffMode)(-1);
+        private float _lastMaxDist = -1f;
 
         private void LogV(string msg) { if (verboseLogging) Debug.Log($"[PhononDSPBridge:{_instanceId}] {msg}"); }
         private void LogW(string msg) { Debug.LogWarning($"[PhononDSPBridge:{_instanceId}] {msg}"); }
@@ -138,11 +139,7 @@ namespace ifp.arena.shared
             iplDirectEffectCreate(ctx, ref audio, ref dirS, out _direct);
         }
 
-
-        private float _lastMaxDist = -1f;
-
-
-private float CalculateDistanceAttenuation(float dist)
+        private float CalculateDistanceAttenuation(float dist)
         {
             if (_src == null) return 0f;
 
@@ -174,7 +171,7 @@ private float CalculateDistanceAttenuation(float dist)
 
                 float normalizedDist = dist / maxDist;
                 float result = Mathf.Clamp01(_cachedRolloffCurve.Evaluate(normalizedDist));
-                
+
                 // --- DEBUG ---
                 LogV($"  -> Custom Curve evaluation: Evaluate({normalizedDist:F3}) => {result:F3}");
                 return result;
@@ -187,11 +184,11 @@ private float CalculateDistanceAttenuation(float dist)
                 LogV($"  -> Linear evaluation result: {result:F3}");
                 return result;
             }
-            
+
             if (_src.rolloffMode == AudioRolloffMode.Logarithmic)
             {
                 float result = minDist / dist;
-                 // --- DEBUG ---
+                // --- DEBUG ---
                 LogV($"  -> Logarithmic evaluation result: {result:F3}");
                 return result;
             }
@@ -207,18 +204,18 @@ private float CalculateDistanceAttenuation(float dist)
 
             UnityEngine.Vector3 localPos = listener.InverseTransformPoint(transform.position);
             UnityEngine.Vector3 d = localPos.sqrMagnitude < 0.000001f ? UnityEngine.Vector3.forward : localPos.normalized;
-
             float dist = (transform.position - listener.position).magnitude;
 
-            // Replaced the buggy 1f - dist / maxDist with correct engine emulation
-            float atten = CalculateDistanceAttenuation(dist);
-
+            bool shouldApplyDistAtten = true;
             float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
             bool applyTrans = false;
 
 #if STEAMAUDIO_ENABLED
             if (_steamSrc != null)
             {
+                // Read the distance attenuation bool from the SteamAudioSource
+                shouldApplyDistAtten = _steamSrc.distanceAttenuation;
+
                 occ = Mathf.Clamp01(_steamSrc.occlusionValue);
                 applyTrans = _steamSrc.transmission;
                 if (_steamSrc.transmission)
@@ -229,6 +226,10 @@ private float CalculateDistanceAttenuation(float dist)
                 }
             }
 #endif
+
+            // Only calculate attenuation if Steam Audio says we should, otherwise default to 1.0 (full volume)
+            float atten = shouldApplyDistAtten ? CalculateDistanceAttenuation(dist) : 1f;
+
             IntPtr hrtfPtr = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
             lock (_lock)
@@ -265,8 +266,6 @@ private float CalculateDistanceAttenuation(float dist)
                 }
 
                 float blend = Mathf.Clamp01(spatialBlendOverride);
-                // Note: Multiplying `_distAtten` manually like this is actually brilliant,
-                // because native Phonon doesn't support interpolating distance rolloff using a Unity `spatialBlend` equivalent.
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
 
                 for (int i = 0; i < n; i++)
@@ -294,7 +293,7 @@ private float CalculateDistanceAttenuation(float dist)
                         {
                             flags = flags,
                             transmissionType = 1,
-                            distanceAttenuation = 1f, // Safe to keep 1f since you pre-multiplied `effectiveAtten` on _monoIn loop
+                            distanceAttenuation = 1f,
                             airAbsorptionLow = 1f,
                             airAbsorptionMid = 1f,
                             airAbsorptionHigh = 1f,
@@ -359,8 +358,6 @@ private float CalculateDistanceAttenuation(float dist)
     }
 
     // ── Structs for effects not exposed by the SteamAudio managed API ─────────
-    // (Context + HRTF structs removed — those are owned by SteamAudioManager.)
-
     [StructLayout(LayoutKind.Sequential)]
     internal struct PAudioSettings { public int samplingRate; public int frameSize; }
 
@@ -382,7 +379,7 @@ private float CalculateDistanceAttenuation(float dist)
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct PDirectEffectSettings { public int numChannels; }
-
+    
     [StructLayout(LayoutKind.Sequential)]
     internal struct PDirectEffectParams
     {

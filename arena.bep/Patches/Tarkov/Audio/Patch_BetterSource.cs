@@ -73,4 +73,27 @@ namespace ifp.arena.bep.Patches
             return false;
         }
     }
+
+    internal class Patch_BetterSource_UpdateSourceVolume : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.UpdateSourceVolume));
+
+        [PatchPrefix]
+        public static bool Prefix(BetterSource __instance, float speed)
+        {
+            // If this source has our bridge, we handle occlusion in DSP.
+            // We only want Unity to handle BaseVolume (Distance) and FadeFactor.
+            if (SteamSourceDict.cache.TryGetValue(__instance.source1, out var data))
+            {
+                // Calculate volume WITHOUT OcclusionVolumeFactor
+                float targetVolume = __instance.BaseVolume * __instance.FadeFactor;
+
+                // Apply smoothly to the source
+                __instance.source1.volume = Mathf.Lerp(__instance.source1.volume, targetVolume, speed * Time.deltaTime);
+
+                return false; // Skip original method
+            }
+            return true;
+        }
+    }
 }

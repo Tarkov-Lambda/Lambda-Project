@@ -30,7 +30,7 @@ public static class SteamAudioSourceAttacher
     public static async void Initialize()
     {
         List<ReverbSimpleSource> reverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
-        List<ReverbSimpleSource> playerReverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
+        List<ReverbSimpleSource> playerReverbSimpleSources = new();
 
         foreach (Player player in H.AllPlayers)
         {
@@ -50,8 +50,10 @@ public static class SteamAudioSourceAttacher
             var reverbCache = GetOrAdd(reverbSource);
 
             source1Cache.bridge.IsBypass = false;
-            reverbCache.bridge.IsBypass = true;
+            reverbCache.bridge.IsBypass = false;
 
+            // source1Cache.steam.distanceAttenuation = true;
+            // reverbCache.steam.distanceAttenuation = true;
             // MonoBehaviourSingleton<AudioSourceWorldDebug>.Instance.audioSources.Add(reverbSimpleSource.source1);
         }
 
@@ -63,7 +65,7 @@ public static class SteamAudioSourceAttacher
             var reverbCache = GetOrAdd(reverbSource);
 
             source1Cache.bridge.IsBypass = false;
-            reverbCache.bridge.IsBypass = true;
+            reverbCache.bridge.IsBypass = false;
         }
 
 
@@ -71,16 +73,25 @@ public static class SteamAudioSourceAttacher
         foreach (SuperSource superSource in superSources)
         {
             var source1Cache = GetOrAdd(superSource.source1);
-            source1Cache.bridge.IsBypass = false;
-
             var source2Cache = GetOrAdd(superSource.source2);
-            source2Cache.bridge.IsBypass = true;
+
+            source1Cache.bridge.IsBypass = false;
+            source2Cache.bridge.IsBypass = false;
+
+            // source1Cache.steam.distanceAttenuation = true;
+            // source2Cache.steam.distanceAttenuation = true;
         }
     }
 
     private static SteamSourceData GetOrAdd(AudioSource audioSource)
     {
-        // if (SteamSourceDict.cache.ContainsKey(audioSource)) SteamSourceDict.cache.Remove(audioSource);
+        if (SteamSourceDict.cache.ContainsKey(audioSource))
+        {
+            Object.Destroy(SteamSourceDict.cache[audioSource].bridge);
+            Object.Destroy(SteamSourceDict.cache[audioSource].steam);
+            SteamSourceDict.cache.Remove(audioSource);
+        }
+
 
         // if (SteamSourceDict.cache.ContainsKey(audioSource)) return SteamSourceDict.cache[audioSource];
 
@@ -91,10 +102,10 @@ public static class SteamAudioSourceAttacher
         };
 
         SteamAudioSource steamAudio = SteamSourceDict.cache[audioSource].steam;
-        steamAudio.occlusion = false;
-        steamAudio.transmission = false;
+        steamAudio.occlusion = true;
+        steamAudio.transmission = true;
 
-        steamAudio.distanceAttenuation = false;
+        steamAudio.distanceAttenuation = true;
         steamAudio.distanceAttenuationInput = DistanceAttenuationInput.CurveDriven;
         steamAudio.distanceAttenuationValue = 1f;
 
@@ -111,7 +122,10 @@ public static class SteamAudioSourceAttacher
         steamAudio.transmissionLow = 0.5f;
 
         audioSource.spatialize = false;
-        audioSource.spatialBlend = audioSource.spatialBlend;
+        var cachedSpatialBlend = audioSource.spatialBlend;
+        audioSource.spatialBlend = 0.1268321f; // forcing it to change
+        audioSource.spatialBlend = cachedSpatialBlend;
+
 
         return SteamSourceDict.cache[audioSource];
     }
