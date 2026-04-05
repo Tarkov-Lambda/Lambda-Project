@@ -56,7 +56,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI
             quickAccessPanel.RectTransform.pivot = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
             quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(20, 150);
+            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(15, 70);
         }
 
         public static void StretchItemsPanel(CommonUI commonUI)

@@ -93,6 +93,7 @@ namespace ifp.arena.bep.Core.UI
 
             matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
             matchUIController.ToggleScoreboard(false);
+            matchUIController.transform.SetAsFirstSibling();
 
             GameObject prefabShopUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
 
@@ -117,6 +118,13 @@ namespace ifp.arena.bep.Core.UI
         {
             if (H.Arena is null) return;
             matchUIController.TopBar.SetTime(H.Arena.StateTimer);
+
+#if DEBUG
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                matchUIController.PopupMatchEnd.Pop(false, "ROUND LOSS", "pizdec");
+            }
+#endif
         }
 
         void OnRoundActionEnd(RoundActionPhaseEnd data)

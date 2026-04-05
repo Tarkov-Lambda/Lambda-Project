@@ -15,7 +15,7 @@ namespace arena.ui
 
         void Awake()
         {
-            frame.alpha = 1f;
+            frame.alpha = 0f;
         }
 
         public void Pop(PlayerStats killer)
@@ -31,9 +31,9 @@ namespace arena.ui
         {
             if (t < 1f)
             {
-                t += Time.deltaTime * 3f;
+                t += Time.deltaTime * 0.5f;
                 t = Mathf.Clamp01(t);
-                frame.alpha = EasingFunctions.InCirc(1f - t);
+                frame.alpha = EasingFunctions.OutCirc(1f - t);
             }
         }
     }
