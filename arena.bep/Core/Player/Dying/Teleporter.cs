@@ -11,84 +11,83 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace ifp.arena.bep.Core.Dying
+namespace ifp.arena.bep.Core.Dying;
+
+public class Teleporter
 {
-    public class Teleporter
+    // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
+    static public void Teleport(Player player, string mapName = "", Faction faction = Faction.None)
     {
-        // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
-        static public void Teleport(Player player, string mapName = "", Faction faction = Faction.None)
+        PlayerScore pScore = H.GetPlayerScore(player.Id);
+
+        string targetMap;
+        Faction targetFaction;
+
+        if (!string.IsNullOrEmpty(mapName))
         {
-            PlayerScore pScore = H.GetPlayerScore(player.Id);
-
-            string targetMap;
-            Faction targetFaction;
-
-            if (!string.IsNullOrEmpty(mapName))
-            {
-                targetMap = mapName;
-                targetFaction = faction;
-            }
-            else if (pScore.isAlive)
-            {
-                targetMap = H.Session.mapName;
-                targetFaction = pScore.faction;
-            }
-            else
-            {
-                targetMap = "lobby";
-                targetFaction = Faction.None;
-            }
-
-            if (!TryGetNewPosition(targetMap, targetFaction, out Vector3 nextPlayerPosition))
-            {
-                D.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
-                return;
-            }
-
-            player.Teleport(nextPlayerPosition);
+            targetMap = mapName;
+            targetFaction = faction;
+        }
+        else if (pScore.isAlive)
+        {
+            targetMap = H.Session.mapName;
+            targetFaction = pScore.faction;
+        }
+        else
+        {
+            targetMap = "lobby";
+            targetFaction = Faction.None;
         }
 
-        public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)
+        if (!TryGetNewPosition(targetMap, targetFaction, out Vector3 nextPlayerPosition))
         {
-            Scene s = SceneManager.GetSceneByName(sceneName);
-            if (s == null) D.LogError($"Trying to find spawn points in a scene that doesn't exist");
-
-            GameObject[] gObjects = s.GetRootGameObjects();
-
-            SpawnPoints[] allSpawnPoints = [];
-            foreach (GameObject gObject in gObjects)
-            {
-                SpawnPoints[] sPoints = gObject.GetComponentsInChildren<SpawnPoints>();
-                if (sPoints.Length > 0)
-                {
-                    allSpawnPoints = sPoints;
-                    break;
-                }
-            }
-
-            if (allSpawnPoints.Length == 0)
-            {
-                newPos = Vector3.zero;
-                return false;
-            }
-
-            var currentSpawnPoints = allSpawnPoints.FirstOrDefault(spawnPoint => spawnPoint.faction == faction);
-            if (currentSpawnPoints == null)
-            {
-                D.LogError($"Can't find spawn point for {faction} faction");
-                newPos = Vector3.zero;
-                return false;
-            }
-            
-            var list = new List<Vector3>();
-            foreach (Transform transform in currentSpawnPoints.transform)
-            {
-                list.Add(transform.position);
-            }
-
-            newPos = list.ToArray().RandomElement();
-            return true;
+            D.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
+            return;
         }
 
+        player.Teleport(nextPlayerPosition);
     }
+
+    public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)
+    {
+        Scene s = SceneManager.GetSceneByName(sceneName);
+        if (s == null) D.LogError($"Trying to find spawn points in a scene that doesn't exist");
+
+        GameObject[] gObjects = s.GetRootGameObjects();
+
+        SpawnPoints[] allSpawnPoints = [];
+        foreach (GameObject gObject in gObjects)
+        {
+            SpawnPoints[] sPoints = gObject.GetComponentsInChildren<SpawnPoints>();
+            if (sPoints.Length > 0)
+            {
+                allSpawnPoints = sPoints;
+                break;
+            }
+        }
+
+        if (allSpawnPoints.Length == 0)
+        {
+            newPos = Vector3.zero;
+            return false;
+        }
+
+        var currentSpawnPoints = allSpawnPoints.FirstOrDefault(spawnPoint => spawnPoint.faction == faction);
+        if (currentSpawnPoints == null)
+        {
+            D.LogError($"Can't find spawn point for {faction} faction");
+            newPos = Vector3.zero;
+            return false;
+        }
+
+        var list = new List<Vector3>();
+        foreach (Transform transform in currentSpawnPoints.transform)
+        {
+            list.Add(transform.position);
+        }
+
+        newPos = list.ToArray().RandomElement();
+        return true;
+    }
+
 }

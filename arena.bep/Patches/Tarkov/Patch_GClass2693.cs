@@ -1,12 +1,10 @@
 using EFT;
-using EFT.InventoryLogic;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches.Tarkov
-{
+namespace ifp.arena.bep.Patches.Tarkov;
+
     public class Patch_GClass2963_Spawn : ModulePatch
     {
         private const float SpawnAnimationSpeed = 2f;
@@ -19,4 +17,3 @@ namespace ifp.arena.bep.Patches.Tarkov
             animationSpeed = SpawnAnimationSpeed;
         }
     }
-}

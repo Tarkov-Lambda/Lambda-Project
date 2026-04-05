@@ -8,127 +8,126 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace ifp.arena.bep.Core.AssetBundleHandling
+namespace ifp.arena.bep.Core.AssetBundleHandling;
+
+public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposable
 {
-    public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposable
+    public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
+    private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
+
+
+
+    public MapAssetBundleHandler()
     {
-        public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
-        private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
+        Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;
+    }
 
+    public async UniTask LoadMap(string mapName)
+    {
+        if (mapName != "lobby") MapLoadEvent.OnBeginLoad?.Invoke();
 
+        AssetBundle MapBundle = await LoadAssetBundle(mapName);
+        if (MapBundle == null) return;
 
-        public MapAssetBundleHandler()
+        string[] scenePaths = MapBundle.GetAllScenePaths();
+        if (scenePaths.Length == 0) D.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
+
+        BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
+
+        // Unloading in case it's already loaded (essentially to refresh for dev)
+        // also making sure it's not the lobby, because it's a persistent player safety place
+        if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded && scenePaths[0] != "lobby")
         {
-            Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;
+            await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();
         }
 
-        public async UniTask LoadMap(string mapName)
+        if (!SceneManager.GetSceneByPath(scenePaths[0]).isLoaded)
         {
-            if (mapName != "lobby") MapLoadEvent.OnBeginLoad?.Invoke();
-
-            AssetBundle MapBundle = await LoadAssetBundle(mapName);
-            if (MapBundle == null) return;
-
-            string[] scenePaths = MapBundle.GetAllScenePaths();
-            if (scenePaths.Length == 0) D.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
-
-            BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
-
-            // Unloading in case it's already loaded (essentially to refresh for dev)
-            // also making sure it's not the lobby, because it's a persistent player safety place
-            if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded && scenePaths[0] != "lobby")
-            {
-                await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();
-            }
-
-            if (!SceneManager.GetSceneByPath(scenePaths[0]).isLoaded)
-            {
-                await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
-            }
-
-            if (mapName != "lobby") MapLoadEvent.OnSuccessfulLoad?.Invoke();
+            await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
         }
 
-        public async UniTask<AssetBundle> LoadAssetBundle(string name)
+        if (mapName != "lobby") MapLoadEvent.OnSuccessfulLoad?.Invoke();
+    }
+
+    public async UniTask<AssetBundle> LoadAssetBundle(string name)
+    {
+        string fullPath = Path.Combine(pathToBundlesDir, name);
+        if (!File.Exists(fullPath))
         {
-            string fullPath = Path.Combine(pathToBundlesDir, name);
-            if (!File.Exists(fullPath))
+            D.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
+            return null;
+        }
+
+        // Check if it's already loaded, OR if it was previously cached as null
+        if (!loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) || bundle == null)
+        {
+
+            BundleLoadingProgressReport progressReportBundle = new BundleLoadingProgressReport();
+
+            bundle = await AssetBundle.LoadFromFileAsync(fullPath).ToUniTask(progressReportBundle);
+
+            if (bundle == null)
             {
-                D.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
+                D.Log($"[AssetBundleHandler] Failed to load AssetBundle '{name}'.");
+
+                // Clean up the dictionary so we don't permanently cache a null failure
+                loadedAssetBundles.Remove(fullPath);
                 return null;
             }
 
-            // Check if it's already loaded, OR if it was previously cached as null
-            if (!loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) || bundle == null)
-            {
-
-                BundleLoadingProgressReport progressReportBundle = new BundleLoadingProgressReport();
-
-                bundle = await AssetBundle.LoadFromFileAsync(fullPath).ToUniTask(progressReportBundle);
-
-                if (bundle == null)
-                {
-                    D.Log($"[AssetBundleHandler] Failed to load AssetBundle '{name}'.");
-
-                    // Clean up the dictionary so we don't permanently cache a null failure
-                    loadedAssetBundles.Remove(fullPath);
-                    return null;
-                }
-
-                loadedAssetBundles[fullPath] = bundle;
-            }
-
-            return bundle;
+            loadedAssetBundles[fullPath] = bundle;
         }
 
-        void UnloadEverythingOnGameWorldDispose(GameWorld gWorld)
-        {
-            UnloadAll(true);
-        }
-
-        void UnloadAll(bool includingLobby = false)
-        {
-            MapLoadEvent.OnBeginUnload?.Invoke();
-            foreach (var kvp in loadedAssetBundles)
-            {
-                AssetBundle bundle = kvp.Value;
-                if (bundle != null)
-                {
-                    // we do not unload lobby so that we can teleport there during reloads
-                    if (!includingLobby && bundle.name == "lobby") continue;
-
-                    foreach (var scenePath in bundle.GetAllScenePaths())
-                    {
-                        if (SceneManager.GetSceneByPath(scenePath).isLoaded)
-                        {
-                            SceneManager.UnloadSceneAsync(scenePath);
-                        }
-                    }
-
-                    kvp.Value.Unload(true);
-                }
-            }
-
-            loadedAssetBundles.Clear();
-            MapLoadEvent.OnUnload?.Invoke();
-        }
-
-        public void Dispose()
-        {
-            Patch_Gameworld_OnDispose.OnDispose -= UnloadEverythingOnGameWorldDispose;
-            UnloadAll();
-            Release(this);
-        }
+        return bundle;
     }
 
-    class BundleLoadingProgressReport : IProgress<float>
+    void UnloadEverythingOnGameWorldDispose(GameWorld gWorld)
     {
-        public float CurrentProgress { get; private set; }
+        UnloadAll(true);
+    }
 
-        public void Report(float value)
+    void UnloadAll(bool includingLobby = false)
+    {
+        MapLoadEvent.OnBeginUnload?.Invoke();
+        foreach (var kvp in loadedAssetBundles)
         {
-            CurrentProgress = value;
-            // Optional: D.Log($"Loading Progress: {value * 100}%");
+            AssetBundle bundle = kvp.Value;
+            if (bundle != null)
+            {
+                // we do not unload lobby so that we can teleport there during reloads
+                if (!includingLobby && bundle.name == "lobby") continue;
+
+                foreach (var scenePath in bundle.GetAllScenePaths())
+                {
+                    if (SceneManager.GetSceneByPath(scenePath).isLoaded)
+                    {
+                        SceneManager.UnloadSceneAsync(scenePath);
+                    }
+                }
+
+                kvp.Value.Unload(true);
+            }
         }
+
+        loadedAssetBundles.Clear();
+        MapLoadEvent.OnUnload?.Invoke();
+    }
+
+    public void Dispose()
+    {
+        Patch_Gameworld_OnDispose.OnDispose -= UnloadEverythingOnGameWorldDispose;
+        UnloadAll();
+        Release(this);
+    }
+}
+
+class BundleLoadingProgressReport : IProgress<float>
+{
+    public float CurrentProgress { get; private set; }
+
+    public void Report(float value)
+    {
+        CurrentProgress = value;
+        // Optional: D.Log($"Loading Progress: {value * 100}%");
     }
 }

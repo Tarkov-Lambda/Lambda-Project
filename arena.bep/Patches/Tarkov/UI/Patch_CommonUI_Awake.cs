@@ -7,65 +7,64 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ifp.arena.bep.Patches.Tarkov.UI
+namespace ifp.arena.bep.Patches.Tarkov.UI;
+
+internal class Patch_CommonUI_Awake : ModulePatch
 {
-    internal class Patch_CommonUI_Awake : ModulePatch
+    public static event Action<CommonUI> OnAwake;
+
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(CommonUI), nameof(CommonUI.Awake));
+
+    [PatchPostfix]
+    static void Postfix(CommonUI __instance)
     {
-        public static event Action<CommonUI> OnAwake;
+        OnAwake?.Invoke(__instance);
 
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(CommonUI), nameof(CommonUI.Awake));
+        ModifyQuickAccessPanel(__instance);
 
-        [PatchPostfix]
-        static void Postfix(CommonUI __instance)
-        {
-            OnAwake?.Invoke(__instance);
+        StretchInventoryScreen(__instance);
+    }
 
-            ModifyQuickAccessPanel(__instance);
+    public static void ModifyQuickAccessPanel(CommonUI commonUI)
+    {
+        InventoryScreenQuickAccessPanel quickAccessPanel = commonUI.EftBattleUIScreen.QuickAccessPanel;
 
-            StretchInventoryScreen(__instance);
-        }
+        var layoutGroup = quickAccessPanel.GetComponent<HorizontalOrVerticalLayoutGroup>();
+        Component.DestroyImmediate(layoutGroup);
 
-        public static void ModifyQuickAccessPanel(CommonUI commonUI)
-        {
-            InventoryScreenQuickAccessPanel quickAccessPanel = commonUI.EftBattleUIScreen.QuickAccessPanel;
+        var verticalLayoutGroup = quickAccessPanel.gameObject.AddComponent<VerticalLayoutGroup>();
+        quickAccessPanel.gameObject.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        quickAccessPanel.gameObject.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var layoutGroup = quickAccessPanel.GetComponent<HorizontalOrVerticalLayoutGroup>();
-            Component.DestroyImmediate(layoutGroup);
+        Transform weapon = quickAccessPanel.transform.Find("Weapon");
+        Transform quickSlots = quickAccessPanel.transform.Find("QuickSlots");
 
-            var verticalLayoutGroup = quickAccessPanel.gameObject.AddComponent<VerticalLayoutGroup>();
-            quickAccessPanel.gameObject.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            quickAccessPanel.gameObject.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        Component.DestroyImmediate(weapon.gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>());
+        Component.DestroyImmediate(quickSlots.gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>());
 
-            Transform weapon = quickAccessPanel.transform.Find("Weapon");
-            Transform quickSlots = quickAccessPanel.transform.Find("QuickSlots");
+        var vlg = weapon.gameObject.AddComponent<VerticalLayoutGroup>();
+        vlg.childControlHeight = false;
+        vlg.childControlWidth = false;
+        vlg.spacing = -10;
 
-            Component.DestroyImmediate(weapon.gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>());
-            Component.DestroyImmediate(quickSlots.gameObject.GetComponent<HorizontalOrVerticalLayoutGroup>());
+        vlg = quickSlots.gameObject.AddComponent<VerticalLayoutGroup>();
+        vlg.childControlHeight = false;
+        vlg.childControlWidth = false;
+        vlg.padding.left = 5;
+        vlg.spacing = 20;
 
-            var vlg = weapon.gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.childControlHeight = false;
-            vlg.childControlWidth = false;
-            vlg.spacing = -10;
+        quickAccessPanel.RectTransform.pivot = new Vector2(0, 0);
+        quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
+        quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
+        quickAccessPanel.RectTransform.anchoredPosition = new Vector2(15, 70);
+    }
 
-            vlg = quickSlots.gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.childControlHeight = false;
-            vlg.childControlWidth = false;
-            vlg.padding.left = 5;
-            vlg.spacing = 20;
-
-            quickAccessPanel.RectTransform.pivot = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchorMin = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchorMax = new Vector2(0, 0);
-            quickAccessPanel.RectTransform.anchoredPosition = new Vector2(15, 70);
-        }
-
-        public static void StretchInventoryScreen(CommonUI commonUI)
-        {
-           Transform itemsPanel = commonUI.InventoryScreen.transform.Find("Items Panel");
-            RectTransform leftSide = itemsPanel.Find("LeftSide") as RectTransform;
-            leftSide.offsetMin = new Vector2(leftSide.offsetMin.x, 40f);
-            RectTransform stashPanel = itemsPanel.Find("Stash Panel") as RectTransform;
-            stashPanel.offsetMin = new Vector2(stashPanel.offsetMin.x, 40f);
-        }
+    public static void StretchInventoryScreen(CommonUI commonUI)
+    {
+        Transform itemsPanel = commonUI.InventoryScreen.transform.Find("Items Panel");
+        RectTransform leftSide = itemsPanel.Find("LeftSide") as RectTransform;
+        leftSide.offsetMin = new Vector2(leftSide.offsetMin.x, 40f);
+        RectTransform stashPanel = itemsPanel.Find("Stash Panel") as RectTransform;
+        stashPanel.offsetMin = new Vector2(stashPanel.offsetMin.x, 40f);
     }
 }

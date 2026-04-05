@@ -9,44 +9,44 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ifp.arena.bep.GameTypes
+namespace ifp.arena.bep.GameTypes;
+
+public enum MatchState
 {
-    public enum MatchState
-    {
-        // Just chilling type beat
-        None,
+    // Just chilling type beat
+    None,
 
-        // Waiting for players to load
-        Warmup,
-        WarmupEnd,
+    // Waiting for players to load
+    Warmup,
+    WarmupEnd,
 
-        // Shared
-        Pause, // Can only be invoked when in RoundPrepare
-        RoundPrepare,
-        RoundAction,
-        RoundEnd,
+    // Shared
+    Pause, // Can only be invoked when in RoundPrepare
+    RoundPrepare,
+    RoundAction,
+    RoundEnd,
 
-        // SND
-        RoundPlanted,
+    // SND
+    RoundPlanted,
 
-        // Probably a good way to do these
-        SideSwap,
-        MatchEnd,
-    }
+    // Probably a good way to do these
+    SideSwap,
+    MatchEnd,
+}
 
-    public class SessionInfo
-    {
-        public MatchState matchState = MatchState.None;
-        public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
-        public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
-        public BombState bombState = BombState.None;
+public class SessionInfo
+{
+    public MatchState matchState = MatchState.None;
+    public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
+    public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
+    public BombState bombState = BombState.None;
 
-        public GameModes currentGameMode = GameModes.SND;
-        public string mapName = "";
+    public GameModes currentGameMode = GameModes.SND;
+    public string mapName = "";
 
-        public int mvpId;
+    public int mvpId;
 
-        public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
+    public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
         {
             {MatchState.None, 0},
             {MatchState.Warmup, 5},
@@ -60,240 +60,239 @@ namespace ifp.arena.bep.GameTypes
             {MatchState.MatchEnd, 15}
         };
 
-        public SessionInfo()
+    public SessionInfo()
+    {
+        InitializeScoreBoard();
+    }
+
+    public void InitializeScoreBoard()
+    {
+        if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
+            return;
+
+        factionWins[Faction.CT] = 0;
+        factionWins[Faction.T] = 0;
+
+        foreach (var p in H.AllPlayers)
         {
-            InitializeScoreBoard();
-        }
-
-        public void InitializeScoreBoard()
-        {
-            if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
-                return;
-
-            factionWins[Faction.CT] = 0;
-            factionWins[Faction.T] = 0;
-
-            foreach (var p in H.AllPlayers)
+            if (!scoreboard.ContainsKey(p.Id))
             {
-                if (!scoreboard.ContainsKey(p.Id))
-                {
-                    scoreboard[p.Id] = new PlayerScore(p.Id);
-                }
+                scoreboard[p.Id] = new PlayerScore(p.Id);
             }
-        }
-
-        public void ResetSessionScopeFields()
-        {
-            if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
-                return;
-
-            foreach (var p in H.AllPlayers)
-            {
-                if (scoreboard.ContainsKey(p.Id))
-                {
-                    scoreboard[p.Id].SessionReset();
-                }
-            }
-        }
-
-        public void ResetRoundScopeFields()
-        {
-            if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
-                return;
-
-            foreach (var p in H.AllPlayers)
-            {
-                if (scoreboard.ContainsKey(p.Id))
-                {
-                    scoreboard[p.Id].RoundReset();
-                }
-            }
-        }
-
-        // Locking out the player from shooting/jumping/moving
-        public bool IsControllerPartiallyLocked()
-        {
-            if (H.GameWorld is HideoutGameWorld) return false;
-            // return false;
-
-            if (matchState == MatchState.RoundPrepare || matchState == MatchState.Pause) return true;
-            if (!H.MainPlayerScore.isAlive && H.Session.mapName != "") return true;
-
-            return false;
-        }
-
-        public List<Player> GetPlayersFromFaction(Faction faction)
-        {
-            if (!H.isInRaid())
-                return new();
-
-            return scoreboard.Values
-                .Where(s => s.faction == faction)
-                .Select(s => s.player)
-                .ToList();
-        }
-
-        public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
-        {
-            if (!H.isInRaid())
-                return new();
-
-            return scoreboard.Values.Where(s => s.faction == faction).ToList();
         }
     }
 
-    public class PlayerScore
+    public void ResetSessionScopeFields()
     {
-        public readonly Player player;
+        if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
+            return;
 
-        public Faction faction = Faction.None;
-
-        // Round scope
-        public int kills { get; private set; }
-        public int damage { get; private set; }
-        public int headshots { get; private set; }
-        public int assists { get; private set; }
-        public int deaths { get; private set; }
-        public int mvps { get; private set; }
-
-        // only the server knows this value
-        public int s_roundDamage { get; private set; }
-
-        public int roundKills { get; private set; }
-        public int roundHeadshots { get; private set; }
-
-        public bool isAlive { get; private set; }
-        public int money { get; private set; } = 0;
-
-        // meta gaming (previously known as facebook gaming)
-        public bool isMapReady;
-        public int ping;
-        public bool IsAdmin;
-
-        public PlayerScore(int id)
+        foreach (var p in H.AllPlayers)
         {
-            player = H.GetPlayer(id);
-            if (FikaBackendUtils.IsServer && H.MainPlayer.Id == id)
+            if (scoreboard.ContainsKey(p.Id))
             {
-                IsAdmin = true;
+                scoreboard[p.Id].SessionReset();
             }
         }
+    }
 
-        public void AddFrag(bool isHeadshot)
+    public void ResetRoundScopeFields()
+    {
+        if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
+            return;
+
+        foreach (var p in H.AllPlayers)
         {
-            kills++;
-            roundKills++;
-            if (isHeadshot)
+            if (scoreboard.ContainsKey(p.Id))
             {
-                headshots++;
-                roundHeadshots++;
+                scoreboard[p.Id].RoundReset();
             }
         }
+    }
 
-        public void AddDamage(int newDamage)
+    // Locking out the player from shooting/jumping/moving
+    public bool IsControllerPartiallyLocked()
+    {
+        if (H.GameWorld is HideoutGameWorld) return false;
+        // return false;
+
+        if (matchState == MatchState.RoundPrepare || matchState == MatchState.Pause) return true;
+        if (!H.MainPlayerScore.isAlive && H.Session.mapName != "") return true;
+
+        return false;
+    }
+
+    public List<Player> GetPlayersFromFaction(Faction faction)
+    {
+        if (!H.isInRaid())
+            return new();
+
+        return scoreboard.Values
+            .Where(s => s.faction == faction)
+            .Select(s => s.player)
+            .ToList();
+    }
+
+    public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
+    {
+        if (!H.isInRaid())
+            return new();
+
+        return scoreboard.Values.Where(s => s.faction == faction).ToList();
+    }
+}
+
+public class PlayerScore
+{
+    public readonly Player player;
+
+    public Faction faction = Faction.None;
+
+    // Round scope
+    public int kills { get; private set; }
+    public int damage { get; private set; }
+    public int headshots { get; private set; }
+    public int assists { get; private set; }
+    public int deaths { get; private set; }
+    public int mvps { get; private set; }
+
+    // only the server knows this value
+    public int s_roundDamage { get; private set; }
+
+    public int roundKills { get; private set; }
+    public int roundHeadshots { get; private set; }
+
+    public bool isAlive { get; private set; }
+    public int money { get; private set; } = 0;
+
+    // meta gaming (previously known as facebook gaming)
+    public bool isMapReady;
+    public int ping;
+    public bool IsAdmin;
+
+    public PlayerScore(int id)
+    {
+        player = H.GetPlayer(id);
+        if (FikaBackendUtils.IsServer && H.MainPlayer.Id == id)
         {
-            s_roundDamage += newDamage;
+            IsAdmin = true;
         }
+    }
 
-        public void Kill()
+    public void AddFrag(bool isHeadshot)
+    {
+        kills++;
+        roundKills++;
+        if (isHeadshot)
         {
-            deaths++;
-            isAlive = false;
+            headshots++;
+            roundHeadshots++;
         }
+    }
 
-        public void Spawn()
-        {
-            isAlive = true;
-            EventBus.OnSelfRespawn?.Invoke();
-        }
+    public void AddDamage(int newDamage)
+    {
+        s_roundDamage += newDamage;
+    }
 
-        public void SessionReset()
-        {
-            mvps = 0;
-            kills = 0;
-            damage = 0;
-            headshots = 0;
-            assists = 0;
-            deaths = 0;
-            isAlive = true;
+    public void Kill()
+    {
+        deaths++;
+        isAlive = false;
+    }
 
-            s_roundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
-            roundHeadshots = 0;
-            roundKills = 0;
-        }
+    public void Spawn()
+    {
+        isAlive = true;
+        EventBus.OnSelfRespawn?.Invoke();
+    }
 
-        public void RoundReset()
-        {
-            damage += s_roundDamage; // apply damage to the total counter after round
-            s_roundDamage = 0;
-            roundHeadshots = 0;
-            roundKills = 0;
-        }
+    public void SessionReset()
+    {
+        mvps = 0;
+        kills = 0;
+        damage = 0;
+        headshots = 0;
+        assists = 0;
+        deaths = 0;
+        isAlive = true;
 
-        public void Sync(PlayerScoreSyncData packet)
-        {
-            faction = (Faction)packet.faction;
-            mvps = packet.mvps;
-            kills = packet.kills;
-            headshots = packet.headshots;
-            assists = packet.assists;
-            deaths = packet.deaths;
-            money = packet.money;
-            isAlive = packet.isAlive;
-            isMapReady = packet.isReady;
+        s_roundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
+        roundHeadshots = 0;
+        roundKills = 0;
+    }
 
-            roundKills = packet.roundKills;
-            roundHeadshots = packet.roundHeadshots;
-        }
+    public void RoundReset()
+    {
+        damage += s_roundDamage; // apply damage to the total counter after round
+        s_roundDamage = 0;
+        roundHeadshots = 0;
+        roundKills = 0;
+    }
 
-        public void AddMoney(int amount)
-        {
-            money += amount;
+    public void Sync(PlayerScoreSyncData packet)
+    {
+        faction = (Faction)packet.faction;
+        mvps = packet.mvps;
+        kills = packet.kills;
+        headshots = packet.headshots;
+        assists = packet.assists;
+        deaths = packet.deaths;
+        money = packet.money;
+        isAlive = packet.isAlive;
+        isMapReady = packet.isReady;
 
-            money = Math.Clamp(money, 0, EconomyConstants.MAX_MONEY);
+        roundKills = packet.roundKills;
+        roundHeadshots = packet.roundHeadshots;
+    }
 
-            if (player == H.MainPlayer)
-                EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
-        }
+    public void AddMoney(int amount)
+    {
+        money += amount;
 
-        public void SpendMoney(int amount)
-        {
-            money -= amount;
-            if (money < 0)
-                money = 0;
+        money = Math.Clamp(money, 0, EconomyConstants.MAX_MONEY);
+
+        if (player == H.MainPlayer)
             EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
-        }
-
-        public void SetMoney(int newMoney)
-        {
-            money = newMoney;
-        }
-
-        public bool CanBuy()
-        {
-            if (H.Session.matchState is MatchState.RoundPrepare) return true;
-            if (H.Session.matchState is MatchState.RoundAction)
-                return H.Arena.StateTimer >= H.Arena.PhaseDurationSeconds - 30; // only allow buying within first 30 seconds of round action
-
-            return false;
-        }
     }
 
-    public enum BombState
+    public void SpendMoney(int amount)
     {
-        None,
-        Planting,
-        Planted,
-        Defusing,
-        Defused,
-        Exploded
+        money -= amount;
+        if (money < 0)
+            money = 0;
+        EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
     }
 
-    public enum RoundWinReason
+    public void SetMoney(int newMoney)
     {
-        None,
-        Objective,
-        Elimination,
-        Timeout
+        money = newMoney;
     }
+
+    public bool CanBuy()
+    {
+        if (H.Session.matchState is MatchState.RoundPrepare) return true;
+        if (H.Session.matchState is MatchState.RoundAction)
+            return H.Arena.StateTimer >= H.Arena.PhaseDurationSeconds - 30; // only allow buying within first 30 seconds of round action
+
+        return false;
+    }
+}
+
+public enum BombState
+{
+    None,
+    Planting,
+    Planted,
+    Defusing,
+    Defused,
+    Exploded
+}
+
+public enum RoundWinReason
+{
+    None,
+    Objective,
+    Elimination,
+    Timeout
 }

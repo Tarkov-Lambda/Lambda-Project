@@ -7,273 +7,272 @@ using ifp.arena.bep.networking.Base.RateLimiting;
 using System;
 using System.Diagnostics;
 
-namespace ifp.arena.bep.networking.Base
+namespace ifp.arena.bep.networking.Base;
+
+public enum PacketAuthority
 {
-    public enum PacketAuthority
+    Both,       // Anyone can send/receive
+    ServerOnly  // Only Server can send. Clients only receive.
+}
+
+public struct RejectedPacket<T> : INetSerializable where T : INetSerializable, new()
+{
+    public T Payload;
+
+    public void Serialize(NetDataWriter writer)
     {
-        Both,       // Anyone can send/receive
-        ServerOnly  // Only Server can send. Clients only receive.
+        Payload.Serialize(writer);
     }
 
-    public struct RejectedPacket<T> : INetSerializable where T : INetSerializable, new()
+    public void Deserialize(NetDataReader reader)
     {
-        public T Payload;
+        Payload = new T();
+        Payload.Deserialize(reader);
+    }
+}
 
-        public void Serialize(NetDataWriter writer)
-        {
-            Payload.Serialize(writer);
-        }
+// Currently still a lot of pit falls in packet traversal route
+// Note: currently the responsibility between ShouldBroadcastClientPacket and RequestSendToPlayer is kind of blurred
+// this is probably the first place for refactoring
+public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
+{
+    protected DeliveryMethod deliveryMethod;
+    protected PacketAuthority authority;
 
-        public void Deserialize(NetDataReader reader)
-        {
-            Payload = new T();
-            Payload.Deserialize(reader);
-        }
+    private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
+    protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
+
+    public PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
+    {
+        this.deliveryMethod = deliveryMethod;
+        this.authority = authority;
+
+        H.OnGameStarted += RegisterPacket;
+        H.OnGameDispose += UnregisterPacket;
+        // Hot-reload
+        RegisterPacket(H.GameWorld);
     }
 
-    // Currently still a lot of pit falls in packet traversal route
-    // Note: currently the responsibility between ShouldBroadcastClientPacket and RequestSendToPlayer is kind of blurred
-    // this is probably the first place for refactoring
-    public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
+    public void RegisterPacket(GameWorld gameWorld)
     {
-        protected DeliveryMethod deliveryMethod;
-        protected PacketAuthority authority;
-
-        private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
-        protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
-
-        public PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
+        if (H.isInRaid())
         {
-            this.deliveryMethod = deliveryMethod;
-            this.authority = authority;
-
-            H.OnGameStarted += RegisterPacket;
-            H.OnGameDispose += UnregisterPacket;
-            // Hot-reload
-            RegisterPacket(H.GameWorld);
-        }
-
-        public void RegisterPacket(GameWorld gameWorld)
-        {
-            if (H.isInRaid())
+            D.Log($"Registering {typeof(T).Name}");
+            if (FikaBackendUtils.IsServer)
             {
-                D.Log($"Registering {typeof(T).Name}");
-                if (FikaBackendUtils.IsServer)
-                {
-                    H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
-                    H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
-                }
-                else
-                {
-                    H.FikaNet.RegisterPacket<T, NetPeer>(WhenClientReceivesPacket);
-                    H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>(WhenClientReceivesRejection);
-                }
-            }
-        }
-
-        public void UnregisterPacket(GameWorld gameWorld)
-        {
-            D.Log($"Disposing {typeof(T).FullName}");
-
-            try
-            {
-                _serverRateLimiter.Clear();
-
-                if (H.NetPacketProcessor == null) return;
-
-                H.NetPacketProcessor.RemoveSubscription<T>();
-                H.NetPacketProcessor.RemoveSubscription<RejectedPacket<T>>();
-            }
-            catch (Exception ex)
-            {
-                Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
-            }
-        }
-
-        public void Dispose()
-        {
-            UnregisterPacket(null);
-            Release(this);
-        }
-
-        // [Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object
-        // Stack trace:
-        // ifp.arena.bep.networking.Base.PacketHandler`1[T].IsUnauthorized (System.Int32 id) (at <969384f4afc24680a3f8616f1f99f5da>:0)
-        // ifp.arena.bep.networking.Base.PacketHandler`1[T].WhenServerReceivesPacket (T packet, Fika.Core.Networking.LiteNetLib.NetPeer netPeer) (at <969384f4afc24680a3f8616f1f99f5da>:0)
-        // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor+<>c__DisplayClass30_0`2[T,TUserData].<SubscribeNetSerializable>b__0 (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-        // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadPacket (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-        // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadAllPackets (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-        // Fika.Core.Networking.FikaServer.OnNetworkReceive (Fika.Core.Networking.LiteNetLib.NetPeer peer, Fika.Core.Networking.LiteNetLib.NetPacketReader reader, System.Byte channelNumber, Fika.Core.Networking.LiteNetLib.DeliveryMethod deliveryMethod) (at <4961a269c1a0469488965fa870906146>:0)
-        // Fika.Core.Networking.LiteNetLib.NetManager.ProcessEvent (Fika.Core.Networking.LiteNetLib.NetEvent evt) (at <4961a269c1a0469488965fa870906146>:0)
-        // Fika.Core.Networking.LiteNetLib.LiteNetManager.PollEvents () (at <4961a269c1a0469488965fa870906146>:0)
-        // Fika.Core.Networking.FikaServer.Update () (at <4961a269c1a0469488965fa870906146>:0)
-        // UnityEngine.DebugLogHandler:LogException(Exception, Object)
-        // Class412:LogException(Exception, Object)
-        // UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
-
-        // Admins have the same authority as the server
-        private bool IsUnauthorized(int id)
-        {
-            return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(id).IsAdmin;
-        }
-
-        // OPTIONAL ENTRY POINT
-        // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
-        protected void RequestSendToPlayer(T packet, int netId)
-        {
-            if (!H.isInRaid()) return;
-
-            // local sender is the target, execute locally; I am not sure how I want to do this
-            // But for the sake of keeping things as coupled as possible with the network layer
-            // this might come handy later.
-            if (netId == H.FikaNet.NetId)
-            {
-                WhenApproved(packet, null);
-                return;
-            }
-
-            var peer = H.NetManager.GetPeerById(netId) as NetPeer;
-            RequestSend(packet, peer);
-        }
-
-        // ENTRY POINT
-        // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
-        protected void RequestSend(T packet, NetPeer targetPeer = null)
-        {
-            if (!H.isInRaid()) return;
-            if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft check local-side
-
-            // targetPeer will never be local here
-            if (targetPeer != null)
-            {
-                H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
+                H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
+                H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
             }
             else
             {
-                LocalPredictApproved(packet);
-
-                H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
-                if (FikaBackendUtils.IsServer)
-                {
-                    // WhenServerReceivesPacket(packet, Singleton<NetPeer>.Instance);
-                    WhenApproved(packet, Singleton<NetPeer>.Instance);
-                }
+                H.FikaNet.RegisterPacket<T, NetPeer>(WhenClientReceivesPacket);
+                H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>(WhenClientReceivesRejection);
             }
         }
+    }
 
-        private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
+    public void UnregisterPacket(GameWorld gameWorld)
+    {
+        D.Log($"Disposing {typeof(T).FullName}");
+
+        try
         {
-            if (!TryPassServerRateLimit(packet, netPeer))
-                return;
+            _serverRateLimiter.Clear();
 
-            // idk what the best action here is, but for now we just drop
-            if (IsUnauthorized(netPeer.Id))
+            if (H.NetPacketProcessor == null) return;
+
+            H.NetPacketProcessor.RemoveSubscription<T>();
+            H.NetPacketProcessor.RemoveSubscription<RejectedPacket<T>>();
+        }
+        catch (Exception ex)
+        {
+            Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
+        }
+    }
+
+    public void Dispose()
+    {
+        UnregisterPacket(null);
+        Release(this);
+    }
+
+    // [Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object
+    // Stack trace:
+    // ifp.arena.bep.networking.Base.PacketHandler`1[T].IsUnauthorized (System.Int32 id) (at <969384f4afc24680a3f8616f1f99f5da>:0)
+    // ifp.arena.bep.networking.Base.PacketHandler`1[T].WhenServerReceivesPacket (T packet, Fika.Core.Networking.LiteNetLib.NetPeer netPeer) (at <969384f4afc24680a3f8616f1f99f5da>:0)
+    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor+<>c__DisplayClass30_0`2[T,TUserData].<SubscribeNetSerializable>b__0 (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadPacket (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadAllPackets (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.FikaServer.OnNetworkReceive (Fika.Core.Networking.LiteNetLib.NetPeer peer, Fika.Core.Networking.LiteNetLib.NetPacketReader reader, System.Byte channelNumber, Fika.Core.Networking.LiteNetLib.DeliveryMethod deliveryMethod) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.NetManager.ProcessEvent (Fika.Core.Networking.LiteNetLib.NetEvent evt) (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.LiteNetLib.LiteNetManager.PollEvents () (at <4961a269c1a0469488965fa870906146>:0)
+    // Fika.Core.Networking.FikaServer.Update () (at <4961a269c1a0469488965fa870906146>:0)
+    // UnityEngine.DebugLogHandler:LogException(Exception, Object)
+    // Class412:LogException(Exception, Object)
+    // UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
+
+    // Admins have the same authority as the server
+    private bool IsUnauthorized(int id)
+    {
+        return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(id).IsAdmin;
+    }
+
+    // OPTIONAL ENTRY POINT
+    // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
+    protected void RequestSendToPlayer(T packet, int netId)
+    {
+        if (!H.isInRaid()) return;
+
+        // local sender is the target, execute locally; I am not sure how I want to do this
+        // But for the sake of keeping things as coupled as possible with the network layer
+        // this might come handy later.
+        if (netId == H.FikaNet.NetId)
+        {
+            WhenApproved(packet, null);
+            return;
+        }
+
+        var peer = H.NetManager.GetPeerById(netId) as NetPeer;
+        RequestSend(packet, peer);
+    }
+
+    // ENTRY POINT
+    // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
+    protected void RequestSend(T packet, NetPeer targetPeer = null)
+    {
+        if (!H.isInRaid()) return;
+        if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft check local-side
+
+        // targetPeer will never be local here
+        if (targetPeer != null)
+        {
+            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
+        }
+        else
+        {
+            LocalPredictApproved(packet);
+
+            H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
+            if (FikaBackendUtils.IsServer)
             {
-                D.Log("Unauthorized Packet, dropping");
-                return;
+                // WhenServerReceivesPacket(packet, Singleton<NetPeer>.Instance);
+                WhenApproved(packet, Singleton<NetPeer>.Instance);
             }
+        }
+    }
 
-            // If ServerValidation returns false, send reject packet and return before doing applying the packet.
-            bool validPacket = ServerValidation(ref packet, netPeer);
-            if (!validPacket)
+    private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
+    {
+        if (!TryPassServerRateLimit(packet, netPeer))
+            return;
+
+        // idk what the best action here is, but for now we just drop
+        if (IsUnauthorized(netPeer.Id))
+        {
+            D.Log("Unauthorized Packet, dropping");
+            return;
+        }
+
+        // If ServerValidation returns false, send reject packet and return before doing applying the packet.
+        bool validPacket = ServerValidation(ref packet, netPeer);
+        if (!validPacket)
+        {
+            if (H.NetPacketProcessor != null)
             {
-                if (H.NetPacketProcessor != null)
+                var rejected = new RejectedPacket<T> { Payload = packet };
+                H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
+            }
+            return;
+        }
+
+        if (ShouldBroadcastPacket(packet)) // if this packet originates from the server - we already broadcasted it
+        {
+            H.FikaNet.SendData(ref packet, deliveryMethod, true);
+        }
+
+        WhenApproved(packet, netPeer);
+    }
+
+    private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
+    {
+        WhenApproved(packet, netPeer);
+    }
+
+    private void WhenClientReceivesRejection(RejectedPacket<T> rejectedPacket, NetPeer netPeer)
+    {
+        WhenRejected(rejectedPacket.Payload, netPeer);
+    }
+
+    protected virtual void OnRateLimited(T packet, NetPeer netPeer, in RateLimitConfig config)
+    {
+        D.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
+    }
+
+    private bool TryPassServerRateLimit(T packet, NetPeer netPeer)
+    {
+        var config = ServerRateLimit;
+        if (!config.Enabled)
+            return true;
+
+        double nowSeconds = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+
+        _serverRateLimiter.Prune(nowSeconds, config.StateTtlSeconds);
+
+        bool allowed = _serverRateLimiter.TryConsume(netPeer.Id, nowSeconds, config, out bool canSendReject);
+        if (allowed)
+            return true;
+
+        OnRateLimited(packet, netPeer, config);
+
+
+        switch (config.Action)
+        {
+            case RateLimitAction.Drop:
+                return false;
+
+            case RateLimitAction.Reject:
                 {
+                    if (!canSendReject)
+                        return false;
+
+                    if (H.NetPacketProcessor == null)
+                        return false;
+
                     var rejected = new RejectedPacket<T> { Payload = packet };
                     H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
+                    return false;
                 }
-                return;
-            }
 
-            if (ShouldBroadcastPacket(packet)) // if this packet originates from the server - we already broadcasted it
-            {
-                H.FikaNet.SendData(ref packet, deliveryMethod, true);
-            }
+            case RateLimitAction.Disconnect:
+                netPeer.Disconnect();
+                return false;
 
-            WhenApproved(packet, netPeer);
+            default:
+                return false;
         }
+    }
 
-        private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
-        {
-            WhenApproved(packet, netPeer);
-        }
+    // OPTIONAL
+    protected virtual bool ShouldBroadcastPacket(T packet) => true;
 
-        private void WhenClientReceivesRejection(RejectedPacket<T> rejectedPacket, NetPeer netPeer)
-        {
-            WhenRejected(rejectedPacket.Payload, netPeer);
-        }
+    // OPTIONAL
+    // For hard checking client packets
+    /// <summary>returning false means the packet is rejected</summary>
+    protected virtual bool ServerValidation(ref T packet, NetPeer netPeer) => true;
 
-        protected virtual void OnRateLimited(T packet, NetPeer netPeer, in RateLimitConfig config)
-        {
-            D.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
-        }
+    // OPTIONAL
+    // In case client is quite sure that the packet is gonna get approved
+    // and we want to do sfx/vfx without delay
+    protected virtual void LocalPredictApproved(T packet) { }
 
-        private bool TryPassServerRateLimit(T packet, NetPeer netPeer)
-        {
-            var config = ServerRateLimit;
-            if (!config.Enabled)
-                return true;
+    // ENTRY POINT
+    // packet type specific way of applying the received packet
+    protected abstract void WhenApproved(T packet, NetPeer netPeer);
 
-            double nowSeconds = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
-
-            _serverRateLimiter.Prune(nowSeconds, config.StateTtlSeconds);
-
-            bool allowed = _serverRateLimiter.TryConsume(netPeer.Id, nowSeconds, config, out bool canSendReject);
-            if (allowed)
-                return true;
-
-            OnRateLimited(packet, netPeer, config);
-
-
-            switch (config.Action)
-            {
-                case RateLimitAction.Drop:
-                    return false;
-
-                case RateLimitAction.Reject:
-                    {
-                        if (!canSendReject)
-                            return false;
-
-                        if (H.NetPacketProcessor == null)
-                            return false;
-
-                        var rejected = new RejectedPacket<T> { Payload = packet };
-                        H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
-                        return false;
-                    }
-
-                case RateLimitAction.Disconnect:
-                    netPeer.Disconnect();
-                    return false;
-
-                default:
-                    return false;
-            }
-        }
-
-        // OPTIONAL
-        protected virtual bool ShouldBroadcastPacket(T packet) => true;
-
-        // OPTIONAL
-        // For hard checking client packets
-        /// <summary>returning false means the packet is rejected</summary>
-        protected virtual bool ServerValidation(ref T packet, NetPeer netPeer) => true;
-
-        // OPTIONAL
-        // In case client is quite sure that the packet is gonna get approved
-        // and we want to do sfx/vfx without delay
-        protected virtual void LocalPredictApproved(T packet) { }
-
-        // ENTRY POINT
-        // packet type specific way of applying the received packet
-        protected abstract void WhenApproved(T packet, NetPeer netPeer);
-
-        // OPTIONAL
-        // kinda only using this to notify or negate anything done in ClientPrediction
-        protected virtual void WhenRejected(T packet, NetPeer netPeer)
-        {
-            D.Log($"Server Rejected the packet: {GetType().Name}");
-        }
+    // OPTIONAL
+    // kinda only using this to notify or negate anything done in ClientPrediction
+    protected virtual void WhenRejected(T packet, NetPeer netPeer)
+    {
+        D.Log($"Server Rejected the packet: {GetType().Name}");
     }
 }

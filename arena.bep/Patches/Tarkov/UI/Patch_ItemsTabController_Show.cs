@@ -8,18 +8,17 @@ using System.Reflection;
 
 using ItemsTabController = EFT.UI.ItemsPanel.GClass3802;
 
-namespace ifp.arena.bep.Patches.Tarkov.UI
+namespace ifp.arena.bep.Patches.Tarkov.UI;
+
+internal class Patch_ItemsTabController_Show : ModulePatch
 {
-    internal class Patch_ItemsTabController_Show : ModulePatch
+    public static event Action<CompoundItem> OnShow;
+
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemsTabController), nameof(ItemsTabController.Show));
+
+    [PatchPostfix]
+    static void Postfix(ItemsTabController __instance)
     {
-        public static event Action<CompoundItem> OnShow;
-
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemsTabController), nameof(ItemsTabController.Show));
-
-        [PatchPostfix]
-        static void Postfix(ItemsTabController __instance)
-        {
-            OnShow?.Invoke(__instance.CompoundItem_0);
-        }
+        OnShow?.Invoke(__instance.CompoundItem_0);
     }
 }

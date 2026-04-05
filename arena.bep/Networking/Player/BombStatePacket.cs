@@ -10,92 +10,91 @@ using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
 
-namespace ifp.arena.bep.networking
+namespace ifp.arena.bep.networking;
+
+[MemoryPackable]
+public partial struct BombStatePacket : INetSerializable
 {
-    [MemoryPackable]
-    public partial struct BombStatePacket : INetSerializable
+    public int playerId;
+    public BombState state;
+    // Vector3 is stored as three floats so MemoryPack can serialize it natively.
+    public float posX, posY, posZ;
+    public double timestamp;
+
+    /// <summary>Convenience accessor — not serialized.</summary>
+    [MemoryPackIgnore]
+    public Vector3 position
     {
-        public int playerId;
-        public BombState state;
-        // Vector3 is stored as three floats so MemoryPack can serialize it natively.
-        public float posX, posY, posZ;
-        public double timestamp;
-
-        /// <summary>Convenience accessor — not serialized.</summary>
-        [MemoryPackIgnore]
-        public Vector3 position
-        {
-            get => new Vector3(posX, posY, posZ);
-            set { posX = value.x; posY = value.y; posZ = value.z; }
-        }
-
-        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
+        get => new Vector3(posX, posY, posZ);
+        set { posX = value.x; posY = value.y; posZ = value.z; }
     }
 
-    public class BombStatePacketHandler : PacketHandler<BombStatePacket>
+    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
+}
+
+public class BombStatePacketHandler : PacketHandler<BombStatePacket>
+{
+    public void Send(Player player, BombState state, Vector3 position)
     {
-        public void Send(Player player, BombState state, Vector3 position)
+        var packet = new BombStatePacket
         {
-            var packet = new BombStatePacket
-            {
-                playerId = player.Id,
-                state = state,
-                timestamp = NetworkTime.ServerNowSeconds
-            };
-            packet.position = position;
+            playerId = player.Id,
+            state = state,
+            timestamp = NetworkTime.ServerNowSeconds
+        };
+        packet.position = position;
 
-            RequestSend(packet);
+        RequestSend(packet);
+    }
+
+    protected override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
+    {
+        return base.ServerValidation(ref packet, peer);
+    }
+
+    protected override void LocalPredictApproved(BombStatePacket packet)
+    {
+        // idk how I feel about mutating the state like this locally as a general practice
+        // but it shouldn't be an issue here at least
+        if (packet.state == BombState.Planted)
+        {
+            H.BombHandler.BombPlantedPosition = packet.position;
+            H.BombHandler.bombVisuals.transform.position = packet.position;
         }
 
-        protected override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
-        {
-            return base.ServerValidation(ref packet, peer);
-        }
+        H.BombHandler.PlayBombAudio(packet);
+    }
 
-        protected override void LocalPredictApproved(BombStatePacket packet)
-        {
-            // idk how I feel about mutating the state like this locally as a general practice
-            // but it shouldn't be an issue here at least
-            if (packet.state == BombState.Planted)
-            {
-                H.BombHandler.BombPlantedPosition = packet.position;
-                H.BombHandler.bombVisuals.transform.position = packet.position;
-            }
+    protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
+    {
+        H.Session.bombState = packet.state;
 
+        Player player = H.GetPlayer(packet.playerId);
+        if (!player.IsYourPlayer)
+        {
             H.BombHandler.PlayBombAudio(packet);
         }
 
-        protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
+        if (packet.state is BombState.Planted)
         {
-            H.Session.bombState = packet.state;
-
-            Player player = H.GetPlayer(packet.playerId);
-            if (!player.IsYourPlayer)
+            H.Arena.LastObjectivePlayerId = packet.playerId;
+            foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
-                H.BombHandler.PlayBombAudio(packet);
+                bombPlantZone.GetComponent<BoxCollider>().enabled = false;
             }
-
-            if (packet.state is BombState.Planted)
-            {
-                H.Arena.LastObjectivePlayerId = packet.playerId;
-                foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
-                {
-                    bombPlantZone.GetComponent<BoxCollider>().enabled = false;
-                }
-            }
-
-
-
-            if (packet.state is BombState.Defused or BombState.Exploded)
-            {
-                H.Arena.LastObjectiveBombState = packet.state;
-                if (packet.playerId > 0)
-                    H.Arena.LastObjectivePlayerId = packet.playerId;
-            }
-
-            H.BombHandler.SetBombVisuals(packet);
-            EventBus.OnBombStateChange(packet.state);
         }
+
+
+
+        if (packet.state is BombState.Defused or BombState.Exploded)
+        {
+            H.Arena.LastObjectiveBombState = packet.state;
+            if (packet.playerId > 0)
+                H.Arena.LastObjectivePlayerId = packet.playerId;
+        }
+
+        H.BombHandler.SetBombVisuals(packet);
+        EventBus.OnBombStateChange(packet.state);
     }
 }

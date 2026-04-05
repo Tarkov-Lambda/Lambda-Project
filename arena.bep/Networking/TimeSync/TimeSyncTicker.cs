@@ -4,43 +4,42 @@ using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core;
 using UnityEngine;
 
-namespace ifp.arena.bep.networking.TimeSync
+namespace ifp.arena.bep.networking.TimeSync;
+
+public class TimeSyncTicker : MonoBehaviour
 {
-    public class TimeSyncTicker : MonoBehaviour
+    private double _nextSendLocalSeconds;
+
+    private const double IntervalSeconds = 1.0;
+
+    private void Awake()
     {
-        private double _nextSendLocalSeconds;
+        _nextSendLocalSeconds = NetworkTime.LocalNowSeconds;
+    }
 
-        private const double IntervalSeconds = 1.0;
+    private void Update()
+    {
 
-        private void Awake()
-        {
-            _nextSendLocalSeconds = NetworkTime.LocalNowSeconds;
-        }
+        if (FikaBackendUtils.IsServer)
+            return;
 
-        private void Update()
-        {
+        double now = NetworkTime.LocalNowSeconds;
+        if (now < _nextSendLocalSeconds)
+            return;
 
-            if (FikaBackendUtils.IsServer)
-                return;
+        _nextSendLocalSeconds = now + IntervalSeconds;
 
-            double now = NetworkTime.LocalNowSeconds;
-            if (now < _nextSendLocalSeconds)
-                return;
+        if (!Singleton<TimeSyncRequestPacketHandler>.Instantiated)
+            return;
 
-            _nextSendLocalSeconds = now + IntervalSeconds;
+        if (H.GameWorld == null)
+            return;
 
-            if (!Singleton<TimeSyncRequestPacketHandler>.Instantiated)
-                return;
+        Singleton<TimeSyncRequestPacketHandler>.Instance.Send();
+    }
 
-            if (H.GameWorld == null)
-                return;
-
-            Singleton<TimeSyncRequestPacketHandler>.Instance.Send();
-        }
-
-        private void OnDestroy()
-        {
-            NetworkTime.Reset();
-        }
+    private void OnDestroy()
+    {
+        NetworkTime.Reset();
     }
 }

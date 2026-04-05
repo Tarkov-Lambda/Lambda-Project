@@ -11,151 +11,149 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace ifp.arena.bep.Core.Gamemode
+namespace ifp.arena.bep.Core.Gamemode;
+
+public class SND_Prepare : SharedPrepare
 {
-    public class SND_Prepare : SharedPrepare
+    public override void OnEnter()
     {
-        public override void OnEnter()
+        foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
         {
-            foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
-            {
-                bombPlantZone.GetComponent<BoxCollider>().enabled = true;
-            }
-
-            H.Session.bombState = BombState.None;
-
-            H.Arena.LastObjectivePlayerId = -1;
-            H.Arena.LastObjectiveBombState = BombState.None;
-
-            // Hide any leftover bomb visual from the previous round
-            H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
-
-            IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
-
-            base.OnEnter();
+            bombPlantZone.GetComponent<BoxCollider>().enabled = true;
         }
 
-        public override void OnExit()
-        {
-            base.OnExit();
-        }
+        H.Session.bombState = BombState.None;
 
+        H.Arena.LastObjectivePlayerId = -1;
+        H.Arena.LastObjectiveBombState = BombState.None;
+
+        // Hide any leftover bomb visual from the previous round
+        H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
+
+        IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
+
+        base.OnEnter();
     }
 
-    public class SND_Action : IGameState
+    public override void OnExit()
     {
-        public MatchState StateType => MatchState.RoundAction;
-        public void OnEnter() { }
-        public MatchState? OnUpdate()
-        {
-            if (!FikaBackendUtils.IsServer) return null;
-            Faction? winner = CheckWipe();
-            if (winner.HasValue) { H.Arena.Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
-            if (H.Session.bombState == BombState.Planted) return MatchState.RoundPlanted;
-            if (H.Arena.StateTimer <= 0) { H.Arena.Award(Faction.CT, RoundWinReason.Timeout); return MatchState.RoundEnd; }
-            return null;
-        }
-        public void OnExit() { }
-
-        private Faction? CheckWipe()
-        {
-            var alive = H.Scoreboard.Values.Where(p => p.isAlive).GroupBy(p => p.faction).ToDictionary(g => g.Key, g => g.Count());
-            var factions = H.Scoreboard.Values.Select(p => p.faction).Where(f => f != Faction.None).Distinct();
-            foreach (var f in factions) if (!alive.ContainsKey(f) || alive[f] == 0) return factions.FirstOrDefault(o => o != f);
-            return null;
-        }
+        base.OnExit();
     }
 
-    public class SND_Planted : IGameState
+}
+
+public class SND_Action : IGameState
+{
+    public MatchState StateType => MatchState.RoundAction;
+    public void OnEnter() { }
+    public MatchState? OnUpdate()
     {
-        public MatchState StateType => MatchState.RoundPlanted;
+        if (!FikaBackendUtils.IsServer) return null;
+        Faction? winner = CheckWipe();
+        if (winner.HasValue) { H.Arena.Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
+        if (H.Session.bombState == BombState.Planted) return MatchState.RoundPlanted;
+        if (H.Arena.StateTimer <= 0) { H.Arena.Award(Faction.CT, RoundWinReason.Timeout); return MatchState.RoundEnd; }
+        return null;
+    }
+    public void OnExit() { }
 
-        public void OnEnter() { }
+    private Faction? CheckWipe()
+    {
+        var alive = H.Scoreboard.Values.Where(p => p.isAlive).GroupBy(p => p.faction).ToDictionary(g => g.Key, g => g.Count());
+        var factions = H.Scoreboard.Values.Select(p => p.faction).Where(f => f != Faction.None).Distinct();
+        foreach (var f in factions) if (!alive.ContainsKey(f) || alive[f] == 0) return factions.FirstOrDefault(o => o != f);
+        return null;
+    }
+}
 
-        public MatchState? OnUpdate()
+public class SND_Planted : IGameState
+{
+    public MatchState StateType => MatchState.RoundPlanted;
+
+    public void OnEnter() { }
+
+    public MatchState? OnUpdate()
+    {
+        if (!FikaBackendUtils.IsServer) return null;
+
+        // If all CT are dead before timer runs out
+        // if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))
+        // {
+        //     H.Arena.Award(Faction.T, RoundWinReason.Elimination);
+        //     return MatchState.RoundEnd;
+        // }
+
+        if (H.Session.bombState == BombState.Defused)
         {
-            if (!FikaBackendUtils.IsServer) return null;
-
-            // If all CT are dead before timer runs out
-            // if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))
-            // {
-            //     H.Arena.Award(Faction.T, RoundWinReason.Elimination);
-            //     return MatchState.RoundEnd;
-            // }
-
-            if (H.Session.bombState == BombState.Defused)
-            {
-                H.Arena.Award(Faction.CT, RoundWinReason.Objective);
-                return MatchState.RoundEnd;
-            }
-
-            if (H.Arena.StateTimer <= 0)
-            {
-                H.Arena.Award(Faction.T, RoundWinReason.Objective);
-                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Exploded, Vector3.zero);
-                return MatchState.RoundEnd;
-            }
-
-            return null;
+            H.Arena.Award(Faction.CT, RoundWinReason.Objective);
+            return MatchState.RoundEnd;
         }
 
-        public void OnExit() { }
-    }
-
-    public class SND_End : SharedEnd
-    {
-        public override void OnExit()
+        if (H.Arena.StateTimer <= 0)
         {
-            int currentRound = H.Session.factionWins.Values.Sum();
-            int maxRounds = SND_ModeRules.maxRoundsToWin * 2 - 1;
-            double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
-            Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
-            base.OnExit();
-        }
-    }
-
-    public class SND_SideSwap : SharedSideSwap
-    {
-        public override void OnExit()
-        {
-            (H.Arena.ActiveRules as SND_ModeRules).hasSideSwapped = true;
-            base.OnExit();
-        }
-    }
-
-    public class SND_ModeRules : GameModeRules
-    {
-        public static int maxRoundsToWin = 13;
-        public static float platingTime = 4.5f;
-        public static float defusingTime = 10f;
-        public static float defuseRadius = 2.5f;
-        public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
-        public static string defuseKitTemplateId = "544fb5454bdc2df8738b456a";
-
-        public bool hasSideSwapped;
-
-        public SND_ModeRules()
-        {
-            hasSideSwapped = false;
+            H.Arena.Award(Faction.T, RoundWinReason.Objective);
+            Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Exploded, Vector3.zero);
+            return MatchState.RoundEnd;
         }
 
-        public override IGameState CreateState(MatchState state) => state switch
-        {
-            MatchState.None => new SharedNone(),
-
-            MatchState.Warmup => new SharedWarmup(),
-            MatchState.WarmupEnd => new SharedWarmupEnd(),
-
-            MatchState.Pause => new SharedPause(),
-            MatchState.RoundPrepare => new SND_Prepare(),
-            MatchState.RoundAction => new SND_Action(),
-            MatchState.RoundPlanted => new SND_Planted(),
-            MatchState.RoundEnd => new SharedEnd(),
-
-            MatchState.SideSwap => new SND_SideSwap(),
-            MatchState.MatchEnd => new SharedFinish(),
-            _ => null
-        };
+        return null;
     }
 
+    public void OnExit() { }
+}
+
+public class SND_End : SharedEnd
+{
+    public override void OnExit()
+    {
+        int currentRound = H.Session.factionWins.Values.Sum();
+        int maxRounds = SND_ModeRules.maxRoundsToWin * 2 - 1;
+        double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
+        Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
+        base.OnExit();
+    }
+}
+
+public class SND_SideSwap : SharedSideSwap
+{
+    public override void OnExit()
+    {
+        (H.Arena.ActiveRules as SND_ModeRules).hasSideSwapped = true;
+        base.OnExit();
+    }
+}
+
+public class SND_ModeRules : GameModeRules
+{
+    public static int maxRoundsToWin = 13;
+    public static float platingTime = 4.5f;
+    public static float defusingTime = 10f;
+    public static float defuseRadius = 2.5f;
+    public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
+    public static string defuseKitTemplateId = "544fb5454bdc2df8738b456a";
+
+    public bool hasSideSwapped;
+
+    public SND_ModeRules()
+    {
+        hasSideSwapped = false;
+    }
+
+    public override IGameState CreateState(MatchState state) => state switch
+    {
+        MatchState.None => new SharedNone(),
+
+        MatchState.Warmup => new SharedWarmup(),
+        MatchState.WarmupEnd => new SharedWarmupEnd(),
+
+        MatchState.Pause => new SharedPause(),
+        MatchState.RoundPrepare => new SND_Prepare(),
+        MatchState.RoundAction => new SND_Action(),
+        MatchState.RoundPlanted => new SND_Planted(),
+        MatchState.RoundEnd => new SharedEnd(),
+
+        MatchState.SideSwap => new SND_SideSwap(),
+        MatchState.MatchEnd => new SharedFinish(),
+        _ => null
+    };
 }

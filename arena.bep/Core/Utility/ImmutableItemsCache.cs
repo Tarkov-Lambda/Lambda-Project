@@ -4,32 +4,31 @@ using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 
-namespace ifp.arena.bep.Core.UI
+namespace ifp.arena.bep.Core.UI;
+
+internal class ImmutableItemsCache : Singleton<ImmutableItemsCache>, IDisposable
 {
-    internal class ImmutableItemsCache : Singleton<ImmutableItemsCache>, IDisposable
+    Dictionary<string, Item> cacheImmutableItems = new Dictionary<string, Item>();
+
+    public Item GetImmutableItem(string bsgId)
     {
-        Dictionary<string, Item> cacheImmutableItems = new Dictionary<string, Item>();
+        if (cacheImmutableItems.ContainsKey(bsgId))
+            return cacheImmutableItems[bsgId];
 
-        public Item GetImmutableItem(string bsgId)
-        {
-            if (cacheImmutableItems.ContainsKey(bsgId))
-                return cacheImmutableItems[bsgId];
+        var weaponBuild = FU.GetCustomTemplate(bsgId);
+        if (weaponBuild != null)
+            return weaponBuild.Item;
 
-            var weaponBuild = FU.GetCustomTemplate(bsgId);
-            if (weaponBuild != null)
-                return weaponBuild.Item;
+        IU.TryCreateItem(bsgId, out Item newImmutableItem);
+        if (newImmutableItem != null)
+            cacheImmutableItems.Add(bsgId, newImmutableItem);
 
-            IU.TryCreateItem(bsgId, out Item newImmutableItem);
-            if (newImmutableItem != null)
-                cacheImmutableItems.Add(bsgId, newImmutableItem);
+        return newImmutableItem;
+    }
 
-            return newImmutableItem;
-        }
-
-        public void Dispose()
-        {
-            cacheImmutableItems.Clear();
-            Release(this);
-        }
+    public void Dispose()
+    {
+        cacheImmutableItems.Clear();
+        Release(this);
     }
 }

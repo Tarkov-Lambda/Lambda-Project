@@ -1,42 +1,40 @@
 ﻿using EFT;
 using HarmonyLib;
-using ifp.arena.bep.Core;
 using ifp.arena.bep.networking.TimeSync;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches.Tarkov
+namespace ifp.arena.bep.Patches.Tarkov;
+
+internal class Patch_Gameworld_OnGameStarted : ModulePatch
 {
-    internal class Patch_Gameworld_OnGameStarted : ModulePatch
+    public static event Action<GameWorld> OnGameStarted;
+
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.OnGameStarted));
+
+    [PatchPostfix]
+    static void Postfix(GameWorld __instance)
     {
-        public static event Action<GameWorld> OnGameStarted;
+        if (__instance is HideoutGameWorld) return;
 
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.OnGameStarted));
-
-        [PatchPostfix]
-        static void Postfix(GameWorld __instance)
-        {
-            if (__instance is HideoutGameWorld) return;
-
-            NetworkTime.Reset();
-            OnGameStarted?.Invoke(__instance);
-        }
+        NetworkTime.Reset();
+        OnGameStarted?.Invoke(__instance);
     }
+}
 
-    internal class Patch_Gameworld_OnDispose : ModulePatch
+internal class Patch_Gameworld_OnDispose : ModulePatch
+{
+    public static event Action<GameWorld> OnDispose;
+
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.Dispose));
+
+    [PatchPostfix]
+    static void Postfix(GameWorld __instance)
     {
-        public static event Action<GameWorld> OnDispose;
+        if (!H.isInRaid()) return;
 
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.Dispose));
-
-        [PatchPostfix]
-        static void Postfix(GameWorld __instance)
-        {
-            if (!H.isInRaid()) return;
-
-            NetworkTime.Reset();
-            OnDispose?.Invoke(__instance);
-        }
+        NetworkTime.Reset();
+        OnDispose?.Invoke(__instance);
     }
 }

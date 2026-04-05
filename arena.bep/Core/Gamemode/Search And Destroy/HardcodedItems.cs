@@ -10,44 +10,43 @@ using HarmonyLib;
 using System.IO;
 using ifp.arena.shared.Models;
 
-namespace ifp.arena.bep.Core.Economy
+namespace ifp.arena.bep.Core.Economy;
+
+public static class BuyMenu
 {
-    public static class BuyMenu
+    public static string EconomyDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "Economy.jsonc");
+
+    public static List<BuyCategory> buyCategories = new();
+
+    public static bool TryGetItemData(string bsgId, out ShopItem itemData)
     {
-        public static string EconomyDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "Economy.jsonc");
-
-        public static List<BuyCategory> buyCategories = new();
-
-        public static bool TryGetItemData(string bsgId, out ShopItem itemData)
+        foreach (var category in buyCategories)
         {
-            foreach (var category in buyCategories)
+            foreach (var item in category.items)
             {
-                foreach (var item in category.items)
+                if (item.bsgId == bsgId)
                 {
-                    if (item.bsgId == bsgId)
-                    {
-                        itemData = item;
-                        return true;
-                    }
-                    else if (item.ammoId == bsgId)
-                    {
-                        itemData = item;
-                        return true;
-                    }
+                    itemData = item;
+                    return true;
+                }
+                else if (item.ammoId == bsgId)
+                {
+                    itemData = item;
+                    return true;
                 }
             }
-            itemData = new ShopItem();
-            return false;
         }
+        itemData = new ShopItem();
+        return false;
+    }
 
-        public static void LoadItems(string json)
-        {
-            buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
-        }
+    public static void LoadItems(string json)
+    {
+        buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
+    }
 
-        static BuyMenu()
-        {
-            LoadItems(File.ReadAllText(EconomyDataPath));
-        }
+    static BuyMenu()
+    {
+        LoadItems(File.ReadAllText(EconomyDataPath));
     }
 }

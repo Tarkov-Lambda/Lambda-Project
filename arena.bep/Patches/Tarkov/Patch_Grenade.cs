@@ -8,8 +8,8 @@ using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
 
-namespace ifp.arena.bep.Patches.Tarkov
-{
+namespace ifp.arena.bep.Patches.Tarkov;
+
     public class Patch_Grenade_InvokeBlowUpEvent : ModulePatch
     {
         private const string _smokeTemplateId = "617aa4dd8166f034d57de9c5";
@@ -40,4 +40,3 @@ namespace ifp.arena.bep.Patches.Tarkov
             return true;
         }
     }
-}

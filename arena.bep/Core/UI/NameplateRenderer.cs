@@ -4,115 +4,114 @@ using ifp.arena.ui.Nameplate;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ifp.arena.bep.Core.UI
+namespace ifp.arena.bep.Core.UI;
+
+internal class NameplateRenderer : MonoBehaviour
 {
-    internal class NameplateRenderer : MonoBehaviour
+    private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.2f, 0f);
+
+    RectTransform rectTransform => transform as RectTransform;
+
+    List<Nameplate> nameplates = new List<Nameplate>();
+
+    Nameplate prefabNameplate;
+
+    public void Init(CommonUI commonUI, Nameplate prefabNameplate)
     {
-        private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.2f, 0f);
+        rectTransform.SetParent(commonUI.EftBattleUIScreen.transform);
+        rectTransform.SetAsFirstSibling();
 
-        RectTransform rectTransform => transform as RectTransform;
+        rectTransform.localScale = Vector3.one;
+        rectTransform.localPosition = Vector3.zero;
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
 
-        List<Nameplate> nameplates = new List<Nameplate>();
+        this.prefabNameplate = prefabNameplate;
+    }
 
-        Nameplate prefabNameplate;
-
-        public void Init(CommonUI commonUI, Nameplate prefabNameplate)
+    private Nameplate GetOrCreateNameplate(int index)
+    {
+        while (nameplates.Count <= index)
         {
-            rectTransform.SetParent(commonUI.EftBattleUIScreen.transform);
-            rectTransform.SetAsFirstSibling();
+            Nameplate instance = Instantiate(prefabNameplate, rectTransform);
+            instance.gameObject.SetActive(false);
+            nameplates.Add(instance);
+        }
+        return nameplates[index];
+    }
 
-            rectTransform.localScale = Vector3.one;
-            rectTransform.localPosition = Vector3.zero;
-            rectTransform.anchorMin = Vector2.zero;
-            rectTransform.anchorMax = Vector2.one;
-            rectTransform.offsetMin = Vector2.zero;
-            rectTransform.offsetMax = Vector2.zero;
+    private void DisableAll()
+    {
+        for (int i = 0; i < nameplates.Count; i++)
+            nameplates[i].gameObject.SetActive(false);
+    }
 
-            this.prefabNameplate = prefabNameplate;
+    void LateUpdate()
+    {
+        if (!H.isInRaid())
+        {
+            DisableAll();
+            return;
         }
 
-        private Nameplate GetOrCreateNameplate(int index)
+        Faction ownFaction = H.MainPlayerScore.faction;
+        int activeCount = 0;
+
+        Camera cam = CameraClass.Instance.Camera;
+
+        foreach (var playerScore in H.Scoreboard.Values)
         {
-            while (nameplates.Count <= index)
-            {
-                Nameplate instance = Instantiate(prefabNameplate, rectTransform);
-                instance.gameObject.SetActive(false);
-                nameplates.Add(instance);
-            }
-            return nameplates[index];
+            if (playerScore == H.MainPlayerScore)
+                continue;
+
+            if (playerScore.faction != ownFaction)
+                continue;
+
+            if (playerScore.player == null || !playerScore.isAlive)
+                continue;
+
+            Vector3 worldPos = playerScore.player.PlayerBones.Head.position + HEAD_OFFSET;
+            Vector3 viewportPos = cam.WorldToViewportPoint(worldPos);
+
+            if (viewportPos.z < 0f) // behind the camera
+                continue;
+
+            Nameplate nameplate = GetOrCreateNameplate(activeCount);
+            nameplate.gameObject.SetActive(true);
+
+            RectTransform nameplateRect = nameplate.transform as RectTransform;
+
+            Vector2 screenPos = new Vector2(
+                viewportPos.x * Screen.width,
+                viewportPos.y * Screen.height
+            );
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                rectTransform,
+                screenPos,
+                cam: null,
+                out Vector2 localPoint
+            );
+
+            nameplateRect.localPosition = localPoint;
+
+            nameplate.Set(playerScore.player.Profile.Nickname, playerScore.faction);
+
+            activeCount++;
         }
 
-        private void DisableAll()
+        // disable leftover
+        for (int i = activeCount; i < nameplates.Count; i++)
+            nameplates[i].gameObject.SetActive(false);
+    }
+
+    void OnDestroy()
+    {
+        foreach (var item in nameplates)
         {
-            for (int i = 0; i < nameplates.Count; i++)
-                nameplates[i].gameObject.SetActive(false);
-        }
-
-        void LateUpdate()
-        {
-            if (!H.isInRaid())
-            {
-                DisableAll();
-                return;
-            }
-
-            Faction ownFaction = H.MainPlayerScore.faction;
-            int activeCount = 0;
-
-            Camera cam = CameraClass.Instance.Camera;
-
-            foreach (var playerScore in H.Scoreboard.Values)
-            {
-                if (playerScore == H.MainPlayerScore)
-                    continue;
-
-                if (playerScore.faction != ownFaction)
-                    continue;
-
-                if (playerScore.player == null || !playerScore.isAlive)
-                    continue;
-
-                Vector3 worldPos = playerScore.player.PlayerBones.Head.position + HEAD_OFFSET;
-                Vector3 viewportPos = cam.WorldToViewportPoint(worldPos);
-
-                if (viewportPos.z < 0f) // behind the camera
-                    continue;
-
-                Nameplate nameplate = GetOrCreateNameplate(activeCount);
-                nameplate.gameObject.SetActive(true);
-
-                RectTransform nameplateRect = nameplate.transform as RectTransform;
-
-                Vector2 screenPos = new Vector2(
-                    viewportPos.x * Screen.width,
-                    viewportPos.y * Screen.height
-                );
-
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    rectTransform,
-                    screenPos,
-                    cam: null,
-                    out Vector2 localPoint
-                );
-
-                nameplateRect.localPosition = localPoint;
-
-                nameplate.Set(playerScore.player.Profile.Nickname, playerScore.faction);
-
-                activeCount++;
-            }
-
-            // disable leftover
-            for (int i = activeCount; i < nameplates.Count; i++)
-                nameplates[i].gameObject.SetActive(false);
-        }
-
-        void OnDestroy()
-        {
-            foreach (var item in nameplates)
-            {
-                Destroy(item.gameObject);
-            }
+            Destroy(item.gameObject);
         }
     }
 }

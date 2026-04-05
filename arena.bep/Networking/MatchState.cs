@@ -8,37 +8,36 @@ using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
 using MemoryPack;
 
-namespace ifp.arena.bep.networking
-{
-    [MemoryPackable]
-    public partial struct MatchStateSyncPacket : INetSerializable
-    {
-        public MatchState matchState;
-        public double serverPhaseStartSeconds;
-        public RoundActionPhaseEnd? roundActionEnd;
+namespace ifp.arena.bep.networking;
 
-        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<MatchStateSyncPacket>(reader);
+[MemoryPackable]
+public partial struct MatchStateSyncPacket : INetSerializable
+{
+    public MatchState matchState;
+    public double serverPhaseStartSeconds;
+    public RoundActionPhaseEnd? roundActionEnd;
+
+    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<MatchStateSyncPacket>(reader);
+}
+
+public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
+{
+    public MatchStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+
+    public void Send(MatchState roundState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
+    {
+        var packet = new MatchStateSyncPacket
+        {
+            matchState = roundState,
+            serverPhaseStartSeconds = NetworkTime.ServerNowSeconds,
+            roundActionEnd = roundActionEnd
+        };
+        RequestSend(packet);
     }
 
-    public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
+    protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)
     {
-        public MatchStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
-
-        public void Send(MatchState roundState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
-        {
-            var packet = new MatchStateSyncPacket
-            {
-                matchState = roundState,
-                serverPhaseStartSeconds = NetworkTime.ServerNowSeconds,
-                roundActionEnd = roundActionEnd
-            };
-            RequestSend(packet);
-        }
-
-        protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)
-        {
-            H.Arena.TransitionToState(packet);
-        }
+        H.Arena.TransitionToState(packet);
     }
 }

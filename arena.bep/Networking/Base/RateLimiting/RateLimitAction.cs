@@ -1,9 +1,8 @@
-namespace ifp.arena.bep.networking.Base.RateLimiting
+namespace ifp.arena.bep.networking.Base.RateLimiting;
+
+public enum RateLimitAction
 {
-    public enum RateLimitAction
-    {
-        Drop = 0,
-        Reject = 1,
-        Disconnect = 2
-    }
+    Drop = 0,
+    Reject = 1,
+    Disconnect = 2
 }

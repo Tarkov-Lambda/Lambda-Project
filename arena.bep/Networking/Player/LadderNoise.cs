@@ -9,49 +9,48 @@ using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
 
-namespace ifp.arena.bep.networking
-{
-    [MemoryPackable]
-    public partial struct LadderNoisePacket : INetSerializable
-    {
-        public int id;
-        public LadderMaterial ladderMaterial;
+namespace ifp.arena.bep.networking;
 
-        public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-        public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<LadderNoisePacket>(reader);
+[MemoryPackable]
+public partial struct LadderNoisePacket : INetSerializable
+{
+    public int id;
+    public LadderMaterial ladderMaterial;
+
+    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<LadderNoisePacket>(reader);
+}
+
+// I mean I could do this the tarkov way but who gives a fuck
+public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
+{
+    public void Send(LadderMaterial ladderMaterial)
+    {
+        RequestSend(new LadderNoisePacket
+        {
+            id = H.MainPlayer.Id,
+            ladderMaterial = ladderMaterial
+        });
     }
 
-    // I mean I could do this the tarkov way but who gives a fuck
-    public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
+    protected override void LocalPredictApproved(LadderNoisePacket packet)
     {
-        public void Send(LadderMaterial ladderMaterial)
-        {
-            RequestSend(new LadderNoisePacket
-            {
-                id = H.MainPlayer.Id,
-                ladderMaterial = ladderMaterial
-            });
-        }
+        MakeLadderNoise(H.MainPlayer, packet);
+    }
 
-        protected override void LocalPredictApproved(LadderNoisePacket packet)
-        {
-            MakeLadderNoise(H.MainPlayer, packet);
-        }
+    protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
+    {
+        Player player = H.GetPlayer(packet.id);
+        if (player.IsYourPlayer) return;
 
-        protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
-        {
-            Player player = H.GetPlayer(packet.id);
-            if (player.IsYourPlayer) return;
+        MakeLadderNoise(player, packet);
+    }
 
-            MakeLadderNoise(player, packet);
-        }
+    private void MakeLadderNoise(Player player, LadderNoisePacket packet)
+    {
+        Vector3 pos = player.PlayerBody.transform.position;
+        AudioClip[] audioClips = packet.ladderMaterial == LadderMaterial.Metal ? H.Sounds.LadderNoiseMetal : H.Sounds.LadderNoiseWood;
 
-        private void MakeLadderNoise(Player player, LadderNoisePacket packet)
-        {
-            Vector3 pos = player.PlayerBody.transform.position;
-            AudioClip[] audioClips = packet.ladderMaterial == LadderMaterial.Metal ? H.Sounds.LadderNoiseMetal : H.Sounds.LadderNoiseWood;
-
-            H.AudioHandler.PlayAtPoint(pos, audioClips.RandomElement());
-        }
+        H.AudioHandler.PlayAtPoint(pos, audioClips.RandomElement());
     }
 }

@@ -4,7 +4,6 @@ using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -18,15 +17,11 @@ using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
 using SPT.Reflection.Patching;
-using SteamAudio;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Reflection;
-using Audio.ReverbSubsystem;
 using UnityEngine;
 
 namespace ifp.arena.bep;
@@ -93,15 +88,14 @@ public class Plugin : BaseUnityPlugin
         InitConfiguration();
 
         // STEAM AUDIO
-        if (!SteamAudioInitializer._initialized) SteamAudioInitializer.Initialize();
+        SteamAudioInitializer.Initialize();
+
+        // AUDIO
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        RegisterPatch(new Patch_SpatialAudioSystem_method_29());                    // Proxy spatialBlend calls to PhononDSPBridge
+        // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                    // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force spatialize off to bypass MetaXR (if SteamAudioSource Exists on this AudioSource)
         RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_BetterSource_UpdateSourceVolume());              // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_MetaSpatialAudioSource_get_EnableReverb());      // Disable Reverb
-        // RegisterPatch(new Patch_AudioSource_set_volume());                       // Force volume to 1f
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
@@ -120,9 +114,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
 
-
-        RegisterPatch(new Patch_Player_ShotReactions());                            // Smooth Speed Tweak
-        RegisterPatch(new Patch_MovementContext_ManualUpdate());                    // Smooth Speed Tweak
+        RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
+        RegisterPatch(new Patch_MovementContext_ManualUpdate());                    // Something something old movement
         // RegisterPatch(new NostalgiaPatrolFixExitPatch());
         // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
         RegisterPatch(new Patch_MovementContext_GetNewState());                     // Change Movement State Classes
@@ -137,11 +130,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for death
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
 
-        // RegisterPatch(new Patch_BackendConfigSettingsClass_AimPunchMagnitude()); // Set aimpunch to 0
 
-        // RegisterPatch(new Patch_SearchableItemItemClass_IsSearched());           // Planting (PlaceItem)
-
-        // RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_PlaceItemTrigger()); // Planting (PlaceItem)
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Defusing (Tripwire)
 
 
@@ -166,7 +155,6 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
 
-        // RegisterPatch(new ObservedPlayer_CreateObservedPlayer_Transpiler());
         // RegisterPatch(new Patch_ObservedPlayer_HandleDamagePacket());
         // RegisterPatch(new ObservedPlayer_PauseAllEffectsOnPlayer_Patch());
         // RegisterPatch(new ObservedPlayer_UnpauseAllEffectsOnPlayer_Patch());
@@ -280,7 +268,7 @@ public class Plugin : BaseUnityPlugin
         {
             if (patch is IDisposable disposable)
                 disposable.Dispose();
-            
+
             patch.Disable();
         }
 
