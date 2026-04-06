@@ -12,8 +12,9 @@
 - Search and Destroy  
 - Respawning Mechanic  
 - Preemptive Server-Side Deaths  
+- Mid-Raid Spawning
 - Lootable Fake Corpses  
-- Molotovs  
+- Molotovs
 
 ### UI / UX
 - Buy Menu

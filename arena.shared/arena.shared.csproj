@@ -31,9 +31,11 @@
     <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
       <Private>False</Private>
     </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
+
+        <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
     </Reference>
+
     <Reference Include="..\deps\libraries\*.dll">
       <Private>False</Private>
     </Reference>
@@ -44,8 +46,7 @@
       <FilesToCopy Include="$(OutputPath)\*.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopy)" 
-          DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" 
-          ContinueOnError="true" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
+      ContinueOnError="true" />
   </Target>
 </Project>
