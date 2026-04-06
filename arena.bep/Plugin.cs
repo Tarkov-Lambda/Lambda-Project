@@ -23,6 +23,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.LowLevel;
 using UnityEngine.UI;
 
 namespace ifp.arena.bep;
@@ -82,8 +83,11 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<T>();
     }
 
-    async Task Start()
+    async void Start()
     {
+        PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+        PlayerLoopHelper.Initialize(ref playerLoop);
+
         Logger = base.Logger;
         Logger.LogInfo("Load");
         InitConfiguration();

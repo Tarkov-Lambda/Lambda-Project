@@ -88,9 +88,9 @@
       <Private>False</Private>
     </Reference>
 
-    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
+    <!-- <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
-    </Reference>
+    </Reference> -->
     <Reference Include="..\deps\libraries\*.dll">
       <Private>False</Private>
     </Reference>
@@ -122,12 +122,13 @@
 
 
     <ItemGroup>
-      <Dependencies Include="../deps/libraries/MemoryPack.Core.dll" />
+      <!-- <Dependencies Include="../deps/libraries/MemoryPack.Core.dll" />
       <Dependencies Include="../deps/libraries/System.Collections.Immutable.dll" />
-      <!-- <Dependencies Include="../deps/libraries/UniTask.dll" />
-      <Dependencies Include="../deps/libraries/UniTask.*.dll" /> -->
+      <Dependencies Include="../deps/libraries/UniTask.dll" />
+      <Dependencies Include="../deps/libraries/UniTask.*.dll" />
       <Dependencies Include="../deps/libraries/audioplugin_phonon.dll" />
-      <Dependencies Include="../deps/libraries/phonon.dll" />
+      <Dependencies Include="../deps/libraries/phonon.dll" /> -->
+      <Dependencies Include="../deps/libraries/*.dll" />
 
       <DebugDependencies Include="../deps/libraries/ScriptEngine.dll"
         Condition="'$(Configuration)' == 'Debug'" />
@@ -141,8 +142,6 @@
 
       <Configs Include="../deps/configs/*.cfg" />
       <JSON Include="../deps/configs/*.jsonc" />
-
-      <Bundles Include="../bundles/*" />
     </ItemGroup>
 
 
@@ -151,9 +150,6 @@
 
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
-
-    <Copy SourceFiles="@(Bundles)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\bundles" />
-
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
       Condition="'$(Configuration)' == 'Debug'" />
@@ -165,6 +161,7 @@
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
       <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\arena.bep.dll" />
       <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\arena.bep.pdb" />
+      <!-- <ReleaseConflicts Include="$(SPTPath)\BepInEx\plugins\ifp\tracer.dll" /> -->
     </ItemGroup>
 
     <Delete Files="@(ReleaseConflicts)" Condition="'$(Configuration)' == 'Release'" />
@@ -176,16 +173,33 @@
     <Delete Files="@(DebugConflicts)" Condition="'$(Configuration)' == 'Debug'" />
   </Target>
 
-  <!-- Make Release Zip -->
   <Target Name="CreateBuild" AfterTargets="DeleteConflictingLibraries"
     Condition="'$(Configuration)' == 'Release'">
+
     <PropertyGroup>
-      <BuildOutputDir>$(SPTPath)\BepInEx</BuildOutputDir>
       <ZipOutput>$(SolutionDir)builds\$(MSBuildProjectName).zip</ZipOutput>
+      <StagingDir>$(BaseIntermediateOutputPath)zip_staging</StagingDir>
     </PropertyGroup>
 
-    <ZipDirectory SourceDirectory="$(SPTPath)\BepInEx\plugins\ifp" DestinationFile="$(ZipOutput)"
+    <!-- Clean staging folder -->
+    <RemoveDir Directories="$(StagingDir)" />
+    <MakeDir Directories="$(StagingDir)\BepInEx\plugins\ifp" />
+
+    <!-- Copy plugin output -->
+    <ItemGroup>
+      <PluginFiles Include="$(SPTPath)\BepInEx\plugins\ifp\**\*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(PluginFiles)"
+      DestinationFiles="@(PluginFiles->'$(StagingDir)\BepInEx\plugins\ifp\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- Create zip from staging -->
+    <ZipDirectory
+      SourceDirectory="$(StagingDir)"
+      DestinationFile="$(ZipOutput)"
       Overwrite="true" />
+
   </Target>
 
 </Project>
