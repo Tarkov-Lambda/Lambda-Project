@@ -25,7 +25,7 @@
 - Round Result
 
 ### Audio
-- Steam Audio Integration  
+- Steam Audio Integration (Occlusion, Transmission, Distance Attentuation)
 
 ---
 
@@ -69,9 +69,10 @@ This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/lic
 
 ### Dependencies
 
-| Project        | License                                                                    |
-|----------------|----------------------------------------------------------------------------|
-| SPT.Modules    | [NCSA](https://dev.sp-tarkov.com/SPT/Modules/src/branch/master/LICENSE.md) |
-| LiteNetLib     | [MIT](https://github.com/RevenantX/LiteNetLib/blob/master/LICENSE.txt)     |
-| MemoryPack     | [MIT](https://github.com/Cysharp/MemoryPack/blob/main/LICENSE.txt)         |
-| UniTask        | [MIT](https://github.com/Cysharp/MemoryPack/blob/main/LICENSE.txt)         |
+| Project        | License                                                                                |
+|----------------|----------------------------------------------------------------------------------------|
+| SPT.Modules    | [NCSA](https://dev.sp-tarkov.com/SPT/Modules/src/branch/master/LICENSE.md)             |
+| Steam Audio    | [Apache 2.0](https://github.com/ValveSoftware/steam-audio/blob/master/LICENSE.md)      |
+| LiteNetLib     | [MIT](https://github.com/RevenantX/LiteNetLib/blob/master/LICENSE.txt)                 |
+| MemoryPack     | [MIT](https://github.com/Cysharp/MemoryPack/blob/main/LICENSE.txt)                     |
+| UniTask        | [MIT](https://github.com/Cysharp/MemoryPack/blob/main/LICENSE.txt)                     |
