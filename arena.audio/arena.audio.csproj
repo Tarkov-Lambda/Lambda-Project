@@ -20,7 +20,6 @@
 
 
   <ItemGroup>
-
     <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
       <Private>False</Private>
     </Reference>
@@ -52,10 +51,7 @@
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-    <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
 </Project>

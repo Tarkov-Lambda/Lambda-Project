@@ -32,7 +32,7 @@ public static class Debugging
         public static void LogArenaController(string msg) {}
         public static void LogTransaction(string msg) {}
         public static void LogInventory(string msg) {}
-        public static string Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { }
+        public static string Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { return ""; }
 #endif
 
     public static void LogError(string msg) => Plugin.Logger.LogError(msg);

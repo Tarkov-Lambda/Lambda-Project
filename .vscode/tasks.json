@@ -4,8 +4,7 @@
 		{
 			"type": "dotnet",
 			"task": "build -c Debug",
-			"problemMatcher": [],
-			"label": "dotnet: build",
+			"label": "Build Debug",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -13,6 +12,17 @@
 			"presentation": {
 				"reveal": "never",
 			}
-		}
+		},
+		{
+			"type": "dotnet",
+			"task": "build -c Release",
+			"label": "Build Release",
+			"group": {
+				"kind": "build",
+			},
+			"presentation": {
+				"reveal": "never",
+			}
+		},
 	]
 }
