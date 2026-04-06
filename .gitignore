@@ -1,3 +1,9 @@
+# syncthing stuff
+.sync-conflict*
+.stignore
+.stfolder
+
+# Builds
 .bin/
 .obj/
 bin/
@@ -5,10 +11,4 @@ obj/
 .vs/
 .vsconfig
 
-# syncthing stuff
-.sync-conflict*
-.stignore
-.stfolder
-
-audio/*
-arena.audio/content/*
+# Unfit for distribution

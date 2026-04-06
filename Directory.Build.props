@@ -1,0 +1,11 @@
+<Project>
+	<PropertyGroup>
+		<BaseOutputPath>$(ProjectDir).bin\</BaseOutputPath>
+		<BaseIntermediateOutputPath>$(ProjectDir).obj\</BaseIntermediateOutputPath>
+	</PropertyGroup>
+	
+    <PropertyGroup>
+        <SPTPath></SPTPath>
+        <UnityEditorPath></UnityEditorPath>
+    </PropertyGroup>
+</Project>
