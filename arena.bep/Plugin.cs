@@ -93,8 +93,8 @@ public class Plugin : BaseUnityPlugin
 
         // AUDIO
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                    // Proxy spatialBlend calls to PhononDSPBridge
-        RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force spatialize off to bypass MetaXR (if SteamAudioSource Exists on this AudioSource)
+        // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
+        RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
         RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
 
@@ -105,8 +105,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
         // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
-        RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation
-        RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation instances to players
+        RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
+        RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_CalculateCameraPosition()); // Reduce Bobbing/inertia motion for pistols
@@ -128,11 +128,10 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_CanPressTrigger());                                 // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
 
-        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for death
+        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for subsequent death packet
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
 
-
-        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Defusing (Tripwire)
+        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Looting Fake Corpses, Planting, Defusing
 
 
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
@@ -146,7 +145,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop());                          // Instant Weapon Unequip
         // RegisterPatch(new Patch_FirearmController_InitiateOperation());
-        RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Other players see you inspecting hands
+        RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Send Hands Examination Packet to other players
         //------------------------------------------ //
 
         UIPatches.Enable();
@@ -155,8 +154,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
         RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
-        RegisterPatch(new Patch_Button_set_enabled());                  // Allow clients to connect mid raid
-
+        RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
@@ -168,49 +166,49 @@ public class Plugin : BaseUnityPlugin
 
         //--------------- NETWORK --------------- //
         // Player
-        RegisterSingleton<PlayerKilledPacketHandler>();
-        RegisterSingleton<FactionChangePacketHandler>();
-        RegisterSingleton<SpawnItemPacketHandler>();
-        RegisterSingleton<HandsInspectPacketHandler>();
-        RegisterSingleton<BlindFirePacketHandler>();
-        RegisterSingleton<ReplenishPacketHandler>();
-        RegisterSingleton<BombAssignmentPacketHandler>();
-        RegisterSingleton<CustomGrenadeExplosionPacketHandler>();
-        RegisterSingleton<LadderNoisePacketHandler>();
-        RegisterSingleton<PopPacketHandler>();
+        RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
+        RegisterSingleton<FactionChangePacketHandler>();                            // Player swaps factions
+        RegisterSingleton<SpawnItemPacketHandler>();                                // Player asks to spawn an item
+        RegisterSingleton<HandsInspectPacketHandler>();                             // Hands Examination Packet
+        RegisterSingleton<BlindFirePacketHandler>();                                // Procedural blindfire state synchronization
+        RegisterSingleton<ReplenishPacketHandler>();                                // Player announcens a replenishment
+        RegisterSingleton<BombAssignmentPacketHandler>();                           // Server tells a specific player to equip a bomb
+        RegisterSingleton<CustomGrenadeExplosionPacketHandler>();                   // Explosion of a custom grenade
+        RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
+        RegisterSingleton<RemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
 
         // Session
-        RegisterSingleton<SessionInfoPacketHandler>();
-        RegisterSingleton<BombStatePacketHandler>();
-        RegisterSingleton<MatchStateSyncPacketHandler>();
-        RegisterSingleton<RestartPacketHandler>();
-        RegisterSingleton<AssetLoadStatePacketHandler>();
-        RegisterSingleton<AdminLoginPacketHandler>();
-        RegisterSingleton<TimeSyncRequestPacketHandler>();
-        RegisterSingleton<TimeSyncResponsePacketHandler>();
-        RegisterSingleton<PausePacketHandler>();
+        RegisterSingleton<SessionInfoPacketHandler>();                              // Server sends a snapshot of the entire session info (start of the match / on round end)
+        RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
+        RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
+        RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
+        RegisterSingleton<AssetLoadStatePacketHandler>();                           // Server Broadcasts a custom asset load (map, etc)
+        RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
+        RegisterSingleton<TimeSyncRequestPacketHandler>();                          // UTC Time Synchronization
+        RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
+        RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         //------------------------------------------ //
 
         // Internal Classses (order matters)
 
-        RegisterSingleton<MapAssetBundleHandler>();
-        RegisterSingleton<RagdollCreator>();
-        RegisterSingleton<ImmutableItemsCache>();
-        RegisterSingleton<PresetManager>();
+        RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
+        RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
+        RegisterSingleton<ImmutableItemsCache>();                                   // Caching gun presets
+        RegisterSingleton<PresetManager>();                                         // Collects
 
         try
         {
-            RegisterSingleton<FXHandler>();
-            RegisterSingleton<AudioHandler>();
-            RegisterSingleton<MusicHandler>();
+            RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
+            RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
+            RegisterSingleton<MusicHandler>();                                      // Listens to ArenaController and plays music when necessary
             // RegisterSingleton<RaymarchHandler>();
-            RegisterSingleton<UIManager>();
-            RegisterSingleton<ArenaController>();
-            RegisterSingleton<SpectatorManager>();
+            RegisterSingleton<UIManager>();                                         // ENTRY POINT FOR UI
+            RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT
+            RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
             var warmup = typeof(Ladder);
-            await RegisterSingletonInRaid<LadderEventManager>(); // this lifecycle needs refactor asap
-            await RegisterSingletonInRaid<BombHandler>();
+            await RegisterSingletonInRaid<LadderEventManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
+            await RegisterSingletonInRaid<BombHandler>();                           // Handler for entirety of Bomb's lifecycle
 
             SteamAudioSourceAttacher.Initialize();
         }
@@ -247,7 +245,7 @@ public class Plugin : BaseUnityPlugin
         }
         if (RestartKey.Value.IsDown())
         {
-            Singleton<RestartPacketHandler>.Instance.Send();
+            Singleton<SessionStartPacketHandler>.Instance.Send();
         }
     }
 

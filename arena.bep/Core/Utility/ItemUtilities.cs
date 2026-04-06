@@ -114,7 +114,7 @@ public static class ItemUtilities
 
     public static void ClientRequestPopItem(Item item)
     {
-        Singleton<PopPacketHandler>.Instance.Send(item);
+        Singleton<RemoveItemPacketHandler>.Instance.Send(item);
         // IU.TryPopItemWithoutRestriction(item, item.CurrentAddress, H.MainPlayer).Forget();
     }
 

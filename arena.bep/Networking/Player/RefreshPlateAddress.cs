@@ -30,7 +30,7 @@ public struct PopPacket : INetSerializable
     }
 }
 
-public class PopPacketHandler : PacketHandler<PopPacket>
+public class RemoveItemPacketHandler : PacketHandler<PopPacket>
 {
 
     protected override RateLimitConfig ServerRateLimit => new(
@@ -58,7 +58,6 @@ public class PopPacketHandler : PacketHandler<PopPacket>
     {
         IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.player).Forget();
     }
-
 
     protected override async void WhenApproved(PopPacket packet, NetPeer peer)
     {

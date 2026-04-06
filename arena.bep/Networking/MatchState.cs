@@ -25,11 +25,11 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
 {
     public MatchStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-    public void Send(MatchState roundState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
+    public void Send(MatchState matchState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
     {
         var packet = new MatchStateSyncPacket
         {
-            matchState = roundState,
+            matchState = matchState,
             serverPhaseStartSeconds = NetworkTime.ServerNowSeconds,
             roundActionEnd = roundActionEnd
         };

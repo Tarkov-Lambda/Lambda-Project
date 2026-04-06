@@ -23,9 +23,9 @@ public partial struct RestartPacket : INetSerializable
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
 // NOTE: We are sending a SessionInfoPacket that updates info right before this (a little redundant but whatever)
-public class RestartPacketHandler : PacketHandler<RestartPacket>
+public class SessionStartPacketHandler : PacketHandler<RestartPacket>
 {
-    public RestartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
     private void PrepareForRestart()
     {

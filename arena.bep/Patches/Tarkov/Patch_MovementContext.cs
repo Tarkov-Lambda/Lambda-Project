@@ -179,7 +179,6 @@ public class Patch_MovementContext_GetNewState : ModulePatch
     }
 }
 
-// ADS
 public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
@@ -191,7 +190,6 @@ public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
     }
 }
 
-// Leaning
 public class Patch_MovementContext_method_15 : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_15));
