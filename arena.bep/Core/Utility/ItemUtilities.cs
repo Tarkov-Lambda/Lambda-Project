@@ -95,6 +95,16 @@ public static class ItemUtilities
             }
         }
 
+        if (placement.Kind is not PlacementKind.ArmorPlate)
+        {
+            var addResult = placement.Address.Add(templateItem, true);
+            if (addResult.Failed)
+            {
+                D.Notify(addResult.Error_0);
+                return false;
+            }
+        }
+
         Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
         clonedItem.StackObjectsCount = 1;
         D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
@@ -294,14 +304,7 @@ public static class ItemUtilities
         {
             case PlacementKind.VestAddress:
             case PlacementKind.EquipmentSlot:
-                if (player.IsYourPlayer)
-                {
-                    player.InventoryController.AddAndRaiseEvents(item, placement.Address);
-                }
-                else
-                {
-                    placement.Address.Add(item, false);
-                }
+                placement.Address.Add(item, false);
                 break;
 
             case PlacementKind.ArmorPlate:

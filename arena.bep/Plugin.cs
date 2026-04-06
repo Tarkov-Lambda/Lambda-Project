@@ -23,6 +23,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ifp.arena.bep;
 
@@ -151,7 +152,12 @@ public class Plugin : BaseUnityPlugin
         UIPatches.Enable();
 
         //--------------- FIKA --------------- //
-        RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());      // Server-side preemptive death broadcasting
+        RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
+        RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
+        RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
+        RegisterPatch(new Patch_Button_set_enabled());                  // Allow clients to connect mid raid
+
+
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
 

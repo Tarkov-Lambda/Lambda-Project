@@ -30,27 +30,41 @@ public static class SteamAudioSourceAttacher
     public static async void Initialize()
     {
         List<ReverbSimpleSource> reverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
-        List<ReverbSimpleSource> playerReverbSimpleSources = new();
+        List<BetterSource> playerBetterSources = new();
 
         foreach (Player player in H.AllPlayers)
         {
-            if (player.IsYourPlayer) continue; // main player avoiding this is lowkey nicer
-            var playerAudioSources = player.gameObject.GetComponentsInChildren<ReverbSimpleSource>();
-            playerReverbSimpleSources.AddRange(playerAudioSources);
+            var playerAudioSources = player.gameObject.GetComponentsInChildren<BetterSource>();
+            playerBetterSources.AddRange(playerAudioSources);
         }
 
         FieldInfo _reverbSourceField = AccessTools.Field(typeof(ReverbSimpleSource), "_reverbSource");
 
         // Separate so I can do some shit later
-        foreach (ReverbSimpleSource reverbSimpleSource in playerReverbSimpleSources)
+        foreach (BetterSource betterSource in playerBetterSources)
         {
-            AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
+            Player player = betterSource.GetComponentInParent<Player>();
 
-            var source1Cache = GetOrAdd(reverbSimpleSource.source1);
-            var reverbCache = GetOrAdd(reverbSource);
+            var source1Cache = GetOrAdd(betterSource.source1);
+            if (player.IsYourPlayer) betterSource.source1.spatialBlend = 0f;
 
-            source1Cache.bridge.IsBypass = false;
-            reverbCache.bridge.IsBypass = false;
+            if (betterSource is ReverbSimpleSource reverbSimpleSource)
+            {
+                AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
+
+                var reverbCache = GetOrAdd(reverbSource);
+
+                if (player.IsYourPlayer) reverbCache.bridge.IsBypass = true;
+            }
+            else if (betterSource is ReverbSuperSource reverbSuperSource)
+            {
+                D.Log("is ReverbSuperSource");
+            }
+            else if (betterSource is SuperSource superSource)
+            {
+                D.Log("is superSource");
+            }
+
 
             // source1Cache.steam.distanceAttenuation = true;
             // reverbCache.steam.distanceAttenuation = true;

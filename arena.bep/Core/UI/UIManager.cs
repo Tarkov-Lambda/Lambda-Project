@@ -132,7 +132,12 @@ public class UIManager : Singleton<UIManager>, IDisposable
         bool win = data.winner == H.MainPlayerScore.faction;
         string mainTitle = win ? "ROUND WON" : "ROUND LOST";
 
-        string subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
+        string subTitle = "";
+
+        if(H.GetPlayer(data.mvpId) != null && data.mvpReason != null)
+        {
+            subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
+        }
 
         matchUIController.PopupMatchEnd.Pop(win, mainTitle, subTitle);
     }

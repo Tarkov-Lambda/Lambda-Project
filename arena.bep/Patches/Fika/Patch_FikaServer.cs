@@ -2,30 +2,32 @@
 using EFT;
 using EFT.HealthSystem;
 using Fika.Core.Main.Components;
+using Fika.Core.Main.GameMode;
 using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
+using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Packets.Player.Common;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using HarmonyLib;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using UnityEngine;
 
 namespace ifp.arena.bep.Patches
 {
-
     internal sealed class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     {
-        private static readonly AccessTools.FieldRef<FikaServer, CoopHandler> CoopHandlerRef = AccessTools.FieldRefAccess<FikaServer, CoopHandler>("_coopHandler");
 
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
 
         [PatchPostfix]
-        private static void Postfix(FikaServer __instance, CommonPlayerPacket packet, NetPeer peer)
+        private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
         {
             // D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
             if (packet.Type is ECommonSubPacketType.HealthSync)
@@ -43,10 +45,9 @@ namespace ifp.arena.bep.Patches
             if (packet.Type != ECommonSubPacketType.Damage) return;
             if (packet.SubPacket is not DamagePacket damage) return;
 
-            var coopHandler = CoopHandlerRef(__instance);
             int victimNetId = packet.NetId;
 
-            if (!coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
+            if (!____coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
 
             // D.Log(peer.Id.ToString());
             // D.Log(damage.ProfileId);
@@ -231,3 +232,86 @@ namespace ifp.arena.bep.Patches
         }
     }
 }
+
+
+// FRAGILE (complete function overwrite)
+internal sealed class Patch_FikaServer_OnNetworkReceiveUnconnected : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.OnNetworkReceiveUnconnected));
+
+    [PatchPrefix]
+    private static bool Prefix(FikaServer __instance, CoopHandler ____coopHandler, NetManager ____netServer, IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+    {
+        bool flag = false;
+        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && Singleton<IFikaGame>.Instance.GameController.RaidStarted)
+        {
+            flag = true;
+        }
+
+        string result;
+        if (messageType == UnconnectedMessageType.Broadcast)
+        {
+            D.Log("[SERVER] Received discovery request. Send discovery response");
+            NetDataWriter netDataWriter = new NetDataWriter();
+            netDataWriter.Put(1);
+            ____netServer.SendUnconnectedMessage(netDataWriter.AsReadOnlySpan(), remoteEndPoint);
+        }
+        else if (reader.TryGetString(out result))
+        {
+            NetDataWriter netDataWriter2 = new NetDataWriter();
+            string text = FikaBackendUtils.ServerGuid.ToString();
+            if (result == text)
+            {
+                bool flag2 = reader.GetBool();
+                // netDataWriter2.Put((flag && !flag2) ? "fika.inprogress" : "fika.hello");
+                netDataWriter2.Put("fika.hello");
+                ____netServer.SendUnconnectedMessage(netDataWriter2.AsReadOnlySpan(), remoteEndPoint);
+            }
+            else
+            {
+                D.LogError("PingingRequest::Data was not as expected: " + result);
+                netDataWriter2.Put("fika.reject");
+                ____netServer.SendUnconnectedMessage(netDataWriter2.AsReadOnlySpan(), remoteEndPoint);
+            }
+        }
+        else
+        {
+            D.LogError("PingingRequest: Could not parse string");
+        }
+
+        return false;
+    }
+}
+
+// FRAGILE (complete function overwrite)
+internal sealed class Patch_FikaServer_OnConnectionRequest : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.OnConnectionRequest));
+
+    [PatchPrefix]
+    private static bool Prefix(CoopHandler ____coopHandler, NetManager ____netServer, NetDataWriter ____dataWriter, ConnectionRequest request)
+    {
+        request.Accept();
+        return false;
+
+
+        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && Singleton<IFikaGame>.Instance.GameController.RaidStarted)
+        {
+            if (request.Data.GetString() == "fika.reconnect")
+            {
+                request.Accept();
+                return false;
+            }
+            ____dataWriter.Reset();
+            ____dataWriter.Put("Raid already started");
+            request.Reject(____dataWriter);
+
+            return false;
+        }
+
+        request.AcceptIfKey("fika.core");
+
+        return false;
+    }
+}
+
