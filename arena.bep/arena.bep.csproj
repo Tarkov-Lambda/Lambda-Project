@@ -8,6 +8,10 @@
     <DefineConstants>$(DefineConstants);SPT_4_0;STEAMAUDIO_ENABLED</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <Product>Lambda</Product>
+    <Version>0.0.1</Version>
+    <Description>Developed by ifp and tarkin</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@ using Comfort.Common;
 
 using ifp.arena.bep.Patches.Tarkov.UI.BattleStance;
 using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
+using EFT.UI;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI;
 
@@ -27,6 +28,10 @@ internal static class UIPatches
     internal static void Enable()
     {
         Disable();
+
+        RegisterAndEnable(new Patch_PreloaderUI_RefreshCornerLabel());
+        if (Singleton<PreloaderUI>.Instantiated)
+            Singleton<PreloaderUI>.Instance.method_6(); // PreloaderUI.RefreshCornerLabel();
 
         RegisterAndEnable(new Patch_CommonUI_Awake());
 
