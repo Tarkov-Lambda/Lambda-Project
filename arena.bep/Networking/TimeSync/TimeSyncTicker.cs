@@ -29,13 +29,13 @@ public class TimeSyncTicker : MonoBehaviour
 
         _nextSendLocalSeconds = now + IntervalSeconds;
 
-        if (!Singleton<TimeSyncRequestPacketHandler>.Instantiated)
+        if (!Singleton<TimeSynchronizationPacketHandler>.Instantiated)
             return;
 
         if (H.GameWorld == null)
             return;
 
-        Singleton<TimeSyncRequestPacketHandler>.Instance.Send();
+        Singleton<TimeSynchronizationPacketHandler>.Instance.Send();
     }
 
     private void OnDestroy()

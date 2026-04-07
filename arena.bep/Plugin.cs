@@ -167,8 +167,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
-        RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
-
+        // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 
         RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
@@ -182,8 +181,7 @@ public class Plugin : BaseUnityPlugin
 
         //--------------- NETWORK --------------- //
         // MemoryPack Custom Formats
-
-        RegisterMemoryPackFormatter(new PlayerFormatter());
+        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> int
 
         // Player
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
@@ -204,8 +202,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
         RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
-        RegisterSingleton<TimeSyncRequestPacketHandler>();                          // UTC Time Synchronization
-        RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
+        RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         //------------------------------------------ //
 

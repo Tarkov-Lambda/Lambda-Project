@@ -42,10 +42,9 @@ public static class EventBus
     public static Action<MatchState> OnEnd;
     public static Action<BombState> OnBombStateChange;
     public static Action<PlayerKilledPacket> OnPlayerKill;
-
     public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
-    public static Action<int> OnSelfMoneyChanged;
 
+    public static Action<int> OnSelfMoneyChanged;
     public static Action OnItemBuy;
 
     public static Action OnSelfRespawn;

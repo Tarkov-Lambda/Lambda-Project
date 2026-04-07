@@ -330,19 +330,14 @@ internal sealed class Patch_FikaServer_StopNatIntroduceRoutine : ModulePatch
 internal sealed class Patch_FikaServer_OnDestroy : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnDestroy");
-    static FieldInfo _ctsField = AccessTools.Field(typeof(FikaServer), "_cts");
 
     [PatchPrefix]
-    private static bool Prefix(FikaServer __instance)
+    private static bool Prefix(FikaServer __instance, CancellationTokenSource ____cts)
     {
-        // var _cts = _ctsField.GetValue(_instance) as CancellationTokenSource;
-
-        // if (_cts != null)
-        // {
-        //     _cts.Cancel();
-        // }
-
-        D.Log("FIKASERVER ON DESTROY");
+        if (____cts != null)
+        {
+            ____cts.Cancel();
+        }
 
         return true;
     }

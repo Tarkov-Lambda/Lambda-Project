@@ -8,7 +8,7 @@ using static EFT.Player;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct HandsInspectPacket : INetSerializable
+public partial struct HandsInspectPacket : INetSerializable, AuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }

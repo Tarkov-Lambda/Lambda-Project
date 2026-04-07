@@ -11,7 +11,7 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PlayerReadinessPacket : INetSerializable
+public partial struct PlayerReadinessPacket : INetSerializable, AuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }

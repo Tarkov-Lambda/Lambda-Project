@@ -60,7 +60,11 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     public void ManageFikaEvent(FikaEvent fikaEvent)
     {
-        D.Log($"Fika Event: {typeof(FikaEvent).Name}");
+        if (this is SessionInfoPacketHandler)
+        {
+            D.Log($"Fika Event: {fikaEvent.GetType().Name}");
+        }
+
         if (fikaEvent is FikaNetworkManagerCreatedEvent)
         {
             RegisterPacket();
@@ -75,10 +79,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     public async void RegisterPacket(GameWorld gWorld = default)
     {
-        D.Notify($"Trying to Register");
         if (H.FikaNet != null)
         {
-            D.Notify($"Registering {typeof(T).Name}");
+            D.Log($"Registering {typeof(T).Name}");
             if (FikaBackendUtils.IsServer)
             {
                 H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
@@ -154,11 +157,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (packet is AuthoredPacket authoredPacket)
         {
             if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
+            packet = (T)(object)authoredPacket;
         }
 
         if (packet is ServerTimestampedPacket serverTimestampedPacket && FikaBackendUtils.IsServer)
         {
             serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
+            packet = (T)(object)serverTimestampedPacket;
         }
 
         // targetPeer will never be local here
@@ -290,6 +295,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (packet is ServerTimestampedPacket serverTimestampedPacket)
         {
             serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
+            packet = (T)(object)serverTimestampedPacket;
         }
 
         return true;

@@ -8,17 +8,29 @@ using MemoryPack;
 namespace ifp.arena.bep.networking.TimeSync;
 
 [MemoryPackable]
-public partial struct TimeSyncRequestPacket : INetSerializable
+public partial struct TimeSynchronizationPacket : INetSerializable
 {
     public double clientSendLocalSeconds;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSyncRequestPacket>(reader);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSynchronizationPacket>(reader);
 }
 
-public class TimeSyncRequestPacketHandler : PacketHandler<TimeSyncRequestPacket>
+[MemoryPackable]
+public partial struct TimeSyncResponsePacket : INetSerializable
 {
-    public TimeSyncRequestPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
+    public int targetPeerId;
+    public double clientSendLocalSeconds;
+    public double serverSendSeconds;
+
+    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
+
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSyncResponsePacket>(reader);
+}
+
+public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>
+{
+    public TimeSynchronizationPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
 
     protected override RateLimitConfig ServerRateLimit => new(
         enabled: false,
@@ -29,14 +41,14 @@ public class TimeSyncRequestPacketHandler : PacketHandler<TimeSyncRequestPacket>
         stateTtlSeconds: 30,
         rejectCooldownSeconds: 0.5);
 
-    protected override bool ShouldBroadcastPacket(TimeSyncRequestPacket packet) => false;
+    protected override bool ShouldBroadcastPacket(TimeSynchronizationPacket packet) => false;
 
     public void Send()
     {
         if (FikaBackendUtils.IsServer)
             return;
 
-        var packet = new TimeSyncRequestPacket
+        var packet = new TimeSynchronizationPacket
         {
             clientSendLocalSeconds = NetworkTime.LocalNowSeconds
         };
@@ -44,7 +56,7 @@ public class TimeSyncRequestPacketHandler : PacketHandler<TimeSyncRequestPacket>
         RequestSend(packet);
     }
 
-    protected override void WhenApproved(TimeSyncRequestPacket packet, NetPeer netPeer)
+    protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer netPeer)
     {
         if (FikaBackendUtils.IsClient)
             return;

@@ -12,7 +12,7 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct FactionChangePacket : INetSerializable
+public partial struct FactionChangePacket : INetSerializable, AuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
@@ -40,7 +40,8 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
         if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
 
-        await UniTask.WaitUntil(() => CanChangeFaction(packet.faction));
+        if (!CanChangeFaction(packet.faction))
+            D.Notify("Can't change sides during active phase");
 
         RequestSend(packet);
     }
