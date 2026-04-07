@@ -16,18 +16,6 @@ public partial struct TimeSynchronizationPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSynchronizationPacket>(reader);
 }
 
-[MemoryPackable]
-public partial struct TimeSyncResponsePacket : INetSerializable
-{
-    public int targetPeerId;
-    public double clientSendLocalSeconds;
-    public double serverSendSeconds;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSyncResponsePacket>(reader);
-}
-
 public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>
 {
     public TimeSynchronizationPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }

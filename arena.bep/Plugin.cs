@@ -203,6 +203,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
         RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
         RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
+        RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         //------------------------------------------ //
 
@@ -284,8 +285,8 @@ public class Plugin : BaseUnityPlugin
 
         foreach (var patch in _patches)
         {
-            if (patch is IDisposable disposable)
-                disposable.Dispose();
+            if (patch is IDisposable disposablePatch)
+                disposablePatch.Dispose();
 
             patch.Disable();
         }

@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Comfort.Logs;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Fika.Core.Main.Utils;
@@ -52,72 +53,65 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         this.deliveryMethod = deliveryMethod;
         this.authority = authority;
 
+        Inititalize();
+    }
+
+    public virtual void Inititalize()
+    {
         OnFikaEvent += ManageFikaEvent;
-        H.OnNetworkManagerInitialized += RegisterPacket;
-        // Hot-reload
-        RegisterPacket();
+
+        if (H.isInRaid() && H.FikaNet != null) RegisterPacket();
+    }
+
+    public void Dispose()
+    {
+        OnFikaEvent -= ManageFikaEvent;
+
+        if (H.isInRaid() && H.FikaNet != null) UnregisterPacket();
+        Release(this);
     }
 
     public void ManageFikaEvent(FikaEvent fikaEvent)
     {
-        if (this is SessionInfoPacketHandler)
-        {
-            D.Log($"Fika Event: {fikaEvent.GetType().Name}");
-        }
+        if (this is SessionInfoPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
 
-        if (fikaEvent is FikaNetworkManagerCreatedEvent)
+        if (fikaEvent is FikaNetworkManagerCreatedEvent) RegisterPacket();
+        if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
+    }
+
+
+    public void RegisterPacket() => RegisterPacket(null);
+
+    public void RegisterPacket(GameWorld gWorld = null)
+    {
+        D.Log($"Registering {typeof(T).Name}");
+        if (FikaBackendUtils.IsServer)
         {
-            RegisterPacket();
+            H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
+            H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
         }
-        else if (fikaEvent is FikaNetworkManagerDestroyedEvent)
+        else
         {
-            UnregisterPacket();
+            H.FikaNet.RegisterPacket<T, NetPeer>(WhenClientReceivesPacket);
+            H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>(WhenClientReceivesRejection);
         }
     }
 
-    public async void RegisterPacket() => RegisterPacket(H.GameWorld);
+    public void UnregisterPacket() => UnregisterPacket(null);
 
-    public async void RegisterPacket(GameWorld gWorld = default)
+    private void UnregisterPacket(GameWorld gWorld = null)
     {
-        if (H.FikaNet != null)
-        {
-            D.Log($"Registering {typeof(T).Name}");
-            if (FikaBackendUtils.IsServer)
-            {
-                H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
-                H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
-            }
-            else
-            {
-                H.FikaNet.RegisterPacket<T, NetPeer>(WhenClientReceivesPacket);
-                H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>(WhenClientReceivesRejection);
-            }
-        }
-    }
-
-    public void UnregisterPacket()
-    {
-        D.Log($"Disposing {typeof(T).FullName}");
-
         try
         {
             _serverRateLimiter.Clear();
-
             if (H.NetPacketProcessor == null) return;
-
             H.NetPacketProcessor.RemoveSubscription<T>();
             H.NetPacketProcessor.RemoveSubscription<RejectedPacket<T>>();
         }
         catch (Exception ex)
         {
-            Plugin.Logger.LogWarning($"Safe dispose failed: {ex}");
+            Plugin.Logger.LogWarning($"ClearPacketSubscriptions failed: {ex}");
         }
-    }
-
-    public void Dispose()
-    {
-        UnregisterPacket();
-        Release(this);
     }
 
     // Admins have the same authority as the server
@@ -154,6 +148,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
         D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
+        // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency 
         if (packet is AuthoredPacket authoredPacket)
         {
             if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
@@ -186,6 +181,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
     {
+        if (this is HandsInspectPacketHandler)
+        {
+            D.Notify($"Inspecting");
+            D.Notify($"{netPeer.Id}");
+
+        }
+
         if (!TryPassServerRateLimit(packet, netPeer))
             return;
 
@@ -216,8 +218,10 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         WhenApproved(packet, netPeer);
     }
 
-    private async void WhenClientReceivesPacket(T packet, NetPeer netPeer)
+    private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
+        if (!H.isInRaid() || H.FikaNet == null) return;
+
         WhenApproved(packet, netPeer);
     }
 
@@ -286,10 +290,10 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (packet is AuthoredPacket authoredPacket)
         {
             // Anti-spoofing
-            if (authoredPacket.player.Id != netPeer.Id)
-            {
-                return false;
-            }
+            // if (authoredPacket.player.Id != netPeer.Id)
+            // {
+            //     return false;
+            // }
         }
 
         if (packet is ServerTimestampedPacket serverTimestampedPacket)
