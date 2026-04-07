@@ -65,9 +65,9 @@ namespace ifp.arena.shared
 
         // ── Effect handles ────────────────────────────────────────────────────
         private IntPtr _binaural = IntPtr.Zero;
-        private IntPtr _direct   = IntPtr.Zero;
-        private IntPtr _reflectionEffect  = IntPtr.Zero;
-        private IntPtr _ambiDecodeEffect  = IntPtr.Zero;
+        private IntPtr _direct = IntPtr.Zero;
+        private IntPtr _reflectionEffect = IntPtr.Zero;
+        private IntPtr _ambiDecodeEffect = IntPtr.Zero;
 
         // ── Native-allocated buffers for the reflection pipeline ──────────────
         // Allocated by iplAudioBufferAllocate; data pointer is stable after allocation.
@@ -78,9 +78,9 @@ namespace ifp.arena.shared
 
         // Reflection pipeline parameters (set once in InitEffects, read-only after that)
         private int _maxAmbiChannels = 4;  // (1+1)^2 for order 1
-        private int _irSize          = 0;
+        private int _irSize = 0;
         private int _nativeFrameSize = 0;  // frame size the native buffers were allocated for
-        private int _cachedMaxOrder  = 1;
+        private int _cachedMaxOrder = 1;
 
         // ── Component refs ────────────────────────────────────────────────────
         private AudioSource _src;
@@ -89,20 +89,20 @@ namespace ifp.arena.shared
 #endif
 
         // ── Per-frame data (game thread → audio thread, protected by _lock) ───
-        private PVec3  _dir      = new PVec3 { z = 1f };
-        private float  _distAtten   = 1f;
-        private float  _occlusion   = 1f;
-        private float  _transLow    = 0f;
-        private float  _transMid    = 0f;
-        private float  _transHigh   = 0f;
-        private bool   _applyTransmission = false;
-        private IntPtr _hrtf        = IntPtr.Zero;
+        private PVec3 _dir = new PVec3 { z = 1f };
+        private float _distAtten = 1f;
+        private float _occlusion = 1f;
+        private float _transLow = 0f;
+        private float _transMid = 0f;
+        private float _transHigh = 0f;
+        private bool _applyTransmission = false;
+        private IntPtr _hrtf = IntPtr.Zero;
 
         // Reflection per-frame cache
         private ReflectionEffectParams _cachedReflParams;
-        private bool                   _hasValidReflData = false;
-        private PCoordinateSpace3      _listenerCS;
-        private float                  _reflMixLevel = 1f;
+        private bool _hasValidReflData = false;
+        private PCoordinateSpace3 _listenerCS;
+        private float _reflMixLevel = 1f;
 
         private readonly object _lock = new object();
 
@@ -114,7 +114,7 @@ namespace ifp.arena.shared
 
         // ── Distance attenuation curve cache ──────────────────────────────────
         private AnimationCurve _cachedRolloffCurve;
-        private float          _lastMaxDist = -1f;
+        private float _lastMaxDist = -1f;
 
         // ── Inspector ─────────────────────────────────────────────────────────
         [Header("Spatial Blend")]
@@ -128,6 +128,8 @@ namespace ifp.arena.shared
         public bool IsBypass = false;
 
         private string _instanceId;
+
+        private IntPtr _cachedContext = IntPtr.Zero;
 
         private void LogV(string msg) { if (verboseLogging) Debug.Log($"[PhononDSPBridge:{_instanceId}] {msg}"); }
         private void LogW(string msg) { Debug.LogWarning($"[PhononDSPBridge:{_instanceId}] {msg}"); }
@@ -149,9 +151,9 @@ namespace ifp.arena.shared
 
             UnityEngine.AudioSettings.GetDSPBufferSize(out int bufSize, out _);
             int cap = bufSize * 2;
-            _monoIn  = new float[cap];
+            _monoIn = new float[cap];
             _monoOut = new float[cap];
-            _leftOut  = new float[cap];
+            _leftOut = new float[cap];
             _rightOut = new float[cap];
 
             // First attempt; will silently no-op if SteamAudioManager / HRTF not ready yet.
@@ -165,8 +167,8 @@ namespace ifp.arena.shared
             // quiesced by Unity before this point, but we lock anyway to be safe.
             lock (_lock)
             {
-                if (_binaural != IntPtr.Zero)         { iplBinauralEffectRelease(ref _binaural);        _binaural        = IntPtr.Zero; }
-                if (_direct   != IntPtr.Zero)         { iplDirectEffectRelease(ref _direct);            _direct          = IntPtr.Zero; }
+                if (_binaural != IntPtr.Zero) { iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero; }
+                if (_direct != IntPtr.Zero) { iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero; }
                 if (_reflectionEffect != IntPtr.Zero) { iplReflectionEffectRelease(ref _reflectionEffect); _reflectionEffect = IntPtr.Zero; }
                 if (_ambiDecodeEffect != IntPtr.Zero) { iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect); _ambiDecodeEffect = IntPtr.Zero; }
 
@@ -174,11 +176,10 @@ namespace ifp.arena.shared
                 {
                     _reflBufsAllocated = false;
 
-                    var ctx = SteamAudioManager.Context?.Get() ?? IntPtr.Zero;
-                    if (ctx != IntPtr.Zero)
+                    if (_cachedContext != IntPtr.Zero)
                     {
-                        if (_reflAmbiNative.data   != IntPtr.Zero) iplAudioBufferFree(ctx, ref _reflAmbiNative);
-                        if (_reflStereoNative.data != IntPtr.Zero) iplAudioBufferFree(ctx, ref _reflStereoNative);
+                        if (_reflAmbiNative.data != IntPtr.Zero) iplAudioBufferFree(_cachedContext, ref _reflAmbiNative);
+                        if (_reflStereoNative.data != IntPtr.Zero) iplAudioBufferFree(_cachedContext, ref _reflStereoNative);
                     }
                 }
             }
@@ -192,14 +193,14 @@ namespace ifp.arena.shared
         {
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Context == null) return;
 
-            IntPtr ctx  = SteamAudioManager.Context.Get();
+            IntPtr ctx = SteamAudioManager.Context.Get();
             IntPtr hrtf = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
             if (ctx == IntPtr.Zero || hrtf == IntPtr.Zero) return;
 
             int rate, frameSize;
 #if STEAMAUDIO_ENABLED
             var saAudio = SteamAudioManager.AudioSettings;
-            rate      = saAudio.samplingRate;
+            rate = saAudio.samplingRate;
             frameSize = saAudio.frameSize;
 #else
             rate = UnityEngine.AudioSettings.outputSampleRate;
@@ -245,18 +246,18 @@ namespace ifp.arena.shared
             var settings = SteamAudioSettings.Singleton;
             if (settings == null) return;
 
-            int maxOrder   = settings.realTimeAmbisonicOrder;
-            int ambiCh     = (maxOrder + 1) * (maxOrder + 1);
-            int irSz       = Mathf.Max(1, (int)(settings.realTimeDuration * rate));
-            int reflType   = (int)settings.reflectionEffectType;
+            int maxOrder = settings.realTimeAmbisonicOrder;
+            int ambiCh = (maxOrder + 1) * (maxOrder + 1);
+            int irSz = Mathf.Max(1, (int)(settings.realTimeDuration * rate));
+            int reflType = (int)settings.reflectionEffectType;
 
             if (_reflectionEffect == IntPtr.Zero)
             {
                 var reflS = new PReflectionEffectSettings
                 {
-                    type        = reflType,
+                    type = reflType,
                     numChannels = ambiCh,
-                    irSize      = irSz,
+                    irSize = irSz,
                 };
                 int r = iplReflectionEffectCreate(ctx, ref audio, ref reflS, out _reflectionEffect);
                 if (r != 0)
@@ -273,11 +274,11 @@ namespace ifp.arena.shared
                 {
                     speakerLayout = new PSpeakerLayout
                     {
-                        type       = 1, // IPL_SPEAKERLAYOUTTYPE_STEREO
+                        type = 1, // IPL_SPEAKERLAYOUTTYPE_STEREO
                         numSpeakers = 0,
-                        speakers   = IntPtr.Zero,
+                        speakers = IntPtr.Zero,
                     },
-                    hrtf     = hrtf,
+                    hrtf = hrtf,
                     maxOrder = maxOrder,
                 };
                 int r = iplAmbisonicsDecodeEffectCreate(ctx, ref audio, ref ambiS, out _ambiDecodeEffect);
@@ -293,17 +294,18 @@ namespace ifp.arena.shared
             if (!_reflBufsAllocated && _reflectionEffect != IntPtr.Zero && _ambiDecodeEffect != IntPtr.Zero)
             {
                 PAudioBuffer localAmbi, localStereo;
-                int r1 = iplAudioBufferAllocate(ctx, ambiCh,  frameSize, out localAmbi);
-                int r2 = iplAudioBufferAllocate(ctx, 2,        frameSize, out localStereo);
+                int r1 = iplAudioBufferAllocate(ctx, ambiCh, frameSize, out localAmbi);
+                int r2 = iplAudioBufferAllocate(ctx, 2, frameSize, out localStereo);
 
                 if (r1 == 0 && r2 == 0)
                 {
+                    _cachedContext = ctx;
                     // Store pipeline params before publishing the flag
-                    _cachedMaxOrder  = maxOrder;
+                    _cachedMaxOrder = maxOrder;
                     _maxAmbiChannels = ambiCh;
-                    _irSize          = irSz;
+                    _irSize = irSz;
                     _nativeFrameSize = frameSize;
-                    _reflAmbiNative  = localAmbi;
+                    _reflAmbiNative = localAmbi;
                     _reflStereoNative = localStereo;
 
                     // Publish: volatile write acts as a full memory fence.
@@ -360,14 +362,14 @@ namespace ifp.arena.shared
 
             // ── Occlusion / transmission / distance attenuation ───────────────
             bool shouldApplyDistAtten = true;
-            float occ  = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
-            bool  applyTrans = false;
+            float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
+            bool applyTrans = false;
 
             // ── Reflection data ───────────────────────────────────────────────
-            bool                   hasRefl    = false;
+            bool hasRefl = false;
             ReflectionEffectParams reflParams = default;
-            PCoordinateSpace3      listenerCS = default;
-            float                  reflMix    = 1f;
+            PCoordinateSpace3 listenerCS = default;
+            float reflMix = 1f;
 
 #if STEAMAUDIO_ENABLED
             if (_steamSrc != null)
@@ -378,8 +380,8 @@ namespace ifp.arena.shared
                 applyTrans = _steamSrc.transmission;
                 if (applyTrans)
                 {
-                    tLow  = Mathf.Clamp01(_steamSrc.transmissionLow);
-                    tMid  = Mathf.Clamp01(_steamSrc.transmissionMid);
+                    tLow = Mathf.Clamp01(_steamSrc.transmissionLow);
+                    tMid = Mathf.Clamp01(_steamSrc.transmissionMid);
                     tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
                 }
 
@@ -388,14 +390,14 @@ namespace ifp.arena.shared
                 {
                     try
                     {
-                        var outputs    = _steamSrc.GetOutputs(SimulationFlags.Reflections);
+                        var outputs = _steamSrc.GetOutputs(SimulationFlags.Reflections);
                         var saSettings = SteamAudioSettings.Singleton;
 
                         // Copy the IR handle + EQ from simulation; override bookkeeping fields.
-                        reflParams          = outputs.reflections;
-                        reflParams.type     = saSettings.reflectionEffectType;
+                        reflParams = outputs.reflections;
+                        reflParams.type = saSettings.reflectionEffectType;
                         reflParams.numChannels = _maxAmbiChannels;
-                        reflParams.irSize   = _irSize;
+                        reflParams.irSize = _irSize;
 
                         hasRefl = reflParams.ir != IntPtr.Zero;
                         reflMix = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
@@ -408,10 +410,10 @@ namespace ifp.arena.shared
 
                         listenerCS = new PCoordinateSpace3
                         {
-                            right  = new PVec3 { x =  lR.x, y =  lR.y, z = -lR.z },
-                            up     = new PVec3 { x =  lU.x, y =  lU.y, z = -lU.z },
-                            ahead  = new PVec3 { x =  lF.x, y =  lF.y, z = -lF.z },
-                            origin = new PVec3 { x =  lP.x, y =  lP.y, z = -lP.z },
+                            right = new PVec3 { x = lR.x, y = lR.y, z = -lR.z },
+                            up = new PVec3 { x = lU.x, y = lU.y, z = -lU.z },
+                            ahead = new PVec3 { x = lF.x, y = lF.y, z = -lF.z },
+                            origin = new PVec3 { x = lP.x, y = lP.y, z = -lP.z },
                         };
                     }
                     catch (Exception ex)
@@ -422,24 +424,24 @@ namespace ifp.arena.shared
             }
 #endif
 
-            float atten  = shouldApplyDistAtten ? CalculateDistanceAttenuation(dist) : 1f;
+            float atten = shouldApplyDistAtten ? CalculateDistanceAttenuation(dist) : 1f;
             IntPtr hrtfPtr = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
             lock (_lock)
             {
-                _dir              = new PVec3 { x = d.x, y = d.y, z = -d.z };
-                _distAtten        = atten;
-                _occlusion        = occ;
-                _transLow         = tLow;
-                _transMid         = tMid;
-                _transHigh        = tHigh;
+                _dir = new PVec3 { x = d.x, y = d.y, z = -d.z };
+                _distAtten = atten;
+                _occlusion = occ;
+                _transLow = tLow;
+                _transMid = tMid;
+                _transHigh = tHigh;
                 _applyTransmission = applyTrans;
-                _hrtf             = hrtfPtr;
+                _hrtf = hrtfPtr;
 
                 _hasValidReflData = hasRefl;
                 _cachedReflParams = reflParams;
-                _listenerCS       = listenerCS;
-                _reflMixLevel     = reflMix;
+                _listenerCS = listenerCS;
+                _reflMixLevel = reflMix;
             }
         }
 
@@ -462,31 +464,31 @@ namespace ifp.arena.shared
                 // Grow managed scratch buffers if Unity's DSP buffer expanded
                 if (n > _monoIn.Length)
                 {
-                    _monoIn  = new float[n];
+                    _monoIn = new float[n];
                     _monoOut = new float[n];
-                    _leftOut  = new float[n];
+                    _leftOut = new float[n];
                     _rightOut = new float[n];
                 }
 
-                float blend          = Mathf.Clamp01(spatialBlendOverride);
+                float blend = Mathf.Clamp01(spatialBlendOverride);
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
 
                 // Downmix stereo → mono with distance attenuation
                 for (int i = 0; i < n; i++)
                     _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
 
-                fixed (float* pIn   = _monoIn,
-                              pOut  = _monoOut,
+                fixed (float* pIn = _monoIn,
+                              pOut = _monoOut,
                               pLeft = _leftOut,
                               pRight = _rightOut)
                 {
                     // Build PAudioBuffer views over managed memory (no native allocation here)
-                    IntPtr* inPtrs  = stackalloc IntPtr[1]; inPtrs[0]  = (IntPtr)pIn;
+                    IntPtr* inPtrs = stackalloc IntPtr[1]; inPtrs[0] = (IntPtr)pIn;
                     IntPtr* outPtrs = stackalloc IntPtr[1]; outPtrs[0] = (IntPtr)pOut;
                     IntPtr* binPtrs = stackalloc IntPtr[2]; binPtrs[0] = (IntPtr)pLeft;
-                                                            binPtrs[1] = (IntPtr)pRight;
+                    binPtrs[1] = (IntPtr)pRight;
 
-                    var inBuf  = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)inPtrs };
+                    var inBuf = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)inPtrs };
                     var outBuf = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)outPtrs };
                     var binBuf = new PAudioBuffer { numChannels = 2, numSamples = n, data = (IntPtr)binPtrs };
 
@@ -498,17 +500,17 @@ namespace ifp.arena.shared
 
                         var dp = new PDirectEffectParams
                         {
-                            flags            = dflags,
+                            flags = dflags,
                             transmissionType = 1,          // FrequencyDependent
                             distanceAttenuation = 1f,
-                            airAbsorptionLow  = 1f,
-                            airAbsorptionMid  = 1f,
+                            airAbsorptionLow = 1f,
+                            airAbsorptionMid = 1f,
                             airAbsorptionHigh = 1f,
-                            directivity       = 1f,
-                            occlusion         = _occlusion,
-                            transmissionLow   = _transLow,
-                            transmissionMid   = _transMid,
-                            transmissionHigh  = _transHigh,
+                            directivity = 1f,
+                            occlusion = _occlusion,
+                            transmissionLow = _transLow,
+                            transmissionMid = _transMid,
+                            transmissionHigh = _transHigh,
                         };
                         iplDirectEffectApply(_direct, ref dp, ref inBuf, ref outBuf);
                     }
@@ -522,11 +524,11 @@ namespace ifp.arena.shared
                     {
                         var bp = new PBinauralEffectParams
                         {
-                            direction    = _dir,
+                            direction = _dir,
                             interpolation = 1,   // bilinear
                             spatialBlend = blend,
-                            hrtf         = _hrtf,
-                            peakDelays   = IntPtr.Zero,
+                            hrtf = _hrtf,
+                            peakDelays = IntPtr.Zero,
                         };
                         iplBinauralEffectApply(_binaural, ref bp, ref outBuf, ref binBuf);
                     }
@@ -535,7 +537,7 @@ namespace ifp.arena.shared
                         // No HRTF yet: pass-through to both channels
                         for (int i = 0; i < n; i++)
                         {
-                            _leftOut[i]  = _monoOut[i];
+                            _leftOut[i] = _monoOut[i];
                             _rightOut[i] = _monoOut[i];
                         }
                     }
@@ -544,14 +546,14 @@ namespace ifp.arena.shared
                     // Only when simulation has produced valid IR data and native
                     // buffers are allocated for the correct frame size.
                     bool doReflections =
-                        _hasValidReflData        &&
-                        _reflBufsAllocated       &&
-                        _reflectionEffect  != IntPtr.Zero &&
-                        _ambiDecodeEffect  != IntPtr.Zero &&
-                        _hrtf              != IntPtr.Zero &&
-                        n == _nativeFrameSize    &&
-                        _reflAmbiNative.data    != IntPtr.Zero &&
-                        _reflStereoNative.data  != IntPtr.Zero;
+                        _hasValidReflData &&
+                        _reflBufsAllocated &&
+                        _reflectionEffect != IntPtr.Zero &&
+                        _ambiDecodeEffect != IntPtr.Zero &&
+                        _hrtf != IntPtr.Zero &&
+                        n == _nativeFrameSize &&
+                        _reflAmbiNative.data != IntPtr.Zero &&
+                        _reflStereoNative.data != IntPtr.Zero;
 
                     if (doReflections)
                     {
@@ -567,10 +569,10 @@ namespace ifp.arena.shared
                         // 3b: Decode ambisonics → binaural stereo using HRTF
                         var ambiP = new PAmbisonicsDecodeEffectParams
                         {
-                            order       = _cachedMaxOrder,
-                            hrtf        = _hrtf,
+                            order = _cachedMaxOrder,
+                            hrtf = _hrtf,
                             orientation = _listenerCS,
-                            binaural    = 1, // IPL_TRUE: apply HRTF
+                            binaural = 1, // IPL_TRUE: apply HRTF
                         };
                         iplAmbisonicsDecodeEffectApply(
                             _ambiDecodeEffect,
@@ -580,13 +582,13 @@ namespace ifp.arena.shared
 
                         // 3c: Additively mix decoded reflections into the direct binaural output
                         float** reflChPtrs = (float**)_reflStereoNative.data.ToPointer();
-                        float*  reflL = reflChPtrs[0];
-                        float*  reflR = reflChPtrs[1];
-                        float   mix   = _reflMixLevel;
+                        float* reflL = reflChPtrs[0];
+                        float* reflR = reflChPtrs[1];
+                        float mix = _reflMixLevel;
 
                         for (int i = 0; i < n; i++)
                         {
-                            _leftOut[i]  += reflL[i] * mix;
+                            _leftOut[i] += reflL[i] * mix;
                             _rightOut[i] += reflR[i] * mix;
                         }
                     }
@@ -595,7 +597,7 @@ namespace ifp.arena.shared
                 // Write final stereo back to Unity's interleaved output buffer
                 for (int i = 0; i < n; i++)
                 {
-                    data[i * channels]     = _leftOut[i];
+                    data[i * channels] = _leftOut[i];
                     data[i * channels + 1] = _rightOut[i];
                 }
             }
@@ -632,7 +634,7 @@ namespace ifp.arena.shared
                     }
                 }
 
-                float norm   = dist / maxDist;
+                float norm = dist / maxDist;
                 float result = Mathf.Clamp01(_cachedRolloffCurve.Evaluate(norm));
                 LogV($"  Custom curve: Evaluate({norm:F3}) = {result:F3}");
                 return result;
@@ -700,11 +702,11 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PBinauralEffectParams
     {
-        public PVec3   direction;
-        public int     interpolation;
-        public float   spatialBlend;
-        public IntPtr  hrtf;
-        public IntPtr  peakDelays;
+        public PVec3 direction;
+        public int interpolation;
+        public float spatialBlend;
+        public IntPtr hrtf;
+        public IntPtr peakDelays;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -716,8 +718,8 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PDirectEffectParams
     {
-        public int   flags;
-        public int   transmissionType;
+        public int flags;
+        public int transmissionType;
         public float distanceAttenuation;
         public float airAbsorptionLow, airAbsorptionMid, airAbsorptionHigh;
         public float directivity;
@@ -738,8 +740,8 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PSpeakerLayout
     {
-        public int    type;        // IPLSpeakerLayoutType: 1 = Stereo
-        public int    numSpeakers; // 0 for standard layouts
+        public int type;        // IPLSpeakerLayoutType: 1 = Stereo
+        public int numSpeakers; // 0 for standard layouts
         public IntPtr speakers;    // nullptr for standard layouts
     }
 
@@ -749,7 +751,7 @@ namespace ifp.arena.shared
     {
         public PSpeakerLayout speakerLayout;
         public IntPtr hrtf;
-        public int    maxOrder;
+        public int maxOrder;
     }
 
     /// <summary>
@@ -769,17 +771,17 @@ namespace ifp.arena.shared
     [StructLayout(LayoutKind.Sequential)]
     internal struct PAmbisonicsDecodeEffectParams
     {
-        public int            order;
-        public IntPtr         hrtf;
+        public int order;
+        public IntPtr hrtf;
         public PCoordinateSpace3 orientation;
-        public int            binaural; // IPLBool: 0 = false, 1 = true
+        public int binaural; // IPLBool: 0 = false, 1 = true
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct PAudioBuffer
     {
-        public int    numChannels;
-        public int    numSamples;
+        public int numChannels;
+        public int numSamples;
         public IntPtr data; // float** — one float* per channel
     }
 }
