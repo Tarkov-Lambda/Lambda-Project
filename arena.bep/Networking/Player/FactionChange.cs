@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Fika.Core.Main.Utils;
@@ -25,11 +26,15 @@ public partial struct FactionChangePacket : INetSerializable, AuthoredPacket
 
 public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 {
-    bool CanChangeFaction(Faction faction)
+    public CancellationTokenSource _cts { get; private set; }
+
+    bool CanChangeFaction(PlayerScore playerScore, Faction faction)
     {
+        if (!playerScore.isAlive) return true;
+
         if (faction == Faction.Spectator) return true;
 
-        if (H.Session.matchState <= MatchState.RoundPrepare) return true;
+        if (H.Session.matchState < MatchState.RoundAction) return true;
 
         return false;
     }
@@ -40,21 +45,36 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
         if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
 
-        if (!CanChangeFaction(packet.faction))
-            D.Notify("Can't change sides during active phase");
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
 
-        RequestSend(packet);
+        try
+        {
+            if (!CanChangeFaction(H.MainPlayerScore, packet.faction))
+            {
+                D.Notify("You will change factions at the start of the next round.");
+                await UniTask.WaitUntil(() => CanChangeFaction(H.MainPlayerScore, packet.faction), cancellationToken: _cts.Token);
+            }
+
+            RequestSend(packet);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
     }
 
     protected override bool ServerValidation(ref FactionChangePacket packet, NetPeer netPeer)
     {
-        if (!CanChangeFaction(packet.faction)) return false;
+        if (!CanChangeFaction(H.GetPlayerScore(packet.player.Id), packet.faction)) return false;
 
         return base.ServerValidation(ref packet, netPeer);
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)
     {
+        if (packet.player.IsYourPlayer) _cts?.Cancel();
+
         H.GetPlayerScore(packet.player)?.faction = packet.faction;
     }
 }
