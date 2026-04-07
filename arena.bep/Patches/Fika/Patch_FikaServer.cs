@@ -17,6 +17,7 @@ using SPT.Reflection.Patching;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using UnityEngine;
 
 namespace ifp.arena.bep.Patches
@@ -314,4 +315,35 @@ internal sealed class Patch_FikaServer_OnConnectionRequest : ModulePatch
         return false;
     }
 }
+
+internal sealed class Patch_FikaServer_StopNatIntroduceRoutine : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.StopNatIntroduceRoutine));
+
+    [PatchPrefix]
+    private static bool Prefix()
+    {
+        return false;
+    }
+}
+
+internal sealed class Patch_FikaServer_OnDestroy : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.StopNatIntroduceRoutine));
+    static FieldInfo _ctsField = AccessTools.Field(typeof(FikaServer), "_cts");
+
+    [PatchPrefix]
+    private static bool Prefix(FikaServer _instance)
+    {
+        var _cts = _ctsField.GetValue(_instance) as CancellationTokenSource;
+
+        if (_cts != null)
+        {
+            _cts.Cancel();
+        }
+
+        return true;
+    }
+}
+
 

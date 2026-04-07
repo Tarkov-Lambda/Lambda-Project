@@ -26,79 +26,46 @@ internal class SteamSourceDict
 
 public static class SteamAudioSourceAttacher
 {
+    static FieldInfo _reverbSourceField = AccessTools.Field(typeof(ReverbSimpleSource), "_reverbSource");
 
     public static async void Initialize()
     {
-        List<ReverbSimpleSource> reverbSimpleSources = H.GameWorld?.gameObject.GetComponentsInChildren<ReverbSimpleSource>(true).ToList();
-        List<BetterSource> playerBetterSources = new();
+        List<BetterSource> betterSources = H.GameWorld?.gameObject.GetComponentsInChildren<BetterSource>(true).ToList();
 
         foreach (Player player in H.AllPlayers)
         {
-            var playerAudioSources = player.gameObject.GetComponentsInChildren<BetterSource>();
-            playerBetterSources.AddRange(playerAudioSources);
+            if (player.IsYourPlayer) continue;
+
+            foreach (BetterSource betterSource in player.gameObject.GetComponentsInChildren<BetterSource>())
+            {
+                AttachToBetterSource(betterSource);
+            }
         }
 
-        FieldInfo _reverbSourceField = AccessTools.Field(typeof(ReverbSimpleSource), "_reverbSource");
+        foreach (BetterSource betterSource in betterSources) AttachToBetterSource(betterSource);
+    }
 
-        // Separate so I can do some shit later
-        foreach (BetterSource betterSource in playerBetterSources)
-        {
-            Player player = betterSource.GetComponentInParent<Player>();
+    private static void AttachToBetterSource(BetterSource betterSource)
+    {
+        var source1Cache = GetOrAdd(betterSource.source1);
+        source1Cache.bridge.IsBypass = false;
 
-            var source1Cache = GetOrAdd(betterSource.source1);
-            if (player.IsYourPlayer) betterSource.source1.spatialBlend = 0f;
-
-            if (betterSource is ReverbSimpleSource reverbSimpleSource)
-            {
-                AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
-
-                var reverbCache = GetOrAdd(reverbSource);
-
-                if (player.IsYourPlayer) reverbCache.bridge.IsBypass = true;
-            }
-            else if (betterSource is ReverbSuperSource reverbSuperSource)
-            {
-                D.Log("is ReverbSuperSource");
-            }
-            else if (betterSource is SuperSource superSource)
-            {
-                D.Log("is superSource");
-            }
-
-
-            // source1Cache.steam.distanceAttenuation = true;
-            // reverbCache.steam.distanceAttenuation = true;
-            // MonoBehaviourSingleton<AudioSourceWorldDebug>.Instance.audioSources.Add(reverbSimpleSource.source1);
-        }
-
-        foreach (ReverbSimpleSource reverbSimpleSource in reverbSimpleSources)
+        if (betterSource is ReverbSimpleSource reverbSimpleSource)
         {
             AudioSource reverbSource = _reverbSourceField.GetValue(reverbSimpleSource) as AudioSource;
-
-            var source1Cache = GetOrAdd(reverbSimpleSource.source1);
             var reverbCache = GetOrAdd(reverbSource);
-
-            source1Cache.bridge.IsBypass = false;
             reverbCache.bridge.IsBypass = false;
         }
-
-
-        List<SuperSource> superSources = H.GameWorld?.gameObject.GetComponentsInChildren<SuperSource>(true).ToList();
-        foreach (SuperSource superSource in superSources)
+        else if (betterSource is SuperSource superSource)
         {
-            var source1Cache = GetOrAdd(superSource.source1);
             var source2Cache = GetOrAdd(superSource.source2);
-
-            source1Cache.bridge.IsBypass = false;
             source2Cache.bridge.IsBypass = false;
-
-            // source1Cache.steam.distanceAttenuation = true;
-            // source2Cache.steam.distanceAttenuation = true;
         }
     }
 
     private static SteamSourceData GetOrAdd(AudioSource audioSource)
     {
+        // Reinitialize on Hot Reload
         // if (SteamSourceDict.cache.ContainsKey(audioSource))
         // {
         //     Object.Destroy(SteamSourceDict.cache[audioSource].bridge);
@@ -135,10 +102,13 @@ public static class SteamAudioSourceAttacher
         steamAudio.transmissionMid = 0.4f;
         steamAudio.transmissionLow = 0.5f;
 
+        steamAudio.reflections = false;
+
+        // turn off internal spatializer
         audioSource.spatialize = false;
         var cachedSpatialBlend = audioSource.spatialBlend;
-        audioSource.spatialBlend = 0.1268321f; // forcing it to change
-        audioSource.spatialBlend = cachedSpatialBlend;
+        audioSource.spatialBlend = 0.1268321f;              // force the spatialBlend to change
+        audioSource.spatialBlend = cachedSpatialBlend;      // retrieve the cached real value, send it to PhononDSPBridge through the harmony patch
 
 
         return SteamSourceDict.cache[audioSource];

@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.ui", "arena.ui\arena.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tracer", "Tracer\tracer.csproj", "{E65527C3-98C5-0595-EEC8-6D3B95E8056A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.audio", "arena.audio\arena.audio.csproj", "{F2614763-D1AE-332B-D239-2C11361148E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "arena.audio\SteamAudioUnity.csproj", "{F2614763-D1AE-332B-D239-2C11361148E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

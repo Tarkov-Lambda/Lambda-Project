@@ -51,7 +51,13 @@
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <ItemGroup>
+      <FilesToCopy Include="$(OutputPath)\*.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <!-- <Copy SourceFiles="$(OutputPath)SteamAudioUnity.dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" /> -->
   </Target>
 </Project>

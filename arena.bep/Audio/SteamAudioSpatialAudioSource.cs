@@ -31,9 +31,9 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
     private bool _directSoundEnabled = true;
 
     /// <summary>
-    /// Phase 2 reflections mix level [0, 1].  Default 0.5 keeps the reverb present without
-    /// overwhelming direct sound.  Override via <see cref="ReverbSendDB"/> / <see cref="EarlyReflectionsSendDB"/>
-    /// or set directly if you want a fixed level regardless of preset.
+    /// Phase 2 reflections mix level [0, 10].  Default 0.5 keeps the reverb present without
+    /// overwhelming direct sound.  Override via <see cref="ReverbSendDB"/> /
+    /// <see cref="EarlyReflectionsSendDB"/> or set directly for a fixed level.
     /// </summary>
     private float _reflectionsMixLevelOverride = 0.5f;
 
@@ -101,7 +101,12 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
         {
             _enableReverb = value;
 #if STEAMAUDIO_ENABLED
-            if (_steamSource != null) _steamSource.reflections = false;
+            // Reflections are enabled/disabled by the phase system, not this flag.
+            // When false, keep reflections off; when true, respect current scene phase.
+            if (_steamSource != null && !value)
+                _steamSource.reflections = false;
+            else if (_steamSource != null && value && SteamAudioSceneTracker.IsSceneReady)
+                _steamSource.reflections = true;
 #endif
         }
     }
@@ -118,7 +123,7 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
         }
     }
 
-    /// <summary>Reverb send level in dB (-80 → 0). Mapped to Steam Audio's 0–1 reflectionsMixLevel.</summary>
+    /// <summary>Reverb send level in dB (-80 → 0). Mapped to Steam Audio's 0–10 reflectionsMixLevel.</summary>
     public override float ReverbSendDB
     {
         get => _reverbSendDB;
@@ -126,7 +131,7 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
         {
             _reverbSendDB = value;
 #if STEAMAUDIO_ENABLED
-            _reflectionsMixLevelOverride = Mathf.Clamp01((value + 80f) / 80f);
+            _reflectionsMixLevelOverride = Mathf.Clamp((value + 80f) / 80f, 0f, 10f);
             if (_steamSource != null) _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 #endif
         }
@@ -145,7 +150,7 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
             _earlyReflDB = value;
 #if STEAMAUDIO_ENABLED
             // Use the stronger of reverb/early-refl to drive Steam Audio's single mix level
-            _reflectionsMixLevelOverride = Mathf.Clamp01((Mathf.Max(_reverbSendDB, value) + 80f) / 80f);
+            _reflectionsMixLevelOverride = Mathf.Clamp((Mathf.Max(_reverbSendDB, value) + 80f) / 80f, 0f, 10f);
             if (_steamSource != null) _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 #endif
         }
@@ -272,12 +277,12 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
 
         // Simulation-only settings: binaural/DSP is handled by PhononDSPBridge, not
         // audioplugin_phonon, so we disable the Unity spatializer on this source.
-        _steamSource.directBinaural = false; // PhononDSPBridge does HRTF
-        _steamSource.distanceAttenuation = false;  // PhononDSPBridge does distance atten
+        _steamSource.directBinaural = false;     // PhononDSPBridge does HRTF
+        _steamSource.distanceAttenuation = false; // PhononDSPBridge does distance attenuation
         _steamSource.airAbsorption = false;
         _steamSource.directivity = false;
         _steamSource.directMixLevel = 1f;
-        _steamSource.reflectionsMixLevel = 1f;
+        _steamSource.reflectionsMixLevel = _reflectionsMixLevelOverride;
 
         if (SteamAudioSceneTracker.IsSceneReady)
         {
@@ -291,7 +296,7 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
             _steamSource.pathing = false;
         }
 
-        // ── PhononDSPBridge: drives the DSP (HRTF + occlusion/transmission).
+        // ── PhononDSPBridge: drives the DSP (HRTF + occlusion/transmission/reflections).
         // Its Awake() will set spatialize=false and spatialBlend=0 immediately.
         _phononDSPBridge = gameObject.GetOrAddComponent<PhononDSPBridge>();
 #endif
@@ -335,39 +340,45 @@ public class SteamAudioSpatialAudioSource : BaseSpatialAudioSource
     }
 
     /// <summary>
-    /// Applies the full Phase 2 simulation settings to the underlying
-    /// <see cref="SteamAudioSource"/>. Called from both <see cref="TryInit"/>
-    /// (when geometry is already available) and <see cref="UpgradeToPhase2"/>.
+    /// Applies the full Phase 2 simulation settings to the underlying <see cref="SteamAudioSource"/>.
+    /// Called from both <see cref="TryInit"/> (when geometry is already available)
+    /// and <see cref="UpgradeToPhase2"/>.
     /// </summary>
     private void ApplyPhase2Settings()
     {
 #if STEAMAUDIO_ENABLED
         if (_steamSource == null) return;
 
-        // ── Occlusion ─────────────────────────────────────────────────────
+        // ── Occlusion ─────────────────────────────────────────────────────────
         // Raycast: single shadow ray per source per sim frame – very cheap.
-        // Use OcclusionType.Volumetric + occlusionSamples > 1 for soft transitions
-        // through doorways / thin cover if needed later.
-        _steamSource.occlusion = true;
-        _steamSource.occlusionType = OcclusionType.Raycast;
+        // Switch to OcclusionType.Volumetric + occlusionSamples > 1 later for
+        // soft transitions through doorways / thin cover.
+        _steamSource.occlusion      = true;
+        _steamSource.occlusionType  = OcclusionType.Raycast;
         _steamSource.occlusionSamples = 1;
 
-        // ── Transmission ──────────────────────────────────────────────────
-        // FrequencyDependent: applies the material's per-band transmission EQ
-        // so different wall materials muffle differently (concrete vs wood etc.)
-        _steamSource.transmission = true;
-        _steamSource.transmissionType = TransmissionType.FrequencyDependent;
+        // ── Transmission ──────────────────────────────────────────────────────
+        // FrequencyDependent: applies the material's per-band EQ so different wall
+        // materials muffle differently (concrete vs wood, etc.)
+        _steamSource.transmission         = true;
+        _steamSource.transmissionType     = TransmissionType.FrequencyDependent;
         _steamSource.maxTransmissionSurfaces = 1; // penetrate at most 1 wall
 
-        // ── Reflections ───────────────────────────────────────────────────
-        // Real-time convolution IR computed by SteamAudioManager's reflection thread.
-        // HRTF-binauralised for immersive reverb.
-        _steamSource.reflections = false;
-        _steamSource.reflectionsType = ReflectionsType.Realtime;
-        _steamSource.applyHRTFToReflections = false;
-        _steamSource.reflectionsMixLevel = Mathf.Clamp01(_reflectionsMixLevelOverride);
+        // ── Reflections ───────────────────────────────────────────────────────
+        // Enable real-time convolution IR simulation so the simulator computes a
+        // room IR for this source.  PhononDSPBridge reads the IR each frame via
+        // SteamAudioSource.GetOutputs(SimulationFlags.Reflections) and applies:
+        //   ReflectionEffect (IR convolution) → AmbisonicsDecodeEffect (HRTF binaural)
+        // in its OnAudioFilterRead chain.  applyHRTFToReflections stays false so the
+        // Unity audio plugin does not double-process the output.
+        _steamSource.reflections            = true;
+        _steamSource.reflectionsType        = ReflectionsType.Realtime;
+        _steamSource.applyHRTFToReflections = false; // handled inside PhononDSPBridge
+        _steamSource.reflectionsMixLevel    = Mathf.Clamp(_reflectionsMixLevelOverride, 0f, 10f);
 
-        // Pathing requires pre-baked probe batches – leave disabled unless set externally.
+        // ── Pathing ───────────────────────────────────────────────────────────
+        // Requires pre-baked SteamAudioProbeBatch assets – leave disabled until
+        // probe baking is implemented for the loaded map.
         _steamSource.pathing = false;
 #endif
     }

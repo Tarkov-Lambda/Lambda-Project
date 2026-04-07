@@ -105,7 +105,7 @@
       <Private>False</Private>
     </ProjectReference>
 
-    <ProjectReference Include="..\arena.audio\arena.audio.csproj">
+    <ProjectReference Include="..\arena.audio\SteamAudioUnity.csproj">
       <Private>False</Private>
     </ProjectReference>
 
@@ -145,11 +145,19 @@
     </ItemGroup>
 
 
-    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" />
-    <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\" />
+    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue" />
 
-    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
-    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
+    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue" />
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
       Condition="'$(Configuration)' == 'Debug'" />

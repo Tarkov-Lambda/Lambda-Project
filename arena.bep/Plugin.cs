@@ -158,6 +158,9 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
         RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
+        RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
+        RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+
         RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
