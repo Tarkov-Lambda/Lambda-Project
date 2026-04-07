@@ -209,7 +209,14 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         matchUIController.TopBar.SetScores(scoreCT, scoreT);
 
-        matchUIController.Scoreboard.SetPlayers(GetAllPlayersStats(), H.Session.factionWins, H.MainPlayerScore.faction);
+        PlayerStats[] allPlayerStats = GetAllPlayersStats();
+
+        PlayerStats[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();  
+        PlayerStats[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();  
+
+        matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
+
+        matchUIController.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.faction);
 
         shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
     }

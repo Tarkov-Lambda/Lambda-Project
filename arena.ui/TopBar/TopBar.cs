@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using ifp.arena.shared;
+using ifp.arena.shared.Models;
 
 namespace arena.ui
 {
@@ -15,7 +16,11 @@ namespace arena.ui
 
         [SerializeField] private FactionColors factionColors;
 
-        void OnEnable()
+        [Space(10)]
+        [SerializeField] private TeamStatus teamStatusLeft;
+        [SerializeField] private TeamStatus teamStatusRight;
+
+        void Start()
         {
             teamScoreLeft.Color = factionColors.Get(Faction.CT);
             teamScoreRight.Color = factionColors.Get(Faction.T);
@@ -32,6 +37,12 @@ namespace arena.ui
             if (textTimer == null)
                 return;
             textTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
+        }
+
+        public void SetTeamStatuses(PlayerStats[] leftTeam, PlayerStats[] rightTeam)
+        {
+            teamStatusLeft.Set(leftTeam);
+            teamStatusRight.Set(rightTeam);
         }
 
         string FormatTime(float seconds)

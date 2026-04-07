@@ -11,6 +11,13 @@ namespace arena.ui
         [SerializeField] private float opacityWhenAlive;
         [SerializeField] private float opacityWhenDead;
 
+        public void SetColor(Color color)
+        {
+            return; // looks bad
+            iconPlayer.SetColorKeepGraphicAlpha(color);
+            iconDead.SetColorKeepGraphicAlpha(color);
+        }
+
         public void SetAlive()
         {
             iconPlayer.SetAlpha(opacityWhenAlive);
