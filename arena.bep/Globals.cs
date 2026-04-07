@@ -25,6 +25,8 @@ global using IItemRelatedView = GInterface179;
 
 global using CameraManager = CameraClass;
 
+global using EftScreenManager = CurrentScreenSingletonClass;
+
 // To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {

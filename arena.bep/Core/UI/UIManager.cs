@@ -3,6 +3,7 @@ using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
+using EFT.UI.Screens;
 using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Economy;
@@ -35,6 +36,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
     NameplateRenderer nameplateRenderer;
 
     EFTCameraHook cameraHook;
+
+    FactionSelectionScreen factionSelectionScreen;
 
     public Material MatteMaterial { get; private set; }
 
@@ -111,6 +114,12 @@ public class UIManager : Singleton<UIManager>, IDisposable
         GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
         nameplateRenderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
 
+        GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/FactionSelection/FactionSelection.prefab");
+        factionSelectionScreen = GameObject.Instantiate(prefabFactionSelection, commonUI.transform.GetChild(0)).AddComponent<FactionSelectionScreen>();
+        factionSelectionScreen.transform.SetSiblingIndex(1);
+        EftScreenManager.Instance.RegisterScreen(FactionSelectionScreen.FAKETYPE, factionSelectionScreen);
+        factionSelectionScreen.Close();
+
         MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
     }
 
@@ -122,9 +131,15 @@ public class UIManager : Singleton<UIManager>, IDisposable
 #if DEBUG
         if (Input.GetKeyDown(KeyCode.P))
         {
-            matchUIController.PopupMatchEnd.Pop(false, "ROUND LOSS", "pizdec");
+            ShowFactionSelectionScreen();
         }
 #endif
+    }
+    
+    void ShowFactionSelectionScreen()
+    {
+        FactionSelectionScreen.FactionSelectionScreenController screenController = new(Singleton<FactionChangePacketHandler>.Instance.Send);
+        screenController.ShowScreen(EScreenState.Temporary);
     }
 
     void OnRoundActionEnd(RoundActionPhaseEnd data)
@@ -256,6 +271,14 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
 
         cameraHook?.Dispose();
+
+        if (factionSelectionScreen != null)
+        {
+            if (EftScreenManager.Instance.CurrentBaseScreenController is FactionSelectionScreen.FactionSelectionScreenController)
+                EftScreenManager.Instance.CloseCurrentScreenForced();
+            EftScreenManager.Instance.ReleaseScreen(FactionSelectionScreen.FAKETYPE, factionSelectionScreen);
+            GameObject.Destroy(factionSelectionScreen.gameObject);
+        }
 
         if (matchUIController != null)
             GameObject.Destroy(matchUIController.gameObject);
