@@ -80,7 +80,7 @@ public static class ReplenishmentUtilities
             ReplenishMagazine(mag, ammo);
         }
 
-        int missing = 3 - mags.Count;
+        int missing = 3 - mags.Count();
         if (missing <= 0)
             return;
 

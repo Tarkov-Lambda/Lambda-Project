@@ -135,8 +135,7 @@ public class SessionInfo
 
     public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
     {
-        if (!H.isInRaid())
-            return new();
+        if (!H.isInRaid()) return new();
 
         return scoreboard.Values.Where(s => s.faction == faction).ToList();
     }
@@ -153,7 +152,7 @@ public class PlayerScore
 {
     public readonly Player player;
 
-    public Faction faction = Faction.None;
+    public Faction faction { get; private set; }
 
     // Round scope
     public int kills { get; private set; }
@@ -195,6 +194,13 @@ public class PlayerScore
             headshots++;
             roundHeadshots++;
         }
+    }
+
+    public void ChangeFaction(Faction faction)
+    {
+        this.faction = faction;
+        if (player == H.MainPlayer)
+            EventBus.OnSelfFactionChanged?.Invoke(faction);
     }
 
     public void AddDamage(int newDamage)

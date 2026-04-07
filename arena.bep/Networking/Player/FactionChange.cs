@@ -75,6 +75,6 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
     {
         if (packet.player.IsYourPlayer) _cts?.Cancel();
 
-        H.GetPlayerScore(packet.player)?.faction = packet.faction;
+        H.GetPlayerScore(packet.player)?.ChangeFaction(packet.faction);
     }
 }

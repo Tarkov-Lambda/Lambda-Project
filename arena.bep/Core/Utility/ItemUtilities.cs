@@ -274,7 +274,7 @@ public static class ItemUtilities
         var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
         if (slot.ContainedItem == null) return true;
 
-        List<MagazineItemClass> magsToThrow = null;
+        IEnumerable<MagazineItemClass> magsToThrow = null;
         if (slot.ContainedItem is Weapon oldWeapon)
         {
             string oldMagTemplateId = oldWeapon.GetCurrentMagazine()?.TemplateId;
@@ -304,7 +304,14 @@ public static class ItemUtilities
         {
             case PlacementKind.VestAddress:
             case PlacementKind.EquipmentSlot:
-                placement.Address.Add(item, false);
+                // if (player.IsYourPlayer)
+                // {
+                    player.InventoryController.AddAndRaiseEvents(item, placement.Address);
+                // }
+                // else
+                // {
+                //     placement.Address.Add(item, false);
+                // }
                 break;
 
             case PlacementKind.ArmorPlate:

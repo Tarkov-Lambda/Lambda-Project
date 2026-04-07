@@ -55,7 +55,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
                 if (!H.Scoreboard.ContainsKey(packet.player.Id))
                 {
                     H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
-                    H.GetPlayerScore(packet.player.Id).faction = Faction.Spectator;
+                    H.GetPlayerScore(packet.player.Id).ChangeFaction(Faction.Spectator);
                 }
 
                 Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.player);

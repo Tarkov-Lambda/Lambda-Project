@@ -6,6 +6,8 @@ using EFT.CameraControl;
 using System.Collections.Generic;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.shared;
+using System.Linq;
 
 namespace ifp.arena.bep.Core;
 
@@ -18,14 +20,24 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         EventBus.OnLateUpdate += onUpdate;
         EventBus.OnEnter += OnEnter;
+        EventBus.OnSelfFactionChanged += OnFactionChanged;
     }
 
     public void Dispose()
     {
         EventBus.OnLateUpdate -= onUpdate;
         EventBus.OnEnter -= OnEnter;
+        EventBus.OnSelfFactionChanged -= OnFactionChanged;
         StopSpectating();
         Release(this);
+    }
+
+    private void OnFactionChanged(Faction faction)
+    {
+        if (faction == Faction.Spectator)
+            SwitchSpectatePlayer();
+        else
+            StopSpectating();
     }
 
     private void OnEnter(MatchState matchState)
@@ -60,7 +72,12 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SwitchSpectatePlayer(bool next = true)
     {
-        var validPlayersToSpectate = H.AllTeammateScores;
+        List<PlayerScore> validPlayersToSpectate;
+
+        if (H.MainPlayerScore.faction == Faction.Spectator)
+        {
+            validPlayersToSpectate = H.Scoreboard.Values.Where(s => s.faction != Faction.Spectator).ToList();
+        } else validPlayersToSpectate = H.AllTeammateScores;
 
         if (validPlayersToSpectate.Count == 0)
         {

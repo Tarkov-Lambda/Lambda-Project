@@ -24,8 +24,8 @@ public static class PlayerUtilities
         return vestItems.Concat(pocketItems).OfType<T>();
     }
 
-    public static List<MagazineItemClass> GetMatchingMags(Player player, CompoundItem vest, string magTemplateId) =>
-    GetVestAndPocketGridItems<MagazineItemClass>(player, vest).Where(m => m.TemplateId == magTemplateId).ToList();
+    public static IEnumerable<MagazineItemClass> GetMatchingMags(Player player, CompoundItem vest, string magTemplateId) =>
+    GetVestAndPocketGridItems<MagazineItemClass>(player, vest).Where(m => m.TemplateId == magTemplateId);
 
     public static List<Weapon> GetPlayerWeapons(Player player)
     {
