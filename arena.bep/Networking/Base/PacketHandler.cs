@@ -150,6 +150,11 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
         D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
+        if (packet is INetSerializableAuthored authoredPacket)
+        {
+            if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
+        }
+
         // targetPeer will never be local here
         if (targetPeer != null)
         {
@@ -267,7 +272,15 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     /// <summary>returning false means the packet is rejected</summary>
     protected virtual bool ServerValidation(ref T packet, NetPeer netPeer)
     {
-        // packet.player = H.GetPlayer(netPeer.Id);   
+        if (packet is INetSerializableAuthored authoredPacket)
+        {
+            // Anti-spoofing
+            if (authoredPacket.player.Id != netPeer.Id)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 

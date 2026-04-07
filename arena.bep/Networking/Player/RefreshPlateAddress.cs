@@ -9,9 +9,10 @@ using ifp.arena.bep.networking.Base.RateLimiting;
 
 namespace ifp.arena.bep.networking;
 
-public struct PopPacket : INetSerializable
+public struct PopPacket : INetSerializableAuthored
 {
-    public Player player;
+    public Player player { get; set; }
+    
     public Item item;
     public ItemAddress itemAddress;
 

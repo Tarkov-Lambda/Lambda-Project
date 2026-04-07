@@ -1,4 +1,5 @@
-﻿using Fika.Core.Main.Utils;
+﻿using EFT;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -14,7 +15,8 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct PausePacket : INetSerializable
 {
-    public int id;
+    [MemoryPackAllowSerialize]
+    public Player player;
     public double serverPhaseStartSeconds;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
@@ -29,7 +31,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
     {
         var packet = new PausePacket
         {
-            id = H.MainPlayer.Id,
+            player = H.MainPlayer,
         };
 
         if (FikaBackendUtils.IsServer)

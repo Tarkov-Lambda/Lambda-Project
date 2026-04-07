@@ -92,6 +92,13 @@ public static class Helpers
         return playerScore;
     }
 
+    public static PlayerScore GetPlayerScore(Player player)
+    {
+        if (!isInRaid()) return null;
+        Arena.session.scoreboard.TryGetValue(player.Id, out var playerScore);
+        return playerScore;
+    }
+
     public static PlayerScore GetMainPlayerScore()
     {
         if (!isInRaid()) return null;

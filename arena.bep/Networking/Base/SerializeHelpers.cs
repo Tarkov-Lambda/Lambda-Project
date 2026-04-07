@@ -11,6 +11,10 @@ using UnityEngine;
 
 namespace ifp.arena.bep.networking;
 
+public interface INetSerializableAuthored : INetSerializable
+{
+    public Player player { get; set; }
+}
 
 public static class NetExtensions
 {

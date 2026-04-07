@@ -13,7 +13,9 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct PlayerReadinessPacket : INetSerializable
 {
-    public int playerId;
+    [MemoryPackAllowSerialize]
+    public Player player { get; set; }
+
     public PlayerReadinessState readyState;
     public int progress;
 
@@ -27,7 +29,6 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
     {
         var packet = new PlayerReadinessPacket
         {
-            playerId = H.MainPlayer.Id,
             readyState = readyState,
             progress = progress
         };
@@ -37,8 +38,8 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
-        PlayerScore playerScore = H.GetPlayerScore(packet.playerId);
-        if (playerScore == null) H.Scoreboard[packet.playerId] = new PlayerScore(packet.playerId);
+        PlayerScore playerScore = H.GetPlayerScore(packet.player);
+        if (playerScore == null) H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
 
         playerScore?.readyState = packet.readyState;
 
@@ -47,17 +48,16 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             // In case a player is reporting they are connected mid session (reconnects, new joins)
             if (H.Session?.matchState != MatchState.None && packet.readyState == PlayerReadinessState.Connected)
             {
-                Player player = H.GetPlayer(packet.playerId);
-                if (player == null) return;
+                if (packet.player == null) return;
 
-                if (!H.Scoreboard.ContainsKey(packet.playerId))
+                if (!H.Scoreboard.ContainsKey(packet.player.Id))
                 {
-                    H.Scoreboard[packet.playerId] = new PlayerScore(packet.playerId);
-                    H.GetPlayerScore(packet.playerId).faction = Faction.Spectator;
+                    H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
+                    H.GetPlayerScore(packet.player.Id).faction = Faction.Spectator;
                 }
 
-                Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(player);
-                Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(player);
+                Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.player);
+                Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.player);
             }
         }
         else

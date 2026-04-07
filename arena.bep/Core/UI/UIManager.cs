@@ -134,7 +134,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         string subTitle = "";
 
-        if(H.GetPlayer(data.mvpId) != null && data.mvpReason != null)
+        if (H.GetPlayer(data.mvpId) != null && data.mvpReason != null)
         {
             subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
         }
@@ -160,8 +160,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         try
         {
-            H.Scoreboard.TryGetValue(killPacket.killerId, out PlayerScore playerKiller);
-            H.Scoreboard.TryGetValue(killPacket.victimId, out PlayerScore playerVictim);
+            H.Scoreboard.TryGetValue(killPacket.killer.Id, out PlayerScore playerKiller);
+            H.Scoreboard.TryGetValue(killPacket.victim.Id, out PlayerScore playerVictim);
 
             string leftName = playerKiller?.player.Profile.Nickname;
             string rightName = playerVictim?.player.Profile.Nickname;

@@ -18,9 +18,15 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct PlayerKilledPacket : INetSerializable
 {
-    public int killerId;
-    public int victimId;
-    public int assistId;
+    [MemoryPackAllowSerialize]
+    public Player killer;
+    
+    [MemoryPackAllowSerialize]
+    public Player victim;
+
+    [MemoryPackAllowSerialize]
+    public Player assist;
+    
     public EDamageType damageType;
     public EBodyPartColliderType bodyPartCollider;
     public string weaponId;
@@ -51,61 +57,32 @@ public partial struct PlayerKilledPacket : INetSerializable
 
 public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
-    public void Send(DamageInfoStruct damage, int? victimId = null)
+    public void Send(DamageInfoStruct damage, Player victim = null)
     {
         int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
 
+        var killer = H.GetPlayer(killerId);
+
         var packet = new PlayerKilledPacket
         {
-            killerId = killerId,
-            victimId = H.MainPlayer.Id,
-            assistId = 12312345, // idk how to make this yet tbh
+            killer = killer,
+            victim = H.MainPlayer,
+            assist = null,
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
             weaponId = H.GetPlayer(killerId).HandsController.Item.TemplateId,
         };
 
-        if (victimId.HasValue) packet.victimId = victimId.Value;
-
-        RequestSend(packet);
-    }
-
-    public void Send(DamagePacket damage)
-    {
-        int victimId = damage.NetId;
-
-        int killerId = 0;
-        string weaponTemplateId = "";
-
-        if (damage.ProfileId.HasValue)
-        {
-            var killerPlayer = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId.Value.ToString());
-            if (killerPlayer != null)
-            {
-                killerId = killerPlayer.Id;
-                if (killerPlayer.HandsController?.Item != null)
-                    weaponTemplateId = killerPlayer.HandsController.Item.TemplateId;
-            }
-        }
-
-        var packet = new PlayerKilledPacket
-        {
-            killerId = killerId,
-            victimId = victimId,
-            assistId = 12312345,
-            damageType = damage.DamageType,
-            bodyPartCollider = damage.ColliderType,
-            weaponId = weaponTemplateId,
-        };
+        if (victim != null) packet.victim = victim;
 
         RequestSend(packet);
     }
 
     protected override void LocalPredictApproved(PlayerKilledPacket packet)
     {
-        PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
+        PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.isAlive) return;
-        PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
+        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
 
         victimScore.Kill();
 
@@ -121,9 +98,9 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
     protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
     {
-        PlayerScore victimScore = H.GetPlayerScore(packet.victimId);
+        PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.isAlive) return;
-        PlayerScore killerScore = H.GetPlayerScore(packet.killerId);
+        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
 
         victimScore.Kill();
 

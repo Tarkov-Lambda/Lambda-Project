@@ -50,8 +50,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
-    // private readonly List<MemoryPackFormatter<> _memoryPackFormatters = new();
-
+    private readonly List<IMemoryPackFormatter> _memoryPackFormatters = new();
 
     private CancellationTokenSource _cts;
 
@@ -59,6 +58,14 @@ public class Plugin : BaseUnityPlugin
     {
         patch.Enable();
         _patches.Add(patch);
+    }
+
+    private void RegisterMemoryPackFormatter<T>(IMemoryPackFormatter<T> formatter)
+    {
+        if (!MemoryPackFormatterProvider.IsRegistered<T>())
+        {
+            MemoryPackFormatterProvider.Register<T>(formatter as MemoryPackFormatter<T>);
+        }
     }
 
     public void RegisterSingleton<T>() where T : class, IDisposable, new()
@@ -109,7 +116,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
         // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
-        RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
+        // RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
@@ -175,10 +182,8 @@ public class Plugin : BaseUnityPlugin
 
         //--------------- NETWORK --------------- //
         // MemoryPack Custom Formats
-        if (MemoryPackFormatterProvider.IsRegistered<PlayerFormatter>() == false)
-        {
-            MemoryPackFormatterProvider.Register(new PlayerFormatter());
-        }
+
+        RegisterMemoryPackFormatter(new PlayerFormatter());
 
         // Player
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)

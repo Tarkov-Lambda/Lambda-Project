@@ -13,9 +13,11 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombStatePacket : INetSerializable
+public partial struct BombStatePacket : INetSerializableAuthored
 {
-    public int playerId;
+    [MemoryPackAllowSerialize]
+    public Player player { get; set; }
+
     public BombState state;
     // Vector3 is stored as three floats so MemoryPack can serialize it natively.
     public float posX, posY, posZ;
@@ -39,7 +41,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         var packet = new BombStatePacket
         {
-            playerId = player.Id,
+            player = player,
             state = state,
             timestamp = NetworkTime.ServerNowSeconds
         };
@@ -70,15 +72,14 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         H.Session.bombState = packet.state;
 
-        Player player = H.GetPlayer(packet.playerId);
-        if (!player.IsYourPlayer)
+        if (!packet.player.IsYourPlayer)
         {
             H.BombHandler.PlayBombAudio(packet);
         }
 
         if (packet.state is BombState.Planted)
         {
-            H.Arena.LastObjectivePlayerId = packet.playerId;
+            H.Arena.LastObjectivePlayerId = packet.player.Id;
             foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
                 bombPlantZone.GetComponent<BoxCollider>().enabled = false;
@@ -90,8 +91,8 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         if (packet.state is BombState.Defused or BombState.Exploded)
         {
             H.Arena.LastObjectiveBombState = packet.state;
-            if (packet.playerId > 0)
-                H.Arena.LastObjectivePlayerId = packet.playerId;
+            if (packet.player.Id > 0)
+                H.Arena.LastObjectivePlayerId = packet.player.Id;
         }
 
         H.BombHandler.SetBombVisuals(packet);

@@ -1,5 +1,6 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
+using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -13,7 +14,9 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct FactionChangePacket : INetSerializable
 {
-    public int id;
+    [MemoryPackAllowSerialize]
+    public Player player { get; set; }
+    
     public Faction faction;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
@@ -35,7 +38,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
     {
         var packet = new FactionChangePacket
         {
-            id = H.GameWorld.MainPlayer.Id,
+            player = H.MainPlayer,
             faction = faction
         };
 
@@ -49,15 +52,12 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
     protected override bool ServerValidation(ref FactionChangePacket packet, NetPeer netPeer)
     {
         if (!CanChangeFaction(packet.faction)) return false;
-        
+
         return base.ServerValidation(ref packet, netPeer);
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)
     {
-        if (H.Scoreboard[packet.id] != null)
-        {
-            H.Scoreboard[packet.id].faction = packet.faction;
-        }
+        H.GetPlayerScore(packet.player)?.faction = packet.faction;
     }
 }

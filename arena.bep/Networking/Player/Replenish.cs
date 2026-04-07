@@ -1,3 +1,4 @@
+using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
@@ -7,9 +8,10 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct ReplenishPacket : INetSerializable
+public partial struct ReplenishPacket : INetSerializableAuthored
 {
-    public int id;
+    [MemoryPackAllowSerialize]
+    public Player player { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<ReplenishPacket>(reader);
@@ -21,7 +23,7 @@ public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
     {
         var packet = new ReplenishPacket
         {
-            id = H.MainPlayer.Id,
+            player = H.MainPlayer,
         };
 
         RequestSend(packet);
@@ -29,6 +31,6 @@ public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
 
     protected override void WhenApproved(ReplenishPacket packet, NetPeer peer)
     {
-        RU.Replenish(H.GetPlayer(packet.id));
+        RU.Replenish(packet.player);
     }
 }

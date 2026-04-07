@@ -69,7 +69,6 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void PlayBombAudio(BombStatePacket packet)
     {
-        Player player = H.GetPlayer(packet.playerId);
 
         Vector3 pos = Vector3.zero;
         AudioClip clip = null;
@@ -81,11 +80,11 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                 CancelBombAudio();
                 break;
             case BombState.Planting:
-                pos = player.PlayerBody.transform.position;
+                pos = packet.player.PlayerBody.transform.position;
                 clip = H.Sounds.Planting;
                 break;
             case BombState.Defusing:
-                pos = player.PlayerBody.transform.position;
+                pos = packet.player.PlayerBody.transform.position;
                 clip = H.Sounds.Defusing;
                 break;
             case BombState.Defused:

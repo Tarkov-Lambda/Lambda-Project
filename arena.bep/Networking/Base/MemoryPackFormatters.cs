@@ -1,14 +1,6 @@
-﻿using System;
-using EFT;
-using EFT.InventoryLogic;
-using Fika.Core.Networking;
+﻿using EFT;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using Fika.Core.Networking.Pooling;
-using ifp.arena.bep.Core;
 using MemoryPack;
-using Newtonsoft.Json;
-using UnityEngine;
-
 
 namespace ifp.arena.bep.networking;
 
@@ -29,7 +21,7 @@ public static class MemoryPackHelper
 }
 
 
-public sealed class PlayerFormatter : MemoryPackFormatter<Player>
+public class PlayerFormatter : MemoryPackFormatter<Player>
 {
     public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref Player value)
     {
@@ -39,19 +31,19 @@ public sealed class PlayerFormatter : MemoryPackFormatter<Player>
             return;
         }
 
-        writer.WriteVarInt(value.Id);
+        writer.WriteObjectHeader(1);
+        writer.WriteUnmanaged(value.Id);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Player value)
     {
-        if (reader.PeekIsNull())
+        if (!reader.TryReadObjectHeader(out var count))
         {
-            reader.Advance(1);
             value = null;
             return;
         }
 
-        var id = reader.ReadVarIntInt32();
+        int id = reader.ReadUnmanaged<int>();
         value = H.GetPlayer(id);
     }
 }

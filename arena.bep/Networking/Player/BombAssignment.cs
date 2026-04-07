@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -10,9 +11,10 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombAssignmentPacket : INetSerializable
+public partial struct BombAssignmentPacket : INetSerializableAuthored
 {
-    public int playerId;
+    [MemoryPackAllowSerialize]
+    public Player player { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombAssignmentPacket>(reader);
@@ -30,10 +32,10 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
 
             var packet = new BombAssignmentPacket
             {
-                playerId = randomTerrorist.Id,
+                player = randomTerrorist,
             };
 
-            RequestSendToPlayer(packet, packet.playerId);
+            RequestSendToPlayer(packet, packet.player.Id);
         }
     }
 

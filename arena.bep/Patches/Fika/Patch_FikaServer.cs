@@ -200,7 +200,7 @@ namespace ifp.arena.bep.Patches
             D.Dump(chestHP);
             if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim.Id); // Client dies
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim); // Client dies
             }
 
             float current2 = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;

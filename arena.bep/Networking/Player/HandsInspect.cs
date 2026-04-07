@@ -1,3 +1,4 @@
+using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.networking.Base;
@@ -9,7 +10,8 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct HandsInspectPacket : INetSerializable
 {
-    public int id;
+    [MemoryPackAllowSerialize]
+    public Player player { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<HandsInspectPacket>(reader);
@@ -17,21 +19,20 @@ public partial struct HandsInspectPacket : INetSerializable
 
 public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
 {
-    public void Send(int id)
+    public void Send()
     {
         var packet = new HandsInspectPacket
         {
-            id = id
+            player = H.MainPlayer
         };
         RequestSend(packet);
     }
 
     protected override void WhenApproved(HandsInspectPacket packet, NetPeer peer)
     {
-        var player = H.GetPlayer(packet.id);
-        if (player.IsYourPlayer) return;
+        if (packet.player.IsYourPlayer) return;
 
-        if (player.HandsController is EmptyHandsController emptyHands)
+        if (packet.player.HandsController is EmptyHandsController emptyHands)
         {
             emptyHands.ExamineWeapon();
         }

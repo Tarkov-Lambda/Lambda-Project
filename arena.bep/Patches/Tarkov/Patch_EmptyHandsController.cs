@@ -21,7 +21,7 @@ namespace ifp.arena.bep.Patches.Tarkov;
 
             if (player.IsYourPlayer)
             {
-                Singleton<HandsInspectPacketHandler>.Instance.Send(player.Id);
+                Singleton<HandsInspectPacketHandler>.Instance.Send();
             }
         }
     }
