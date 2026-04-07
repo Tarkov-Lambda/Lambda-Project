@@ -69,7 +69,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
         // Report back to the server that the map is loaded
-        Singleton<PlayerReadinessPacketHandler>.Instance.Send(true, 100);
+        Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready, 100);
 
         switch (H.Session.currentGameMode)
         {

@@ -1,37 +1,53 @@
 ﻿using Fika.Core.Main.Components;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
+using Fika.Core.Networking.Packets.Backend;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using SPT.Reflection.Patching;
+using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches
+namespace ifp.arena.bep.Patches;
+
+internal class Patch_FikaClient_OnCommonPlayerPacketReceived : ModulePatch
 {
-    internal class Patch_FikaClient_OnCommonPlayerPacketReceived : ModulePatch
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaClient), "OnCommonPlayerPacketReceived");
+
+    [PatchPrefix]
+    static bool Prefix(CoopHandler ____coopHandler, CommonPlayerPacket packet)
     {
-        protected override MethodBase GetTargetMethod()
+        D.Notify(packet.SubPacket.ToString());
+        // if (____coopHandler.Players.TryGetValue(packet.NetId, out var playerToApply))
+        // {
+        //     if (packet.Type == ECommonSubPacketType.Damage)
+        //     {
+        //         Plugin.Logger.LogInfo(packet.SubPacket);
+        //     }
+        //     packet.Execute(playerToApply);
+        // }
+
+        return true;
+    }
+}
+
+internal class Patch_FikaClient_OnNetworkSettingsPacketReceived : ModulePatch
+{
+    public static event Action OnNetworkManagerInitialized;
+
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(NetManagerUtils), nameof(NetManagerUtils.CreateNetManager));
+
+    [PatchPostfix]
+    static void Postfix(bool isServer)
+    {
+        if (!isServer)
         {
-            return AccessTools.Method(typeof(FikaClient), "OnCommonPlayerPacketReceived");
-        }
-
-
-        [PatchPrefix]
-        static bool Prefix(CoopHandler ____coopHandler, CommonPlayerPacket packet)
-        {
-            D.Notify(packet.SubPacket.ToString());
-            // if (____coopHandler.Players.TryGetValue(packet.NetId, out var playerToApply))
-            // {
-            //     if (packet.Type == ECommonSubPacketType.Damage)
-            //     {
-            //         Plugin.Logger.LogInfo(packet.SubPacket);
-            //     }
-            //     packet.Execute(playerToApply);
-            // }
-
-            return true;
+            // OnNetworkManagerInitialized.Invoke();
         }
     }
 }
+
+
+

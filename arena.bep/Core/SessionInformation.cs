@@ -142,6 +142,13 @@ public class SessionInfo
     }
 }
 
+public enum PlayerReadinessState
+{
+    Disconnected,
+    Connected,
+    Ready
+}
+
 public class PlayerScore
 {
     public readonly Player player;
@@ -163,10 +170,10 @@ public class PlayerScore
     public int roundHeadshots { get; private set; }
 
     public bool isAlive { get; private set; }
-    public int money { get; private set; } = 0;
+    public int money { get; private set; }
 
     // meta gaming (previously known as facebook gaming)
-    public bool isMapReady;
+    public PlayerReadinessState readyState;
     public int ping;
     public bool IsAdmin;
 
@@ -240,7 +247,7 @@ public class PlayerScore
         deaths = packet.deaths;
         money = packet.money;
         isAlive = packet.isAlive;
-        isMapReady = packet.isReady;
+        readyState = packet.readyState;
 
         roundKills = packet.roundKills;
         roundHeadshots = packet.roundHeadshots;

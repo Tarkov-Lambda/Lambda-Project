@@ -21,7 +21,6 @@ public partial struct LadderNoisePacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<LadderNoisePacket>(reader);
 }
 
-// I mean I could do this the tarkov way but who gives a fuck
 public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
 {
     public void Send(LadderMaterial ladderMaterial)
@@ -54,3 +53,4 @@ public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
         H.AudioHandler.PlayAtPoint(pos, audioClips.RandomElement());
     }
 }
+

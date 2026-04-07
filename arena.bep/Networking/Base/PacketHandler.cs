@@ -1,10 +1,9 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
-using Fika.Core.Modding;
 using Fika.Core.Modding.Events;
+using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.networking.Base.RateLimiting;
@@ -53,27 +52,32 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         this.authority = authority;
 
         OnFikaEvent += ManageFikaEvent;
+        H.OnNetworkManagerInitialized += RegisterPacket;
         // Hot-reload
         RegisterPacket();
     }
 
     public void ManageFikaEvent(FikaEvent fikaEvent)
     {
-        if (fikaEvent is FikaNetworkManagerCreatedEvent fikaNetworkManagerCreatedEvent)
+        D.Log($"Fika Event: {typeof(FikaEvent).Name}");
+        if (fikaEvent is FikaNetworkManagerCreatedEvent)
         {
             RegisterPacket();
         }
-        else if (fikaEvent is FikaNetworkManagerDestroyedEvent fikaNetworkManagerDestroyedEvent)
+        else if (fikaEvent is FikaNetworkManagerDestroyedEvent)
         {
             UnregisterPacket();
         }
     }
 
-    public void RegisterPacket()
+    public async void RegisterPacket() => RegisterPacket(H.GameWorld);
+
+    public async void RegisterPacket(GameWorld gWorld = default)
     {
-        if (H.isInRaid())
+        D.Notify($"Trying to Register");
+        if (H.FikaNet != null)
         {
-            D.Log($"Registering {typeof(T).Name}");
+            D.Notify($"Registering {typeof(T).Name}");
             if (FikaBackendUtils.IsServer)
             {
                 H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
@@ -144,6 +148,8 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (!H.isInRaid()) return;
         if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft check local-side
 
+        D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+
         // targetPeer will never be local here
         if (targetPeer != null)
         {
@@ -196,8 +202,6 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     private async void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
-        // Buffer Every packet until we are in raid and can actually apply them
-        await UniTask.WaitUntil(() => H.isInRaid());
         WhenApproved(packet, netPeer);
     }
 
@@ -261,7 +265,11 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     // OPTIONAL
     // For hard checking client packets
     /// <summary>returning false means the packet is rejected</summary>
-    protected virtual bool ServerValidation(ref T packet, NetPeer netPeer) => true;
+    protected virtual bool ServerValidation(ref T packet, NetPeer netPeer)
+    {
+        // packet.player = H.GetPlayer(netPeer.Id);   
+        return true;
+    }
 
     // OPTIONAL
     // In case client is quite sure that the packet is gonna get approved

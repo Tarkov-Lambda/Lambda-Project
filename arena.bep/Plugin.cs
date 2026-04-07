@@ -16,6 +16,7 @@ using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
+using MemoryPack;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -49,6 +50,8 @@ public class Plugin : BaseUnityPlugin
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
+    // private readonly List<MemoryPackFormatter<> _memoryPackFormatters = new();
+
 
     private CancellationTokenSource _cts;
 
@@ -156,7 +159,9 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
-        RegisterPatch(new Patch_FikaServer_OnDestroy());                         // Stop NAT Introduction manually
+        RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+        RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
+
 
         RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
@@ -169,6 +174,12 @@ public class Plugin : BaseUnityPlugin
         //------------------------------------------ //
 
         //--------------- NETWORK --------------- //
+        // MemoryPack Custom Formats
+        if (MemoryPackFormatterProvider.IsRegistered<PlayerFormatter>() == false)
+        {
+            MemoryPackFormatterProvider.Register(new PlayerFormatter());
+        }
+
         // Player
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
         RegisterSingleton<FactionChangePacketHandler>();                            // Player swaps factions
@@ -182,11 +193,11 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<RemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
 
         // Session
+        RegisterSingleton<PlayerReadinessPacketHandler>();                          // Server/Client reports specific player's status
         RegisterSingleton<SessionInfoPacketHandler>();                              // Server sends a snapshot of the entire session info (start of the match / on round end)
         RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
-        RegisterSingleton<PlayerReadinessPacketHandler>();                           // Server Broadcasts a custom asset load (map, etc)
         RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
         RegisterSingleton<TimeSyncRequestPacketHandler>();                          // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
@@ -213,8 +224,6 @@ public class Plugin : BaseUnityPlugin
             var warmup = typeof(Ladder);
             await RegisterSingletonInRaid<LadderEventManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
             await RegisterSingletonInRaid<BombHandler>();                           // Handler for entirety of Bomb's lifecycle
-
-            SteamAudioSourceAttacher.Initialize();
         }
         catch (Exception ex)
         {

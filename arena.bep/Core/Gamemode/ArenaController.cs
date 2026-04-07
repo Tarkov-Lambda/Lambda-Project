@@ -11,10 +11,12 @@ using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
+using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using Koenigz.PerfectCulling.EFT;
 using MemoryPack;
 using System;
+using System.Linq;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
@@ -77,7 +79,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public RoundActionPhaseEnd? LastRoundActionEnd;
     public int LastObjectivePlayerId = -1; // planter/defuser
     public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
-                                                              // End of absolute bullshit
+    // End of absolute bullshit
 
     private IGameState _currentState;
 
@@ -89,26 +91,38 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         if (H.GameWorld != null) StartSession(H.GameWorld);
         H.OnGameStarted += StartSession;
         H.OnGameDispose += EndSession;
+        OnFikaEvent += ManageFikaEvents;
+    }
+
+    public void ManageFikaEvents(FikaEvent fikaEvent)
+    {
+        if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
+        {
+            Player player = H.GetPlayer(peerDisconnectedEvent.Peer.Id);
+            if (player != null)
+            {
+                if (FikaBackendUtils.IsClient) return;
+
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player]);
+                Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Disconnected);
+            }
+        }
     }
 
     public void Dispose()
     {
         H.OnGameStarted -= StartSession;
         H.OnGameDispose -= EndSession;
+        OnFikaEvent -= ManageFikaEvents;
         EndSession(H.GameWorld);
         Release(this);
     }
 
     public async void StartSession(GameWorld gameWorld)
     {
-        if (H.GameWorld is HideoutGameWorld) return;
+        if (!H.isInRaid()) return;
 
-
-        foreach (var player in H.AllPlayers)
-        {
-            D.Log($"{player.Equipment.Id} {player.Profile.Nickname} {player.ProfileId}");
-        }
-        // IU.ResetInventoryLock();
+        SteamAudioSourceAttacher.Initialize();
 
         _tickerObject = new GameObject("Arena Gamesession");
         _tickerObject.GetOrAddComponent<GameModeTicker>();
@@ -123,17 +137,10 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
         Teleporter.Teleport(H.MainPlayer, "lobby");
-
         Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
-
-
         Physics.simulationMode = SimulationMode.FixedUpdate;
-        // delay is stupid
-        if (FikaBackendUtils.IsClient)
-        {
-            await UniTask.Delay(200);
-            Singleton<AdminLoginPacketHandler>.Instance.Send();
-        }
+
+        Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
 
         SteamAudioInitializer.AttachListenerIfNeeded();
     }
@@ -171,9 +178,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     }
 
     // Server sends this
-    public void ChangeState(MatchState newStateType)
+    public async void ChangeState(MatchState newStateType)
     {
         if (FikaBackendUtils.IsClient) return;
+        
+        await UniTask.Delay(1);
 
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
@@ -222,16 +231,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
 
         H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
-    }
-
-    private async void OnPeerJoinedMidSession(NetPeer peer)
-    {
-        Player player = H.GetPlayer(peer.Id);
-        H.Scoreboard[player.Id] = new PlayerScore(player.Id);
-        H.GetPlayerScore(player.Id).faction = Faction.Spectator;
-
-        Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(player);
-        Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(player);
     }
 
     public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();

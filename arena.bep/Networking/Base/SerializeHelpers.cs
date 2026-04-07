@@ -11,21 +11,6 @@ using UnityEngine;
 
 namespace ifp.arena.bep.networking;
 
-public static class MemoryPackHelper
-{
-    public static void Serialize<T>(NetDataWriter writer, T value)
-    {
-        writer.Put(MemoryPackSerializer.Serialize(value));
-    }
-
-    public static T Deserialize<T>(NetDataReader reader) where T : struct
-    {
-        int length = reader.AvailableBytes;
-        byte[] bytes = new byte[length];
-        reader.GetBytes(bytes, length);
-        return MemoryPackSerializer.Deserialize<T>(bytes);
-    }
-}
 
 public static class NetExtensions
 {

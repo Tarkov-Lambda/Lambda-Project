@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using EFT.UI;
 using ifp.arena.bep.Core.FX;
 using Fika.Core.Main.Players;
+using ifp.arena.bep.Patches;
 
 namespace ifp.arena.bep.Core;
 
@@ -63,6 +64,12 @@ public static class Helpers
     {
         add => Patch_Gameworld_OnDispose.OnDispose += value;
         remove => Patch_Gameworld_OnDispose.OnDispose -= value;
+    }
+
+    public static event Action OnNetworkManagerInitialized
+    {
+        add => Patch_FikaClient_OnNetworkSettingsPacketReceived.OnNetworkManagerInitialized += value;
+        remove => Patch_FikaClient_OnNetworkSettingsPacketReceived.OnNetworkManagerInitialized -= value;
     }
 
     // bro thinks he's the main character

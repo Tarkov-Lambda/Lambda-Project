@@ -64,6 +64,9 @@ public class Patch_Player_Teleport : ModulePatch
 
 public class Patch_Player_ShotReactions : ModulePatch, IDisposable
 {
+    public static readonly Dictionary<Player, DamageInfoStruct> LastDamageToPlayer = new();
+
+
     private static Dictionary<int, long> _lastShotTimeDict = new();
     private const int CooldownMs = 15;
 
@@ -74,6 +77,8 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
     {
         // D.Dump(shot);
         if (shot.OverDamageFrom != null) return;
+        LastDamageToPlayer[__instance] = shot;
+
         if (bodyPart is not EBodyPart.Head) return;
 
         int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;

@@ -28,7 +28,7 @@ public partial struct PlayerScoreSyncData
     public int deaths;
     public int money;
     public bool isAlive;
-    public bool isReady;
+    public PlayerReadinessState readyState;
 
     public int s_roundDamage;
     public int roundKills;
@@ -82,7 +82,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
                 deaths = kvp.Value.deaths,
                 money = kvp.Value.money,
                 isAlive = kvp.Value.isAlive,
-                isReady = kvp.Value.isMapReady,
+                readyState = kvp.Value.readyState,
 
                 s_roundDamage = kvp.Value.s_roundDamage,
                 roundKills = kvp.Value.roundKills,
@@ -106,7 +106,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         var session = H.Session;
         if (session == null) return;
 
-        await UniTask.WaitUntil(() => H.GetPlayerScore(player.Id).isMapReady);
+        await UniTask.WaitUntil(() => H.GetPlayerScore(player.Id).readyState <= PlayerReadinessState.Connected);
         RequestSendToPlayer(FormatPacket(), player.Id);
     }
 
