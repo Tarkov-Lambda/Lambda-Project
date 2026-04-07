@@ -1,10 +1,10 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using EFT.Animations;
+using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
-using HarmonyLib;
-using ifp.arena.bep;
+using Fika.Core.Modding.Events;
+using Fika.Core.Networking.LiteNetLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
@@ -12,11 +12,11 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
+using Koenigz.PerfectCulling.EFT;
 using MemoryPack;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using static Fika.Core.Modding.FikaEventDispatcher;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
@@ -173,6 +173,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     // Server sends this
     public void ChangeState(MatchState newStateType)
     {
+        if (FikaBackendUtils.IsClient) return;
+
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
@@ -220,6 +222,16 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
 
         H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
+    }
+
+    private async void OnPeerJoinedMidSession(NetPeer peer)
+    {
+        Player player = H.GetPlayer(peer.Id);
+        H.Scoreboard[player.Id] = new PlayerScore(player.Id);
+        H.GetPlayerScore(player.Id).faction = Faction.Spectator;
+
+        Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(player);
+        Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(player);
     }
 
     public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();

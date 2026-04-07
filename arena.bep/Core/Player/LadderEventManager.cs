@@ -22,7 +22,6 @@ public class LadderEventManager : Singleton<LadderEventManager>, IDisposable
 
     public LadderEventManager()
     {
-        D.Log("Created");
         Ladder.onPlayerEnterLadder += OnTriggerEnter;
         Ladder.onPlayerExitLadder += OnTriggerExit;
         GameModeTicker.onUpdate += OnUpdate;

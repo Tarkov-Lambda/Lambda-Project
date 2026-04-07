@@ -13,17 +13,17 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct RestartPacket : INetSerializable
+public partial struct SessionStartPacket : INetSerializable
 {
     public string mapName;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<RestartPacket>(reader);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionStartPacket>(reader);
 }
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
 // NOTE: We are sending a SessionInfoPacket that updates info right before this (a little redundant but whatever)
-public class SessionStartPacketHandler : PacketHandler<RestartPacket>
+public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 {
     public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
@@ -41,47 +41,35 @@ public class SessionStartPacketHandler : PacketHandler<RestartPacket>
 
     public void Send()
     {
-        if (H.Session == null) return;
+        if (!H.isInRaid()) return;
 
-        if (FikaBackendUtils.IsServer)
-        {
-            PrepareForRestart();
-        }
+        PrepareForRestart();
 
-        var packet = new RestartPacket
-        {
-            mapName = Plugin.MapName.Value,
-        };
-
+        var packet = new SessionStartPacket { mapName = Plugin.MapName.Value };
         RequestSend(packet);
     }
 
-    protected override bool ServerValidation(ref RestartPacket packet, NetPeer netPeer)
+    // We only send restart packets to specific player under the condition that they just spawned/reconnected
+    // for that reason we don't execute PrepareForRestart() here; I am not pleased with the way I'm doing it
+    public void SendToPlayer(Player player)
     {
-        PrepareForRestart();
-        return base.ServerValidation(ref packet, netPeer);
+        if (!H.isInRaid()) return;
+
+        var packet = new SessionStartPacket { mapName = Plugin.MapName.Value };
+        RequestSendToPlayer(packet, player.Id);
     }
 
-    protected override async void WhenApproved(RestartPacket packet, NetPeer peer)
+    protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
     {
-        Player player = H.GetMainPlayer();
-        if (player != null)
-        {
-            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
-        }
-
-        D.Log(FikaBackendUtils.IsServer.ToString());
         D.LogTransaction("Starting a match");
+        Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
 
-        if (FikaBackendUtils.IsServer)
-        {
-            H.Arena.ChangeState(MatchState.Warmup);
-        }
+        H.Arena.ChangeState(MatchState.Warmup);
 
         await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
         // Report back to the server that the map is loaded
-        Singleton<AssetLoadStatePacketHandler>.Instance.Send(true, "");
+        Singleton<PlayerReadinessPacketHandler>.Instance.Send(true, 100);
 
         switch (H.Session.currentGameMode)
         {

@@ -1,11 +1,16 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
+using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
+using Fika.Core.Modding;
+using Fika.Core.Modding.Events;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.networking.Base.RateLimiting;
 using System;
 using System.Diagnostics;
+using static Fika.Core.Modding.FikaEventDispatcher;
 
 namespace ifp.arena.bep.networking.Base;
 
@@ -47,13 +52,24 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         this.deliveryMethod = deliveryMethod;
         this.authority = authority;
 
-        H.OnGameStarted += RegisterPacket;
-        H.OnGameDispose += UnregisterPacket;
+        OnFikaEvent += ManageFikaEvent;
         // Hot-reload
-        RegisterPacket(H.GameWorld);
+        RegisterPacket();
     }
 
-    public void RegisterPacket(GameWorld gameWorld)
+    public void ManageFikaEvent(FikaEvent fikaEvent)
+    {
+        if (fikaEvent is FikaNetworkManagerCreatedEvent fikaNetworkManagerCreatedEvent)
+        {
+            RegisterPacket();
+        }
+        else if (fikaEvent is FikaNetworkManagerDestroyedEvent fikaNetworkManagerDestroyedEvent)
+        {
+            UnregisterPacket();
+        }
+    }
+
+    public void RegisterPacket()
     {
         if (H.isInRaid())
         {
@@ -71,7 +87,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         }
     }
 
-    public void UnregisterPacket(GameWorld gameWorld)
+    public void UnregisterPacket()
     {
         D.Log($"Disposing {typeof(T).FullName}");
 
@@ -92,24 +108,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     public void Dispose()
     {
-        UnregisterPacket(null);
+        UnregisterPacket();
         Release(this);
     }
-
-    // [Error  : Unity Log] NullReferenceException: Object reference not set to an instance of an object
-    // Stack trace:
-    // ifp.arena.bep.networking.Base.PacketHandler`1[T].IsUnauthorized (System.Int32 id) (at <969384f4afc24680a3f8616f1f99f5da>:0)
-    // ifp.arena.bep.networking.Base.PacketHandler`1[T].WhenServerReceivesPacket (T packet, Fika.Core.Networking.LiteNetLib.NetPeer netPeer) (at <969384f4afc24680a3f8616f1f99f5da>:0)
-    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor+<>c__DisplayClass30_0`2[T,TUserData].<SubscribeNetSerializable>b__0 (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadPacket (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.Utils.NetPacketProcessor.ReadAllPackets (Fika.Core.Networking.LiteNetLib.Utils.NetDataReader reader, System.Object userData) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.FikaServer.OnNetworkReceive (Fika.Core.Networking.LiteNetLib.NetPeer peer, Fika.Core.Networking.LiteNetLib.NetPacketReader reader, System.Byte channelNumber, Fika.Core.Networking.LiteNetLib.DeliveryMethod deliveryMethod) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.NetManager.ProcessEvent (Fika.Core.Networking.LiteNetLib.NetEvent evt) (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.LiteNetLib.LiteNetManager.PollEvents () (at <4961a269c1a0469488965fa870906146>:0)
-    // Fika.Core.Networking.FikaServer.Update () (at <4961a269c1a0469488965fa870906146>:0)
-    // UnityEngine.DebugLogHandler:LogException(Exception, Object)
-    // Class412:LogException(Exception, Object)
-    // UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
 
     // Admins have the same authority as the server
     private bool IsUnauthorized(int id)
@@ -193,8 +194,10 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         WhenApproved(packet, netPeer);
     }
 
-    private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
+    private async void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
+        // Buffer Every packet until we are in raid and can actually apply them
+        await UniTask.WaitUntil(() => H.isInRaid());
         WhenApproved(packet, netPeer);
     }
 

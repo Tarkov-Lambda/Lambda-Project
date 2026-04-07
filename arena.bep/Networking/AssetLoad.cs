@@ -6,32 +6,32 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct AssetLoadStatePacket : INetSerializable
+public partial struct PlayerReadinessPacket : INetSerializable
 {
     public int id;
-    public bool isReady;
-    public string msg;
+    public bool isMapReady;
+    public int progress;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<AssetLoadStatePacket>(reader);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayerReadinessPacket>(reader);
 }
 
-public class AssetLoadStatePacketHandler : PacketHandler<AssetLoadStatePacket>
+public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 {
-    public void Send(bool isLoaded, string msg)
+    public void Send(bool isMapReady, int progress = 0)
     {
-        var packet = new AssetLoadStatePacket
+        var packet = new PlayerReadinessPacket
         {
             id = H.MainPlayer.Id,
-            isReady = isLoaded,
-            msg = msg
+            isMapReady = isMapReady,
+            progress = progress
         };
 
         RequestSend(packet);
     }
 
-    protected override void WhenApproved(AssetLoadStatePacket packet, NetPeer peer)
+    protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
-        H.GetPlayerScore(packet.id)?.isMapReady = packet.isReady;
+        H.GetPlayerScore(packet.id)?.isMapReady = packet.isMapReady;
     }
 }

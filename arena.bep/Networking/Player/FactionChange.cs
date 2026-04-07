@@ -1,5 +1,9 @@
-﻿using Fika.Core.Networking.LiteNetLib;
+﻿using System;
+using Cysharp.Threading.Tasks;
+using Fika.Core.Main.Utils;
+using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using MemoryPack;
@@ -18,7 +22,16 @@ public partial struct FactionChangePacket : INetSerializable
 
 public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 {
-    public void Send(Faction faction)
+    bool CanChangeFaction(Faction faction)
+    {
+        if (faction == Faction.Spectator) return true;
+
+        if (H.Session.matchState <= MatchState.RoundPrepare) return true;
+
+        return false;
+    }
+
+    public async void Send(Faction faction)
     {
         var packet = new FactionChangePacket
         {
@@ -26,7 +39,18 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
             faction = faction
         };
 
+        if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
+
+        await UniTask.WaitUntil(() => CanChangeFaction(packet.faction));
+
         RequestSend(packet);
+    }
+
+    protected override bool ServerValidation(ref FactionChangePacket packet, NetPeer netPeer)
+    {
+        if (!CanChangeFaction(packet.faction)) return false;
+        
+        return base.ServerValidation(ref packet, netPeer);
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)

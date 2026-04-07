@@ -16,6 +16,7 @@ using ifp.arena.bep.Patches.Tarkov;
 using System.Runtime.CompilerServices;
 using EFT.UI;
 using ifp.arena.bep.Core.FX;
+using Fika.Core.Main.Players;
 
 namespace ifp.arena.bep.Core;
 

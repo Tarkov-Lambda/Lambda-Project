@@ -47,6 +47,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      SkipUnchangedFiles="true"/>
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue" />
   </Target>
 </Project>

@@ -13,6 +13,7 @@ namespace ifp.arena.shared
     {
         None, // FFA
         CT,
-        T
+        T,
+        Spectator
     }
 }

@@ -47,8 +47,6 @@ public class Plugin : BaseUnityPlugin
     private ConfigEntry<KeyboardShortcut> DeathKey;
     private ConfigEntry<KeyboardShortcut> RestartKey;
 
-    private GameObject TracerOverlay;
-
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
 
@@ -73,7 +71,6 @@ public class Plugin : BaseUnityPlugin
         {
             // await UniTask.WaitUntil(() => H.isInRaid(), cancellationToken: _cts.Token);
             await UniTask.WaitUntil(() => H.isInRaid());
-
         }
         catch (OperationCanceledException)
         {
@@ -159,7 +156,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
-        RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+        RegisterPatch(new Patch_FikaServer_OnDestroy());                         // Stop NAT Introduction manually
 
         RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
@@ -189,7 +186,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
-        RegisterSingleton<AssetLoadStatePacketHandler>();                           // Server Broadcasts a custom asset load (map, etc)
+        RegisterSingleton<PlayerReadinessPacketHandler>();                           // Server Broadcasts a custom asset load (map, etc)
         RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
         RegisterSingleton<TimeSyncRequestPacketHandler>();                          // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
@@ -259,7 +256,6 @@ public class Plugin : BaseUnityPlugin
     void OnDestroy()
     {
         Logger.LogInfo("Unload");
-        UnityEngine.Object.Destroy(TracerOverlay);
 
         // H.MainPlayer.MovementContext.ExitOverridenState();
         // RunStateClass idleState = new RunStateClass(H.MainPlayer.MovementContext);
