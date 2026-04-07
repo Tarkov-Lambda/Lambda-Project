@@ -182,8 +182,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (FikaBackendUtils.IsClient) return;
         
-        await UniTask.Delay(1);
-
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
@@ -200,7 +198,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
         PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
-        ServerPhaseStartSeconds = packet.serverPhaseStartSeconds;
+        ServerPhaseStartSeconds = packet.timestamp;
 
         if (packet.roundActionEnd.HasValue)
         {

@@ -16,8 +16,7 @@ public partial struct LadderNoisePacket : INetSerializable
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
-    
-    public int playerId;
+
     public LadderMaterial ladderMaterial;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
@@ -26,14 +25,7 @@ public partial struct LadderNoisePacket : INetSerializable
 
 public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
 {
-    public void Send(LadderMaterial ladderMaterial)
-    {
-        RequestSend(new LadderNoisePacket
-        {
-            playerId = H.MainPlayer.Id,
-            ladderMaterial = ladderMaterial
-        });
-    }
+    public void Send(LadderMaterial ladderMaterial) => RequestSend(new LadderNoisePacket { ladderMaterial = ladderMaterial });
 
     protected override void LocalPredictApproved(LadderNoisePacket packet)
     {
@@ -42,10 +34,9 @@ public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
 
     protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
     {
-        Player player = H.GetPlayer(packet.playerId);
-        if (player.IsYourPlayer) return;
+        if (packet.player.IsYourPlayer) return;
 
-        MakeLadderNoise(player, packet);
+        MakeLadderNoise(packet.player, packet);
     }
 
     private void MakeLadderNoise(Player player, LadderNoisePacket packet)

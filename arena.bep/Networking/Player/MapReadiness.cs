@@ -38,6 +38,8 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
+        if (H.Scoreboard == null) return;
+
         PlayerScore playerScore = H.GetPlayerScore(packet.player);
         if (playerScore == null) H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
 

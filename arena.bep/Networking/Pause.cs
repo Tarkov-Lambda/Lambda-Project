@@ -13,11 +13,12 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PausePacket : INetSerializable
+public partial struct PausePacket : INetSerializable, AuthoredPacket, ServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player;
-    public double serverPhaseStartSeconds;
+    public Player player { get; set; }
+
+    public double timestamp { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PausePacket>(reader);
@@ -29,26 +30,23 @@ public class PausePacketHandler : PacketHandler<PausePacket>
 
     public void Send()
     {
-        var packet = new PausePacket
-        {
-            player = H.MainPlayer,
-        };
+        var packet = new PausePacket { };
 
         if (FikaBackendUtils.IsServer)
-        {
-            packet.serverPhaseStartSeconds = NetworkTime.ServerNowSeconds;
-        }
+            packet.timestamp = NetworkTime.ServerNowSeconds;
 
         RequestSend(packet);
     }
 
     protected override bool ServerValidation(ref PausePacket packet, NetPeer netPeer)
     {
-        packet.serverPhaseStartSeconds = NetworkTime.ServerNowSeconds;
+        packet.timestamp = NetworkTime.ServerNowSeconds;
+
         if (H.Session.matchState == MatchState.RoundPrepare)
         {
             return true;
         }
+
         else return false;
     }
 
@@ -57,7 +55,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         MatchStateSyncPacket matchStateSyncPacket = new MatchStateSyncPacket
         {
             matchState = MatchState.Pause,
-            serverPhaseStartSeconds = packet.serverPhaseStartSeconds,
+            timestamp = packet.timestamp,
         };
         H.Arena.TransitionToState(matchStateSyncPacket);
     }

@@ -7,7 +7,7 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BlindFirePacket : INetSerializableAuthored
+public partial struct BlindFirePacket : INetSerializable, AuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
@@ -20,13 +20,9 @@ public partial struct BlindFirePacket : INetSerializableAuthored
 
 public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
 {
-    public void Send(int id, int value)
+    public void Send(int value)
     {
-        var packet = new BlindFirePacket
-        {
-            player = H.MainPlayer,
-            value = value
-        };
+        var packet = new BlindFirePacket { value = value };
         RequestSend(packet);
     }
 

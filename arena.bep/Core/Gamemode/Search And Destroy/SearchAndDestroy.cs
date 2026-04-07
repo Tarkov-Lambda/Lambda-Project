@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using ifp.arena.bep.GameTypes;
@@ -92,7 +93,8 @@ public class SND_Planted : IGameState
         if (H.Arena.StateTimer <= 0)
         {
             H.Arena.Award(Faction.T, RoundWinReason.Objective);
-            Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Exploded, Vector3.zero);
+            Player lastObjectivePlayer = H.GetPlayer(H.Arena.LastObjectivePlayerId);
+            Singleton<BombStatePacketHandler>.Instance.Send(lastObjectivePlayer, BombState.Exploded, Vector3.zero);
             return MatchState.RoundEnd;
         }
 

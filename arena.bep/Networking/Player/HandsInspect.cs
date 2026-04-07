@@ -19,14 +19,7 @@ public partial struct HandsInspectPacket : INetSerializable
 
 public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
 {
-    public void Send()
-    {
-        var packet = new HandsInspectPacket
-        {
-            player = H.MainPlayer
-        };
-        RequestSend(packet);
-    }
+    public void Send() => RequestSend(new HandsInspectPacket { });
 
     protected override void WhenApproved(HandsInspectPacket packet, NetPeer peer)
     {

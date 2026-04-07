@@ -8,7 +8,7 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct ReplenishPacket : INetSerializableAuthored
+public partial struct ReplenishPacket : INetSerializable, AuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
@@ -19,15 +19,7 @@ public partial struct ReplenishPacket : INetSerializableAuthored
 
 public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
 {
-    public void Send()
-    {
-        var packet = new ReplenishPacket
-        {
-            player = H.MainPlayer,
-        };
-
-        RequestSend(packet);
-    }
+    public void Send() => RequestSend(new ReplenishPacket { });
 
     protected override void WhenApproved(ReplenishPacket packet, NetPeer peer)
     {

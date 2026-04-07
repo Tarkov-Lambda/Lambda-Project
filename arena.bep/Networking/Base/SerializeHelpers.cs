@@ -11,10 +11,17 @@ using UnityEngine;
 
 namespace ifp.arena.bep.networking;
 
-public interface INetSerializableAuthored : INetSerializable
+public interface AuthoredPacket
 {
+    // use this field to 
     public Player player { get; set; }
 }
+
+public interface ServerTimestampedPacket
+{
+    public double timestamp { get; set; }
+}
+
 
 public static class NetExtensions
 {

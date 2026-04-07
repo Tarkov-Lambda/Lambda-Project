@@ -92,7 +92,7 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
         {
             player.HandsController.BlindFire(b);
 
-            if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(player.Id, b);
+            if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(b);
         }
         return false;
     }

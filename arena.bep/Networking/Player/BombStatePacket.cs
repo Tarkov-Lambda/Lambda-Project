@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.Gamemode;
@@ -13,23 +14,16 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombStatePacket : INetSerializableAuthored
+public partial struct BombStatePacket : INetSerializable, AuthoredPacket, ServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
 
-    public BombState state;
-    // Vector3 is stored as three floats so MemoryPack can serialize it natively.
-    public float posX, posY, posZ;
-    public double timestamp;
+    public double timestamp {get; set;}
 
-    /// <summary>Convenience accessor — not serialized.</summary>
-    [MemoryPackIgnore]
-    public Vector3 position
-    {
-        get => new Vector3(posX, posY, posZ);
-        set { posX = value.x; posY = value.y; posZ = value.z; }
-    }
+    public BombState state;
+
+    public Vector3 position;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
@@ -43,16 +37,17 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         {
             player = player,
             state = state,
-            timestamp = NetworkTime.ServerNowSeconds
+            position = position
         };
-        packet.position = position;
 
         RequestSend(packet);
     }
 
-    protected override bool ServerValidation(ref BombStatePacket packet, NetPeer peer)
+    protected override bool ServerValidation(ref BombStatePacket packet, NetPeer netPeer)
     {
-        return base.ServerValidation(ref packet, peer);
+        if (packet.state == BombState.Exploded) return false;
+
+        return base.ServerValidation(ref packet, netPeer);
     }
 
     protected override void LocalPredictApproved(BombStatePacket packet)
@@ -80,19 +75,17 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         if (packet.state is BombState.Planted)
         {
             H.Arena.LastObjectivePlayerId = packet.player.Id;
-            foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
+            foreach (var bombPlantZone in Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
                 bombPlantZone.GetComponent<BoxCollider>().enabled = false;
             }
         }
 
 
-
         if (packet.state is BombState.Defused or BombState.Exploded)
         {
             H.Arena.LastObjectiveBombState = packet.state;
-            if (packet.player.Id > 0)
-                H.Arena.LastObjectivePlayerId = packet.player.Id;
+            if (packet.player.Id > 0) H.Arena.LastObjectivePlayerId = packet.player.Id;
         }
 
         H.BombHandler.SetBombVisuals(packet);

@@ -11,7 +11,7 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombAssignmentPacket : INetSerializableAuthored
+public partial struct BombAssignmentPacket : INetSerializable, AuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
@@ -30,10 +30,7 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
         {
             var randomTerrorist = H.Session.GetPlayersFromFaction(ifp.arena.shared.Faction.T).RandomElement();
 
-            var packet = new BombAssignmentPacket
-            {
-                player = randomTerrorist,
-            };
+            var packet = new BombAssignmentPacket { player = randomTerrorist, };
 
             RequestSendToPlayer(packet, packet.player.Id);
         }

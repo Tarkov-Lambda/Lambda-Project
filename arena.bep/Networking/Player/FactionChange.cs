@@ -16,7 +16,7 @@ public partial struct FactionChangePacket : INetSerializable
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
-    
+
     public Faction faction;
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
@@ -36,11 +36,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     public async void Send(Faction faction)
     {
-        var packet = new FactionChangePacket
-        {
-            player = H.MainPlayer,
-            faction = faction
-        };
+        var packet = new FactionChangePacket { faction = faction };
 
         if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
 

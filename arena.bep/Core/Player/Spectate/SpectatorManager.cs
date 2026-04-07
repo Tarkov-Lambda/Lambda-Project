@@ -5,6 +5,7 @@ using UnityEngine;
 using EFT.CameraControl;
 using System.Collections.Generic;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.GameTypes;
 
 namespace ifp.arena.bep.Core;
 
@@ -16,9 +17,26 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     public SpectatorManager()
     {
         EventBus.OnLateUpdate += onUpdate;
+        EventBus.OnEnter += OnEnter;
     }
 
-    public void onUpdate()
+    public void Dispose()
+    {
+        EventBus.OnLateUpdate -= onUpdate;
+        EventBus.OnEnter -= OnEnter;
+        StopSpectating();
+        Release(this);
+    }
+
+    private void OnEnter(MatchState matchState)
+    {
+        if (matchState == MatchState.RoundPrepare)
+        {
+            StopSpectating();
+        }
+    }
+
+    private void onUpdate()
     {
         if (observedPlayer == null) return;
 
@@ -249,11 +267,5 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         //     player.ProceduralWeaponAnimation.ResetFovAdjustments(player);
         // }
         // player.ProceduralWeaponAnimation.SetFovParams(player.float_6, player.float_7);
-    }
-
-    public void Dispose()
-    {
-        StopSpectating();
-        Release(this);
     }
 }

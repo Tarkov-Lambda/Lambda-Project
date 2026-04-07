@@ -7,6 +7,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.networking.Base.RateLimiting;
+using ifp.arena.bep.networking.TimeSync;
 using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
@@ -150,9 +151,14 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
         D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
-        if (packet is INetSerializableAuthored authoredPacket)
+        if (packet is AuthoredPacket authoredPacket)
         {
             if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
+        }
+
+        if (packet is ServerTimestampedPacket serverTimestampedPacket && FikaBackendUtils.IsServer)
+        {
+            serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
         }
 
         // targetPeer will never be local here
@@ -272,13 +278,18 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     /// <summary>returning false means the packet is rejected</summary>
     protected virtual bool ServerValidation(ref T packet, NetPeer netPeer)
     {
-        if (packet is INetSerializableAuthored authoredPacket)
+        if (packet is AuthoredPacket authoredPacket)
         {
             // Anti-spoofing
             if (authoredPacket.player.Id != netPeer.Id)
             {
                 return false;
             }
+        }
+
+        if (packet is ServerTimestampedPacket serverTimestampedPacket)
+        {
+            serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
         }
 
         return true;

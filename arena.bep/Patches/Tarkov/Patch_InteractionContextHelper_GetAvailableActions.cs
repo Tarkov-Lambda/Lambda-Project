@@ -52,7 +52,7 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
                     if (H.Session.matchState is not MatchState.RoundPlanted) return;
                     if (owner.Player.CurrentState is IdleStateClass)
                     {
-                        Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defusing, H.BombHandler.BombPlantedPosition);
+                        Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defusing, H.BombHandler.BombPlantedPosition);
 
                         owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
                         owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, async (successful) =>
@@ -63,10 +63,10 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
                             if (!successful)
                             {
                                 // Revert state for all clients so another CT can try
-                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, pos);
+                                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Planted, pos);
                                 return;
                             }
-                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Defused, pos);
+                            Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defused, pos);
                             owner.ClearInteractionState();
                         });
                     }

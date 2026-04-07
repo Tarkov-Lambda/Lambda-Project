@@ -107,8 +107,6 @@ public class SharedPrepare : IGameState
         HU.HealMe().Forget();
 
         HU.ResetObservedPlayersHealth();
-
-        H.SpectatorManager.StopSpectating();
     }
 
     public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

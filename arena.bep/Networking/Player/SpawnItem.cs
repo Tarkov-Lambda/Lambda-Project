@@ -15,7 +15,7 @@ using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.networking;
 
-public struct SpawnItemPacket : INetSerializableAuthored
+public struct SpawnItemPacket : INetSerializable, AuthoredPacket
 {
     public Player player { get; set; }
     public ItemPlacement placement;
