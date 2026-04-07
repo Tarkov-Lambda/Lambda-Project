@@ -38,7 +38,7 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
 
     public async UniTaskVoid SendDelayed(int delayMs = 50)
     {
-        if (!Fika.Core.Main.Utils.FikaBackendUtils.IsServer) return;
+        if (!H.IsServer) return;
         await UniTask.Delay(delayMs);
         Send();
     }

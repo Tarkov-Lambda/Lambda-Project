@@ -43,6 +43,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
     public UIManager()
     {
+        if (H.IsHeadless) return;
+
         Patch_CommonUI_Awake.OnAwake += LoadUI;
         Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
         Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
@@ -50,8 +52,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         if (Singleton<CommonUI>.Instantiated)
             LoadUI(Singleton<CommonUI>.Instance);
 
-        if (Singleton<GameWorld>.Instantiated)
-            AddInventoryHotkeyInterceptor(Singleton<GameWorld>.Instance);
+        if (Singleton<GameWorld>.Instantiated) AddInventoryHotkeyInterceptor(Singleton<GameWorld>.Instance);
 
         EventBus.OnEnter += OnMatchStateEnter;
         EventBus.OnRoundActionEnd += OnRoundActionEnd;
@@ -135,7 +136,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         }
 #endif
     }
-    
+
     void ShowFactionSelectionScreen()
     {
         FactionSelectionScreen.FactionSelectionScreenController screenController = new(Singleton<FactionChangePacketHandler>.Instance.Send);
@@ -211,8 +212,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         PlayerStats[] allPlayerStats = GetAllPlayersStats();
 
-        PlayerStats[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();  
-        PlayerStats[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();  
+        PlayerStats[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
+        PlayerStats[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
 
         matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
 

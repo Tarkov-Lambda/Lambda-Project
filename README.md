@@ -1,5 +1,5 @@
 ## Credits
-- **ifp**: Gamemodes • Networking • SFX • Steam Audio • Economy  
+- **ifp**: Gamemodes • Networking • SFX • Steam Audio • Economy • Patching
 - **tarkin**: UI • VFX • Map SDK • Patching  
 ---
 
@@ -10,6 +10,7 @@
 - First Person Spectator Mode  
 - Gamemode Framework  
 - Search and Destroy  
+- Headless Support
 - Respawning Mechanic  
 - Preemptive Server-Side Deaths  
 - Mid-Raid Spawning

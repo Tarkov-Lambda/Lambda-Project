@@ -28,7 +28,7 @@ namespace ifp.arena.bep.Patches.Tarkov;
                     Singleton<Effects>.Instance.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
                 }
 
-                if (FikaBackendUtils.IsServer)
+                if (H.IsServer)
                 {
                     Singleton<CustomGrenadeExplosionPacketHandler>.Instance.Send(__instance.transform.position, CustomGrenadeType.Molotov);
                 }

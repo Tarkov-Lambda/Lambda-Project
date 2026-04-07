@@ -40,12 +40,17 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
     {
         if (H.Scoreboard == null) return;
 
+        if (packet.player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
+        {
+            Singleton<AdminLoginPacketHandler>.Instance.Send();
+        }
+
         PlayerScore playerScore = H.GetPlayerScore(packet.player);
         if (playerScore == null) H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
 
         playerScore?.readyState = packet.readyState;
 
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)
             if (H.Session?.matchState != MatchState.None && packet.readyState == PlayerReadinessState.Connected)
@@ -62,9 +67,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
                 Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.player);
             }
         }
-        else
-        {
-            Singleton<AdminLoginPacketHandler>.Instance.Send();
-        }
+
+
     }
 }

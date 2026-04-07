@@ -66,7 +66,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 
         // if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
 
-        if (FikaBackendUtils.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+        if (H.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
         // if (__instance.Player.IsYourPlayer)
         {
             D.Log($"{__instance.Player.Profile.Nickname} died");

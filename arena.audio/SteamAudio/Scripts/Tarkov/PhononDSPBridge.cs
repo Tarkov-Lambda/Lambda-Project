@@ -131,7 +131,11 @@ namespace ifp.arena.shared
 
         private IntPtr _cachedContext = IntPtr.Zero;
 
+#if DEBUG
         private void LogV(string msg) { if (verboseLogging) Debug.Log($"[PhononDSPBridge:{_instanceId}] {msg}"); }
+#else
+        private void LogV(string msg) { }
+#endif
         private void LogW(string msg) { Debug.LogWarning($"[PhononDSPBridge:{_instanceId}] {msg}"); }
         private void LogE(string msg) { Debug.LogError($"[PhononDSPBridge:{_instanceId}] {msg}"); }
 

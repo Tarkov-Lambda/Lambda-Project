@@ -4,6 +4,7 @@ using System.IO;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core.UI;
 using Newtonsoft.Json;
 
@@ -47,6 +48,8 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
 
     private void CapturePreset(GameWorld gWorld = null)
     {
+        if (H.IsHeadless) return;
+
         foreach (var presetInfo in PresetInfoConfig)
         {
             // When a person enters the raid, their slots override defaults. if a required slot does not have an item, we use default.

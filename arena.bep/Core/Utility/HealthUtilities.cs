@@ -30,7 +30,7 @@ public static class HealthUtilities
 
     public static void ResetObservedPlayersHealth()
     {
-        if (!FikaBackendUtils.IsServer) return;
+        if (!H.IsServer) return;
 
         foreach (var player in H.AllPlayers)
         {

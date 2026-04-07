@@ -14,7 +14,7 @@ public class FFAAction : IGameState
     public void OnEnter() { }
     public MatchState? OnUpdate()
     {
-        if (FikaBackendUtils.IsClient) return null;
+        if (H.IsClient) return null;
         if (H.Arena.StateTimer <= 0 || H.Scoreboard.Values.Any(p => p.kills >= 20)) return MatchState.MatchEnd;
         return null;
     }

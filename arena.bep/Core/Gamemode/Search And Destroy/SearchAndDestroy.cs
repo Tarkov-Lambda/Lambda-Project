@@ -49,7 +49,7 @@ public class SND_Action : IGameState
     public void OnEnter() { }
     public MatchState? OnUpdate()
     {
-        if (!FikaBackendUtils.IsServer) return null;
+        if (!H.IsServer) return null;
         Faction? winner = CheckWipe();
         if (winner.HasValue) { H.Arena.Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
         if (H.Session.bombState == BombState.Planted) return MatchState.RoundPlanted;
@@ -75,7 +75,7 @@ public class SND_Planted : IGameState
 
     public MatchState? OnUpdate()
     {
-        if (!FikaBackendUtils.IsServer) return null;
+        if (!H.IsServer) return null;
 
         // If all CT are dead before timer runs out
         // if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))

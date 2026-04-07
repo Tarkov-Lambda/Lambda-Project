@@ -18,6 +18,7 @@ namespace ifp.arena.bep.networking.Base;
 public enum PacketAuthority
 {
     Both,       // Anyone can send/receive
+    Admin,      // Server or Admin
     ServerOnly  // Only Server can send. Clients only receive.
 }
 
@@ -85,7 +86,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     public void RegisterPacket(GameWorld gWorld = null)
     {
         D.Log($"Registering {typeof(T).Name}");
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
         {
             H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
             H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
@@ -155,7 +156,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             packet = (T)(object)authoredPacket;
         }
 
-        if (packet is ServerTimestampedPacket serverTimestampedPacket && FikaBackendUtils.IsServer)
+        if (packet is ServerTimestampedPacket serverTimestampedPacket && H.IsServer)
         {
             serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
@@ -170,8 +171,8 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         {
             LocalPredictApproved(packet);
 
-            H.FikaNet.SendData(ref packet, deliveryMethod, FikaBackendUtils.IsServer);
-            if (FikaBackendUtils.IsServer)
+            H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
+            if (H.IsServer)
             {
                 // WhenServerReceivesPacket(packet, Singleton<NetPeer>.Instance);
                 WhenApproved(packet, Singleton<NetPeer>.Instance);

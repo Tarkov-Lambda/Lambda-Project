@@ -112,7 +112,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
 
     protected override void WhenApproved(SessionInfoPacket packet, NetPeer peer)
     {
-        if (FikaBackendUtils.IsServer) return;
+        if (H.IsServer) return;
 
         H.Session.matchState = packet.roundState;
         H.Session.currentGameMode = packet.gameMode;

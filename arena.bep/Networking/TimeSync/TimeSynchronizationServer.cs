@@ -24,7 +24,7 @@ public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacke
 
     protected override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
     {
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
             return;
 
         double clientReceiveLocal = NetworkTime.LocalNowSeconds;

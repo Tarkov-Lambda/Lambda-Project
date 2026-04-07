@@ -32,7 +32,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
     {
         var packet = new PausePacket { };
 
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
             packet.timestamp = NetworkTime.ServerNowSeconds;
 
         RequestSend(packet);

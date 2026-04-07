@@ -40,7 +40,7 @@ public class SharedWarmup : IGameState
 
     public virtual MatchState? OnUpdate()
     {
-        if (!FikaBackendUtils.IsServer) return null;
+        if (!H.IsServer) return null;
         if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.readyState != PlayerReadinessState.Connected)) // Either Disconnected or ready
             return MatchState.WarmupEnd;
         return null;
@@ -59,7 +59,7 @@ public class SharedWarmupEnd : IGameState
     {
 
     }
-    public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public virtual void OnExit()
     {
         H.Session.InitializeScoreBoard();
@@ -75,7 +75,7 @@ public class SharedPause : IGameState
 
     public virtual MatchState? OnUpdate()
     {
-        if (!FikaBackendUtils.IsServer) return null;
+        if (!H.IsServer) return null;
         if (H.Arena.StateTimer <= 0) return MatchState.RoundPrepare;
         return null;
     }
@@ -109,7 +109,7 @@ public class SharedPrepare : IGameState
         HU.ResetObservedPlayersHealth();
     }
 
-    public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
+    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
 
     public virtual void OnExit()
     {
@@ -126,7 +126,7 @@ public class SharedEnd : IGameState
     public MatchState StateType => MatchState.RoundEnd;
     public virtual void OnEnter()
     {
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
         {
 
             H.Arena.OnRoundEnd();
@@ -134,7 +134,7 @@ public class SharedEnd : IGameState
     }
     public virtual MatchState? OnUpdate()
     {
-        if (FikaBackendUtils.IsClient) return null;
+        if (H.IsClient) return null;
 
         if (H.Arena.StateTimer <= 0)
         {
@@ -171,7 +171,7 @@ public class SharedSideSwap : IGameState
     public MatchState StateType => MatchState.SideSwap;
     public virtual void OnEnter()
     {
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
         {
             foreach (var player in H.AllPlayers)
             {
@@ -183,7 +183,7 @@ public class SharedSideSwap : IGameState
             Singleton<SessionInfoPacketHandler>.Instance.Send();
         }
     }
-    public virtual MatchState? OnUpdate() => FikaBackendUtils.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public virtual void OnExit() { }
 }
 

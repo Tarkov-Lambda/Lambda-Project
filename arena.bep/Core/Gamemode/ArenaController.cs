@@ -101,7 +101,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Player player = H.GetPlayer(peerDisconnectedEvent.Peer.Id);
             if (player != null)
             {
-                if (FikaBackendUtils.IsClient) return;
+                if (H.IsClient) return;
 
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player]);
                 Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Disconnected);
@@ -167,7 +167,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         // On Client: Start + Duration - Now = Remaining Time accurately synced
         StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
         {
             MatchState? nextState = _currentState.OnUpdate();
             if (nextState.HasValue)
@@ -180,7 +180,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     // Server sends this
     public async void ChangeState(MatchState newStateType)
     {
-        if (FikaBackendUtils.IsClient) return;
+        if (H.IsClient) return;
         
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;

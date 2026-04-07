@@ -179,7 +179,7 @@ public class PlayerScore
     public PlayerScore(int id)
     {
         player = H.GetPlayer(id);
-        if (FikaBackendUtils.IsServer && H.MainPlayer.Id == id)
+        if (H.IsServer && H.MainPlayer.Id == id)
         {
             IsAdmin = true;
         }

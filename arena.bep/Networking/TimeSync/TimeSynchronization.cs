@@ -33,7 +33,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     public void Send()
     {
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
             return;
 
         var packet = new TimeSynchronizationPacket
@@ -46,7 +46,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer netPeer)
     {
-        if (FikaBackendUtils.IsClient)
+        if (H.IsClient)
             return;
 
         var response = new TimeSyncResponsePacket

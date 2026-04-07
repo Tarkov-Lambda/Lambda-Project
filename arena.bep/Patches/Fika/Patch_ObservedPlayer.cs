@@ -57,7 +57,7 @@ namespace ifp.arena.bep.Patches
                 _lastWeaponIdRef(__instance) = packet.WeaponId;
             }
 
-            if (FikaBackendUtils.IsServer)
+            if (H.IsServer)
             {
                 ActiveHealthController serverAuthoritativeHealthController = __instance.HealthController as ActiveHealthController;
                 serverAuthoritativeHealthController.ApplyDamage(packet.BodyPartType, damageInfo.Damage, damageInfo);

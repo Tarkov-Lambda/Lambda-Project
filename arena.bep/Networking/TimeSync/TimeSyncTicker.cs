@@ -20,7 +20,7 @@ public class TimeSyncTicker : MonoBehaviour
     private void Update()
     {
 
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
             return;
 
         double now = NetworkTime.LocalNowSeconds;

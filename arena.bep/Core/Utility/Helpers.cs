@@ -18,6 +18,7 @@ using EFT.UI;
 using ifp.arena.bep.Core.FX;
 using Fika.Core.Main.Players;
 using ifp.arena.bep.Patches;
+using Fika.Core.Main.Utils;
 
 namespace ifp.arena.bep.Core;
 
@@ -40,6 +41,9 @@ public static class Helpers
 
     public static SpectatorManager SpectatorManager => isInRaid() ? Singleton<SpectatorManager>.Instance : null;
 
+    public static bool IsHeadless => FikaBackendUtils.IsHeadless;
+    public static bool IsClient => FikaBackendUtils.IsClient;
+    public static bool IsServer => FikaBackendUtils.IsServer;
 
     public static PlayerScore MainPlayerScore => GetMainPlayerScore();
     public static List<Player> AllTeammates => H.Session.GetPlayersFromFaction(H.MainPlayerScore.faction);

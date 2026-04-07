@@ -17,6 +17,8 @@ namespace ifp.arena.bep.networking;
 public partial struct SessionStartPacket : INetSerializable
 {
     public string mapName;
+    public GameModes gameMode;
+
 
     public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionStartPacket>(reader);
@@ -28,25 +30,26 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 {
     public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-    private void PrepareForRestart()
+    private void PrepareForStart(SessionStartPacket packet)
     {
         H.Session.scoreboard.Clear();
         H.Session.factionWins.Clear();
         H.Session.matchState = MatchState.None;
-        H.Session.mapName = Plugin.MapName.Value;
-        H.Session.currentGameMode = Plugin.GameMode.Value;
+        H.Session.mapName = packet.mapName;
+        H.Session.currentGameMode = packet.gameMode;
         H.Session.InitializeScoreBoard();
-
-        Singleton<SessionInfoPacketHandler>.Instance.Send();
     }
 
     public void Send()
     {
         if (!H.isInRaid()) return;
 
-        PrepareForRestart();
+        var packet = new SessionStartPacket
+        {
+            mapName = Plugin.MapName.Value,
+            gameMode = Plugin.GameMode.Value
+        };
 
-        var packet = new SessionStartPacket { mapName = Plugin.MapName.Value };
         RequestSend(packet);
     }
 
@@ -62,6 +65,9 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
     protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
     {
+        PrepareForStart(packet);
+        Singleton<SessionInfoPacketHandler>.Instance.Send();
+
         D.LogTransaction("Starting a match");
         Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
 

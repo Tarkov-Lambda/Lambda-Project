@@ -49,7 +49,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
 
     public void Send()
     {
-        if (FikaBackendUtils.IsServer)
+        if (H.IsServer)
         {
             H.MainPlayerScore.IsAdmin = true;
             return;
