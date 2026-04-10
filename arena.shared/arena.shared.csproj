@@ -15,26 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\core\BepInEx.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll">
-      <Private>False</Private>
-    </Reference>
+    <!-- BepInEx / SPT -->
+    <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
+    <Reference Include="$(BepInExPath)\core\BepInEx.dll" />
+    <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
+    <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
 
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="$(ManagedPath)\*.dll" />
 
     <Reference Include="..\deps\libraries\*.dll">
       <Private>False</Private>

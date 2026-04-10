@@ -8,13 +8,13 @@ using static EFT.Player;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct HandsInspectPacket : INetSerializable, AuthoredPacket
+public partial struct HandsInspectPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<HandsInspectPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<HandsInspectPacket>(reader);
 }
 
 public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>

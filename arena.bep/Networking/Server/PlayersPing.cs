@@ -18,8 +18,8 @@ public partial struct PlayersPingPacket : INetSerializable
 {
     public PlayerPingData[] scores;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayersPingPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayersPingPacket>(reader);
 }
 
 // This runs on interval

@@ -51,8 +51,8 @@ public partial struct PlayerKilledPacket : INetSerializable
         }
     }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayerKilledPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerKilledPacket>(reader);
 }
 
 public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>

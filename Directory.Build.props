@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <SPTPath>F:\Games\SPT</SPTPath>
+        <BepInExPath>$(SPTPath)\BepInEx</BepInExPath>
+        <ManagedPath>$(SPTPath)\EscapeFromTarkov_Data\Managed</ManagedPath>
+    </PropertyGroup>
+</Project>

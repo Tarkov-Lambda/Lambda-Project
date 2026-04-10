@@ -10,8 +10,8 @@ public partial struct TemplatePacket : INetSerializable
 {
     public int id;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TemplatePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<TemplatePacket>(reader);
 }
 
 public class TemplatePacketHandler : PacketHandler<TemplatePacket>

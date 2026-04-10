@@ -67,18 +67,23 @@ public class SessionInfo
 
     public void InitializeScoreBoard()
     {
-        if (H.GameWorld == null || H.GameWorld.AllAlivePlayersList == null)
-            return;
-
         factionWins[Faction.CT] = 0;
         factionWins[Faction.T] = 0;
 
-        foreach (var p in H.AllPlayers)
+        try
         {
-            if (!scoreboard.ContainsKey(p.Id))
+            foreach (var p in H.AllPlayers)
             {
-                scoreboard[p.Id] = new PlayerScore(p.Id);
+                if (p == null) continue;
+                if (!scoreboard.ContainsKey(p.Id))
+                {
+                    scoreboard[p.Id] = new PlayerScore(p.Id);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            D.Log(ex.StackTrace);
         }
     }
 

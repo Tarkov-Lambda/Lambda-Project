@@ -26,7 +26,25 @@ namespace ifp.arena.bep.Core;
 public static class Helpers
 {
     public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-    public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
+    
+    public static Player MainPlayer
+    {
+        get
+        {
+            try
+            {
+                return isInRaid() ? GameWorld.MainPlayer : null;
+            }
+            catch (Exception ex)
+            {
+                D.Dump(ex);
+                D.Log(ex.StackTrace);
+            }
+
+            return null;
+        }
+    }
+
     public static Inventory MainInventory => isInRaid() ? MainPlayer.Inventory : null;
     public static InventoryController MainInventoryController => isInRaid() ? MainPlayer.InventoryController : null;
 
@@ -92,21 +110,21 @@ public static class Helpers
     public static PlayerScore GetPlayerScore(int playerId)
     {
         if (!isInRaid()) return null;
-        Arena.session.scoreboard.TryGetValue(playerId, out var playerScore);
+        Scoreboard.TryGetValue(playerId, out var playerScore);
         return playerScore;
     }
 
     public static PlayerScore GetPlayerScore(Player player)
     {
         if (!isInRaid()) return null;
-        Arena.session.scoreboard.TryGetValue(player.Id, out var playerScore);
+        H.Scoreboard.TryGetValue(player.Id, out var playerScore);
         return playerScore;
     }
 
     public static PlayerScore GetMainPlayerScore()
     {
         if (!isInRaid()) return null;
-        Arena.session.scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
+        Scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
         return playerScore;
     }
 

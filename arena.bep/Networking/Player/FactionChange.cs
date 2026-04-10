@@ -13,15 +13,15 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct FactionChangePacket : INetSerializable, AuthoredPacket
+public partial struct FactionChangePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
 
     public Faction faction;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<FactionChangePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<FactionChangePacket>(reader);
 }
 
 public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>

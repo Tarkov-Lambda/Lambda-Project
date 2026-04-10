@@ -11,15 +11,15 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct MatchStateSyncPacket : INetSerializable, ServerTimestampedPacket
+public partial struct MatchStateSyncPacket : INetSerializable, IServerTimestampedPacket
 {
     public double timestamp {get; set;}
 
     public MatchState matchState;
     public RoundActionPhaseEnd? roundActionEnd;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<MatchStateSyncPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<MatchStateSyncPacket>(reader);
 }
 
 public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>

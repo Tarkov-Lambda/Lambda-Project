@@ -9,7 +9,7 @@ using ifp.arena.bep.networking.Base.RateLimiting;
 
 namespace ifp.arena.bep.networking;
 
-public struct PopPacket : INetSerializable, AuthoredPacket
+public struct PopPacket : INetSerializable, IAuthoredPacket
 {
     public Player player { get; set; }
     

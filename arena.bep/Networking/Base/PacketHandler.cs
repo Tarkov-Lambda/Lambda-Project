@@ -1,12 +1,9 @@
 ﻿using Comfort.Common;
-using Comfort.Logs;
-using Cysharp.Threading.Tasks;
 using EFT;
-using Fika.Core.Main.Utils;
 using Fika.Core.Modding.Events;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
+using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking.Base.RateLimiting;
 using ifp.arena.bep.networking.TimeSync;
 using System;
@@ -38,9 +35,6 @@ public struct RejectedPacket<T> : INetSerializable where T : INetSerializable, n
     }
 }
 
-// Currently still a lot of pit falls in packet traversal route
-// Note: currently the responsibility between ShouldBroadcastClientPacket and RequestSendToPlayer is kind of blurred
-// this is probably the first place for refactoring
 public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
 {
     protected DeliveryMethod deliveryMethod;
@@ -74,7 +68,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     public void ManageFikaEvent(FikaEvent fikaEvent)
     {
-        if (this is SessionInfoPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
+        if (this is PlayerKilledPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
 
         if (fikaEvent is FikaNetworkManagerCreatedEvent) RegisterPacket();
         if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
@@ -118,45 +112,61 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     // Admins have the same authority as the server
     private bool IsUnauthorized(int id)
     {
-        return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(id).IsAdmin;
+        if (H.IsServer) return false;
+        if (authority == PacketAuthority.ServerOnly)
+        {
+            PlayerScore score = H.GetPlayerScore(id);
+            return score == null || !score.IsAdmin; // unauthorized only if NOT admin
+        }
+        return false;
     }
 
     // OPTIONAL ENTRY POINT
     // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
-    protected void RequestSendToPlayer(T packet, int netId)
+    protected void RequestSendToPlayer(T packet, int playerId)
     {
         if (!H.isInRaid()) return;
 
         // local sender is the target, execute locally; I am not sure how I want to do this
         // But for the sake of keeping things as coupled as possible with the network layer
         // this might come handy later.
-        if (netId == H.FikaNet.NetId)
+        if (playerId == H.FikaNet.NetId)
         {
             WhenApproved(packet, null);
             return;
         }
 
+        var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
+        RequestSend(packet, peer);
+    }
+
+    protected void RequestSendToPeer(T packet, int netId)
+    {
+        if (!H.isInRaid()) return;
+
         var peer = H.NetManager.GetPeerById(netId) as NetPeer;
         RequestSend(packet, peer);
     }
+
 
     // ENTRY POINT
     // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
     protected void RequestSend(T packet, NetPeer targetPeer = null)
     {
         if (!H.isInRaid()) return;
-        if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft check local-side
+        if (IsUnauthorized(H.MainPlayer.Id)) return;
 
-        D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+        if (this is not TimeSynchronizationPacketHandler)
+            D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
         // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency 
-        if (packet is AuthoredPacket authoredPacket)
+        if (packet is IAuthoredPacket authoredPacket)
         {
             if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
             packet = (T)(object)authoredPacket;
         }
 
-        if (packet is ServerTimestampedPacket serverTimestampedPacket && H.IsServer)
+        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer)
         {
             serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
@@ -182,12 +192,8 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
     {
-        if (this is HandsInspectPacketHandler)
-        {
-            D.Notify($"Inspecting");
-            D.Notify($"{netPeer.Id}");
-
-        }
+        if (this is not TimeSynchronizationPacketHandler)
+            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {netPeer.Id}");
 
         if (!TryPassServerRateLimit(packet, netPeer))
             return;
@@ -222,6 +228,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
         if (!H.isInRaid() || H.FikaNet == null) return;
+
+        if (this is not TimeSyncResponsePacketHandler)
+            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 
         WhenApproved(packet, netPeer);
     }
@@ -288,7 +297,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     /// <summary>returning false means the packet is rejected</summary>
     protected virtual bool ServerValidation(ref T packet, NetPeer netPeer)
     {
-        if (packet is AuthoredPacket authoredPacket)
+        if (packet is IAuthoredPacket authoredPacket)
         {
             // Anti-spoofing
             // if (authoredPacket.player.Id != netPeer.Id)
@@ -297,7 +306,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             // }
         }
 
-        if (packet is ServerTimestampedPacket serverTimestampedPacket)
+        if (packet is IServerTimestampedPacket serverTimestampedPacket)
         {
             serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;

@@ -12,8 +12,8 @@ public partial struct TimeSynchronizationPacket : INetSerializable
 {
     public double clientSendLocalSeconds;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSynchronizationPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<TimeSynchronizationPacket>(reader);
 }
 
 public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>

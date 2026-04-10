@@ -8,13 +8,13 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct ReplenishPacket : INetSerializable, AuthoredPacket
+public partial struct ReplenishPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<ReplenishPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<ReplenishPacket>(reader);
 }
 
 public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>

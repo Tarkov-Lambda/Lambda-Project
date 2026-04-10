@@ -11,7 +11,7 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PlayerReadinessPacket : INetSerializable, AuthoredPacket
+public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
@@ -19,14 +19,16 @@ public partial struct PlayerReadinessPacket : INetSerializable, AuthoredPacket
     public PlayerReadinessState readyState;
     public int progress;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayerReadinessPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
 }
 
 public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 {
     public void Send(PlayerReadinessState readyState, int progress = 0)
     {
+        if (H.IsHeadless) return;
+
         var packet = new PlayerReadinessPacket
         {
             readyState = readyState,
@@ -38,19 +40,16 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
-        if (H.Scoreboard == null) return;
-
-        if (packet.player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
+        PlayerScore playerScore = H.GetPlayerScore(packet.player);
+        if (playerScore == null)
         {
-            Singleton<AdminLoginPacketHandler>.Instance.Send();
+            H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
+            playerScore = H.Scoreboard[packet.player.Id];
         }
 
-        PlayerScore playerScore = H.GetPlayerScore(packet.player);
-        if (playerScore == null) H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
+        playerScore.readyState = packet.readyState;
 
-        playerScore?.readyState = packet.readyState;
-
-        if (H.IsServer)
+        if (!H.IsClient)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)
             if (H.Session?.matchState != MatchState.None && packet.readyState == PlayerReadinessState.Connected)
@@ -68,6 +67,9 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             }
         }
 
-
+        if (packet.player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
+        {
+            Singleton<AdminLoginPacketHandler>.Instance.Send();
+        }
     }
 }

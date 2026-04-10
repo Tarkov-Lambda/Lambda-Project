@@ -14,7 +14,7 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombStatePacket : INetSerializable, AuthoredPacket, ServerTimestampedPacket
+public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
@@ -25,8 +25,8 @@ public partial struct BombStatePacket : INetSerializable, AuthoredPacket, Server
 
     public Vector3 position;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BombStatePacket>(reader);
 }
 
 public class BombStatePacketHandler : PacketHandler<BombStatePacket>

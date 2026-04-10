@@ -7,15 +7,15 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BlindFirePacket : INetSerializable, AuthoredPacket
+public partial struct BlindFirePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
 
     public int value; // -1 = side fire, 0 = none, 1 = over-top
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BlindFirePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BlindFirePacket>(reader);
 }
 
 public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>

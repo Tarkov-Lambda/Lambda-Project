@@ -122,27 +122,33 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (!H.isInRaid()) return;
 
-        SteamAudioSourceAttacher.Initialize();
+        foreach (var player in H.FikaNet.CoopHandler.HumanPlayers)
+        {
+            D.Log(player.Profile.Nickname);
+        }
 
         _tickerObject = new GameObject("Arena Gamesession");
         _tickerObject.GetOrAddComponent<GameModeTicker>();
         _tickerObject.GetOrAddComponent<TimeSyncTicker>();
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
         UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
+        D.Log("UnityEngine.Object.DontDestroyOnLoad(_tickerObject);");
 
-        HU.ApplyPainkiller();
-
-        D.Notify("Plugin Reloaded");
         if (session == null) session = new SessionInfo();
+        D.Log("if (session == null) session = new SessionInfo();");
 
-        await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
-        Teleporter.Teleport(H.MainPlayer, "lobby");
-        Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
-        Physics.simulationMode = SimulationMode.FixedUpdate;
+        if (!H.IsHeadless)
+        {
+            SteamAudioSourceAttacher.Initialize();
 
-        Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
-
-        SteamAudioInitializer.AttachListenerIfNeeded();
+            HU.ApplyPainkiller();
+            await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
+            Teleporter.Teleport(H.MainPlayer, "lobby");
+            Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
+            Physics.simulationMode = SimulationMode.FixedUpdate;
+            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
+            SteamAudioInitializer.AttachListenerIfNeeded();
+        }
     }
 
     public void EndSession(GameWorld gameWorld)
@@ -181,7 +187,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public async void ChangeState(MatchState newStateType)
     {
         if (H.IsClient) return;
-        
+
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 

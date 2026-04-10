@@ -22,8 +22,8 @@ public partial struct CustomGrenadeExplosionPacket : INetSerializable
     public Vector3 explosionPos;
     public CustomGrenadeType grenadeType;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<CustomGrenadeExplosionPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<CustomGrenadeExplosionPacket>(reader);
 }
 
 public class CustomGrenadeExplosionPacketHandler : PacketHandler<CustomGrenadeExplosionPacket>

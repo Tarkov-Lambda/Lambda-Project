@@ -13,15 +13,15 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PausePacket : INetSerializable, AuthoredPacket, ServerTimestampedPacket
+public partial struct PausePacket : INetSerializable, IAuthoredPacket, IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player player { get; set; }
 
     public double timestamp { get; set; }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PausePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PausePacket>(reader);
 }
 
 public class PausePacketHandler : PacketHandler<PausePacket>

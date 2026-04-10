@@ -47,8 +47,8 @@ public partial struct SessionInfoPacket : INetSerializable
     public Dictionary<int, int> factionWins;
     public PlayerScoreSyncData[] scores;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionInfoPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionInfoPacket>(reader);
 }
 
 // This only runs explicitly, not on interval

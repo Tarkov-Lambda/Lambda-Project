@@ -20,8 +20,8 @@ public partial struct SessionStartPacket : INetSerializable
     public GameModes gameMode;
 
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionStartPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStartPacket>(reader);
 }
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
@@ -59,35 +59,46 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
     {
         if (!H.isInRaid()) return;
 
-        var packet = new SessionStartPacket { mapName = Plugin.MapName.Value };
+        var packet = new SessionStartPacket
+        {
+            mapName = H.Session.mapName,
+            gameMode = H.Session.currentGameMode
+
+        };
         RequestSendToPlayer(packet, player.Id);
     }
 
     protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
     {
         PrepareForStart(packet);
-        Singleton<SessionInfoPacketHandler>.Instance.Send();
 
         D.LogTransaction("Starting a match");
-        Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
 
-        H.Arena.ChangeState(MatchState.Warmup);
-
-        await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
-
-        // Report back to the server that the map is loaded
-        Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready, 100);
-
-        switch (H.Session.currentGameMode)
+        if (!H.IsClient) // Server (headless or listen server) — owns state transitions
         {
-            case GameModes.FFA:
-                H.Arena.ActiveRules = new FFAModeRules();
-                break;
-            case GameModes.SND:
-                H.Arena.ActiveRules = new SND_ModeRules();
-                break;
+            Singleton<SessionInfoPacketHandler>.Instance.Send();
+            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+            H.Arena.ChangeState(MatchState.Warmup);
         }
 
-        PU.OpenEyes();
+        if (!H.IsHeadless) // Clients and listen server — load the level locally
+        {
+            await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
+
+            // Report back to the server that the map is loaded
+            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready, 100);
+
+            switch (H.Session.currentGameMode)
+            {
+                case GameModes.FFA:
+                    H.Arena.ActiveRules = new FFAModeRules();
+                    break;
+                case GameModes.SND:
+                    H.Arena.ActiveRules = new SND_ModeRules();
+                    break;
+            }
+
+            PU.OpenEyes();
+        }
     }
 }

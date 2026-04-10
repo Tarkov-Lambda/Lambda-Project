@@ -35,103 +35,47 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\core\BepInEx.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll">
-      <Private>False</Private>
-    </Reference>
+    <!-- BepInEx / SPT -->
+    <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
+    <Reference Include="$(BepInExPath)\core\BepInEx.dll" />
+    <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
+    <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
 
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\ItemComponent.Types.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.Unity.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Comfort.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Newtonsoft.Json.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.AudioModule.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Unity.TextMeshPro.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Meta.XR.Audio.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DissonanceVoip.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Unity.Postprocessing.Runtime.dll">
-      <Private>False</Private>
-    </Reference>
+    <!-- Escape From Tarkov Managed DLLs -->
+    <Reference Include="$(ManagedPath)\ItemComponent.Types.dll" />
+    <Reference Include="$(ManagedPath)\Assembly-CSharp.dll" />
+    <Reference Include="$(ManagedPath)\Comfort.Unity.dll" />
+    <Reference Include="$(ManagedPath)\Comfort.dll" />
+    <Reference Include="$(ManagedPath)\Newtonsoft.Json.dll" />
+    <Reference Include="$(ManagedPath)\Sirenix.Serialization.dll" />
+    <Reference Include="$(ManagedPath)\UnityEngine.AudioModule.dll" />
+    <Reference Include="$(ManagedPath)\UnityEngine.UI.dll" />
+    <Reference Include="$(ManagedPath)\Unity.TextMeshPro.dll" />
+    <Reference Include="$(ManagedPath)\Meta.XR.Audio.dll" />
+    <Reference Include="$(ManagedPath)\DissonanceVoip.dll" />
+    <Reference Include="$(ManagedPath)\Unity.Postprocessing.Runtime.dll" />
+    <Reference Include="$(ManagedPath)\DOTween.dll" />
+    <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
 
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DOTween.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\DOTween.Modules.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <!-- <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
-      <Private>False</Private>
-    </Reference> -->
     <Reference Include="..\deps\libraries\*.dll">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\arena.shared\arena.shared.csproj">
-      <Private>False</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
 
-    <ProjectReference Include="..\arena.ui\arena.ui.csproj">
-      <Private>False</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\arena.ui\arena.ui.csproj" />
 
-    <ProjectReference Include="..\arena.audio\SteamAudioUnity.csproj">
-      <Private>False</Private>
-    </ProjectReference>
-
+    <ProjectReference Include="..\arena.audio\SteamAudioUnity.csproj" />
 
     <ProjectReference Include="..\Tracer\tracer.csproj" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
-
-  <Target Name="PrintConfig" BeforeTargets="Build">
-    <Message Text="CONFIGURATION: $(Configuration)" Importance="High" />
-  </Target>
-
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
 
     <ItemGroup>
-      <!-- <Dependencies Include="../deps/libraries/MemoryPack.Core.dll" />
-      <Dependencies Include="../deps/libraries/System.Collections.Immutable.dll" />
-      <Dependencies Include="../deps/libraries/UniTask.dll" />
-      <Dependencies Include="../deps/libraries/UniTask.*.dll" />
-      <Dependencies Include="../deps/libraries/audioplugin_phonon.dll" />
-      <Dependencies Include="../deps/libraries/phonon.dll" /> -->
       <Dependencies Include="../deps/libraries/*.dll" />
 
       <DebugDependencies Include="../deps/libraries/ScriptEngine.dll"
@@ -156,12 +100,8 @@
       SkipUnchangedFiles="true"
       ContinueOnError="WarnAndContinue" />
 
-    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\"
-      SkipUnchangedFiles="true"
-      ContinueOnError="WarnAndContinue" />
-    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\"
-      SkipUnchangedFiles="true"
-      ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
+    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
       Condition="'$(Configuration)' == 'Debug'" />
@@ -173,7 +113,6 @@
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
       <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\arena.bep.dll" />
       <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\arena.bep.pdb" />
-      <!-- <ReleaseConflicts Include="$(SPTPath)\BepInEx\plugins\ifp\tracer.dll" /> -->
     </ItemGroup>
 
     <Delete Files="@(ReleaseConflicts)" Condition="'$(Configuration)' == 'Release'" />
@@ -202,8 +141,7 @@
       <PluginFiles Include="$(SPTPath)\BepInEx\plugins\ifp\**\*" />
     </ItemGroup>
 
-    <Copy
-      SourceFiles="@(PluginFiles)"
+    <Copy SourceFiles="@(PluginFiles)"
       DestinationFiles="@(PluginFiles->'$(StagingDir)\BepInEx\plugins\ifp\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- Create zip from staging -->
