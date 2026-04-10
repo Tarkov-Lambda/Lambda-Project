@@ -2,5 +2,5 @@
 
 public interface IServerTimestampedPacket
 {
-    public double timestamp { get; set; }
+    public double Timestamp { get; set; }
 }

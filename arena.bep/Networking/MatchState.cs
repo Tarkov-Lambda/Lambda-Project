@@ -13,7 +13,7 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct MatchStateSyncPacket : INetSerializable, IServerTimestampedPacket
 {
-    public double timestamp {get; set;}
+    public double Timestamp {get; set;}
 
     public MatchState matchState;
     public RoundActionPhaseEnd? roundActionEnd;
@@ -31,7 +31,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         var packet = new MatchStateSyncPacket
         {
             matchState = matchState,
-            timestamp = NetworkTime.ServerNowSeconds,
+            Timestamp = NetworkTime.ServerNowSeconds,
             roundActionEnd = roundActionEnd
         };
         RequestSend(packet);

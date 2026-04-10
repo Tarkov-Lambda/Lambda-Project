@@ -163,13 +163,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency 
         if (packet is IAuthoredPacket authoredPacket)
         {
-            if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
+            if (authoredPacket.Player == null) authoredPacket.Player = H.MainPlayer;
             packet = (T)(object)authoredPacket;
         }
 
         if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer)
         {
-            serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
+            serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
         }
 
@@ -309,7 +309,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
         if (packet is IServerTimestampedPacket serverTimestampedPacket)
         {
-            serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
+            serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
         }
 

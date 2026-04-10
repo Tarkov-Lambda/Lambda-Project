@@ -1,15 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using EFT;
-using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core;
-using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using PacketHandler.RateLimiting;
 using MemoryPack;

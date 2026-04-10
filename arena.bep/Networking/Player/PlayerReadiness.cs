@@ -14,7 +14,7 @@ namespace ifp.arena.bep.networking;
 public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public PlayerReadinessState readyState;
     public int progress;
@@ -40,11 +40,11 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
-        PlayerScore playerScore = H.GetPlayerScore(packet.player);
+        PlayerScore playerScore = H.GetPlayerScore(packet.Player);
         if (playerScore == null)
         {
-            H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
-            playerScore = H.Scoreboard[packet.player.Id];
+            H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
+            playerScore = H.Scoreboard[packet.Player.Id];
         }
 
         playerScore.readyState = packet.readyState;
@@ -54,20 +54,20 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             // In case a player is reporting they are connected mid session (reconnects, new joins)
             if (H.Session?.matchState != MatchState.None && packet.readyState == PlayerReadinessState.Connected)
             {
-                if (packet.player == null) return;
+                if (packet.Player == null) return;
 
-                if (!H.Scoreboard.ContainsKey(packet.player.Id))
+                if (!H.Scoreboard.ContainsKey(packet.Player.Id))
                 {
-                    H.Scoreboard[packet.player.Id] = new PlayerScore(packet.player.Id);
-                    H.GetPlayerScore(packet.player.Id).ChangeFaction(Faction.Spectator);
+                    H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
+                    H.GetPlayerScore(packet.Player.Id).ChangeFaction(Faction.Spectator);
                 }
 
-                Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.player);
-                Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.player);
+                Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.Player);
+                Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.Player);
             }
         }
 
-        if (packet.player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
+        if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
         {
             Singleton<AdminLoginPacketHandler>.Instance.Send();
         }

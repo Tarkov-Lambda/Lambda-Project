@@ -11,7 +11,7 @@ namespace ifp.arena.bep.networking;
 public partial struct HandsInspectPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<HandsInspectPacket>(reader);
@@ -23,9 +23,9 @@ public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
 
     protected override void WhenApproved(HandsInspectPacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) return;
+        if (packet.Player.IsYourPlayer) return;
 
-        if (packet.player.HandsController is EmptyHandsController emptyHands)
+        if (packet.Player.HandsController is EmptyHandsController emptyHands)
         {
             emptyHands.ExamineWeapon();
         }

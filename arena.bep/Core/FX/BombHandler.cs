@@ -80,11 +80,11 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                 CancelBombAudio();
                 break;
             case BombState.Planting:
-                pos = packet.player.PlayerBody.transform.position;
+                pos = packet.Player.PlayerBody.transform.position;
                 clip = H.Sounds.Planting;
                 break;
             case BombState.Defusing:
-                pos = packet.player.PlayerBody.transform.position;
+                pos = packet.Player.PlayerBody.transform.position;
                 clip = H.Sounds.Defusing;
                 break;
             case BombState.Defused:

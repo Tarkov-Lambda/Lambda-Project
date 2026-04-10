@@ -10,7 +10,7 @@ namespace ifp.arena.bep.networking;
 public partial struct BlindFirePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public int value; // -1 = side fire, 0 = none, 1 = over-top
 
@@ -28,8 +28,8 @@ public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
 
     protected override void WhenApproved(BlindFirePacket packet, NetPeer peer)
     {
-        if (packet.player == null || packet.player.IsYourPlayer) return;
+        if (packet.Player == null || packet.Player.IsYourPlayer) return;
 
-        packet.player.HandsController?.BlindFire(packet.value);
+        packet.Player.HandsController?.BlindFire(packet.value);
     }
 }

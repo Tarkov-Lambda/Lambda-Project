@@ -11,7 +11,7 @@ namespace ifp.arena.bep.networking;
 public partial struct ReplenishPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<ReplenishPacket>(reader);
@@ -23,6 +23,6 @@ public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
 
     protected override void WhenApproved(ReplenishPacket packet, NetPeer peer)
     {
-        RU.Replenish(packet.player);
+        RU.Replenish(packet.Player);
     }
 }

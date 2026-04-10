@@ -45,7 +45,7 @@
 - Unity Spatializer Engine bypass *(Steam Audio DSP bridge)*  
 - Custom LiteNetLib Packet Handler  
   - Approval / Rejection System
-  - Prediction handling
+  - Local Approval Prediction Handling
   - Packet Validation
   - Packet Authority
   - Rate limiting

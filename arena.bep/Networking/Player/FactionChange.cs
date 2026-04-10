@@ -16,7 +16,7 @@ namespace ifp.arena.bep.networking;
 public partial struct FactionChangePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public Faction faction;
 
@@ -66,15 +66,15 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     protected override bool ServerValidation(ref FactionChangePacket packet, NetPeer netPeer)
     {
-        if (!CanChangeFaction(H.GetPlayerScore(packet.player.Id), packet.faction)) return false;
+        if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction)) return false;
 
         return base.ServerValidation(ref packet, netPeer);
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) _cts?.Cancel();
+        if (packet.Player.IsYourPlayer) _cts?.Cancel();
 
-        H.GetPlayerScore(packet.player)?.ChangeFaction(packet.faction);
+        H.GetPlayerScore(packet.Player)?.ChangeFaction(packet.faction);
     }
 }

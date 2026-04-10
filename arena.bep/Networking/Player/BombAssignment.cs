@@ -15,7 +15,7 @@ namespace ifp.arena.bep.networking;
 public partial struct BombAssignmentPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BombAssignmentPacket>(reader);
@@ -31,9 +31,9 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
         {
             var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).RandomElement();
 
-            var packet = new BombAssignmentPacket { player = randomTerrorist, };
+            var packet = new BombAssignmentPacket { Player = randomTerrorist, };
 
-            RequestSendToPlayer(packet, packet.player.Id);
+            RequestSendToPlayer(packet, packet.Player.Id);
         }
     }
 

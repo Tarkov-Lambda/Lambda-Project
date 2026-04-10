@@ -179,7 +179,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
         PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
-        ServerPhaseStartSeconds = packet.timestamp;
+        ServerPhaseStartSeconds = packet.Timestamp;
 
         if (packet.roundActionEnd.HasValue)
         {

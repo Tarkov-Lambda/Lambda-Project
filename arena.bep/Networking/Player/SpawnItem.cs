@@ -17,21 +17,21 @@ namespace ifp.arena.bep.networking;
 
 public struct SpawnItemPacket : INetSerializable, IAuthoredPacket
 {
-    public Player player { get; set; }
+    public Player Player { get; set; }
     public ItemPlacement placement;
     public Item item;
 
     public void Serialize(NetDataWriter writer)
     {
-        writer.PutPlayer(player);
+        writer.PutPlayer(Player);
         writer.Put(placement);
         writer.PutItem(item);
     }
 
     public void Deserialize(NetDataReader reader)
     {
-        player = reader.GetPlayer();
-        placement = reader.GetItemPlacement(player);
+        Player = reader.GetPlayer();
+        placement = reader.GetItemPlacement(Player);
         item = reader.GetItem();
     }
 }
@@ -53,7 +53,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     {
         var packet = new SpawnItemPacket
         {
-            player = H.MainPlayer,
+            Player = H.MainPlayer,
             item = item,
             placement = placement
         };
@@ -66,18 +66,18 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     // otherwise we have to rewrite the logic to make the server give us spawn item packages effectivelly (gun + mags, 2 armor plates)
     protected override async void LocalPredictApproved(SpawnItemPacket packet)
     {
-        SpawnItem(packet, packet.player);
+        SpawnItem(packet, packet.Player);
         // we already spent money locally before requesting to begin with.
     }
 
     protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) return;
-        SpawnItem(packet, packet.player);
+        if (packet.Player.IsYourPlayer) return;
+        SpawnItem(packet, packet.Player);
 
         if (BuyMenu.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
-            H.GetPlayerScore(packet.player.Id).SpendMoney(itemData.price);
+            H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
         }
     }
 

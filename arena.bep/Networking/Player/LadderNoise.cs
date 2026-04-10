@@ -12,7 +12,7 @@ namespace ifp.arena.bep.networking;
 public partial struct LadderNoisePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public LadderMaterial ladderMaterial;
 
@@ -31,9 +31,9 @@ public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
 
     protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) return;
+        if (packet.Player.IsYourPlayer) return;
 
-        MakeLadderNoise(packet.player, packet);
+        MakeLadderNoise(packet.Player, packet);
     }
 
     private void MakeLadderNoise(Player player, LadderNoisePacket packet)

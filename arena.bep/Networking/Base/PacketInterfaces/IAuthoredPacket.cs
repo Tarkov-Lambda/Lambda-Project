@@ -5,5 +5,5 @@ namespace ifp.arena.bep.networking;
 public interface IAuthoredPacket
 {
     // use this field to 
-    public Player player { get; set; }
+    public Player Player { get; set; }
 }
