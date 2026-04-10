@@ -15,14 +15,12 @@ public struct SteamSourceData
 {
     public SteamAudioSource steam;
     public PhononDSPBridge bridge;
-
 }
 
 internal class SteamSourceDict
 {
     public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
 }
-
 
 public static class SteamAudioSourceAttacher
 {

@@ -16,7 +16,7 @@ public static class InventoryResetter
 
     public static string GetDefaultPistolBsgId(Faction faction)
     {
-        foreach (var category in BuyMenu.buyCategories)
+        foreach (var category in BuyMenuSelection.buyCategories)
         {
             foreach (var shopItem in category.items)
             {

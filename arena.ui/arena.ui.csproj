@@ -28,7 +28,7 @@
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
+      <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)"

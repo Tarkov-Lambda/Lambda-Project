@@ -26,7 +26,7 @@ public partial struct PlayerScoreSyncData
     public bool isAlive;
     public PlayerReadinessState readyState;
 
-    public int s_roundDamage;
+    public int RoundDamage;
     public int roundKills;
     public int roundHeadshots;
 }
@@ -80,7 +80,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
                 isAlive = kvp.Value.IsAlive,
                 readyState = kvp.Value.readyState,
 
-                s_roundDamage = kvp.Value.s_roundDamage,
+                RoundDamage = kvp.Value.RoundDamage,
                 roundKills = kvp.Value.RoundKills,
                 roundHeadshots = kvp.Value.RoundHeadshots
             }).ToArray()

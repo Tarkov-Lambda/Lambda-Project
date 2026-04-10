@@ -75,7 +75,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         if (packet.Player.IsYourPlayer) return;
         SpawnItem(packet, packet.Player);
 
-        if (BuyMenu.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+        if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
             H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
         }

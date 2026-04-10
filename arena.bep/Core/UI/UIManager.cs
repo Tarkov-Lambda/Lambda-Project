@@ -163,7 +163,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         if (itemInfoProvider == null)
         {
             itemInfoProvider = new BSGItemInfoProvider();
-            shop.SetAssortment(BuyMenu.buyCategories, itemInfoProvider, Purchasing.BuyItem);
+            shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
         }
 
         shop.SetFaction(H.MainPlayerScore.Faction);

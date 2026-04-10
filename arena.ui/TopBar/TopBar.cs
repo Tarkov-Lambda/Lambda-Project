@@ -41,8 +41,8 @@ namespace arena.ui
 
         public void SetTeamStatuses(PlayerStats[] leftTeam, PlayerStats[] rightTeam)
         {
-            teamStatusLeft.Set(leftTeam);
-            teamStatusRight.Set(rightTeam);
+            teamStatusLeft?.Set(leftTeam);
+            teamStatusRight?.Set(rightTeam);
         }
 
         string FormatTime(float seconds)

@@ -111,14 +111,14 @@
 
   <Target Name="DeleteConflictingLibraries" AfterTargets="CopyFilesAfterBuild">
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
-      <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\arena.bep.dll" />
-      <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\arena.bep.pdb" />
+      <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).dll" />
+      <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
     <Delete Files="@(ReleaseConflicts)" Condition="'$(Configuration)' == 'Release'" />
 
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-      <DebugConflicts Include="$(SPTPath)\BepInEx\plugins\ifp\arena.bep.dll" />
+      <DebugConflicts Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
     <Delete Files="@(DebugConflicts)" Condition="'$(Configuration)' == 'Debug'" />

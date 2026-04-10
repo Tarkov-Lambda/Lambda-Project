@@ -34,7 +34,7 @@ public static class FactoryUtilities
 
     public static bool TryGetGunAmmo(Weapon weapon, out AmmoItemClass ammo)
     {
-        if (BuyMenu.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
+        if (BuyMenuSelection.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
         {
             ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
             return true;

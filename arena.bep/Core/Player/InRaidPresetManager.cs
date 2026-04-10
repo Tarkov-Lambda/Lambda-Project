@@ -21,7 +21,7 @@ public struct PresetManagerSlotInfo
 public class PresetManager : Singleton<PresetManager>, IDisposable
 {
 
-    private string PresetDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "PresetData.jsonc");
+    private string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "PresetData.jsonc");
 
     private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 
