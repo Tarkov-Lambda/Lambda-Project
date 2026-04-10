@@ -75,12 +75,13 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         if (!H.IsClient)
         {
             Singleton<SessionInfoPacketHandler>.Instance.Send();
-            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
             H.Arena.ChangeState(MatchState.Warmup);
         }
 
         if (!H.IsHeadless)
         {
+            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             // Report back to the server that the map is loaded

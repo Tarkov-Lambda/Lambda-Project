@@ -52,7 +52,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         if (!H.IsClient)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)
-            if (H.Session?.matchState != MatchState.None && packet.readyState == PlayerReadinessState.Connected)
+            if (H.Session?.matchState > MatchState.WarmupEnd && packet.readyState == PlayerReadinessState.Connected)
             {
                 if (packet.Player == null) return;
 

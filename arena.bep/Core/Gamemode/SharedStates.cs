@@ -45,6 +45,7 @@ public class SharedWarmup : IGameState
             return MatchState.WarmupEnd;
         return null;
     }
+
     public virtual void OnExit()
     {
 
@@ -59,7 +60,7 @@ public class SharedWarmupEnd : IGameState
     {
 
     }
-    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public virtual void OnExit()
     {
         H.Session.InitializeScoreBoard();

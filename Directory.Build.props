@@ -1,5 +1,13 @@
 <Project>
     <PropertyGroup>
+      <!-- The goal is to have a C# solution live inside a Unity project to make serialized references from .meta files work -->
+      <!-- Need to avoid Visual Studio build output folders ending up inside of a Unity project -->
+      <!-- Unity ignores folders that have a dot in front, so we override default folder names with names with a dot in front -->
+      <BaseOutputPath>$(ProjectDir).bin\</BaseOutputPath>
+      <BaseIntermediateOutputPath>$(ProjectDir).obj\</BaseIntermediateOutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <SPTPath>F:\Games\SPT</SPTPath>
         <BepInExPath>$(SPTPath)\BepInEx</BepInExPath>
         <ManagedPath>$(SPTPath)\EscapeFromTarkov_Data\Managed</ManagedPath>

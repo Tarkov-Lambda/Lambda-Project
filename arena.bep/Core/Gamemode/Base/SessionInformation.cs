@@ -22,7 +22,7 @@ public class SessionInfo
         {
             {MatchState.None, 0},
             {MatchState.Warmup, 5},
-            {MatchState.WarmupEnd, 0},
+            {MatchState.WarmupEnd, 5},
             {MatchState.Pause, 45},
             {MatchState.RoundPrepare, 3},
             {MatchState.RoundAction, 115},

@@ -14,6 +14,12 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
 
+  <ItemDefinitionGroup>
+    <Reference>
+      <Private>false</Private>
+    </Reference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <!-- BepInEx / SPT -->
     <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
@@ -23,9 +29,7 @@
 
     <Reference Include="$(ManagedPath)\*.dll" />
 
-    <Reference Include="..\deps\libraries\*.dll">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="..\deps\libraries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

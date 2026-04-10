@@ -14,40 +14,28 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
 
+  <ItemDefinitionGroup>
+    <Reference>
+      <Private>false</Private>
+    </Reference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <Compile Remove="SteamAudio/Scripts/Editor/**/*.cs" />
   </ItemGroup>
 
-
   <ItemGroup>
-    <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\core\BepInEx.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="..\deps\libraries\*.dll">
-      <Private>False</Private>
-    </Reference>
+    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\arena.shared\arena.shared.csproj">
-      <Private>False</Private>
-    </ProjectReference>
+    <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
+    <Reference Include="$(BepInExPath)\core\BepInEx.dll" />
+    <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
+    <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
+    <Reference Include="$(ManagedPath)\*.dll" />
+
+    <Reference Include="..\deps\libraries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

@@ -20,6 +20,8 @@ using Fika.Core.Main.Players;
 using ifp.arena.bep.Patches;
 using Fika.Core.Main.Utils;
 
+#nullable enable
+
 namespace ifp.arena.bep.Core;
 
 // Helper class for singleton refences & helper functions
@@ -27,23 +29,8 @@ public static class Helpers
 {
     public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
 
-    public static Player MainPlayer
-    {
-        get
-        {
-            try
-            {
-                return IsInRaid() ? GameWorld.MainPlayer : null;
-            }
-            catch (Exception ex)
-            {
-                D.Dump(ex);
-                D.Log(ex.StackTrace);
-            }
-
-            return null;
-        }
-    }
+    // public static Player MainPlayer => IsInRaid() ? GameWorld.MainPlayer : null;
+    public static Player MainPlayer => GetMainPlayer();
 
     public static Inventory MainInventory => IsInRaid() ? MainPlayer.Inventory : null;
     public static InventoryController MainInventoryController => IsInRaid() ? MainPlayer.InventoryController : null;
@@ -73,7 +60,7 @@ public static class Helpers
     public static NetManager NetManager => GetNetManager();
 
     public static ArenaController Arena => Singleton<ArenaController>.Instance;
-    public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
+    public static SessionInfo Session => Arena.session;
     public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
     public static event Action<GameWorld> OnGameStarted
@@ -95,10 +82,19 @@ public static class Helpers
     }
 
     // bro thinks he's the main character
-    public static Player GetMainPlayer()
+    public static Player? GetMainPlayer()
     {
-        if (!IsInRaid()) return null;
-        return GameWorld.MainPlayer;
+        try
+        {
+            return IsInRaid() ? GameWorld.MainPlayer : null;
+        }
+        catch (Exception ex)
+        {
+            D.Dump(ex);
+            D.Log(ex.StackTrace);
+        }
+
+        return null;
     }
 
     public static Player GetPlayer(int playerId)
@@ -135,7 +131,7 @@ public static class Helpers
 
     public static bool IsInRaid()
     {
-        D.Log((GameWorld != null && GameWorld is not HideoutGameWorld).ToString());
+        // D.Log((GameWorld != null && GameWorld is not HideoutGameWorld).ToString());
         return GameWorld != null && GameWorld is not HideoutGameWorld;
     }
 
