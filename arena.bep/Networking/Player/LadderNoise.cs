@@ -1,7 +1,7 @@
 using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;

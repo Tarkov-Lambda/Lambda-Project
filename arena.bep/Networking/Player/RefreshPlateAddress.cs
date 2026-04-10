@@ -4,8 +4,8 @@ using EFT.InventoryLogic;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base;
-using ifp.arena.bep.networking.Base.RateLimiting;
+using PacketHandler;
+using PacketHandler.RateLimiting;
 
 namespace ifp.arena.bep.networking;
 

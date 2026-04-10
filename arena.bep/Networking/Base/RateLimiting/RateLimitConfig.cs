@@ -1,6 +1,6 @@
 using System;
 
-namespace ifp.arena.bep.networking.Base.RateLimiting;
+namespace PacketHandler.RateLimiting;
 
 public readonly struct RateLimitConfig
 {

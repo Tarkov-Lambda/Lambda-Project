@@ -1,6 +1,6 @@
 ﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking;

@@ -4,7 +4,7 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 

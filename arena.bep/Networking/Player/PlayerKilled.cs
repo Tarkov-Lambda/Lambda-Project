@@ -9,7 +9,7 @@ using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 

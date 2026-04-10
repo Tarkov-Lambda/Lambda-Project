@@ -4,13 +4,14 @@ using Fika.Core.Modding.Events;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base.RateLimiting;
+using PacketHandler.RateLimiting;
 using ifp.arena.bep.networking.TimeSync;
 using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
+using ifp.arena.bep.networking;
 
-namespace ifp.arena.bep.networking.Base;
+namespace PacketHandler;
 
 public enum PacketAuthority
 {
@@ -105,7 +106,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         }
         catch (Exception ex)
         {
-            Plugin.Logger.LogWarning($"ClearPacketSubscriptions failed: {ex}");
+            D.Log($"ClearPacketSubscriptions failed: {ex}");
         }
     }
 

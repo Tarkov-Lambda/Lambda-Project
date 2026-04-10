@@ -306,7 +306,7 @@ public static class ItemUtilities
             case PlacementKind.EquipmentSlot:
                 // if (player.IsYourPlayer)
                 // {
-                    player.InventoryController.AddAndRaiseEvents(item, placement.Address);
+                player.InventoryController.AddAndRaiseEvents(item, placement.Address);
                 // }
                 // else
                 // {

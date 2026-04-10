@@ -7,7 +7,7 @@ using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 
