@@ -32,7 +32,7 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
         LoadItems(File.ReadAllText(PresetDataPath));
         H.OnGameStarted += CapturePreset;
 
-        if (H.isInRaid()) CapturePreset(); // Hot-reload
+        if (H.IsInRaid()) CapturePreset(); // Hot-reload
     }
 
     public void Dispose()

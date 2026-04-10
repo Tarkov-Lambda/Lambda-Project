@@ -92,7 +92,7 @@ public class SharedPrepare : IGameState
 
         // H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-        if (!H.MainPlayerScore.isAlive)
+        if (!H.MainPlayerScore.IsAlive)
         {
             InventoryResetter.ResetInventory().Forget();
             PU.OpenEyes();
@@ -103,7 +103,7 @@ public class SharedPrepare : IGameState
             p.Spawn();
         }
 
-        Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.faction);
+        Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
         HU.HealMe().Forget();
 
         HU.ResetObservedPlayersHealth();
@@ -176,7 +176,7 @@ public class SharedSideSwap : IGameState
             foreach (var player in H.AllPlayers)
             {
                 var playerScore = H.GetPlayerScore(player.Id);
-                var swappedFaction = playerScore.faction == Faction.CT ? Faction.T : Faction.CT;
+                var swappedFaction = playerScore.Faction == Faction.CT ? Faction.T : Faction.CT;
                 playerScore.ChangeFaction(swappedFaction);
             }
             (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);

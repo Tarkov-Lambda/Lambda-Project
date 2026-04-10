@@ -16,13 +16,13 @@ public static class MvpCalculator
         rng ??= new Random();
 
         var winners = H.Scoreboard
-            .Where(kvp => kvp.Value != null && kvp.Value.faction == winner)
+            .Where(kvp => kvp.Value != null && kvp.Value.Faction == winner)
             .Select(kvp => kvp.Value)
             .ToList();
 
         if (winners.Count == 0) return (-1, null);
 
-        bool HasAnyStats(PlayerScore p) => p.kills != 0 || p.assists != 0 || p.deaths != 0;
+        bool HasAnyStats(PlayerScore p) => p.Kills != 0 || p.Assists != 0 || p.Deaths != 0;
 
         // No-action edge case: time ran out, no objective, and the winning team recorded zero stats.
         if (winReason == RoundWinReason.Timeout
@@ -46,11 +46,11 @@ public static class MvpCalculator
             if (objectiveBombState == BombState.Defused)
             {
                 var defuser = winners.FirstOrDefault(p => p.player != null && p.player.Id == objectivePlayerId);
-                if (defuser != null && defuser.roundKills == 0)
+                if (defuser != null && defuser.RoundKills == 0)
                 {
-                    int maxKills = winners.Max(p => p.roundKills);
+                    int maxKills = winners.Max(p => p.RoundKills);
                     if (maxKills > 0)
-                        return BreakTies(winners.Where(p => p.roundKills == maxKills).ToList(), rng);
+                        return BreakTies(winners.Where(p => p.RoundKills == maxKills).ToList(), rng);
                 }
 
                 return (objectivePlayerId, "defusing the bomb");
@@ -60,8 +60,8 @@ public static class MvpCalculator
         }
 
         // Elimination/timeout fallback: most kills this round.
-        int bestKills = winners.Max(p => p.roundKills);
-        return BreakTies(winners.Where(p => p.roundKills == bestKills).ToList(), rng);
+        int bestKills = winners.Max(p => p.RoundKills);
+        return BreakTies(winners.Where(p => p.RoundKills == bestKills).ToList(), rng);
     }
 
     private static (int mvpId, string mvpReason) BreakTies(List<PlayerScore> tiedOnKills, System.Random rng)
@@ -70,15 +70,15 @@ public static class MvpCalculator
         if (tiedOnKills.Count == 1) return (tiedOnKills[0].player?.Id ?? -1, "most kills this round");
 
         // Tiebreak 1: most headshots this round.
-        int bestHeadshots = tiedOnKills.Max(p => p.roundHeadshots);
+        int bestHeadshots = tiedOnKills.Max(p => p.RoundHeadshots);
         if (bestHeadshots > 0)
         {
-            var tiedOnHeadshots = tiedOnKills.Where(p => p.roundHeadshots == bestHeadshots).ToList();
+            var tiedOnHeadshots = tiedOnKills.Where(p => p.RoundHeadshots == bestHeadshots).ToList();
             if (tiedOnHeadshots.Count == 1) return (tiedOnHeadshots[0].player?.Id ?? -1, "most headshots this round");
 
             // Tiebreak 2: most assists.
-            int bestAssists = tiedOnHeadshots.Max(p => p.assists);
-            var tiedOnAssists = tiedOnHeadshots.Where(p => p.assists == bestAssists).ToList();
+            int bestAssists = tiedOnHeadshots.Max(p => p.Assists);
+            var tiedOnAssists = tiedOnHeadshots.Where(p => p.Assists == bestAssists).ToList();
             if (tiedOnAssists.Count == 1) return (tiedOnAssists[0].player?.Id ?? -1, "most assists this round");
 
             int idx = rng.Next(tiedOnAssists.Count);
@@ -86,8 +86,8 @@ public static class MvpCalculator
         }
 
         // Tiebreak 2: most assists.
-        int bestAssistsTop = tiedOnKills.Max(p => p.assists);
-        var tied = tiedOnKills.Where(p => p.assists == bestAssistsTop).ToList();
+        int bestAssistsTop = tiedOnKills.Max(p => p.Assists);
+        var tied = tiedOnKills.Where(p => p.Assists == bestAssistsTop).ToList();
         if (tied.Count == 1) return (tied[0].player?.Id ?? -1, "most assists this round");
 
         int randomIdx = rng.Next(tied.Count);

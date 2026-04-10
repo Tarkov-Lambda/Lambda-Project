@@ -81,12 +81,12 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     protected override void LocalPredictApproved(PlayerKilledPacket packet)
     {
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
-        if (!victimScore.isAlive) return;
+        if (!victimScore.IsAlive) return;
         PlayerScore killerScore = H.GetPlayerScore(packet.killer);
 
         victimScore.Kill();
 
-        if (killerScore != victimScore && killerScore.faction != victimScore.faction)
+        if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
         }
@@ -99,12 +99,12 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
     {
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
-        if (!victimScore.isAlive) return;
+        if (!victimScore.IsAlive) return;
         PlayerScore killerScore = H.GetPlayerScore(packet.killer);
 
         victimScore.Kill();
 
-        if (killerScore != victimScore && killerScore.faction != victimScore.faction)
+        if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
         }

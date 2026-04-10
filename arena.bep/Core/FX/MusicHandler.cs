@@ -43,7 +43,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
             if (H.Arena.LastRoundActionEnd.HasValue)
             {
                 Faction winner = H.Arena.LastRoundActionEnd.Value.winner;
-                if (winner == H.MainPlayerScore.faction)
+                if (winner == H.MainPlayerScore.Faction)
                 {
                     PlayMusicEvent(H.Sounds.RoundWon);
                 }

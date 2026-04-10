@@ -74,9 +74,9 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         List<PlayerScore> validPlayersToSpectate;
 
-        if (H.MainPlayerScore.faction == Faction.Spectator)
+        if (H.MainPlayerScore.Faction == Faction.Spectator)
         {
-            validPlayersToSpectate = H.Scoreboard.Values.Where(s => s.faction != Faction.Spectator).ToList();
+            validPlayersToSpectate = H.Scoreboard.Values.Where(s => s.Faction != Faction.Spectator).ToList();
         } else validPlayersToSpectate = H.AllTeammateScores;
 
         if (validPlayersToSpectate.Count == 0)

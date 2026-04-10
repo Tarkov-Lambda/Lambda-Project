@@ -70,19 +70,19 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
             scores = H.Session.scoreboard.Select(kvp => new PlayerScoreSyncData
             {
                 playerId = kvp.Key,
-                faction = (int)kvp.Value.faction,
-                mvps = kvp.Value.mvps,
-                kills = kvp.Value.kills,
-                headshots = kvp.Value.kills,
-                assists = kvp.Value.assists,
-                deaths = kvp.Value.deaths,
-                money = kvp.Value.money,
-                isAlive = kvp.Value.isAlive,
+                faction = (int)kvp.Value.Faction,
+                mvps = kvp.Value.Mvps,
+                kills = kvp.Value.Kills,
+                headshots = kvp.Value.Kills,
+                assists = kvp.Value.Assists,
+                deaths = kvp.Value.Deaths,
+                money = kvp.Value.Money,
+                isAlive = kvp.Value.IsAlive,
                 readyState = kvp.Value.readyState,
 
                 s_roundDamage = kvp.Value.s_roundDamage,
-                roundKills = kvp.Value.roundKills,
-                roundHeadshots = kvp.Value.roundHeadshots
+                roundKills = kvp.Value.RoundKills,
+                roundHeadshots = kvp.Value.RoundHeadshots
             }).ToArray()
         };
 

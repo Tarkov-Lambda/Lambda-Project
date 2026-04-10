@@ -25,7 +25,6 @@ public partial struct SessionStartPacket : INetSerializable
 }
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
-// NOTE: We are sending a SessionInfoPacket that updates info right before this (a little redundant but whatever)
 public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 {
     public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
@@ -42,7 +41,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
     public void Send()
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         var packet = new SessionStartPacket
         {
@@ -53,11 +52,10 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         RequestSend(packet);
     }
 
-    // We only send restart packets to specific player under the condition that they just spawned/reconnected
-    // for that reason we don't execute PrepareForRestart() here; I am not pleased with the way I'm doing it
+    // if a player was not present at the start of this session, send them the sitrep
     public void SendToPlayer(Player player)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         var packet = new SessionStartPacket
         {
@@ -74,14 +72,14 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         D.LogTransaction("Starting a match");
 
-        if (!H.IsClient) // Server (headless or listen server) — owns state transitions
+        if (!H.IsClient)
         {
             Singleton<SessionInfoPacketHandler>.Instance.Send();
             Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
             H.Arena.ChangeState(MatchState.Warmup);
         }
 
-        if (!H.IsHeadless) // Clients and listen server — load the level locally
+        if (!H.IsHeadless)
         {
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
 

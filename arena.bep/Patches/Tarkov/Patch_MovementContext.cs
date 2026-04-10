@@ -22,7 +22,7 @@ public class Patch_CanWalk : ModulePatch
     [PatchPostfix]
     static void Postfix(MovementContext __instance, ref bool __result)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         Player player = playerRef(__instance);
 
@@ -55,7 +55,7 @@ public class Patch_CanJump : ModulePatch
     [PatchPostfix]
     static void Postfix(MovementContext __instance, ref bool __result)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
         if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
         {
             __result = false;

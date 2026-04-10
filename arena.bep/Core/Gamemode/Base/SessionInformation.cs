@@ -94,27 +94,27 @@ public class SessionInfo
         // return false;
 
         if (matchState == MatchState.RoundPrepare || matchState == MatchState.Pause) return true;
-        if (!H.MainPlayerScore.isAlive && H.Session.mapName != "") return true;
+        if (!H.MainPlayerScore.IsAlive && H.Session.mapName != "") return true;
 
         return false;
     }
 
     public List<Player> GetPlayersFromFaction(Faction faction)
     {
-        if (!H.isInRaid())
+        if (!H.IsInRaid())
             return new();
 
         return scoreboard.Values
-            .Where(s => s.faction == faction)
+            .Where(s => s.Faction == faction)
             .Select(s => s.player)
             .ToList();
     }
 
     public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
     {
-        if (!H.isInRaid()) return new();
+        if (!H.IsInRaid()) return new();
 
-        return scoreboard.Values.Where(s => s.faction == faction).ToList();
+        return scoreboard.Values.Where(s => s.Faction == faction).ToList();
     }
 }
 

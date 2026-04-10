@@ -95,7 +95,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public async void StartSession(GameWorld gameWorld)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         foreach (var player in H.FikaNet.CoopHandler.HumanPlayers)
         {

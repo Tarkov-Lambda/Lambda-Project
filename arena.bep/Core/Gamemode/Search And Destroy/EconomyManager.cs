@@ -83,7 +83,7 @@ public class EconomyManager : IDisposable
         int reward = 300;
 
         // Team Kill Penalty?
-        if (killerScore.faction == H.GetPlayerScore(packet.victim)?.faction)
+        if (killerScore.Faction == H.GetPlayerScore(packet.victim)?.Faction)
         {
             reward = -300;
         }
@@ -133,9 +133,9 @@ public class EconomyManager : IDisposable
 
         foreach (var p in H.Scoreboard.Values)
         {
-            if (p.faction == Faction.None) continue;
+            if (p.Faction == Faction.None) continue;
 
-            if (p.faction == winner)
+            if (p.Faction == winner)
             {
                 // Winner always gets paid
                 AddMoney(p, winReward);
@@ -143,8 +143,8 @@ public class EconomyManager : IDisposable
             else
             {
                 // Loser Logic
-                bool isTerrorist = p.faction == Faction.T;
-                bool survived = p.isAlive;
+                bool isTerrorist = p.Faction == Faction.T;
+                bool survived = p.IsAlive;
                 bool bombWasPlanted = H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Exploded;
 
                 // CS2 Rule: Saving as T

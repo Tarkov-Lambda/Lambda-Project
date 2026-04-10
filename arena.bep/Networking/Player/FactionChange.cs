@@ -30,7 +30,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     bool CanChangeFaction(PlayerScore playerScore, Faction faction)
     {
-        if (!playerScore.isAlive) return true;
+        if (!playerScore.IsAlive) return true;
 
         if (faction == Faction.Spectator) return true;
 

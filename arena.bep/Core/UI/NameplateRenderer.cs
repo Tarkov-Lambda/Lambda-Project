@@ -50,13 +50,13 @@ internal class NameplateRenderer : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!H.isInRaid())
+        if (!H.IsInRaid())
         {
             DisableAll();
             return;
         }
 
-        Faction ownFaction = H.MainPlayerScore.faction;
+        Faction ownFaction = H.MainPlayerScore.Faction;
         int activeCount = 0;
 
         Camera cam = CameraClass.Instance.Camera;
@@ -66,10 +66,10 @@ internal class NameplateRenderer : MonoBehaviour
             if (playerScore == H.MainPlayerScore)
                 continue;
 
-            if (playerScore.faction != ownFaction)
+            if (playerScore.Faction != ownFaction)
                 continue;
 
-            if (playerScore.player == null || !playerScore.isAlive)
+            if (playerScore.player == null || !playerScore.IsAlive)
                 continue;
 
             Vector3 worldPos = playerScore.player.PlayerBones.Head.position + HEAD_OFFSET;
@@ -97,7 +97,7 @@ internal class NameplateRenderer : MonoBehaviour
 
             nameplateRect.localPosition = localPoint;
 
-            nameplate.Set(playerScore.player.Profile.Nickname, playerScore.faction);
+            nameplate.Set(playerScore.player.Profile.Nickname, playerScore.Faction);
 
             activeCount++;
         }

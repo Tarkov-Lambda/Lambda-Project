@@ -10,134 +10,135 @@ public class PlayerScore
 {
     public readonly Player player;
 
-    public Faction faction { get; private set; }
-
-    // Round scope
-    public int kills { get; private set; }
-    public int damage { get; private set; }
-    public int headshots { get; private set; }
-    public int assists { get; private set; }
-    public int deaths { get; private set; }
-    public int mvps { get; private set; }
-
-    // only the server knows this value
-    public int s_roundDamage { get; private set; }
-
-    public int roundKills { get; private set; }
-    public int roundHeadshots { get; private set; }
-
-    public bool isAlive { get; private set; }
-    public int money { get; private set; }
+    public Faction Faction { get; private set; }
 
     // meta gaming (previously known as facebook gaming)
     public PlayerReadinessState readyState;
     public int ping;
-    public bool IsAdmin;
+    public bool isAdmin;
+
+    // Round scope
+    public int Kills { get; private set; }
+    public int Damage { get; private set; }
+    public int Headshots { get; private set; }
+    public int Assists { get; private set; }
+    public int Deaths { get; private set; }
+    public int Mvps { get; private set; }
+
+    // only the server knows this value
+    public int RoundDamage { get; private set; }
+
+    public int RoundKills { get; private set; }
+    public int RoundHeadshots { get; private set; }
+
+    public bool IsAlive { get; private set; }
+    public int Money { get; private set; }
+
 
     public PlayerScore(int id)
     {
         player = H.GetPlayer(id);
         if (H.IsServer && H.MainPlayer.Id == id)
         {
-            IsAdmin = true;
+            isAdmin = true;
         }
     }
 
     public void AddFrag(bool isHeadshot)
     {
-        kills++;
-        roundKills++;
+        Kills++;
+        RoundKills++;
         if (isHeadshot)
         {
-            headshots++;
-            roundHeadshots++;
+            Headshots++;
+            RoundHeadshots++;
         }
     }
 
     public void ChangeFaction(Faction faction)
     {
-        this.faction = faction;
+        this.Faction = faction;
         if (player == H.MainPlayer)
             EventBus.OnSelfFactionChanged?.Invoke(faction);
     }
 
     public void AddDamage(int newDamage)
     {
-        s_roundDamage += newDamage;
+        RoundDamage += newDamage;
     }
 
     public void Kill()
     {
-        deaths++;
-        isAlive = false;
+        Deaths++;
+        IsAlive = false;
     }
 
     public void Spawn()
     {
-        isAlive = true;
+        IsAlive = true;
         EventBus.OnSelfRespawn?.Invoke();
     }
 
     public void SessionReset()
     {
-        mvps = 0;
-        kills = 0;
-        damage = 0;
-        headshots = 0;
-        assists = 0;
-        deaths = 0;
-        isAlive = true;
+        Mvps = 0;
+        Kills = 0;
+        Damage = 0;
+        Headshots = 0;
+        Assists = 0;
+        Deaths = 0;
+        IsAlive = true;
 
-        s_roundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
-        roundHeadshots = 0;
-        roundKills = 0;
+        RoundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
+        RoundHeadshots = 0;
+        RoundKills = 0;
     }
 
     public void RoundReset()
     {
-        damage += s_roundDamage; // apply damage to the total counter after round
-        s_roundDamage = 0;
-        roundHeadshots = 0;
-        roundKills = 0;
+        Damage += RoundDamage; // apply damage to the total counter after round
+        RoundDamage = 0;
+        RoundHeadshots = 0;
+        RoundKills = 0;
     }
 
     public void Sync(PlayerScoreSyncData packet)
     {
-        faction = (Faction)packet.faction;
-        mvps = packet.mvps;
-        kills = packet.kills;
-        headshots = packet.headshots;
-        assists = packet.assists;
-        deaths = packet.deaths;
-        money = packet.money;
-        isAlive = packet.isAlive;
+        Faction = (Faction)packet.faction;
+        Mvps = packet.mvps;
+        Kills = packet.kills;
+        Headshots = packet.headshots;
+        Assists = packet.assists;
+        Deaths = packet.deaths;
+        Money = packet.money;
+        IsAlive = packet.isAlive;
         readyState = packet.readyState;
 
-        roundKills = packet.roundKills;
-        roundHeadshots = packet.roundHeadshots;
+        RoundKills = packet.roundKills;
+        RoundHeadshots = packet.roundHeadshots;
     }
 
     public void AddMoney(int amount)
     {
-        money += amount;
+        Money += amount;
 
-        money = Math.Clamp(money, 0, EconomyConstants.MAX_MONEY);
+        Money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
 
         if (player == H.MainPlayer)
-            EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
+            EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
     }
 
     public void SpendMoney(int amount)
     {
-        money -= amount;
-        if (money < 0)
-            money = 0;
-        EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.money);
+        Money -= amount;
+        if (Money < 0)
+            Money = 0;
+        EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
     }
 
     public void SetMoney(int newMoney)
     {
-        money = newMoney;
+        Money = newMoney;
     }
 
     public bool CanBuy()

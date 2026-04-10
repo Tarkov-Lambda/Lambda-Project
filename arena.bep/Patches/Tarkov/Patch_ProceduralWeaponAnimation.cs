@@ -17,7 +17,7 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
     [PatchPrefix]
     static bool Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 motion, ref Vector3 velocity)
     {
-        if (!H.isInRaid()) return true;
+        if (!H.IsInRaid()) return true;
         if (!Patch_Player_VisualPass.PwaToPlayer.TryGetValue(__instance, out Player player)) return true;
         if (player is null) return true;
         if (____firearmController is null) return true;
@@ -54,7 +54,7 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
     ref float ____swayStrength,
     ref float ____aimSwayStrength)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
         if (____firearmController is null) return;
         if (____firearmController.Item is not PistolItemClass) return;
 

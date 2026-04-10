@@ -13,7 +13,7 @@ public class Patch_method_10 : ModulePatch
     [PatchPrefix]
     static bool Prefix(Weapon __instance)
     {
-        if (!H.isInRaid()) return true;
+        if (!H.IsInRaid()) return true;
 
         if (__instance.Buff == null)
         {

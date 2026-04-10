@@ -71,7 +71,7 @@ public static class InventoryResetter
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-            Faction faction = H.MainPlayerScore?.faction ?? Faction.None;
+            Faction faction = H.MainPlayerScore?.Faction ?? Faction.None;
             string defaultPistolBsgId = GetDefaultPistolBsgId(faction);
             string defaultPistolMagTemplateId = GetDefaultPistolMagTemplateId(defaultPistolBsgId);
 

@@ -56,14 +56,14 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     {
         OnFikaEvent += ManageFikaEvent;
 
-        if (H.isInRaid() && H.FikaNet != null) RegisterPacket();
+        if (H.IsInRaid() && H.FikaNet != null) RegisterPacket();
     }
 
     public void Dispose()
     {
         OnFikaEvent -= ManageFikaEvent;
 
-        if (H.isInRaid() && H.FikaNet != null) UnregisterPacket();
+        if (H.IsInRaid() && H.FikaNet != null) UnregisterPacket();
         Release(this);
     }
 
@@ -117,7 +117,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (authority == PacketAuthority.ServerOnly)
         {
             PlayerScore score = H.GetPlayerScore(id);
-            return score == null || !score.IsAdmin; // unauthorized only if NOT admin
+            return score == null || !score.isAdmin; // unauthorized only if NOT admin
         }
         return false;
     }
@@ -126,7 +126,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
     protected void RequestSendToPlayer(T packet, int playerId)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         // local sender is the target, execute locally; I am not sure how I want to do this
         // But for the sake of keeping things as coupled as possible with the network layer
@@ -143,7 +143,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     protected void RequestSendToPeer(T packet, int netId)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         var peer = H.NetManager.GetPeerById(netId) as NetPeer;
         RequestSend(packet, peer);
@@ -154,7 +154,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
     protected void RequestSend(T packet, NetPeer targetPeer = null)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
         if (IsUnauthorized(H.MainPlayer.Id)) return;
 
         if (this is not TimeSynchronizationPacketHandler)
@@ -228,7 +228,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
-        if (!H.isInRaid() || H.FikaNet == null) return;
+        if (!H.IsInRaid() || H.FikaNet == null) return;
 
         if (this is not TimeSyncResponsePacketHandler)
             D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
