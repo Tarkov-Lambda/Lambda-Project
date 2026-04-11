@@ -208,7 +208,6 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             return;
         }
 
-        // If ServerValidation returns false, send reject packet and return before doing applying the packet.
         if (!SanitizeMetadata(ref packet, peer))
         {
             SendRejection(ref packet, peer);
@@ -221,7 +220,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             return;
         }
 
-        if (ShouldBroadcastPacket(packet)) // if this packet originates from the server - we already broadcasted it
+        if (ShouldBroadcastPacket(packet))
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
         }

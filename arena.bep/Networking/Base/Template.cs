@@ -26,9 +26,9 @@ public class TemplatePacketHandler : PacketHandler<TemplatePacket>
         RequestSend(packet);
     }
 
-    protected override bool SanitizeMetadata(ref TemplatePacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref TemplatePacket packet, NetPeer netPeer)
     {
-        return base.SanitizeMetadata(ref packet, netPeer);
+        return true;
     }
 
     protected override void WhenApproved(TemplatePacket packet, NetPeer peer)

@@ -67,7 +67,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         RequestSend(packet);
     }
 
-    protected override bool SanitizeMetadata(ref AdminAuthPacket packet, NetPeer peer)
+    protected override bool PacketValidation(ref AdminAuthPacket packet, NetPeer peer)
     {
         switch (packet.Step)
         {

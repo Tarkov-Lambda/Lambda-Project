@@ -70,7 +70,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         // we already spent money locally before requesting to begin with.
     }
 
-    protected override bool SanitizeMetadata(ref SpawnItemPacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref SpawnItemPacket packet, NetPeer netPeer)
     {
         var placement = AU.GetItemPlacement(packet.item, packet.Player);
 
@@ -82,7 +82,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         if (placement.Address != packet.placement.Address)
             D.Log($"Placement mismatch for {packet.Player.Id}");
         packet.placement = placement;
-        return base.SanitizeMetadata(ref packet, netPeer);
+        return true;
     }
 
     protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
