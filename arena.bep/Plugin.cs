@@ -33,7 +33,7 @@ namespace ifp.arena.bep;
 [BepInPlugin("com.ifp.respawn", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static new ManualLogSource Logger;
+    public static new EFTLogger Logger;
 
     public static readonly string pathToBundles = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
     public static readonly string pathToDeps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "deps");
@@ -44,6 +44,8 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<Faction> PrefferedFaction;
     internal static ConfigEntry<string> MapName;
     internal static ConfigEntry<string> Password;
+
+    internal static ConfigEntry<bool> DisplayLogAsNotificationInGame;
 
     private ConfigEntry<KeyboardShortcut> DeathKey;
     private ConfigEntry<KeyboardShortcut> RestartKey;
@@ -95,7 +97,8 @@ public class Plugin : BaseUnityPlugin
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
 
-        Logger = base.Logger;
+        Logger = new EFTLogger("Lambda", () => DisplayLogAsNotificationInGame.Value);
+        BepInEx.Logging.Logger.Sources.Add(Logger);
         Logger.LogInfo("Load");
         InitConfiguration();
 
@@ -248,6 +251,8 @@ public class Plugin : BaseUnityPlugin
         GameMode = Config.Bind("Admin", "Gamemode", GameModes.SND, "");
         Password = Config.Bind("Admin", "Password", "", "");
 
+        DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", true);
+
         DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
         RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
     }
@@ -300,6 +305,7 @@ public class Plugin : BaseUnityPlugin
 
         _disposables.Clear();
 
+        BepInEx.Logging.Logger.Sources.Add(Logger);
         Logger = null;
     }
 }
