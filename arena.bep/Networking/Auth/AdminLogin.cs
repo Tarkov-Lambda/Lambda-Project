@@ -64,7 +64,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
             Payload = ""
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override bool PacketValidation(ref AdminAuthPacket packet, NetPeer peer)
@@ -103,7 +103,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
                 Payload = responseHash
             };
 
-            RequestSend(responsePacket);
+            DispatchPacket(responsePacket);
         }
         else if (packet.Step == AdminAuthStep.Verify)
         {

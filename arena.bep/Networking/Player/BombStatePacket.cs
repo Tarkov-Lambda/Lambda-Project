@@ -37,7 +37,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
             position = position
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override bool PacketValidation(ref BombStatePacket packet, NetPeer netPeer)

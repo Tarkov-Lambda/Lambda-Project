@@ -35,7 +35,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             progress = progress
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)

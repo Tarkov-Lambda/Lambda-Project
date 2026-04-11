@@ -56,7 +56,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
                 await UniTask.WaitUntil(() => CanChangeFaction(H.MainPlayerScore, packet.faction), cancellationToken: _cts.Token);
             }
 
-            RequestSend(packet);
+            DispatchPacket(packet);
         }
         catch (OperationCanceledException)
         {

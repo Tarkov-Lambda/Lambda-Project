@@ -35,7 +35,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         if (H.IsServer)
             packet.Timestamp = NetworkTime.ServerNowSeconds;
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override bool PacketValidation(ref PausePacket packet, NetPeer netPeer)

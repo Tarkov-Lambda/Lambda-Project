@@ -36,10 +36,20 @@ public static class ItemUtilities
 
     public static async UniTask LoadBundlesForItem(Item item)
     {
-        var prefabsToLoad = item.GetAllItems()
-            .Select(i => i.Template.Prefab)
-            .Where(p => p != null && !string.IsNullOrEmpty(p.path))
-            .ToList();
+        var prefabsToLoad = new List<ResourceKey>();
+
+        foreach (var i in item.GetAllItems())
+        {
+            if (i.Template == null)
+                continue;
+
+            var prefab = i.Template.Prefab;
+
+            if (prefab != null && !string.IsNullOrEmpty(prefab.path))
+            {
+                prefabsToLoad.Add(prefab);
+            }
+        }
 
         // also include the ammo bundle for any weapons in the item tree
         foreach (var subItem in item.GetAllItems())
@@ -113,11 +123,11 @@ public static class ItemUtilities
             clonedItem.StackObjectsCount = 1;
             D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
             Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
-            await UniTask.Delay(25);
             return true;
         }
         finally
         {
+            await UniTask.Delay(25);
             _lock.Release();
         }
     }

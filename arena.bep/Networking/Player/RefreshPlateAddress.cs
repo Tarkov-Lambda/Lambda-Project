@@ -52,7 +52,7 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
             itemAddress = item.CurrentAddress
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     // protected override void LocalPredictApproved(PopPacket packet)

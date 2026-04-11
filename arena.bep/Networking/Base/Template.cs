@@ -23,7 +23,7 @@ public class TemplatePacketHandler : PacketHandler<TemplatePacket>
             id = id,
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override bool PacketValidation(ref TemplatePacket packet, NetPeer netPeer)

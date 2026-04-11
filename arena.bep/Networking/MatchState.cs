@@ -34,7 +34,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
             Timestamp = NetworkTime.ServerNowSeconds,
             roundActionEnd = roundActionEnd
         };
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)

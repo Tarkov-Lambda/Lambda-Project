@@ -94,7 +94,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         var session = H.Session;
         if (session == null) return;
 
-        RequestSend(FormatPacket());
+        DispatchPacket(FormatPacket());
     }
 
     public async void SendToPlayer(Player player)

@@ -140,7 +140,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
 
         var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
-        RequestSend(packet, peer);
+        DispatchPacket(packet, peer);
     }
 
     protected void RequestSendToPeer(T packet, int netId)
@@ -148,13 +148,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (!H.IsInRaid()) return;
 
         var peer = H.NetManager.GetPeerById(netId) as NetPeer;
-        RequestSend(packet, peer);
+        DispatchPacket(packet, peer);
     }
 
 
     // ENTRY POINT
     // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
-    protected void RequestSend(T packet, NetPeer targetPeer = null)
+    protected void DispatchPacket(T packet, NetPeer targetPeer = null)
     {
         if (!H.IsInRaid()) return;
         if (!H.IsHeadless)

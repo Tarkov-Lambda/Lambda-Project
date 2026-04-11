@@ -41,7 +41,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
             clientSendLocalSeconds = NetworkTime.LocalNowSeconds
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer netPeer)

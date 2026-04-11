@@ -75,7 +75,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
         if (victim != null) packet.victim = victim;
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void LocalPredictApproved(PlayerKilledPacket packet)

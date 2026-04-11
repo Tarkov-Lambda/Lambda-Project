@@ -39,7 +39,7 @@ public class CustomGrenadeExplosionPacketHandler : PacketHandler<CustomGrenadeEx
             grenadeType = grenadeType
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)

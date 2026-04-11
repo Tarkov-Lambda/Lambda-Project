@@ -26,7 +26,7 @@ public class WeatherAndTimePacketHandler : PacketHandler<WeatherAndTimePacket>
             minutesSinceMidnight = id,
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(WeatherAndTimePacket packet, NetPeer peer)

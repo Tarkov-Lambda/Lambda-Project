@@ -38,7 +38,7 @@ public class PlayersPingPacketHandler : PacketHandler<PlayersPingPacket>
             }).ToArray()
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(PlayersPingPacket packet, NetPeer peer)

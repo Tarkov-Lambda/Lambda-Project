@@ -58,7 +58,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
             placement = placement
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     // we have to blindly accept our packet here otherwise ItemPlacement is not aware
