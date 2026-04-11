@@ -215,15 +215,6 @@ public class GameModeTicker : MonoBehaviour
 
     private void Update()
     {
-        // AccessTools.Field(typeof(ProceduralWeaponAnimation), "_displacementStr").SetValue(H.MainPlayer.ProceduralWeaponAnimation, 0f);
-        // AccessTools.Field(typeof(ProceduralWeaponAnimation), "_swayStrength").SetValue(H.MainPlayer.ProceduralWeaponAnimation, 0f);
-
-        // H.MainPlayer.ProceduralWeaponAnimation.AimingDisplacementStr = 0f;
-        // H.MainPlayer.ProceduralWeaponAnimation.MotionReact.SwayFactors = Vector3.zero;
-        // H.MainPlayer.ProceduralWeaponAnimation.WalkEffectorEnabled = false;
-        // H.MainPlayer.ProceduralWeaponAnimation.Mask &= ~EProceduralAnimationMask.Walking;
-
-
         onUpdate?.Invoke();
         Singleton<ArenaController>.Instance.Update();
         EventBus.OnUpdate?.Invoke();
@@ -232,7 +223,7 @@ public class GameModeTicker : MonoBehaviour
     private void FixedUpdate()
     {
         onUpdate?.Invoke();
-        Singleton<ArenaController>.Instance.Update();
+        // Singleton<ArenaController>.Instance.Update();
         EventBus.OnFixedUpdate?.Invoke();
     }
 

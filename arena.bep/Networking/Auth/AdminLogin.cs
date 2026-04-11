@@ -32,8 +32,7 @@ public partial struct AdminAuthPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AdminAuthPacket>(reader);
 }
 
-// Currently runs automatically, pretty wasteful
-// Currently runs automatically, pretty wasteful
+// I can't tell if I should refactor this thing to be more inline; though who cares if it's slightly different so long as it works I guess?
 public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
 {
     private readonly Dictionary<Player, string> _pendingChallenges = new();
@@ -68,7 +67,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         RequestSend(packet);
     }
 
-    protected override bool ServerValidation(ref AdminAuthPacket packet, NetPeer peer)
+    protected override bool SanitizeMetadata(ref AdminAuthPacket packet, NetPeer peer)
     {
         switch (packet.Step)
         {

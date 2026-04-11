@@ -3,16 +3,12 @@ using EFT;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
 using PacketHandler.RateLimiting;
 using ifp.arena.bep.networking.TimeSync;
 using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
-using System.Linq;
-using Fika.Core.Main.Players;
-using Comfort.Net.Monitoring;
 
 namespace PacketHandler;
 
@@ -23,19 +19,22 @@ public enum PacketAuthority
     ServerOnly  // Only Server can send. Clients only receive.
 }
 
-public struct RejectedPacket<T> : INetSerializable where T : INetSerializable, new()
+public struct RejectionPacket<T> : INetSerializable where T : INetSerializable, new()
 {
     public T Payload;
+    public string reason;
 
     public void Serialize(NetDataWriter writer)
     {
         Payload.Serialize(writer);
+        writer.Put(reason);
     }
 
     public void Deserialize(NetDataReader reader)
     {
         Payload = new T();
         Payload.Deserialize(reader);
+        reason = reader.GetString();
     }
 }
 
@@ -47,7 +46,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
     protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
 
-    public PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
+    protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
     {
         this.deliveryMethod = deliveryMethod;
         this.authority = authority;
@@ -55,7 +54,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         Inititalize();
     }
 
-    public virtual void Inititalize()
+    protected virtual void Inititalize()
     {
         OnFikaEvent += ManageFikaEvent;
 
@@ -70,7 +69,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         Release(this);
     }
 
-    public void ManageFikaEvent(FikaEvent fikaEvent)
+    protected void ManageFikaEvent(FikaEvent fikaEvent)
     {
         if (this is PlayerKilledPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
 
@@ -86,12 +85,12 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (H.IsServer)
         {
             H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
-            H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
+            H.FikaNet.RegisterPacket<RejectionPacket<T>, NetPeer>((packet, peer) => { }); // Bro thought he was gonna reject the server
         }
         else
         {
             H.FikaNet.RegisterPacket<T, NetPeer>(WhenClientReceivesPacket);
-            H.FikaNet.RegisterPacket<RejectedPacket<T>, NetPeer>(WhenClientReceivesRejection);
+            H.FikaNet.RegisterPacket<RejectionPacket<T>, NetPeer>(WhenClientReceivesRejection);
         }
     }
 
@@ -102,18 +101,17 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         try
         {
             _serverRateLimiter.Clear();
-            if (H.NetPacketProcessor == null) return;
             H.NetPacketProcessor.RemoveSubscription<T>();
-            H.NetPacketProcessor.RemoveSubscription<RejectedPacket<T>>();
+            H.NetPacketProcessor.RemoveSubscription<RejectionPacket<T>>();
         }
         catch (Exception ex)
         {
-            D.Log($"ClearPacketSubscriptions failed: {ex}");
+            D.Log($"Packet Unregistration Failed: {ex}");
         }
     }
 
     // Admins have the same authority as the server
-    private bool IsUnauthorized(int id)
+    protected bool IsUnauthorized(int id)
     {
         if (H.IsServer) return false;
         if (authority == PacketAuthority.ServerOnly)
@@ -133,6 +131,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         // local sender is the target, execute locally; I am not sure how I want to do this
         // But for the sake of keeping things as coupled as possible with the network layer
         // this might come handy later.
+        // if (netId == H.FikaNet.NetId)
+        // {
+        //     LocalPredictApproved(packet);
+        //     WhenApproved(packet, null);
+        //     return;
+        // }
+
 
         var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
         RequestSend(packet, peer);
@@ -152,7 +157,8 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     protected void RequestSend(T packet, NetPeer targetPeer = null)
     {
         if (!H.IsInRaid()) return;
-        if (IsUnauthorized(H.MainPlayer.Id)) return;
+        if (!H.IsHeadless)
+            if (IsUnauthorized(H.MainPlayer.Id)) return;
 
         if (this is not TimeSynchronizationPacketHandler)
             D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
@@ -170,7 +176,6 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             packet = (T)(object)serverTimestampedPacket;
         }
 
-        // targetPeer will never be local here
         if (targetPeer != null)
         {
             H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
@@ -188,30 +193,31 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         }
     }
 
-    private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
+    protected void WhenServerReceivesPacket(T packet, NetPeer peer)
     {
         if (this is not TimeSynchronizationPacketHandler)
-            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {netPeer.Id}");
+            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {peer.Id}");
 
-        if (!TryPassServerRateLimit(packet, netPeer))
+        if (!TryPassServerRateLimit(packet, peer))
             return;
 
         // idk what the best action here is, but for now we just drop
-        if (IsUnauthorized(netPeer.Id))
+        if (IsUnauthorized(peer.Id))
         {
             D.Log("Unauthorized Packet, dropping");
             return;
         }
 
         // If ServerValidation returns false, send reject packet and return before doing applying the packet.
-        bool validPacket = ServerValidation(ref packet, netPeer);
-        if (!validPacket)
+        if (!SanitizeMetadata(ref packet, peer))
         {
-            if (H.NetPacketProcessor != null)
-            {
-                var rejected = new RejectedPacket<T> { Payload = packet };
-                H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
-            }
+            SendRejection(ref packet, peer);
+            return;
+        }
+
+        if (!PacketValidation(ref packet, peer))
+        {
+            SendRejection(ref packet, peer);
             return;
         }
 
@@ -220,10 +226,10 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
         }
 
-        WhenApproved(packet, netPeer);
+        WhenApproved(packet, peer);
     }
 
-    private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
+    protected void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
         if (!H.IsInRaid() || H.FikaNet == null) return;
 
@@ -233,8 +239,19 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         WhenApproved(packet, netPeer);
     }
 
-    private void WhenClientReceivesRejection(RejectedPacket<T> rejectedPacket, NetPeer netPeer)
+    protected void SendRejection(ref T packet, NetPeer peer, string reason = "")
     {
+        var rejected = new RejectionPacket<T> { Payload = packet, reason = reason };
+        H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, peer);
+    }
+
+    protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer netPeer)
+    {
+#if DEBUG
+        D.Notify($"Server Rejected {GetType().Name}");
+        if (rejectedPacket.reason != "")
+            D.Notify(rejectedPacket.reason);
+#endif
         WhenRejected(rejectedPacket.Payload, netPeer);
     }
 
@@ -243,7 +260,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         D.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
     }
 
-    private bool TryPassServerRateLimit(T packet, NetPeer netPeer)
+    protected bool TryPassServerRateLimit(T packet, NetPeer peer)
     {
         var config = ServerRateLimit;
         if (!config.Enabled)
@@ -253,11 +270,11 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
         _serverRateLimiter.Prune(nowSeconds, config.StateTtlSeconds);
 
-        bool allowed = _serverRateLimiter.TryConsume(netPeer.Id, nowSeconds, config, out bool canSendReject);
+        bool allowed = _serverRateLimiter.TryConsume(peer.Id, nowSeconds, config, out bool canSendReject);
         if (allowed)
             return true;
 
-        OnRateLimited(packet, netPeer, config);
+        OnRateLimited(packet, peer, config);
 
 
         switch (config.Action)
@@ -273,13 +290,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
                     if (H.NetPacketProcessor == null)
                         return false;
 
-                    var rejected = new RejectedPacket<T> { Payload = packet };
-                    H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, netPeer);
+
+                    SendRejection(ref packet, peer);
                     return false;
                 }
 
             case RateLimitAction.Disconnect:
-                netPeer.Disconnect();
+                peer.Disconnect();
                 return false;
 
             default:
@@ -291,9 +308,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     protected virtual bool ShouldBroadcastPacket(T packet) => true;
 
     // OPTIONAL
-    // For hard checking client packets
-    /// <summary>returning false means the packet is rejected</summary>
-    protected virtual bool ServerValidation(ref T packet, NetPeer netPeer)
+    // core Generic packet validation
+    // runs before packet specific validation
+    protected virtual bool SanitizeMetadata(ref T packet, NetPeer netPeer)
     {
         if (packet is IAuthoredPacket authoredPacket)
         {
@@ -319,6 +336,10 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         return true;
     }
 
+
+    // optional packet validation
+    protected virtual bool PacketValidation(ref T packet, NetPeer peer) { return true; }
+
     // OPTIONAL
     // In case client is quite sure that the packet is gonna get approved
     // and we want to do sfx/vfx without delay
@@ -330,8 +351,5 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     // OPTIONAL
     // kinda only using this to notify or negate anything done in ClientPrediction
-    protected virtual void WhenRejected(T packet, NetPeer netPeer)
-    {
-        D.Log($"Server Rejected the packet: {GetType().Name}");
-    }
+    protected virtual void WhenRejected(T packet, NetPeer netPeer) { }
 }

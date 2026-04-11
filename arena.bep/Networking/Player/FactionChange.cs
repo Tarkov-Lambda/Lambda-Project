@@ -64,11 +64,11 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
         }
     }
 
-    protected override bool ServerValidation(ref FactionChangePacket packet, NetPeer netPeer)
+    protected override bool SanitizeMetadata(ref FactionChangePacket packet, NetPeer netPeer)
     {
         if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction)) return false;
 
-        return base.ServerValidation(ref packet, netPeer);
+        return base.SanitizeMetadata(ref packet, netPeer);
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)

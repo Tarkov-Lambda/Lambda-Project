@@ -38,7 +38,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         RequestSend(packet);
     }
 
-    protected override bool ServerValidation(ref PausePacket packet, NetPeer netPeer)
+    protected override bool SanitizeMetadata(ref PausePacket packet, NetPeer netPeer)
     {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
 

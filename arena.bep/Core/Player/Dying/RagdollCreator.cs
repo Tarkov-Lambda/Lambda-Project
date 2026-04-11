@@ -128,22 +128,28 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         if (!player.IsYourPlayer)
         {
             PlayerBones cloneBones = playerClone.GetComponentInChildren<PlayerBones>();
-            fakeCorpse.method_17(
-                player.ProfileId,
-                player.Inventory.Equipment as InventoryEquipment,
-                player.Profile.Customization,
-                reinitBody: false,
-                Singleton<GameWorld>.Instance,
-                player.Side,
-                player.Velocity,
-                cloneBones.Pelvis.Original,
-                ragdollEnabled: false,
-                new BindableStateClass<Item>(null),
-                foreStillCorpse: false
-            );
-
-            // new GClass3385(player.Inventory.Equipment as InventoryEquipment, player.Side, player.Inventory.Equipment.Id, player.ProfileId, canBeLocalized: true, EOwnerType.Profile, default, null);
-            // fakeCorpse.Init(player.Inventory.Equipment as InventoryEquipment, "Corpse", H.GameWorld, randomRotation: false, null);
+            try
+            {
+                fakeCorpse.method_17(
+                    player.ProfileId,
+                    player.Inventory.Equipment as InventoryEquipment,
+                    player.Profile.Customization,
+                    reinitBody: false,
+                    Singleton<GameWorld>.Instance,
+                    player.Side,
+                    player.Velocity,
+                    cloneBones.Pelvis.Original,
+                    ragdollEnabled: false,
+                    new BindableStateClass<Item>(null),
+                    foreStillCorpse: false
+                );
+            }
+            catch (Exception ex)
+            {
+                // because we keep creating a corpse for the same player over and over
+                // there is some kind of a non lethal error happening here
+                // too bad!
+            }
         }
 
         Vector3 velocity = player.Velocity;

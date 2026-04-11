@@ -61,7 +61,7 @@ public class Teleporter
 
         if (!scene.isLoaded)
         {
-            D.LogError($"Trying to find spawn points in a scene that is not LOADED! fukc you");
+            D.LogError($"Trying to find spawn points in a scene that is not LOADED! fukc you"); // bro what the fuck are we logging
             return false;
         }
 

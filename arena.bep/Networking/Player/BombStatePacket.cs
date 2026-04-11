@@ -40,11 +40,11 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         RequestSend(packet);
     }
 
-    protected override bool ServerValidation(ref BombStatePacket packet, NetPeer netPeer)
+    protected override bool SanitizeMetadata(ref BombStatePacket packet, NetPeer netPeer)
     {
         if (packet.state == BombState.Exploded) return false;
 
-        return base.ServerValidation(ref packet, netPeer);
+        return base.SanitizeMetadata(ref packet, netPeer);
     }
 
     protected override void LocalPredictApproved(BombStatePacket packet)
