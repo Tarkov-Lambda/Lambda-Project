@@ -50,25 +50,35 @@ public class Teleporter
 
     public static bool TryGetNewPosition(string sceneName, Faction faction, out Vector3 newPos)
     {
-        Scene s = SceneManager.GetSceneByName(sceneName);
-        if (s == null) D.LogError($"Trying to find spawn points in a scene that doesn't exist");
+        newPos = Vector3.zero;
 
-        GameObject[] gObjects = s.GetRootGameObjects();
-
-        SpawnPoints[] allSpawnPoints = [];
-        foreach (GameObject gObject in gObjects)
+        Scene scene = SceneManager.GetSceneByName(sceneName);
+        if (scene == null)
         {
-            SpawnPoints[] sPoints = gObject.GetComponentsInChildren<SpawnPoints>();
+            D.LogError($"Trying to find spawn points in a scene that doesn't exist");
+            return false;
+        }
+
+        if (!scene.isLoaded)
+        {
+            D.LogError($"Trying to find spawn points in a scene that is not LOADED! fukc you");
+            return false;
+        }
+
+        List<SpawnPoints> allSpawnPoints = new List<SpawnPoints>();
+
+        foreach (var rootGameObject in scene.GetRootGameObjects())
+        {
+            SpawnPoints[] sPoints = rootGameObject.GetComponentsInChildren<SpawnPoints>();
             if (sPoints.Length > 0)
             {
-                allSpawnPoints = sPoints;
-                break;
+                allSpawnPoints.AddRange(sPoints);
             }
         }
 
-        if (allSpawnPoints.Length == 0)
+        if (allSpawnPoints.Count == 0)
         {
-            newPos = Vector3.zero;
+            D.LogError($"level {sceneName} contains no spawn points");
             return false;
         }
 
@@ -76,7 +86,6 @@ public class Teleporter
         if (currentSpawnPoints == null)
         {
             D.LogError($"Can't find spawn point for {faction} faction");
-            newPos = Vector3.zero;
             return false;
         }
 
