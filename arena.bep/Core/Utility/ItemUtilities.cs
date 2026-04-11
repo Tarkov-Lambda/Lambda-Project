@@ -21,6 +21,8 @@ namespace ifp.arena.bep.Core;
 // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
 public static class ItemUtilities
 {
+    private static readonly SemaphoreSlim _lock = new(1, 1);
+
     public static Item CreateItemFromTemplateId(string templateId) => FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
     public static bool TryCreateItem(string templateId, out Item newItem)
@@ -65,51 +67,59 @@ public static class ItemUtilities
 
     public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
     {
-        if (templateItem == null)
-            return false;
-
-        await UniTask.Delay(50);
-        var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
-
-        if (placement.Kind == PlacementKind.EquipmentSlot)
+        await _lock.WaitAsync();
+        try
         {
-            var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
-            if (slot.ContainedItem != null)
-            {
-                bool removed;
-                if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
-                    removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
-                else
-                {
-                    if (templateItem is Weapon)
-                        removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
-                    else
-                        removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
-                }
+            if (templateItem == null)
+                return false;
 
-                if (!removed)
+            var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
+
+            if (placement.Kind == PlacementKind.EquipmentSlot)
+            {
+                var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
+                if (slot.ContainedItem != null)
                 {
-                    D.Notify("Failed to allocate slot space in the inventory.");
+                    bool removed;
+                    if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
+                        removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
+                    else
+                    {
+                        if (templateItem is Weapon)
+                            removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
+                        else
+                            removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
+                    }
+
+                    if (!removed)
+                    {
+                        D.Notify("Failed to allocate slot space in the inventory.");
+                        return false;
+                    }
+                }
+            }
+
+            if (placement.Kind is not PlacementKind.ArmorPlate)
+            {
+                var addResult = placement.Address.Add(templateItem, true);
+                if (addResult.Failed)
+                {
+                    D.Notify(addResult.Error_0);
                     return false;
                 }
             }
-        }
 
-        if (placement.Kind is not PlacementKind.ArmorPlate)
+            Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
+            clonedItem.StackObjectsCount = 1;
+            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+            Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
+            await UniTask.Delay(25);
+            return true;
+        }
+        finally
         {
-            var addResult = placement.Address.Add(templateItem, true);
-            if (addResult.Failed)
-            {
-                D.Notify(addResult.Error_0);
-                return false;
-            }
+            _lock.Release();
         }
-
-        Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
-        clonedItem.StackObjectsCount = 1;
-        D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
-        Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
-        return true;
     }
 
     public static void ClientRequestPopItem(Item item)

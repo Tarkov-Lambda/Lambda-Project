@@ -10,6 +10,9 @@ using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
+using System.Linq;
+using Fika.Core.Main.Players;
+using Comfort.Net.Monitoring;
 
 namespace PacketHandler;
 
@@ -75,10 +78,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
     }
 
+    protected void RegisterPacket(GameWorld gWorld = null) => RegisterPacket();
 
-    public void RegisterPacket() => RegisterPacket(null);
-
-    public void RegisterPacket(GameWorld gWorld = null)
+    protected void RegisterPacket()
     {
         D.Log($"Registering {typeof(T).Name}");
         if (H.IsServer)
@@ -93,9 +95,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         }
     }
 
-    public void UnregisterPacket() => UnregisterPacket(null);
+    protected void UnregisterPacket(GameWorld gWorld = null) => UnregisterPacket();
 
-    private void UnregisterPacket(GameWorld gWorld = null)
+    protected void UnregisterPacket()
     {
         try
         {
@@ -131,11 +133,6 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         // local sender is the target, execute locally; I am not sure how I want to do this
         // But for the sake of keeping things as coupled as possible with the network layer
         // this might come handy later.
-        if (playerId == H.FikaNet.NetId)
-        {
-            WhenApproved(packet, null);
-            return;
-        }
 
         var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
         RequestSend(packet, peer);
@@ -300,9 +297,15 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     {
         if (packet is IAuthoredPacket authoredPacket)
         {
-            // Anti-spoofing
-            // if (authoredPacket.player.Id != netPeer.Id)
+            // var isPlayerFound = H.FikaNet.CoopHandler.Players.TryGetValue(netPeer.Id, out FikaPlayer playerToApply);
+            // D.Log(playerToApply.Id.ToString());
+            // if (isPlayerFound == false) return false;
+
+            // // Anti-spoofing
+            // if (playerToApply != authoredPacket.Player)
             // {
+            //     authoredPacket.Player = playerToApply;
+            //     packet = (T)(object)authoredPacket;
             //     return false;
             // }
         }

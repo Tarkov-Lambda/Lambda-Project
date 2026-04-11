@@ -97,20 +97,13 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (!H.IsInRaid()) return;
 
-        foreach (var player in H.FikaNet.CoopHandler.HumanPlayers)
-        {
-            D.Log(player.Profile.Nickname);
-        }
-
         _tickerObject = new GameObject("Arena Gamesession");
         _tickerObject.GetOrAddComponent<GameModeTicker>();
         _tickerObject.GetOrAddComponent<TimeSyncTicker>();
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
         UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
-        D.Log("UnityEngine.Object.DontDestroyOnLoad(_tickerObject);");
 
         if (session == null) session = new SessionInfo();
-        D.Log("if (session == null) session = new SessionInfo();");
 
         if (!H.IsHeadless)
         {
