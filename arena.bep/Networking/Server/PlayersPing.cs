@@ -1,6 +1,6 @@
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using MemoryPack;
 using System.Linq;
 
@@ -18,8 +18,8 @@ public partial struct PlayersPingPacket : INetSerializable
 {
     public PlayerPingData[] scores;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayersPingPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayersPingPacket>(reader);
 }
 
 // This runs on interval

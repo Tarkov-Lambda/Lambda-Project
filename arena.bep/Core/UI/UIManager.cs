@@ -145,7 +145,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
     void OnRoundActionEnd(RoundActionPhaseEnd data)
     {
-        bool win = data.winner == H.MainPlayerScore.faction;
+        bool win = data.winner == H.MainPlayerScore.Faction;
         string mainTitle = win ? "ROUND WON" : "ROUND LOST";
 
         string subTitle = "";
@@ -163,10 +163,10 @@ public class UIManager : Singleton<UIManager>, IDisposable
         if (itemInfoProvider == null)
         {
             itemInfoProvider = new BSGItemInfoProvider();
-            shop.SetAssortment(BuyMenu.buyCategories, itemInfoProvider, Purchasing.BuyItem);
+            shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
         }
 
-        shop.SetFaction(H.MainPlayerScore.faction);
+        shop.SetFaction(H.MainPlayerScore.Faction);
         Refresh();
     }
 
@@ -182,8 +182,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
             string leftName = playerKiller?.player.Profile.Nickname;
             string rightName = playerVictim?.player.Profile.Nickname;
 
-            Faction leftFaction = playerKiller == null ? Faction.None : playerKiller.faction;
-            Faction rightFaction = playerVictim == null ? Faction.None : playerVictim.faction;
+            Faction leftFaction = playerKiller == null ? Faction.None : playerKiller.Faction;
+            Faction rightFaction = playerVictim == null ? Faction.None : playerVictim.Faction;
 
             itemInfoProvider.RequestIcon(killPacket.weaponId, (weaponSprite) =>
             {
@@ -218,9 +218,9 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
 
-        matchUIController.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.faction);
+        matchUIController.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.Faction);
 
-        shop.SetCurrentMoneyBalance(H.MainPlayerScore.money);
+        shop.SetCurrentMoneyBalance(H.MainPlayerScore.Money);
     }
 
     PlayerStats[] GetAllPlayersStats()
@@ -242,19 +242,19 @@ public class UIManager : Singleton<UIManager>, IDisposable
         return new PlayerStats
         {
             Id = playerScore.player.Id,
-            Alive = playerScore.isAlive,
-            Faction = playerScore.faction,
+            Alive = playerScore.IsAlive,
+            Faction = playerScore.Faction,
 
             Name = playerScore.player.Profile.Nickname,
 
-            Money = playerScore.money,
+            Money = playerScore.Money,
 
-            Kills = playerScore.kills,
-            Deaths = playerScore.deaths,
-            Assists = playerScore.assists,
+            Kills = playerScore.Kills,
+            Deaths = playerScore.Deaths,
+            Assists = playerScore.Assists,
             Ping = playerScore.ping,
-            Headshots = playerScore.headshots,
-            Damage = playerScore.damage
+            Headshots = playerScore.Headshots,
+            Damage = playerScore.Damage
         };
     }
 

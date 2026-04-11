@@ -1,7 +1,7 @@
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking.TimeSync;
@@ -13,9 +13,9 @@ public partial struct TimeSyncResponsePacket : INetSerializable
     public double clientSendLocalSeconds;
     public double serverSendSeconds;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
 
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<TimeSyncResponsePacket>(reader);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<TimeSyncResponsePacket>(reader);
 }
 
 public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacket>

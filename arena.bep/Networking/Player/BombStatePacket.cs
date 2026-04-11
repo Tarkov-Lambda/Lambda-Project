@@ -1,12 +1,9 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Main.Utils;
+﻿using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
-using ifp.arena.bep.networking.TimeSync;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
@@ -14,19 +11,19 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombStatePacket : INetSerializable, AuthoredPacket, ServerTimestampedPacket
+public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
-    public double timestamp {get; set;}
+    public double Timestamp {get; set;}
 
     public BombState state;
 
     public Vector3 position;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombStatePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BombStatePacket>(reader);
 }
 
 public class BombStatePacketHandler : PacketHandler<BombStatePacket>
@@ -35,7 +32,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         var packet = new BombStatePacket
         {
-            player = player,
+            Player = player,
             state = state,
             position = position
         };
@@ -67,14 +64,14 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         H.Session.bombState = packet.state;
 
-        if (!packet.player.IsYourPlayer)
+        if (!packet.Player.IsYourPlayer)
         {
             H.BombHandler.PlayBombAudio(packet);
         }
 
         if (packet.state is BombState.Planted)
         {
-            H.Arena.LastObjectivePlayerId = packet.player.Id;
+            H.Arena.LastObjectivePlayerId = packet.Player.Id;
             foreach (var bombPlantZone in Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
                 bombPlantZone.GetComponent<BoxCollider>().enabled = false;
@@ -85,7 +82,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         if (packet.state is BombState.Defused or BombState.Exploded)
         {
             H.Arena.LastObjectiveBombState = packet.state;
-            if (packet.player.Id > 0) H.Arena.LastObjectivePlayerId = packet.player.Id;
+            if (packet.Player.Id > 0) H.Arena.LastObjectivePlayerId = packet.Player.Id;
         }
 
         H.BombHandler.SetBombVisuals(packet);

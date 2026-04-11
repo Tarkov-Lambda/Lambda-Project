@@ -32,7 +32,7 @@ internal class Patch_Gameworld_OnDispose : ModulePatch
     [PatchPostfix]
     static void Postfix(GameWorld __instance)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         NetworkTime.Reset();
         OnDispose?.Invoke(__instance);

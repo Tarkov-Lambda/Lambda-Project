@@ -1,10 +1,7 @@
-using Comfort.Common;
 using EFT;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.FX;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
@@ -12,15 +9,15 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct LadderNoisePacket : INetSerializable
+public partial struct LadderNoisePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public LadderMaterial ladderMaterial;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<LadderNoisePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<LadderNoisePacket>(reader);
 }
 
 public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
@@ -34,9 +31,9 @@ public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
 
     protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) return;
+        if (packet.Player.IsYourPlayer) return;
 
-        MakeLadderNoise(packet.player, packet);
+        MakeLadderNoise(packet.Player, packet);
     }
 
     private void MakeLadderNoise(Player player, LadderNoisePacket packet)

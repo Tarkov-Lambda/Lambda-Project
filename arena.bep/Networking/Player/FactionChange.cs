@@ -6,22 +6,22 @@ using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct FactionChangePacket : INetSerializable, AuthoredPacket
+public partial struct FactionChangePacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
     public Faction faction;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<FactionChangePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<FactionChangePacket>(reader);
 }
 
 public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
@@ -30,7 +30,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     bool CanChangeFaction(PlayerScore playerScore, Faction faction)
     {
-        if (!playerScore.isAlive) return true;
+        if (!playerScore.IsAlive) return true;
 
         if (faction == Faction.Spectator) return true;
 
@@ -66,15 +66,15 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     protected override bool ServerValidation(ref FactionChangePacket packet, NetPeer netPeer)
     {
-        if (!CanChangeFaction(H.GetPlayerScore(packet.player.Id), packet.faction)) return false;
+        if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction)) return false;
 
         return base.ServerValidation(ref packet, netPeer);
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) _cts?.Cancel();
+        if (packet.Player.IsYourPlayer) _cts?.Cancel();
 
-        H.GetPlayerScore(packet.player)?.ChangeFaction(packet.faction);
+        H.GetPlayerScore(packet.Player)?.ChangeFaction(packet.faction);
     }
 }

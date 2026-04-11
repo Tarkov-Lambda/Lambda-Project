@@ -5,7 +5,7 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
 using MemoryPack;
@@ -13,15 +13,15 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PausePacket : INetSerializable, AuthoredPacket, ServerTimestampedPacket
+public partial struct PausePacket : INetSerializable, IAuthoredPacket, IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
-    public double timestamp { get; set; }
+    public double Timestamp { get; set; }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PausePacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PausePacket>(reader);
 }
 
 public class PausePacketHandler : PacketHandler<PausePacket>
@@ -33,14 +33,14 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         var packet = new PausePacket { };
 
         if (H.IsServer)
-            packet.timestamp = NetworkTime.ServerNowSeconds;
+            packet.Timestamp = NetworkTime.ServerNowSeconds;
 
         RequestSend(packet);
     }
 
     protected override bool ServerValidation(ref PausePacket packet, NetPeer netPeer)
     {
-        packet.timestamp = NetworkTime.ServerNowSeconds;
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
 
         if (H.Session.matchState == MatchState.RoundPrepare)
         {
@@ -55,7 +55,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         MatchStateSyncPacket matchStateSyncPacket = new MatchStateSyncPacket
         {
             matchState = MatchState.Pause,
-            timestamp = packet.timestamp,
+            Timestamp = packet.Timestamp,
         };
         H.Arena.TransitionToState(matchStateSyncPacket);
     }

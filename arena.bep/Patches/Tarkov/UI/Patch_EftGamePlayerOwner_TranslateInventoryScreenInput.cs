@@ -18,7 +18,7 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
     {
         if (command == ECommand.ToggleInventory)
         {
-            if (AllowOpenInventory && H.MainPlayerScore.isAlive && !InventoryResetter.IsResetting)
+            if (AllowOpenInventory && H.MainPlayerScore.IsAlive && !InventoryResetter.IsResetting)
             {
                 AllowOpenInventory = false;
                 return true;

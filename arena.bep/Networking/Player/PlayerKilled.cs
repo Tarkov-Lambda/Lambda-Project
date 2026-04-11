@@ -9,7 +9,7 @@ using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 
@@ -20,13 +20,13 @@ public partial struct PlayerKilledPacket : INetSerializable
 {
     [MemoryPackAllowSerialize]
     public Player killer;
-    
+
     [MemoryPackAllowSerialize]
     public Player victim;
 
     [MemoryPackAllowSerialize]
     public Player assist;
-    
+
     public EDamageType damageType;
     public EBodyPartColliderType bodyPartCollider;
     public string weaponId;
@@ -51,8 +51,8 @@ public partial struct PlayerKilledPacket : INetSerializable
         }
     }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<PlayerKilledPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerKilledPacket>(reader);
 }
 
 public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
@@ -80,49 +80,35 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
     protected override void LocalPredictApproved(PlayerKilledPacket packet)
     {
-        PlayerScore victimScore = H.GetPlayerScore(packet.victim);
-        if (!victimScore.isAlive) return;
-        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
-
-        victimScore.Kill();
-
-        if (killerScore != victimScore && killerScore.faction != victimScore.faction)
-        {
-            killerScore.AddFrag(packet.IsHeadshot);
-        }
-
-        // create corpse before anything else happens
-        Die(victimScore.player);
-        EventBus.OnPlayerKill.Invoke(packet);
+        HandleKill(packet);
     }
 
     protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
     {
+        HandleKill(packet);
+    }
+
+    private void HandleKill(PlayerKilledPacket packet)
+    {
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
-        if (!victimScore.isAlive) return;
+        if (!victimScore.IsAlive) return;
+
         PlayerScore killerScore = H.GetPlayerScore(packet.killer);
 
         victimScore.Kill();
 
-        if (killerScore != victimScore && killerScore.faction != victimScore.faction)
+        if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
         // create corpse before anything else happens
-        Die(victimScore.player);
-        EventBus.OnPlayerKill.Invoke(packet);
-    }
-
-    private void Die(Player player)
-    {
-        if (player.IsYourPlayer)
+        if (packet.victim.IsYourPlayer)
         {
-
             HU.HealMe().Forget();
             Singleton<ReplenishPacketHandler>.Instance.Send();
 
-            player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+            packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
             Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
             _ = PU.CloseEyes(true, true);
@@ -131,10 +117,11 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         }
         else
         {
-            Singleton<RagdollCreator>.Instance.OnPacket(player);
+            Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
         }
 
         // player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
-        Teleporter.Teleport(player, "lobby", Faction.None);
+        Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+        EventBus.OnPlayerKill.Invoke(packet);
     }
 }

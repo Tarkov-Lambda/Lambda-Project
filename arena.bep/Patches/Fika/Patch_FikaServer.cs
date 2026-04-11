@@ -14,6 +14,7 @@ using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using HarmonyLib;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
+using System;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -52,7 +53,7 @@ namespace ifp.arena.bep.Patches
 
             // D.Log(peer.Id.ToString());
             // D.Log(damage.ProfileId);
-            var damagePlayer = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
+            Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
 
             // D.Log(damagePlayer.Profile.Nickname);
             // D.Log(damagePlayer.Id.ToString());
@@ -79,8 +80,10 @@ namespace ifp.arena.bep.Patches
             // I can't vouch as per how accurate this is going to be
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
             Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
-
+            
             victim.HandleDamagePacket(damage);
+
+            H.GetPlayerScore(shooter).AddDamage((int)Math.Round(damageInfo.Damage));
         }
 
         // This is fucking retarded but the alternative is to create activehealthcontroller for each player and that's even more retarded
@@ -88,7 +91,7 @@ namespace ifp.arena.bep.Patches
         // Hopefully this does not cause too much desync server side (at the end of the day we are still fully healing the player after death)
         public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
         {
-            if (!H.GetPlayerScore(victim.Id).isAlive) return 0f;
+            if (!H.GetPlayerScore(victim.Id).IsAlive) return 0f;
 
             ObservedHealthController healthController = victim.HealthController as ObservedHealthController;
 

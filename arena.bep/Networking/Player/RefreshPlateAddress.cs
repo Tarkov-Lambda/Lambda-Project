@@ -4,30 +4,30 @@ using EFT.InventoryLogic;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base;
-using ifp.arena.bep.networking.Base.RateLimiting;
+using PacketHandler;
+using PacketHandler.RateLimiting;
 
 namespace ifp.arena.bep.networking;
 
-public struct PopPacket : INetSerializable, AuthoredPacket
+public struct PopPacket : INetSerializable, IAuthoredPacket
 {
-    public Player player { get; set; }
+    public Player Player { get; set; }
     
     public Item item;
     public ItemAddress itemAddress;
 
     public void Serialize(NetDataWriter writer)
     {
-        writer.PutPlayer(player);
+        writer.PutPlayer(Player);
         writer.PutItem(item);
         writer.Put(itemAddress);
     }
 
     public void Deserialize(NetDataReader reader)
     {
-        player = reader.GetPlayer();
+        Player = reader.GetPlayer();
         item = reader.GetItem();
-        itemAddress = reader.GetItemAddress(player);
+        itemAddress = reader.GetItemAddress(Player);
     }
 }
 
@@ -47,7 +47,7 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
     {
         var packet = new PopPacket
         {
-            player = H.MainPlayer,
+            Player = H.MainPlayer,
             item = item,
             itemAddress = item.CurrentAddress
         };
@@ -57,12 +57,12 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
 
     protected override void LocalPredictApproved(PopPacket packet)
     {
-        IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.player).Forget();
+        IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
     }
 
     protected override async void WhenApproved(PopPacket packet, NetPeer peer)
     {
-        if (packet.player.IsYourPlayer) return;
-        IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.player).Forget();
+        if (packet.Player.IsYourPlayer) return;
+        IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
     }
 }

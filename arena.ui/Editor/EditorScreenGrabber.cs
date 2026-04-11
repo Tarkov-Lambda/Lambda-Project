@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using UnityEngine;
 
-namespace ifp.arena.bep.Core.UI.Editor
+namespace Lambda.Core.UI.Editor
 {
     [ExecuteAlways]
     [RequireComponent(typeof(Camera))]

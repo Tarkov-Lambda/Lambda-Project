@@ -55,7 +55,7 @@ public static class Purchasing
 
     public static bool CanAfford(ShopItem request)
     {
-        return H.MainPlayerScore.money >= request.price;
+        return H.MainPlayerScore.Money >= request.price;
     }
 
     public static async void BuyItem(ShopItem request)

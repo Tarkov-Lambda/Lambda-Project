@@ -1,10 +1,7 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
 using Fika.Core.Modding.Events;
-using Fika.Core.Networking.LiteNetLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
@@ -13,10 +10,8 @@ using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
-using Koenigz.PerfectCulling.EFT;
 using MemoryPack;
 using System;
-using System.Linq;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
@@ -33,26 +28,6 @@ public interface IGameState
 public abstract class GameModeRules
 {
     public abstract IGameState CreateState(MatchState state);
-}
-
-public static class EventBus
-{
-    public static Action<MatchState> OnEnter;
-    // We do not have OnUpdate action because clients don't run the update loop 
-    public static Action<MatchState> OnEnd;
-    public static Action<BombState> OnBombStateChange;
-    public static Action<PlayerKilledPacket> OnPlayerKill;
-    public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
-
-    public static Action<int> OnSelfMoneyChanged;
-    public static Action OnItemBuy;
-
-    public static Action OnSelfRespawn;
-    public static Action<Faction> OnSelfFactionChanged;
-
-    public static Action OnUpdate;
-    public static Action OnLateUpdate;
-    public static Action OnFixedUpdate;
 }
 
 [MemoryPackable]
@@ -120,9 +95,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public async void StartSession(GameWorld gameWorld)
     {
-        if (!H.isInRaid()) return;
-
-        SteamAudioSourceAttacher.Initialize();
+        if (!H.IsInRaid()) return;
 
         _tickerObject = new GameObject("Arena Gamesession");
         _tickerObject.GetOrAddComponent<GameModeTicker>();
@@ -130,19 +103,20 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
         UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-        HU.ApplyPainkiller();
-
-        D.Notify("Plugin Reloaded");
         if (session == null) session = new SessionInfo();
 
-        await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
-        Teleporter.Teleport(H.MainPlayer, "lobby");
-        Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
-        Physics.simulationMode = SimulationMode.FixedUpdate;
+        if (!H.IsHeadless)
+        {
+            SteamAudioSourceAttacher.Initialize();
 
-        Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
-
-        SteamAudioInitializer.AttachListenerIfNeeded();
+            HU.ApplyPainkiller();
+            await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
+            Teleporter.Teleport(H.MainPlayer, "lobby");
+            Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
+            Physics.simulationMode = SimulationMode.FixedUpdate;
+            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
+            SteamAudioInitializer.AttachListenerIfNeeded();
+        }
     }
 
     public void EndSession(GameWorld gameWorld)
@@ -181,7 +155,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public async void ChangeState(MatchState newStateType)
     {
         if (H.IsClient) return;
-        
+
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
@@ -198,7 +172,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
         PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
-        ServerPhaseStartSeconds = packet.timestamp;
+        ServerPhaseStartSeconds = packet.Timestamp;
 
         if (packet.roundActionEnd.HasValue)
         {

@@ -5,19 +5,20 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.networking.Base;
+using PacketHandler;
+using ifp.arena.shared;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombAssignmentPacket : INetSerializable, AuthoredPacket
+public partial struct BombAssignmentPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player { get; set; }
+    public Player Player { get; set; }
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<BombAssignmentPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BombAssignmentPacket>(reader);
 }
 
 public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
@@ -26,13 +27,13 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
 
     public void Send()
     {
-        if (H.Session.GetPlayersFromFaction(ifp.arena.shared.Faction.T).Count > 0)
+        if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
         {
-            var randomTerrorist = H.Session.GetPlayersFromFaction(ifp.arena.shared.Faction.T).RandomElement();
+            var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).RandomElement();
 
-            var packet = new BombAssignmentPacket { player = randomTerrorist, };
+            var packet = new BombAssignmentPacket { Player = randomTerrorist, };
 
-            RequestSendToPlayer(packet, packet.player.Id);
+            RequestSendToPlayer(packet, packet.Player.Id);
         }
     }
 

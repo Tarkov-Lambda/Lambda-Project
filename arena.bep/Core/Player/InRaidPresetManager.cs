@@ -21,7 +21,7 @@ public struct PresetManagerSlotInfo
 public class PresetManager : Singleton<PresetManager>, IDisposable
 {
 
-    private string PresetDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "PresetData.jsonc");
+    private string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "PresetData.jsonc");
 
     private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 
@@ -32,7 +32,7 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
         LoadItems(File.ReadAllText(PresetDataPath));
         H.OnGameStarted += CapturePreset;
 
-        if (H.isInRaid()) CapturePreset(); // Hot-reload
+        if (H.IsInRaid()) CapturePreset(); // Hot-reload
     }
 
     public void Dispose()

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ifp.arena.bep.networking.Base.RateLimiting;
+namespace PacketHandler.RateLimiting;
 
 // Not thread-safe; intended to be used on the network thread.
 public sealed class TokenBucketRateLimiter<TKey> where TKey : notnull

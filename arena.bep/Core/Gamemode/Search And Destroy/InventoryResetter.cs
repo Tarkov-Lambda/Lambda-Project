@@ -16,7 +16,7 @@ public static class InventoryResetter
 
     public static string GetDefaultPistolBsgId(Faction faction)
     {
-        foreach (var category in BuyMenu.buyCategories)
+        foreach (var category in BuyMenuSelection.buyCategories)
         {
             foreach (var shopItem in category.items)
             {
@@ -71,7 +71,7 @@ public static class InventoryResetter
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-            Faction faction = H.MainPlayerScore?.faction ?? Faction.None;
+            Faction faction = H.MainPlayerScore?.Faction ?? Faction.None;
             string defaultPistolBsgId = GetDefaultPistolBsgId(faction);
             string defaultPistolMagTemplateId = GetDefaultPistolMagTemplateId(defaultPistolBsgId);
 

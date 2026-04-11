@@ -28,10 +28,10 @@ public class Teleporter
             targetMap = mapName;
             targetFaction = faction;
         }
-        else if (pScore.isAlive)
+        else if (pScore.IsAlive)
         {
             targetMap = H.Session.mapName;
-            targetFaction = pScore.faction;
+            targetFaction = pScore.Faction;
         }
         else
         {

@@ -20,42 +20,47 @@ using Fika.Core.Main.Players;
 using ifp.arena.bep.Patches;
 using Fika.Core.Main.Utils;
 
+#nullable enable
+
 namespace ifp.arena.bep.Core;
 
 // Helper class for singleton refences & helper functions
 public static class Helpers
 {
     public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-    public static Player MainPlayer => isInRaid() ? GameWorld.MainPlayer : null;
-    public static Inventory MainInventory => isInRaid() ? MainPlayer.Inventory : null;
-    public static InventoryController MainInventoryController => isInRaid() ? MainPlayer.InventoryController : null;
 
-    public static GUISounds EFTGUISounds => isInRaid() ? Singleton<GUISounds>.Instance : null;
+    // public static Player MainPlayer => IsInRaid() ? GameWorld.MainPlayer : null;
+    public static Player MainPlayer => GetMainPlayer();
 
-    public static AudioHandler AudioHandler => isInRaid() ? Singleton<AudioHandler>.Instance : null;
-    public static LambdaSounds Sounds => isInRaid() ? Singleton<AudioHandler>.Instance.prefabSounds : null;
+    public static Inventory MainInventory => IsInRaid() ? MainPlayer.Inventory : null;
+    public static InventoryController MainInventoryController => IsInRaid() ? MainPlayer.InventoryController : null;
 
-    public static BombHandler BombHandler => isInRaid() ? Singleton<BombHandler>.Instance : null;
+    public static GUISounds EFTGUISounds => IsInRaid() ? Singleton<GUISounds>.Instance : null;
 
-    public static FXHandler FXHandler => isInRaid() ? Singleton<FXHandler>.Instance : null;
+    public static AudioHandler AudioHandler => IsInRaid() ? Singleton<AudioHandler>.Instance : null;
+    public static LambdaSounds Sounds => IsInRaid() ? Singleton<AudioHandler>.Instance.prefabSounds : null;
 
-    public static SpectatorManager SpectatorManager => isInRaid() ? Singleton<SpectatorManager>.Instance : null;
+    public static BombHandler BombHandler => IsInRaid() ? Singleton<BombHandler>.Instance : null;
+
+    public static FXHandler FXHandler => IsInRaid() ? Singleton<FXHandler>.Instance : null;
+
+    public static SpectatorManager SpectatorManager => IsInRaid() ? Singleton<SpectatorManager>.Instance : null;
 
     public static bool IsHeadless => FikaBackendUtils.IsHeadless;
     public static bool IsClient => FikaBackendUtils.IsClient;
     public static bool IsServer => FikaBackendUtils.IsServer;
 
     public static PlayerScore MainPlayerScore => GetMainPlayerScore();
-    public static List<Player> AllTeammates => H.Session.GetPlayersFromFaction(H.MainPlayerScore.faction);
-    public static List<PlayerScore> AllTeammateScores => H.Session.GetPlayerScoresFromFaction(H.MainPlayerScore.faction);
-    public static List<Player> AllPlayers => isInRaid() ? GetAllPlayers() : new();
+    public static List<Player> AllTeammates => H.Session.GetPlayersFromFaction(H.MainPlayerScore.Faction);
+    public static List<PlayerScore> AllTeammateScores => H.Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
+    public static List<Player> AllPlayers => IsInRaid() ? GetAllPlayers() : new();
 
     public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
     public static NetPacketProcessor NetPacketProcessor => GetPacketProcessor();
     public static NetManager NetManager => GetNetManager();
 
     public static ArenaController Arena => Singleton<ArenaController>.Instance;
-    public static SessionInfo Session => Singleton<ArenaController>.Instance.session;
+    public static SessionInfo Session => Arena.session;
     public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
     public static event Action<GameWorld> OnGameStarted
@@ -77,36 +82,45 @@ public static class Helpers
     }
 
     // bro thinks he's the main character
-    public static Player GetMainPlayer()
+    public static Player? GetMainPlayer()
     {
-        if (!isInRaid()) return null;
-        return GameWorld.MainPlayer;
+        try
+        {
+            return IsInRaid() ? GameWorld.MainPlayer : null;
+        }
+        catch (Exception ex)
+        {
+            D.Dump(ex);
+            D.Log(ex.StackTrace);
+        }
+
+        return null;
     }
 
     public static Player GetPlayer(int playerId)
     {
-        if (!isInRaid()) return null;
+        if (!IsInRaid()) return null;
         return AllPlayers.FirstOrDefault(p => p.Id == playerId);
     }
 
     public static PlayerScore GetPlayerScore(int playerId)
     {
-        if (!isInRaid()) return null;
-        Arena.session.scoreboard.TryGetValue(playerId, out var playerScore);
+        if (!IsInRaid()) return null;
+        Scoreboard.TryGetValue(playerId, out var playerScore);
         return playerScore;
     }
 
     public static PlayerScore GetPlayerScore(Player player)
     {
-        if (!isInRaid()) return null;
-        Arena.session.scoreboard.TryGetValue(player.Id, out var playerScore);
+        if (!IsInRaid()) return null;
+        H.Scoreboard.TryGetValue(player.Id, out var playerScore);
         return playerScore;
     }
 
     public static PlayerScore GetMainPlayerScore()
     {
-        if (!isInRaid()) return null;
-        Arena.session.scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
+        if (!IsInRaid()) return null;
+        Scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
         return playerScore;
     }
 
@@ -115,8 +129,9 @@ public static class Helpers
         return GameWorld.AllAlivePlayersList;
     }
 
-    public static bool isInRaid()
+    public static bool IsInRaid()
     {
+        // D.Log((GameWorld != null && GameWorld is not HideoutGameWorld).ToString());
         return GameWorld != null && GameWorld is not HideoutGameWorld;
     }
 

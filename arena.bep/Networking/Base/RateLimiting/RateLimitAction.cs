@@ -1,4 +1,4 @@
-namespace ifp.arena.bep.networking.Base.RateLimiting;
+namespace PacketHandler.RateLimiting;
 
 public enum RateLimitAction
 {

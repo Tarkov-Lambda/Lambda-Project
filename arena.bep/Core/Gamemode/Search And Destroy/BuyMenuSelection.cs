@@ -1,20 +1,13 @@
-using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking; // Assuming PlayerKilledPacket is here
 using System.Collections.Generic;
-using UnityEngine;
-using EFT.InventoryLogic;
-using System;
 using Newtonsoft.Json;
-using HarmonyLib;
 using System.IO;
 using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.Core.Economy;
 
-public static class BuyMenu
+public static class BuyMenuSelection
 {
-    public static string EconomyDataPath = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json", "Economy.jsonc");
+    public static string EconomyDataPath = Path.Combine(Plugin.pathToConfigs, "Economy.jsonc");
 
     public static List<BuyCategory> buyCategories = new();
 
@@ -45,7 +38,7 @@ public static class BuyMenu
         buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
     }
 
-    static BuyMenu()
+    static BuyMenuSelection()
     {
         LoadItems(File.ReadAllText(EconomyDataPath));
     }

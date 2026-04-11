@@ -13,22 +13,24 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
 
+  <ItemDefinitionGroup>
+    <Reference>
+      <Private>false</Private>
+    </Reference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Unity.TextMeshPro.dll">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll" />
+    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\Unity.TextMeshPro.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
+      <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopy)"

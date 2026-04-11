@@ -1,19 +1,20 @@
 ﻿using Comfort.Common;
-using Comfort.Logs;
-using Cysharp.Threading.Tasks;
 using EFT;
-using Fika.Core.Main.Utils;
 using Fika.Core.Modding.Events;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.networking.Base.RateLimiting;
+using ifp.arena.bep.GameTypes;
+using PacketHandler.RateLimiting;
 using ifp.arena.bep.networking.TimeSync;
 using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
+using ifp.arena.bep.networking;
+using System.Linq;
+using Fika.Core.Main.Players;
+using Comfort.Net.Monitoring;
 
-namespace ifp.arena.bep.networking.Base;
+namespace PacketHandler;
 
 public enum PacketAuthority
 {
@@ -38,9 +39,6 @@ public struct RejectedPacket<T> : INetSerializable where T : INetSerializable, n
     }
 }
 
-// Currently still a lot of pit falls in packet traversal route
-// Note: currently the responsibility between ShouldBroadcastClientPacket and RequestSendToPlayer is kind of blurred
-// this is probably the first place for refactoring
 public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
 {
     protected DeliveryMethod deliveryMethod;
@@ -61,29 +59,28 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     {
         OnFikaEvent += ManageFikaEvent;
 
-        if (H.isInRaid() && H.FikaNet != null) RegisterPacket();
+        if (H.IsInRaid() && H.FikaNet != null) RegisterPacket();
     }
 
     public void Dispose()
     {
         OnFikaEvent -= ManageFikaEvent;
 
-        if (H.isInRaid() && H.FikaNet != null) UnregisterPacket();
+        if (H.IsInRaid() && H.FikaNet != null) UnregisterPacket();
         Release(this);
     }
 
     public void ManageFikaEvent(FikaEvent fikaEvent)
     {
-        if (this is SessionInfoPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
+        if (this is PlayerKilledPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
 
         if (fikaEvent is FikaNetworkManagerCreatedEvent) RegisterPacket();
         if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
     }
 
+    protected void RegisterPacket(GameWorld gWorld = null) => RegisterPacket();
 
-    public void RegisterPacket() => RegisterPacket(null);
-
-    public void RegisterPacket(GameWorld gWorld = null)
+    protected void RegisterPacket()
     {
         D.Log($"Registering {typeof(T).Name}");
         if (H.IsServer)
@@ -98,9 +95,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         }
     }
 
-    public void UnregisterPacket() => UnregisterPacket(null);
+    protected void UnregisterPacket(GameWorld gWorld = null) => UnregisterPacket();
 
-    private void UnregisterPacket(GameWorld gWorld = null)
+    protected void UnregisterPacket()
     {
         try
         {
@@ -111,54 +108,65 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         }
         catch (Exception ex)
         {
-            Plugin.Logger.LogWarning($"ClearPacketSubscriptions failed: {ex}");
+            D.Log($"ClearPacketSubscriptions failed: {ex}");
         }
     }
 
     // Admins have the same authority as the server
     private bool IsUnauthorized(int id)
     {
-        return authority == PacketAuthority.ServerOnly && !H.GetPlayerScore(id).IsAdmin;
+        if (H.IsServer) return false;
+        if (authority == PacketAuthority.ServerOnly)
+        {
+            PlayerScore score = H.GetPlayerScore(id);
+            return score == null || !score.isAdmin; // unauthorized only if NOT admin
+        }
+        return false;
     }
 
     // OPTIONAL ENTRY POINT
     // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
-    protected void RequestSendToPlayer(T packet, int netId)
+    protected void RequestSendToPlayer(T packet, int playerId)
     {
-        if (!H.isInRaid()) return;
+        if (!H.IsInRaid()) return;
 
         // local sender is the target, execute locally; I am not sure how I want to do this
         // But for the sake of keeping things as coupled as possible with the network layer
         // this might come handy later.
-        if (netId == H.FikaNet.NetId)
-        {
-            WhenApproved(packet, null);
-            return;
-        }
+
+        var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
+        RequestSend(packet, peer);
+    }
+
+    protected void RequestSendToPeer(T packet, int netId)
+    {
+        if (!H.IsInRaid()) return;
 
         var peer = H.NetManager.GetPeerById(netId) as NetPeer;
         RequestSend(packet, peer);
     }
 
+
     // ENTRY POINT
     // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
     protected void RequestSend(T packet, NetPeer targetPeer = null)
     {
-        if (!H.isInRaid()) return;
-        if (IsUnauthorized(H.MainPlayer.Id)) return; // Soft check local-side
+        if (!H.IsInRaid()) return;
+        if (IsUnauthorized(H.MainPlayer.Id)) return;
 
-        D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+        if (this is not TimeSynchronizationPacketHandler)
+            D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
         // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency 
-        if (packet is AuthoredPacket authoredPacket)
+        if (packet is IAuthoredPacket authoredPacket)
         {
-            if (authoredPacket.player == null) authoredPacket.player = H.MainPlayer;
+            if (authoredPacket.Player == null) authoredPacket.Player = H.MainPlayer;
             packet = (T)(object)authoredPacket;
         }
 
-        if (packet is ServerTimestampedPacket serverTimestampedPacket && H.IsServer)
+        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer)
         {
-            serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
+            serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
         }
 
@@ -182,12 +190,8 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     private void WhenServerReceivesPacket(T packet, NetPeer netPeer)
     {
-        if (this is HandsInspectPacketHandler)
-        {
-            D.Notify($"Inspecting");
-            D.Notify($"{netPeer.Id}");
-
-        }
+        if (this is not TimeSynchronizationPacketHandler)
+            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {netPeer.Id}");
 
         if (!TryPassServerRateLimit(packet, netPeer))
             return;
@@ -221,7 +225,10 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     private void WhenClientReceivesPacket(T packet, NetPeer netPeer)
     {
-        if (!H.isInRaid() || H.FikaNet == null) return;
+        if (!H.IsInRaid() || H.FikaNet == null) return;
+
+        if (this is not TimeSyncResponsePacketHandler)
+            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 
         WhenApproved(packet, netPeer);
     }
@@ -288,18 +295,24 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     /// <summary>returning false means the packet is rejected</summary>
     protected virtual bool ServerValidation(ref T packet, NetPeer netPeer)
     {
-        if (packet is AuthoredPacket authoredPacket)
+        if (packet is IAuthoredPacket authoredPacket)
         {
-            // Anti-spoofing
-            // if (authoredPacket.player.Id != netPeer.Id)
+            // var isPlayerFound = H.FikaNet.CoopHandler.Players.TryGetValue(netPeer.Id, out FikaPlayer playerToApply);
+            // D.Log(playerToApply.Id.ToString());
+            // if (isPlayerFound == false) return false;
+
+            // // Anti-spoofing
+            // if (playerToApply != authoredPacket.Player)
             // {
+            //     authoredPacket.Player = playerToApply;
+            //     packet = (T)(object)authoredPacket;
             //     return false;
             // }
         }
 
-        if (packet is ServerTimestampedPacket serverTimestampedPacket)
+        if (packet is IServerTimestampedPacket serverTimestampedPacket)
         {
-            serverTimestampedPacket.timestamp = NetworkTime.ServerNowSeconds;
+            serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
         }
 

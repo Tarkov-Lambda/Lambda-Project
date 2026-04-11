@@ -1,17 +1,13 @@
-﻿using Comfort.Common;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking.Base;
 using ifp.arena.shared;
 using System.Collections.Generic;
 using System.Linq;
 using MemoryPack;
-using System;
-using Fika.Core.Main.Players;
 using Cysharp.Threading.Tasks;
-using Fika.Core.Main.Utils;
 using EFT;
+using PacketHandler;
 
 namespace ifp.arena.bep.networking;
 
@@ -30,7 +26,7 @@ public partial struct PlayerScoreSyncData
     public bool isAlive;
     public PlayerReadinessState readyState;
 
-    public int s_roundDamage;
+    public int RoundDamage;
     public int roundKills;
     public int roundHeadshots;
 }
@@ -47,8 +43,8 @@ public partial struct SessionInfoPacket : INetSerializable
     public Dictionary<int, int> factionWins;
     public PlayerScoreSyncData[] scores;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackHelper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackHelper.Deserialize<SessionInfoPacket>(reader);
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionInfoPacket>(reader);
 }
 
 // This only runs explicitly, not on interval
@@ -74,19 +70,19 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
             scores = H.Session.scoreboard.Select(kvp => new PlayerScoreSyncData
             {
                 playerId = kvp.Key,
-                faction = (int)kvp.Value.faction,
-                mvps = kvp.Value.mvps,
-                kills = kvp.Value.kills,
-                headshots = kvp.Value.kills,
-                assists = kvp.Value.assists,
-                deaths = kvp.Value.deaths,
-                money = kvp.Value.money,
-                isAlive = kvp.Value.isAlive,
+                faction = (int)kvp.Value.Faction,
+                mvps = kvp.Value.Mvps,
+                kills = kvp.Value.Kills,
+                headshots = kvp.Value.Kills,
+                assists = kvp.Value.Assists,
+                deaths = kvp.Value.Deaths,
+                money = kvp.Value.Money,
+                isAlive = kvp.Value.IsAlive,
                 readyState = kvp.Value.readyState,
 
-                s_roundDamage = kvp.Value.s_roundDamage,
-                roundKills = kvp.Value.roundKills,
-                roundHeadshots = kvp.Value.roundHeadshots
+                RoundDamage = kvp.Value.RoundDamage,
+                roundKills = kvp.Value.RoundKills,
+                roundHeadshots = kvp.Value.RoundHeadshots
             }).ToArray()
         };
 
