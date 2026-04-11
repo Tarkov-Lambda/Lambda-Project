@@ -192,7 +192,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
                     rightName, rightFaction,
                     weaponSprite, killPacket.IsHeadshot);
 
-                matchUIController.DeathInfo.Pop(GetPlayerStats(playerKiller));
+                if (playerVictim == H.MainPlayerScore)
+                    matchUIController.DeathInfo.Pop(GetPlayerStats(playerKiller));
             });
 
             Refresh();

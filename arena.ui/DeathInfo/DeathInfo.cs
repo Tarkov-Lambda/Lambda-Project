@@ -31,7 +31,7 @@ namespace arena.ui
         {
             if (t < 1f)
             {
-                t += Time.deltaTime * 0.5f;
+                t += Time.deltaTime * 0.2f;
                 t = Mathf.Clamp01(t);
                 frame.alpha = EasingFunctions.OutCirc(1f - t);
             }

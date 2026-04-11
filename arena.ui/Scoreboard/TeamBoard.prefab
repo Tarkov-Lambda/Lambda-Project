@@ -915,7 +915,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displacementMap: {fileID: 2800000, guid: bb06fc015329f2244b13c0d45712e5c8, type: 3}
   scaleWithRectTransform: 0
-  displacementStrength: {x: 0.05, y: 0.007999863}
+  displacementStrength: {x: 0, y: 0.007999863}
   displacementScale: {x: 1, y: 108.3}
   _shader: {fileID: 4800000, guid: 1fd085147a18cea42871ca0b2f5584d9, type: 3}
 --- !u!1 &5033915991834893881
