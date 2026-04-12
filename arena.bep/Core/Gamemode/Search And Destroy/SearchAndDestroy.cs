@@ -31,7 +31,10 @@ public class SND_Prepare : SharedPrepare
         // Hide any leftover bomb visual from the previous round
         H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
 
-        IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
+        if (!H.IsHeadless)
+        {
+            IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
+        }
 
         base.OnEnter();
     }

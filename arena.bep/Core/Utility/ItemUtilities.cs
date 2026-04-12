@@ -77,6 +77,8 @@ public static class ItemUtilities
 
     public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
     {
+        if (H.IsHeadless) return false;
+
         await _lock.WaitAsync();
         try
         {

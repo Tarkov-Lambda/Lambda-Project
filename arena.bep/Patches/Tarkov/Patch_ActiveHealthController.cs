@@ -55,6 +55,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     [PatchPrefix]
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
+        if (!H.IsInRaid()) return false; // mid raid connect protection
         if (__instance.Player.IsAI) return true;
 
         long now = Stopwatch.GetTimestamp();

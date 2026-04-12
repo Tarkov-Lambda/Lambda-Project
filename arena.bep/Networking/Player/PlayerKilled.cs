@@ -120,7 +120,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
         }
 
-        // player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
         Teleporter.Teleport(packet.victim, "lobby", Faction.None);
         EventBus.OnPlayerKill.Invoke(packet);
     }

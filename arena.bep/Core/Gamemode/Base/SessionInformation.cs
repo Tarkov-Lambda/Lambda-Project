@@ -90,9 +90,9 @@ public class SessionInfo
     // Locking out the player from shooting/jumping/moving
     public bool IsControllerPartiallyLocked()
     {
+        if(H.IsHeadless) return false;
         if (H.GameWorld is HideoutGameWorld) return false;
-        // return false;
-
+        
         if (matchState == MatchState.RoundPrepare || matchState == MatchState.Pause) return true;
         if (!H.MainPlayerScore.IsAlive && H.Session.mapName != "") return true;
 

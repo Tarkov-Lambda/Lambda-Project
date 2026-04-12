@@ -228,8 +228,8 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
             var warmup = typeof(Ladder);
-            RegisterSingletonInRaid<LadderEventManager>().Forget();                 // Overwrites Player Controller on Ladder Collision and moves them.
-            RegisterSingletonInRaid<BombHandler>().Forget();                        // Handler for the entirety of Bomb's lifecycle
+            await RegisterSingletonInRaid<LadderEventManager>();                 // Overwrites Player Controller on Ladder Collision and moves them.
+            await RegisterSingletonInRaid<BombHandler>();                        // Handler for the entirety of Bomb's lifecycle
         }
         catch (Exception ex)
         {

@@ -18,6 +18,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public SpectatorManager()
     {
+        if (H.IsHeadless) return;
         EventBus.OnLateUpdate += onUpdate;
         EventBus.OnEnter += OnEnter;
         EventBus.OnSelfFactionChanged += OnFactionChanged;
@@ -72,12 +73,14 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SwitchSpectatePlayer(bool next = true)
     {
+        if (H.IsHeadless) return;
         List<PlayerScore> validPlayersToSpectate;
 
         if (H.MainPlayerScore.Faction == Faction.Spectator)
         {
             validPlayersToSpectate = H.Scoreboard.Values.Where(s => s.Faction != Faction.Spectator).ToList();
-        } else validPlayersToSpectate = H.AllTeammateScores;
+        }
+        else validPlayersToSpectate = H.AllTeammateScores;
 
         if (validPlayersToSpectate.Count == 0)
         {
@@ -140,6 +143,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void StopSpectating()
     {
+        if (H.IsHeadless) return;
+        
         if (observedPlayer != null)
         {
             UpdatePointOfView(observedPlayer, EPointOfView.ThirdPerson);

@@ -247,9 +247,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer netPeer)
     {
 #if DEBUG
-        D.Notify($"Server Rejected {GetType().Name}");
+        D.Log($"Server Rejected {GetType().Name}");
         if (rejectedPacket.reason != "")
-            D.Notify(rejectedPacket.reason);
+            D.Log(rejectedPacket.reason);
 #endif
         WhenRejected(rejectedPacket.Payload, netPeer);
     }

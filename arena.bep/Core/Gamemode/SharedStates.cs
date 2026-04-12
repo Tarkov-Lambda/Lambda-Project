@@ -64,7 +64,12 @@ public class SharedWarmupEnd : IGameState
     public virtual void OnExit()
     {
         H.Session.InitializeScoreBoard();
-        InventoryResetter.ResetInventory().Forget();
+
+        if (!H.IsHeadless)
+        {
+            InventoryResetter.ResetInventory().Forget();
+        }
+
         H.Session.ResetSessionScopeFields(); // full reset
     }
 }
@@ -91,23 +96,27 @@ public class SharedPrepare : IGameState
         H.Session.ResetRoundScopeFields(); // I've lost the plot and I have no clue how to sync states correctly anymore
         IU.GarbageCollectWorldLoot();
 
-        // H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-
-        if (!H.MainPlayerScore.IsAlive)
-        {
-            InventoryResetter.ResetInventory().Forget();
-            PU.OpenEyes();
-        }
-
         foreach (var p in H.Arena.session.scoreboard.Values)
         {
             p.Spawn();
         }
 
-        Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
-        HU.HealMe().Forget();
 
-        HU.ResetObservedPlayersHealth();
+        if (!H.IsHeadless)
+        {
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+
+            if (!H.MainPlayerScore.IsAlive)
+            {
+                InventoryResetter.ResetInventory().Forget();
+                PU.OpenEyes();
+            }
+
+            Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
+            HU.HealMe().Forget();
+
+            HU.ResetObservedPlayersHealth();
+        }
     }
 
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

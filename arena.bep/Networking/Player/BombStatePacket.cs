@@ -16,7 +16,7 @@ public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServ
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
-    public double Timestamp {get; set;}
+    public double Timestamp { get; set; }
 
     public BombState state;
 
@@ -63,9 +63,13 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         H.Session.bombState = packet.state;
 
-        if (!packet.Player.IsYourPlayer)
+        if (!H.IsHeadless)
         {
-            H.BombHandler.PlayBombAudio(packet);
+            if (!packet.Player.IsYourPlayer)
+            {
+                H.BombHandler.PlayBombAudio(packet);
+            }
+
         }
 
         if (packet.state is BombState.Planted)

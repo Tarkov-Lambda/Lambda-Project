@@ -117,6 +117,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
             SteamAudioInitializer.AttachListenerIfNeeded();
         }
+
+        NetworkTime.Reset();
     }
 
     public void EndSession(GameWorld gameWorld)

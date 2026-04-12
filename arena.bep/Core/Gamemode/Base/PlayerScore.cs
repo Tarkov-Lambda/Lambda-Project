@@ -38,6 +38,8 @@ public class PlayerScore
     public PlayerScore(int id)
     {
         player = H.GetPlayer(id);
+        
+        if(H.IsHeadless) return;
         if (H.IsServer && H.MainPlayer.Id == id)
         {
             isAdmin = true;
@@ -58,6 +60,8 @@ public class PlayerScore
     public void ChangeFaction(Faction faction)
     {
         this.Faction = faction;
+
+        if(H.IsHeadless) return;
         if (player == H.MainPlayer)
             EventBus.OnSelfFactionChanged?.Invoke(faction);
     }
@@ -124,6 +128,7 @@ public class PlayerScore
 
         Money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
 
+        if(H.IsHeadless) return;
         if (player == H.MainPlayer)
             EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
     }
@@ -133,6 +138,8 @@ public class PlayerScore
         Money -= amount;
         if (Money < 0)
             Money = 0;
+            
+        if(H.IsHeadless) return;
         EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
     }
 
