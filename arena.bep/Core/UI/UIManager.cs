@@ -67,6 +67,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         SpectatorManager.OnSelfStopSpectating += OnStopSpectating;
 
         EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
+        EventBus.OnSelfRespawn += OnSelfRespawn;
 
         cameraHook = new EFTCameraHook();
     }
@@ -218,10 +219,12 @@ public class UIManager : Singleton<UIManager>, IDisposable
                     leftName, leftFaction,
                     rightName, rightFaction,
                     weaponSprite, killPacket.IsHeadshot);
-
-                if (playerVictim == H.MainPlayerScore)
-                    matchUIController.DeathInfo.Pop(GetPlayerStats(playerKiller));
             });
+
+            if (playerVictim == H.MainPlayerScore)
+            {
+                OnSelfDeath(GetPlayerStats(playerKiller));
+            }
 
             Refresh();
         }
@@ -229,6 +232,18 @@ public class UIManager : Singleton<UIManager>, IDisposable
         {
             Plugin.Logger.LogError(ex);
         }
+    }
+
+    void OnSelfDeath(PlayerStats killer)
+    {
+        matchUIController.DeathInfo.Pop(killer);
+
+        Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(false);
+    }
+
+    void OnSelfRespawn()
+    {
+        Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(true);
     }
 
     void Refresh()
@@ -307,6 +322,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
 
         EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
+        EventBus.OnSelfRespawn -= OnSelfRespawn;
 
         cameraHook?.Dispose();
 
