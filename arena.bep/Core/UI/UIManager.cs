@@ -66,7 +66,15 @@ public class UIManager : Singleton<UIManager>, IDisposable
         SpectatorManager.OnSelfStartSpectating += OnStartSpectating;
         SpectatorManager.OnSelfStopSpectating += OnStopSpectating;
 
+        EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
+
         cameraHook = new EFTCameraHook();
+    }
+
+    void OnSelfFactionChanged(Faction faction)
+    {
+        if (factionSelectionScreen.gameObject.activeSelf)
+            factionSelectionScreen.Cancel();
     }
 
     private void OnStartSpectating(Player player)
@@ -297,6 +305,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         EventBus.OnFixedUpdate -= SetInteractable;
         EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
+
+        EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
 
         cameraHook?.Dispose();
 
