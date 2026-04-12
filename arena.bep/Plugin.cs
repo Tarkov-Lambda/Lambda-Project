@@ -224,9 +224,10 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
             RegisterSingleton<MusicHandler>();                                      // Listens to ArenaController and plays music when necessary
             // RegisterSingleton<RaymarchHandler>();
-            RegisterSingleton<UIManager>();                                         // ENTRY POINT FOR UI
             RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
+
+            RegisterSingleton<UIManager>();                                         // ENTRY POINT FOR UI
 
             var warmup = typeof(Ladder);
             await RegisterSingletonInRaid<LadderEventManager>();                 // Overwrites Player Controller on Ladder Collision and moves them.

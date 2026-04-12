@@ -63,7 +63,24 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EventBus.OnFixedUpdate += SetInteractable;
         EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
 
+        SpectatorManager.OnSelfStartSpectating += OnStartSpectating;
+        SpectatorManager.OnSelfStopSpectating += OnStopSpectating;
+
         cameraHook = new EFTCameraHook();
+    }
+
+    private void OnStartSpectating(Player player)
+    {
+        PlayerScore playerScore = H.GetPlayerScore(player);
+        PlayerStats stats = GetPlayerStats(playerScore);
+
+        matchUIController.Spectator.SetSpectatingPlayer(stats);
+        matchUIController.ToggleSpectator(true);
+    }
+
+    private void OnStopSpectating()
+    {
+        matchUIController.ToggleSpectator(false);
     }
 
     public void SetInteractable()
@@ -122,6 +139,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
         factionSelectionScreen.Close();
 
         MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
+
+        matchUIController.ToggleSpectator(false);
     }
 
     private void UpdateTime()

@@ -16,8 +16,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     private Player observedPlayer = null;
     Transform observedPlayerCameraTransform = null;
 
-    private static event Action<Player> OnSelfStartSpectating;
-    private static event Action OnSelfStopSpectating;
+    public static event Action<Player> OnSelfStartSpectating;
+    public static event Action OnSelfStopSpectating;
 
     public SpectatorManager()
     {
