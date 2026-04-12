@@ -16,6 +16,9 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     private Player observedPlayer = null;
     Transform observedPlayerCameraTransform = null;
 
+    private static event Action<Player> OnSelfStartSpectating;
+    private static event Action OnSelfStopSpectating;
+
     public SpectatorManager()
     {
         if (H.IsHeadless) return;
@@ -137,6 +140,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
         UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
         ChangeCameraPOV(observedPlayer);
+
+        OnSelfStartSpectating?.Invoke(observedPlayer);
     }
 
 
@@ -153,6 +158,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         observedPlayer = null;
 
         ChangeCameraPOV(H.MainPlayer);
+        OnSelfStopSpectating?.Invoke();
     }
 
 
