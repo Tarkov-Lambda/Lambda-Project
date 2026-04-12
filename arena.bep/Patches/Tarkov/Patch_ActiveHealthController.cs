@@ -99,7 +99,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
                 killer = H.GetPlayer(lastDamage.Player.iPlayer.Id);
 
             Player victim = null;
-            if (!H.IsHeadless) victim = H.MainPlayer;
+            if (!H.IsHeadless && !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer) victim = H.MainPlayer;
 
             Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, killer, victim);
         }
