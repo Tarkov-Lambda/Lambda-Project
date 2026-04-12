@@ -101,7 +101,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
             Player victim = null;
             if (!H.IsHeadless && !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer) victim = H.MainPlayer;
 
-            Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, killer, victim);
+            Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, victim, killer);
         }
 
         return false;
