@@ -55,14 +55,11 @@ namespace ifp.arena.bep.Patches
             // D.Log(damage.ProfileId);
             Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
 
-            // D.Log(damagePlayer.Profile.Nickname);
+            // D.Log(shooter.Profile.Nickname);
             // D.Log(damagePlayer.Id.ToString());
 
             // we handle the server owner player natively
             if (victim.IsYourPlayer) return;
-
-            D.Log(victim.Profile.Nickname);
-            D.Log(shooter.Profile.Nickname);
 
             DamageInfoStruct damageInfo = new()
             {
@@ -75,13 +72,13 @@ namespace ifp.arena.bep.Patches
                 PenetrationPower = damage.PenetrationPower,
                 // BlockedBy = packet.BlockedBy, // does not exist
                 // DeflectedBy = packet.DeflectedBy, // does not exist
-                ArmorDamage = damage.ArmorDamage
+                ArmorDamage = damage.ArmorDamage,
             };
 
             // Instead of waiting for healthsync, we apply a damage packet directly on the server on a player that's not ours.
             // I can't vouch as per how accurate this is going to be
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
-            Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
+            Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
 
             victim.HandleDamagePacket(damage);
 
@@ -91,7 +88,7 @@ namespace ifp.arena.bep.Patches
         // This is fucking retarded but the alternative is to create activehealthcontroller for each player and that's even more retarded
         // Intended to be a lightweight damage simulation so that killing still feels quite responsive
         // Hopefully this does not cause too much desync server side (at the end of the day we are still fully healing the player after death)
-        public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+        public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo, DamagePacket damagePacket)
         {
             if (!H.GetPlayerScore(victim.Id).IsAlive) return 0f;
 
@@ -210,7 +207,9 @@ namespace ifp.arena.bep.Patches
             D.Dump(chestHP);
             if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim); // Client dies
+                Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damagePacket.ProfileId);
+
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim, shooter); // Client dies
             }
 
             float current2 = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;

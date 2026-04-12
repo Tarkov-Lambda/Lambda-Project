@@ -45,6 +45,7 @@ public class Teleporter
             return;
         }
 
+        D.Log($"Teleporting {player.Profile.Nickname}");
         player.Teleport(nextPlayerPosition);
     }
 

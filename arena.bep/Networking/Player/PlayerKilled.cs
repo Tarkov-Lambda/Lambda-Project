@@ -13,6 +13,7 @@ using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using System;
+using ifp.arena.bep.Patches.Tarkov;
 
 namespace ifp.arena.bep.networking;
 
@@ -58,43 +59,41 @@ public partial struct PlayerKilledPacket : INetSerializable
 
 public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
-    public void Send(DamageInfoStruct damage, Player victim = null)
+    public void Send(DamageInfoStruct damage, Player victim = null, Player killer = null)
     {
-        D.Dump(victim);
-        int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
+        if (killer == null)
+        {
+            killer = H.GetPlayer(damage.Player.iPlayer.Id);
+        }
 
-        var killer = H.GetPlayer(killerId);
+        if (victim == null && !H.IsHeadless)
+        {
+            victim = H.MainPlayer;
+        }
+
 
         var packet = new PlayerKilledPacket
         {
             killer = killer,
+            victim = victim,
             assist = null,
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
 
 
-        if (victim != null)
-        {
-            packet.victim = victim;
-        }
-        else if (!H.IsHeadless)
-        {
-            packet.victim = H.MainPlayer;
-        }
-
         try
         {
-            packet.weaponId = H.GetPlayer(killerId)?.HandsController?.Item?.TemplateId ?? "";
+            packet.weaponId = killer?.HandsController?.Item?.TemplateId ?? "";
         }
         catch (Exception ex)
         {
             D.Log(ex.ToString());
         }
 
-        if(packet.weaponId == null && packet.weaponId == "")
+        if (packet.weaponId == null)
         {
-            packet.weaponId = "";
+            packet.weaponId = "safasdf";
         }
 
         D.Log("Server was here");
@@ -114,9 +113,11 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
     private void HandleKill(PlayerKilledPacket packet)
     {
-        if (packet.weaponId == "")
+
+        D.Log("asdsadasda");
+        if (packet.weaponId == "safasdf")
         {
-            packet.weaponId = packet.killer?.HandsController?.Item?.TemplateId ?? "";
+            packet.weaponId = packet.killer?.HandsController?.Item?.TemplateId;
         }
 
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
