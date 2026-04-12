@@ -253,7 +253,7 @@ public class Plugin : BaseUnityPlugin
         GameMode = Config.Bind("Admin", "Gamemode", GameModes.SND, "");
         Password = Config.Bind("Admin", "Password", "", "");
 
-        DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", true);
+        DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", false);
 
         DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
         RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));

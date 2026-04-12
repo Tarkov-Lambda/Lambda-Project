@@ -128,6 +128,6 @@ class BundleLoadingProgressReport : IProgress<float>
     public void Report(float value)
     {
         CurrentProgress = value;
-        // Optional: D.Log($"Loading Progress: {value * 100}%");
+        D.Log($"Loading Progress: {value * 100}%");
     }
 }

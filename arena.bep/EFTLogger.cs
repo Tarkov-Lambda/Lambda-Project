@@ -78,11 +78,11 @@ namespace ifp.arena.bep
                             break;
                     }
 
-                    // NotificationManager.DisplayMessageNotification(
-                    //     text,
-                    //     duration: default,
-                    //     iconType: icon,
-                    //     textColor: color);
+                    NotificationManager.DisplayMessageNotification(
+                        text,
+                        duration: default,
+                        iconType: icon,
+                        textColor: color);
                 }
                 catch { }
             });

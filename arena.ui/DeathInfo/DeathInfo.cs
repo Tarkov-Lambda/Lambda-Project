@@ -20,7 +20,7 @@ namespace arena.ui
 
         public void Pop(PlayerStats killer)
         {
-            textKillerName.name = killer.Name;
+            textKillerName.text = killer.Name;
             textKillerName.color = factionColors.Get(killer.Faction);
 
             frame.alpha = 1f;
