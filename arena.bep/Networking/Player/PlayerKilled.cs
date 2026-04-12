@@ -62,7 +62,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim = null, Player killer = null)
     {
-        if (killer == null && damage.Player?.iPlayer != null)
+        if (killer == null)
         {
             killer = H.GetPlayer(damage.Player.iPlayer.Id);
         }
@@ -123,6 +123,8 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
+        EventBus.OnPlayerKill.Invoke(packet);
+
         if (H.IsHeadless)
         {
             Teleporter.Teleport(packet.victim, "lobby", Faction.None);
@@ -138,13 +140,11 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
 
             // 2. Banish them 500 meters underground instantly to hide network latency
-            Vector3 shadowRealmPos = packet.victim.Position + new Vector3(0, 0, 0);
+            Vector3 shadowRealmPos = packet.victim.Position + new Vector3(0, -500f, 0);
             HoldPlayerOut(packet.victim, shadowRealmPos, 2.0f).Forget();
 
             Teleporter.Teleport(packet.victim, "lobby", Faction.None);
         }
-
-        EventBus.OnPlayerKill.Invoke(packet);
     }
 
     private async UniTaskVoid HandleLocalPlayerDeath(PlayerKilledPacket packet)
