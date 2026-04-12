@@ -72,16 +72,16 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
 
     protected override bool PacketValidation(ref SpawnItemPacket packet, NetPeer netPeer)
     {
-        var placement = AU.GetItemPlacement(packet.item, packet.Player);
+        // var placement = AU.GetItemPlacement(packet.item, packet.Player);
 
-        if (packet.placement.Address == null)
-        {
-            return false;
-        }
+        // if (packet.placement.Address == null)
+        // {
+        //     return false;
+        // }
 
-        if (placement.Address != packet.placement.Address)
-            D.Log($"Placement mismatch for {packet.Player.Id}");
-        packet.placement = placement;
+        // if (placement.Address != packet.placement.Address)
+            // D.Log($"Placement mismatch for {packet.Player.Id}");
+        // packet.placement = placement;
         return true;
     }
 

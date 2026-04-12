@@ -165,13 +165,15 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
         // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency
         // Note that this does not apply to the server generated packets due to the fact that sometimes we will send the packet FOR a player.
-        if (packet is IAuthoredPacket authoredPacket && !H.IsServer)
+        if (packet is IAuthoredPacket authoredPacket && !H.IsHeadless)
         {
             if (authoredPacket.Player == null) authoredPacket.Player = H.MainPlayer;
             packet = (T)(object)authoredPacket;
         }
 
-        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer)
+        // Only auto-stamp for broadcasts. Targeted sends (targetPeer != null) preserve
+        // the caller-provided timestamp (e.g. ServerPhaseStartSeconds for late joiners).
+        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer && targetPeer == null)
         {
             serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;

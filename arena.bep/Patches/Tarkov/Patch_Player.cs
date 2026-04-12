@@ -81,8 +81,12 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
 
         if (bodyPart is not EBodyPart.Head) return;
 
-        int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;
-        if (killerId != H.MainPlayer.Id) return;
+        if (!H.IsHeadless)
+        {
+            int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;
+            if (killerId != H.MainPlayer.Id) return;
+        }
+
 
         long now = Stopwatch.GetTimestamp();
 

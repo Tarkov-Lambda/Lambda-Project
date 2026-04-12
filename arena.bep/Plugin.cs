@@ -208,6 +208,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
+        RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
         //------------------------------------------ //
 
         // Internal Classses (order matters)

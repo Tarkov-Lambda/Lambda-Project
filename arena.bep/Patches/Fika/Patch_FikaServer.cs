@@ -61,6 +61,8 @@ namespace ifp.arena.bep.Patches
             // we handle the server owner player natively
             if (victim.IsYourPlayer) return;
 
+            D.Log(victim.Profile.Nickname);
+            D.Log(shooter.Profile.Nickname);
 
             DamageInfoStruct damageInfo = new()
             {
@@ -80,7 +82,7 @@ namespace ifp.arena.bep.Patches
             // I can't vouch as per how accurate this is going to be
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
             Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo);
-            
+
             victim.HandleDamagePacket(damage);
 
             H.GetPlayerScore(shooter).AddDamage((int)Math.Round(damageInfo.Damage));
@@ -95,10 +97,15 @@ namespace ifp.arena.bep.Patches
 
             ObservedHealthController healthController = victim.HealthController as ObservedHealthController;
 
-            if (H.MainPlayer.ActiveHealthController.DamageMultiplier > 1f || bodyPart != EBodyPart.Head || !damageInfo.DamageType.IsEnemyDamage())
+            if (!H.IsHeadless)
             {
-                damage *= H.MainPlayer.ActiveHealthController.DamageMultiplier;
+                if (H.MainPlayer.ActiveHealthController.DamageMultiplier > 1f || bodyPart != EBodyPart.Head || !damageInfo.DamageType.IsEnemyDamage())
+                {
+                    damage *= H.MainPlayer.ActiveHealthController.DamageMultiplier;
+                }
             }
+
+
             if (damageInfo.DamageType.IsEnvironmental())
             {
                 damage *= GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[bodyPart].EnvironmentDamageMultiplier;

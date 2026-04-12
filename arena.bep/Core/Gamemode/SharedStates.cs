@@ -8,6 +8,7 @@ using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
+using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 using System.Linq;

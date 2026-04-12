@@ -79,7 +79,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
                 if (H.IsClient) return;
 
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player]);
-                Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
+                // Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
             }
         }
     }
@@ -167,10 +167,20 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     // Everyone runs this when the match state packet is approved
     public void TransitionToState(MatchStateSyncPacket packet)
     {
-        if (_currentState != null)
+        // Capture the previous state BEFORE updating any fields.
+        // We assign _currentState and session fields first so that if OnExit() throws,
+        // the state machine is already pointing at the new state and won't spam on
+        // the next Update() tick.
+        var previousState = _currentState;
+
+        // Bootstrap the NTP offset from the packet's embedded current-server-time stamp.
+        // This is critical for mid-session joiners who receive the MatchStateSyncPacket
+        // before their first NTP roundtrip has completed (~100ms after joining).
+        // BootstrapFromServerStamp is a no-op when HasSync is already true (no regression
+        // for established players whose periodic NTP has already converged).
+        if (!H.IsServer && packet.serverNowSeconds > 0)
         {
-            _currentState.OnExit();
-            EventBus.OnEnd?.Invoke(_currentState.StateType);
+            NetworkTime.BootstrapFromServerStamp(packet.serverNowSeconds);
         }
 
         PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
@@ -185,9 +195,16 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         session.matchState = packet.matchState;
         _currentState = ActiveRules.CreateState(packet.matchState);
 
-        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
-
         StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
+
+        // Exit the previous state now that _currentState is already advanced.
+        if (previousState != null)
+        {
+            previousState.OnExit();
+            EventBus.OnEnd?.Invoke(previousState.StateType);
+        }
+
+        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
 
         if (_currentState != null)
         {

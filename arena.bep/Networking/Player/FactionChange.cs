@@ -41,7 +41,10 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     public async void Send(Faction faction)
     {
-        var packet = new FactionChangePacket { faction = faction };
+        var packet = new FactionChangePacket
+        {
+            faction = faction
+        };
 
         if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
 

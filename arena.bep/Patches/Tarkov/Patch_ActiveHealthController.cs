@@ -67,11 +67,12 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 
         // if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
 
-        if (H.IsServer || Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo.Player.iPlayer.Id == 1)
+        var lastDamage = Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo;
+        if (H.IsServer || lastDamage.Player?.iPlayer?.Id == 1)
         // if (__instance.Player.IsYourPlayer)
         {
             D.Log($"{__instance.Player.Profile.Nickname} died");
-            Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo);
+            Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage);
         }
 
         return false;
