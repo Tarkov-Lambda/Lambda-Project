@@ -33,7 +33,7 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
 
             var packet = new BombAssignmentPacket { Player = randomTerrorist, };
 
-            RequestSendToPlayer(packet, packet.Player.Id);
+            DispatchPacket(packet);
         }
     }
 
@@ -47,6 +47,8 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
     // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful
     protected override void WhenApproved(BombAssignmentPacket packet, NetPeer peer)
     {
+        if (!packet.Player.IsYourPlayer) return;
+        
         Item BombBackpack = IU.CreateItemFromTemplateId(SND_ModeRules.bombTemplateId);
         IU.ClientRequestGiveItem(BombBackpack).Forget();
     }

@@ -89,6 +89,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.OnGameStarted -= StartSession;
         H.OnGameDispose -= EndSession;
         OnFikaEvent -= ManageFikaEvents;
+        session = null;
         EndSession(H.GameWorld);
         Release(this);
     }
@@ -103,7 +104,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
         UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-        if (session == null) session = new SessionInfo();
+        session = new SessionInfo();
 
         if (!H.IsHeadless)
         {
@@ -133,7 +134,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         if (_tickerObject != null)
         {
-            GameModeTicker.onUpdate     = null;
+            GameModeTicker.onUpdate = null;
             GameModeTicker.onLateUpdate = null;
 
             UnityEngine.Object.Destroy(_tickerObject);
