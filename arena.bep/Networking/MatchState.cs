@@ -1,4 +1,5 @@
-﻿using Fika.Core.Networking.LiteNetLib;
+﻿using EFT;
+using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
@@ -35,6 +36,19 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
             roundActionEnd = roundActionEnd
         };
         DispatchPacket(packet);
+    }
+
+    // Send current phase state to a late/mid-session joiner.
+    // We send ServerPhaseStartSeconds (not Now) so the client recomputes the correct remaining time.
+    public void SendToPlayer(Player player)
+    {
+        var packet = new MatchStateSyncPacket
+        {
+            matchState = H.Session.matchState,
+            Timestamp = H.Arena.ServerPhaseStartSeconds,
+            roundActionEnd = H.Arena.PendingRoundActionEnd
+        };
+        RequestSendToPlayer(packet, player.Id);
     }
 
     protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)

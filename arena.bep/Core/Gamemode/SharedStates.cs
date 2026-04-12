@@ -76,7 +76,7 @@ public class SharedWarmupEnd : IGameState
 
 public class SharedPause : IGameState
 {
-    public MatchState StateType => MatchState.Warmup;
+    public MatchState StateType => MatchState.Pause;
     public virtual void OnEnter() { }
 
     public virtual MatchState? OnUpdate()
@@ -148,9 +148,8 @@ public class SharedEnd : IGameState
 
         if (H.Arena.StateTimer <= 0)
         {
-            if (H.Arena.ActiveRules is SND_ModeRules)
+            if (H.Arena.ActiveRules is SND_ModeRules snd)
             {
-                SND_ModeRules snd = H.Arena.ActiveRules as SND_ModeRules;
                 var wins = H.Session.factionWins;
 
                 if (wins[Faction.CT] + wins[Faction.T] == SND_ModeRules.maxRoundsToWin - 1)

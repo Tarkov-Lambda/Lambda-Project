@@ -38,6 +38,19 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         DispatchPacket(packet);
     }
 
+    // Server-authoritative broadcast: announce a state change FOR another player (e.g. disconnect).
+    // Does NOT check IsHeadless — the server is allowed to speak on behalf of a peer.
+    public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState, int progress = 0)
+    {
+        var packet = new PlayerReadinessPacket
+        {
+            Player = targetPlayer,
+            readyState = readyState,
+            progress = progress
+        };
+        DispatchPacket(packet);
+    }
+
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
         PlayerScore playerScore = H.GetPlayerScore(packet.Player);
@@ -64,6 +77,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
                 Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.Player);
                 Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.Player);
+                Singleton<MatchStateSyncPacketHandler>.Instance.SendToPlayer(packet.Player);
             }
         }
 

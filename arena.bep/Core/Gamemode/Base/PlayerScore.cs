@@ -80,7 +80,8 @@ public class PlayerScore
     public void Spawn()
     {
         IsAlive = true;
-        EventBus.OnSelfRespawn?.Invoke();
+        if (!H.IsHeadless && player == H.MainPlayer)
+            EventBus.OnSelfRespawn?.Invoke();
     }
 
     public void SessionReset()
@@ -108,7 +109,15 @@ public class PlayerScore
 
     public void Sync(PlayerScoreSyncData packet)
     {
-        Faction = (Faction)packet.faction;
+        var newFaction = (Faction)packet.faction;
+        bool factionChanged = newFaction != Faction;
+        Faction = newFaction;
+
+        // Mirror the event that ChangeFaction fires on the server, so clients get
+        // the side-swap notification without needing to go through ChangeFaction().
+        if (factionChanged && !H.IsHeadless && player == H.MainPlayer)
+            EventBus.OnSelfFactionChanged?.Invoke(Faction);
+
         Mvps = packet.mvps;
         Kills = packet.kills;
         Headshots = packet.headshots;

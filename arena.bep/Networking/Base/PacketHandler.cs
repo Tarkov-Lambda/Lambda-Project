@@ -163,8 +163,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (this is not TimeSynchronizationPacketHandler)
             D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
-        // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency 
-        if (packet is IAuthoredPacket authoredPacket)
+        // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency
+        // Note that this does not apply to the server generated packets due to the fact that sometimes we will send the packet FOR a player.
+        if (packet is IAuthoredPacket authoredPacket && !H.IsServer)
         {
             if (authoredPacket.Player == null) authoredPacket.Player = H.MainPlayer;
             packet = (T)(object)authoredPacket;

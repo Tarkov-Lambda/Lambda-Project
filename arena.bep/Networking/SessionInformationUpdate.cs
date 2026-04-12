@@ -73,7 +73,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
                 faction = (int)kvp.Value.Faction,
                 mvps = kvp.Value.Mvps,
                 kills = kvp.Value.Kills,
-                headshots = kvp.Value.Kills,
+                headshots = kvp.Value.Headshots,
                 assists = kvp.Value.Assists,
                 deaths = kvp.Value.Deaths,
                 money = kvp.Value.Money,
@@ -102,7 +102,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         var session = H.Session;
         if (session == null) return;
 
-        await UniTask.WaitUntil(() => H.GetPlayerScore(player.Id).readyState <= PlayerReadinessState.Connected);
+        await UniTask.WaitUntil(() => H.GetPlayerScore(player.Id).readyState >= PlayerReadinessState.Ready);
         RequestSendToPlayer(FormatPacket(), player.Id);
     }
 

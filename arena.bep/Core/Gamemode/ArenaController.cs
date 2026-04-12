@@ -79,7 +79,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
                 if (H.IsClient) return;
 
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player]);
-                Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Disconnected);
+                Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
             }
         }
     }

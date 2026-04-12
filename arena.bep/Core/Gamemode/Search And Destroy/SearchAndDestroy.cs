@@ -64,7 +64,7 @@ public class SND_Action : IGameState
     private Faction? CheckWipe()
     {
         var alive = H.Scoreboard.Values.Where(p => p.IsAlive).GroupBy(p => p.Faction).ToDictionary(g => g.Key, g => g.Count());
-        var factions = H.Scoreboard.Values.Select(p => p.Faction).Where(f => f != Faction.None).Distinct();
+        var factions = H.Scoreboard.Values.Select(p => p.Faction).Where(f => f != Faction.None && f != Faction.Spectator).Distinct();
         foreach (var f in factions) if (!alive.ContainsKey(f) || alive[f] == 0) return factions.FirstOrDefault(o => o != f);
         return null;
     }
