@@ -35,18 +35,15 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         if (H.IsServer)
             packet.Timestamp = NetworkTime.ServerNowSeconds;
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
-    protected override bool SanitizeMetadata(ref PausePacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref PausePacket packet, NetPeer netPeer)
     {
-        packet.Timestamp = NetworkTime.ServerNowSeconds;
-
         if (H.Session.matchState == MatchState.RoundPrepare)
         {
             return true;
         }
-
         else return false;
     }
 

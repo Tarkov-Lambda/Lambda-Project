@@ -41,7 +41,10 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     public async void Send(Faction faction)
     {
-        var packet = new FactionChangePacket { faction = faction };
+        var packet = new FactionChangePacket
+        {
+            faction = faction
+        };
 
         if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
 
@@ -56,7 +59,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
                 await UniTask.WaitUntil(() => CanChangeFaction(H.MainPlayerScore, packet.faction), cancellationToken: _cts.Token);
             }
 
-            RequestSend(packet);
+            DispatchPacket(packet);
         }
         catch (OperationCanceledException)
         {
@@ -64,11 +67,11 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
         }
     }
 
-    protected override bool SanitizeMetadata(ref FactionChangePacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref FactionChangePacket packet, NetPeer netPeer)
     {
         if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction)) return false;
 
-        return base.SanitizeMetadata(ref packet, netPeer);
+        return true;
     }
 
     protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)

@@ -19,7 +19,7 @@ public partial struct ReplenishPacket : INetSerializable, IAuthoredPacket
 
 public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
 {
-    public void Send() => RequestSend(new ReplenishPacket { });
+    public void Send() => DispatchPacket(new ReplenishPacket { });
 
     protected override void WhenApproved(ReplenishPacket packet, NetPeer peer)
     {

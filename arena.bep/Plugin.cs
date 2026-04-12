@@ -103,7 +103,7 @@ public class Plugin : BaseUnityPlugin
         InitConfiguration();
 
         // STEAM AUDIO
-        // SteamAudioInitializer.Initialize();
+        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
 
         // AUDIO
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
@@ -119,7 +119,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
         // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
-        // RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
+        RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
@@ -208,6 +208,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
+        RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
         //------------------------------------------ //
 
         // Internal Classses (order matters)
@@ -228,8 +229,8 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
             var warmup = typeof(Ladder);
-            RegisterSingletonInRaid<LadderEventManager>().Forget();                 // Overwrites Player Controller on Ladder Collision and moves them.
-            RegisterSingletonInRaid<BombHandler>().Forget();                        // Handler for the entirety of Bomb's lifecycle
+            await RegisterSingletonInRaid<LadderEventManager>();                 // Overwrites Player Controller on Ladder Collision and moves them.
+            await RegisterSingletonInRaid<BombHandler>();                        // Handler for the entirety of Bomb's lifecycle
         }
         catch (Exception ex)
         {

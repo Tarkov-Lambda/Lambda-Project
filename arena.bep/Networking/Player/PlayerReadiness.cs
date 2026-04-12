@@ -35,7 +35,20 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             progress = progress
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
+    }
+
+    // Server-authoritative broadcast: announce a state change FOR another player (e.g. disconnect).
+    // Does NOT check IsHeadless — the server is allowed to speak on behalf of a peer.
+    public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState, int progress = 0)
+    {
+        var packet = new PlayerReadinessPacket
+        {
+            Player = targetPlayer,
+            readyState = readyState,
+            progress = progress
+        };
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
@@ -52,19 +65,20 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         if (!H.IsClient)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)
-            if (H.Session?.matchState > MatchState.WarmupEnd && packet.readyState == PlayerReadinessState.Connected)
-            {
-                if (packet.Player == null) return;
+                // if (H.Session?.matchState > MatchState.WarmupEnd && packet.readyState == PlayerReadinessState.Connected)
+                // {
+                //     if (packet.Player == null) return;
 
-                if (!H.Scoreboard.ContainsKey(packet.Player.Id))
-                {
-                    H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
-                    H.GetPlayerScore(packet.Player.Id).ChangeFaction(Faction.Spectator);
-                }
+                //     if (!H.Scoreboard.ContainsKey(packet.Player.Id))
+                //     {
+                //         H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
+                //         H.GetPlayerScore(packet.Player.Id).ChangeFaction(Faction.Spectator);
+                //     }
 
-                Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.Player);
-                Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.Player);
-            }
+                //     Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.Player);
+                //     Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.Player);
+                //     Singleton<MatchStateSyncPacketHandler>.Instance.SendToPlayer(packet.Player);
+                // }
         }
 
         if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)

@@ -77,6 +77,7 @@ public class Patch_MovementContext_PlayerAnimatorSetBlindFire : ModulePatch
 
 public class Patch_MovementContext_SetBlindFire : ModulePatch
 {
+    private static int lastSentState;
     private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), new Type[] { typeof(int) });
@@ -92,7 +93,12 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
         {
             player.HandsController.BlindFire(b);
 
-            if (player.IsYourPlayer) Singleton<BlindFirePacketHandler>.Instance?.Send(b);
+            if (player.IsYourPlayer && lastSentState != b)
+            {
+                Singleton<BlindFirePacketHandler>.Instance?.Send(b);
+                lastSentState = b;
+            }
+
         }
         return false;
     }

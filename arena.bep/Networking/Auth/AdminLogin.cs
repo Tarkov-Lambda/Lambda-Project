@@ -64,10 +64,10 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
             Payload = ""
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
-    protected override bool SanitizeMetadata(ref AdminAuthPacket packet, NetPeer peer)
+    protected override bool PacketValidation(ref AdminAuthPacket packet, NetPeer peer)
     {
         switch (packet.Step)
         {
@@ -103,7 +103,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
                 Payload = responseHash
             };
 
-            RequestSend(responsePacket);
+            DispatchPacket(responsePacket);
         }
         else if (packet.Step == AdminAuthStep.Verify)
         {

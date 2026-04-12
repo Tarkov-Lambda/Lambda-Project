@@ -7,6 +7,7 @@ using EFT.UI;
 using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Utils;
 using HarmonyLib;
+using ifp.arena.bep.networking;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core;
@@ -44,12 +45,11 @@ public static class HealthUtilities
         }
     }
 
-    // This is really stupid and the amount of replenish shit im doing is really bad
     public static async Task HealMe()
     {
-        var healthController = H.MainPlayer.ActiveHealthController;
-        RU.Replenish(H.MainPlayer, true);
+        Singleton<ReplenishPacketHandler>.Instance.Send();
 
+        var healthController = H.MainPlayer.ActiveHealthController;
         healthController.ChangeHydration(100f);
         healthController.ChangeEnergy(100f);
         healthController.RestoreFullHealth();

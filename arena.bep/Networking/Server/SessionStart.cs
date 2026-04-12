@@ -49,7 +49,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             gameMode = Plugin.GameMode.Value
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     // if a player was not present at the start of this session, send them the sitrep

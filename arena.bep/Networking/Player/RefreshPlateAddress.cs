@@ -52,17 +52,17 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
             itemAddress = item.CurrentAddress
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
-    protected override void LocalPredictApproved(PopPacket packet)
-    {
-        IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
-    }
+    // protected override void LocalPredictApproved(PopPacket packet)
+    // {
+    //     IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
+    // }
 
     protected override async void WhenApproved(PopPacket packet, NetPeer peer)
     {
-        if (packet.Player.IsYourPlayer) return;
+        // if (packet.Player.IsYourPlayer) return;
         IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
     }
 }

@@ -21,6 +21,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         GameObject.DontDestroyOnLoad(go);
         _musicObject = go.AddComponent<MusicObject>();
 
+        if (H.IsHeadless) return;
         EventBus.OnEnter += OnEnter;
         EventBus.OnEnd += OnEnd;
         EventBus.OnUpdate += Update;

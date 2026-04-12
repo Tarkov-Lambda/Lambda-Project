@@ -16,7 +16,7 @@ public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServ
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
-    public double Timestamp {get; set;}
+    public double Timestamp { get; set; }
 
     public BombState state;
 
@@ -37,14 +37,13 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
             position = position
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
-    protected override bool SanitizeMetadata(ref BombStatePacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref BombStatePacket packet, NetPeer netPeer)
     {
         if (packet.state == BombState.Exploded) return false;
-
-        return base.SanitizeMetadata(ref packet, netPeer);
+        return true;
     }
 
     protected override void LocalPredictApproved(BombStatePacket packet)
@@ -64,9 +63,13 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         H.Session.bombState = packet.state;
 
-        if (!packet.Player.IsYourPlayer)
+        if (!H.IsHeadless)
         {
-            H.BombHandler.PlayBombAudio(packet);
+            if (!packet.Player.IsYourPlayer)
+            {
+                H.BombHandler.PlayBombAudio(packet);
+            }
+
         }
 
         if (packet.state is BombState.Planted)

@@ -23,7 +23,7 @@ public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
     public void Send(int value)
     {
         var packet = new BlindFirePacket { value = value };
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     protected override void WhenApproved(BlindFirePacket packet, NetPeer peer)

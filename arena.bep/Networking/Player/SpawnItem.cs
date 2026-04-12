@@ -58,7 +58,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
             placement = placement
         };
 
-        RequestSend(packet);
+        DispatchPacket(packet);
     }
 
     // we have to blindly accept our packet here otherwise ItemPlacement is not aware
@@ -70,19 +70,19 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         // we already spent money locally before requesting to begin with.
     }
 
-    protected override bool SanitizeMetadata(ref SpawnItemPacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref SpawnItemPacket packet, NetPeer netPeer)
     {
-        var placement = AU.GetItemPlacement(packet.item, packet.Player);
+        // var placement = AU.GetItemPlacement(packet.item, packet.Player);
 
-        if (packet.placement.Address == null)
-        {
-            return false;
-        }
+        // if (packet.placement.Address == null)
+        // {
+        //     return false;
+        // }
 
-        if (placement.Address != packet.placement.Address)
-            D.Log($"Placement mismatch for {packet.Player.Id}");
-        packet.placement = placement;
-        return base.SanitizeMetadata(ref packet, netPeer);
+        // if (placement.Address != packet.placement.Address)
+            // D.Log($"Placement mismatch for {packet.Player.Id}");
+        // packet.placement = placement;
+        return true;
     }
 
     protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)

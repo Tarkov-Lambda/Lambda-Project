@@ -20,7 +20,6 @@ using Fika.Core.Main.Players;
 using ifp.arena.bep.Patches;
 using Fika.Core.Main.Utils;
 
-#nullable enable
 
 namespace ifp.arena.bep.Core;
 
@@ -82,10 +81,16 @@ public static class Helpers
     }
 
     // bro thinks he's the main character
-    public static Player? GetMainPlayer()
+    public static Player GetMainPlayer()
     {
         try
         {
+            if (H.IsHeadless)
+            {
+                D.Log("Headless trying to access MainPlayer. This is not supposed to happen.");
+                D.Log(Environment.StackTrace);
+                return null;
+            }
             return IsInRaid() ? GameWorld.MainPlayer : null;
         }
         catch (Exception ex)

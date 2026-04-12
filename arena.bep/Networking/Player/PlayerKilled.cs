@@ -12,6 +12,8 @@ using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
+using System;
+using ifp.arena.bep.Patches.Tarkov;
 
 namespace ifp.arena.bep.networking;
 
@@ -57,25 +59,46 @@ public partial struct PlayerKilledPacket : INetSerializable
 
 public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
-    public void Send(DamageInfoStruct damage, Player victim = null)
+    public void Send(DamageInfoStruct damage, Player victim = null, Player killer = null)
     {
-        int killerId = damage.Player != null ? damage.Player.iPlayer.Id : 1;
+        if (killer == null)
+        {
+            killer = H.GetPlayer(damage.Player.iPlayer.Id);
+        }
 
-        var killer = H.GetPlayer(killerId);
+        if (victim == null && !H.IsHeadless)
+        {
+            victim = H.MainPlayer;
+        }
+
 
         var packet = new PlayerKilledPacket
         {
             killer = killer,
-            victim = H.MainPlayer,
+            victim = victim,
             assist = null,
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
-            weaponId = H.GetPlayer(killerId).HandsController.Item.TemplateId,
         };
 
-        if (victim != null) packet.victim = victim;
 
-        RequestSend(packet);
+        try
+        {
+            packet.weaponId = killer?.HandsController?.Item?.TemplateId ?? "";
+        }
+        catch (Exception ex)
+        {
+            D.Log(ex.ToString());
+        }
+
+        if (packet.weaponId == null)
+        {
+            packet.weaponId = "safasdf";
+        }
+
+        D.Log("Server was here");
+
+        DispatchPacket(packet);
     }
 
     protected override void LocalPredictApproved(PlayerKilledPacket packet)
@@ -90,6 +113,13 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
     private void HandleKill(PlayerKilledPacket packet)
     {
+
+        D.Log("asdsadasda");
+        if (packet.weaponId == "safasdf")
+        {
+            packet.weaponId = packet.killer?.HandsController?.Item?.TemplateId;
+        }
+
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.IsAlive) return;
 
@@ -102,25 +132,27 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
-        // create corpse before anything else happens
-        if (packet.victim.IsYourPlayer)
+        if (!H.IsHeadless)
         {
-            HU.HealMe().Forget();
-            Singleton<ReplenishPacketHandler>.Instance.Send();
+            if (packet.victim.IsYourPlayer)
+            {
+                HU.HealMe().Forget();
+                Singleton<ReplenishPacketHandler>.Instance.Send();
 
-            packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-            Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
+                packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+                Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
 
-            _ = PU.CloseEyes(true, true);
+                _ = PU.CloseEyes(true, true);
 
-            H.MainPlayer.SetEmptyHands(delegate { });
+                H.MainPlayer.SetEmptyHands(delegate { });
+            }
+            else
+            {
+                Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
+            }
         }
-        else
-        {
-            Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
-        }
 
-        // player.Teleport(player.Position + new UnityEngine.Vector3(0f, -10f, 0f));
+
         Teleporter.Teleport(packet.victim, "lobby", Faction.None);
         EventBus.OnPlayerKill.Invoke(packet);
     }

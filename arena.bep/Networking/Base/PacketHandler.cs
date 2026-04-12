@@ -140,7 +140,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
 
         var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
-        RequestSend(packet, peer);
+        DispatchPacket(packet, peer);
     }
 
     protected void RequestSendToPeer(T packet, int netId)
@@ -148,13 +148,13 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (!H.IsInRaid()) return;
 
         var peer = H.NetManager.GetPeerById(netId) as NetPeer;
-        RequestSend(packet, peer);
+        DispatchPacket(packet, peer);
     }
 
 
     // ENTRY POINT
     // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
-    protected void RequestSend(T packet, NetPeer targetPeer = null)
+    protected void DispatchPacket(T packet, NetPeer targetPeer = null)
     {
         if (!H.IsInRaid()) return;
         if (!H.IsHeadless)
@@ -163,14 +163,17 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (this is not TimeSynchronizationPacketHandler)
             D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
-        // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency 
-        if (packet is IAuthoredPacket authoredPacket)
+        // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency
+        // Note that this does not apply to the server generated packets due to the fact that sometimes we will send the packet FOR a player.
+        if (packet is IAuthoredPacket authoredPacket && !H.IsHeadless)
         {
             if (authoredPacket.Player == null) authoredPacket.Player = H.MainPlayer;
             packet = (T)(object)authoredPacket;
         }
 
-        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer)
+        // Only auto-stamp for broadcasts. Targeted sends (targetPeer != null) preserve
+        // the caller-provided timestamp (e.g. ServerPhaseStartSeconds for late joiners).
+        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer && targetPeer == null)
         {
             serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
             packet = (T)(object)serverTimestampedPacket;
@@ -208,7 +211,6 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             return;
         }
 
-        // If ServerValidation returns false, send reject packet and return before doing applying the packet.
         if (!SanitizeMetadata(ref packet, peer))
         {
             SendRejection(ref packet, peer);
@@ -221,7 +223,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
             return;
         }
 
-        if (ShouldBroadcastPacket(packet)) // if this packet originates from the server - we already broadcasted it
+        if (ShouldBroadcastPacket(packet))
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
         }
@@ -248,9 +250,9 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer netPeer)
     {
 #if DEBUG
-        D.Notify($"Server Rejected {GetType().Name}");
+        D.Log($"Server Rejected {GetType().Name}");
         if (rejectedPacket.reason != "")
-            D.Notify(rejectedPacket.reason);
+            D.Log(rejectedPacket.reason);
 #endif
         WhenRejected(rejectedPacket.Payload, netPeer);
     }
