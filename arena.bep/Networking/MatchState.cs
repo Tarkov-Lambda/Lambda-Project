@@ -44,7 +44,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
     // Send current phase state to a late/mid-session joiner.
     // Timestamp = ServerPhaseStartSeconds (historical) so the client computes correct remaining time.
     // serverNowSeconds = current server time so the client can bootstrap its NTP offset immediately.
-    public void SendToPlayer(Player player)
+    public void SendToPeer(NetPeer peer)
     {
         var packet = new MatchStateSyncPacket
         {
@@ -53,7 +53,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
             serverNowSeconds = NetworkTime.ServerNowSeconds, // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
-        DispatchPacketToPlayer(packet, player);
+        DispatchPacketToPeer(packet, peer);
     }
 
     protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)

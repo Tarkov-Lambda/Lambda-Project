@@ -109,28 +109,9 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         DispatchPacket(FormatPacket());
     }
 
-    public async void SendToPlayer(Player player)
+    public async void SendToPeer(NetPeer peer)
     {
-        var session = H.Session;
-        if (session == null) return;
-
-        try
-        {
-            // Wait until the player has a score entry AND reports Ready.
-            // The null-guard handles the window where the player connected but hasn't
-            // been added to the scoreboard yet (PlayerReadinessPacketHandler does this
-            // lazily on first receive). The CTS ensures we don't loop forever if the
-            // player disconnects before becoming ready.
-            // await UniTask.WaitUntil(
-            //     () => { var s = H.GetPlayerScore(player.Id); return s != null && s.readyState >= PlayerReadinessState.Ready; },
-            //     cancellationToken: _cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-
-        DispatchPacketToPlayer(FormatPacket(), player);
+        DispatchPacketToPeer(FormatPacket(), peer);
     }
 
     protected override void WhenApproved(SessionInfoPacket packet, NetPeer peer)

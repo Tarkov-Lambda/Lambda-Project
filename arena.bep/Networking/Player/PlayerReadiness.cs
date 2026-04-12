@@ -75,9 +75,9 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
                     H.GetPlayerScore(packet.Player.Id).ChangeFaction(Faction.Spectator);
                 }
 
-                Singleton<SessionStartPacketHandler>.Instance.SendToPlayer(packet.Player);
-                Singleton<SessionInfoPacketHandler>.Instance.SendToPlayer(packet.Player);
-                Singleton<MatchStateSyncPacketHandler>.Instance.SendToPlayer(packet.Player);
+                Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
+                Singleton<SessionInfoPacketHandler>.Instance.SendToPeer(peer);
+                Singleton<MatchStateSyncPacketHandler>.Instance.SendToPeer(peer);
             }
         }
 

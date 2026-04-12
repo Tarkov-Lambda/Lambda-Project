@@ -114,47 +114,23 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected bool IsUnauthorized(int id)
     {
         if (H.IsServer) return false;
-        if (authority == PacketAuthority.ServerOnly)
+        
+        if (authority == PacketAuthority.Admin)
         {
             PlayerScore score = H.GetPlayerScore(id);
             return score == null || !score.isAdmin; // unauthorized only if NOT admin
         }
+        else if (authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
+        {
+            return true;
+        }
+
         return false;
     }
 
-    // OPTIONAL ENTRY POINT
-    // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
-    protected void DispatchPacketToPlayer(T packet, Player player)
+    protected void DispatchPacketToPeer(T packet, NetPeer peer)
     {
         if (!H.IsInRaid()) return;
-
-        // local sender is the target, execute locally; I am not sure how I want to do this
-        // But for the sake of keeping things as coupled as possible with the network layer
-        // this might come handy later.
-        // if (netId == H.FikaNet.NetId)
-        // {
-        //     LocalPredictApproved(packet);
-        //     WhenApproved(packet, null);
-        //     return;
-        // }
-
-        var cachedConnections = H.GetCachedConnections();
-        if (cachedConnections.TryGetValue(player.ProfileId, out var netId))
-        {
-            var peer = H.NetManager.GetPeerById(netId) as NetPeer;
-            DispatchPacket(packet, peer);
-        }
-        else
-        {
-            D.LogError($"Can't find peer by the specified Profile ID: {player.ProfileId}");
-        }
-    }
-
-    protected void DispatchPacketToPeer(T packet, int netId)
-    {
-        if (!H.IsInRaid()) return;
-
-        var peer = H.NetManager.GetPeerById(netId) as NetPeer;
         DispatchPacket(packet, peer);
     }
 

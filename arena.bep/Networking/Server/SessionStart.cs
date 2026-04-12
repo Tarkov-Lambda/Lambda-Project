@@ -27,7 +27,7 @@ public partial struct SessionStartPacket : INetSerializable
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
 public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 {
-    public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Admin) { }
 
     private void PrepareForStart(SessionStartPacket packet)
     {
@@ -53,7 +53,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
     }
 
     // if a player was not present at the start of this session, send them the sitrep
-    public void SendToPlayer(Player player)
+    public void SendToPeer(NetPeer peer)
     {
         if (!H.IsInRaid()) return;
 
@@ -63,7 +63,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             gameMode = H.Session.currentGameMode
 
         };
-        DispatchPacketToPlayer(packet, player);
+        DispatchPacketToPeer(packet, peer);
     }
 
     protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
