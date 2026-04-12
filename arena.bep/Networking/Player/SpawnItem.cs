@@ -102,7 +102,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
     }
 
-    public new void Dispose()
+    public override void Dispose()
     {
         _chains.Clear();
         base.Dispose();

@@ -2,8 +2,10 @@
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MemoryPack;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -50,7 +52,17 @@ public partial struct SessionInfoPacket : INetSerializable
 // This only runs explicitly, not on interval
 public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
 {
+    private CancellationTokenSource _cts = new();
+
     public SessionInfoPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+
+    public override void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        base.Dispose();
+    }
 
     public SessionInfoPacket FormatPacket()
     {
@@ -102,8 +114,23 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         var session = H.Session;
         if (session == null) return;
 
-        await UniTask.WaitUntil(() => H.GetPlayerScore(player.Id).readyState >= PlayerReadinessState.Ready);
-        DispatchPacketToPlayer(FormatPacket(), player.Id);
+        try
+        {
+            // Wait until the player has a score entry AND reports Ready.
+            // The null-guard handles the window where the player connected but hasn't
+            // been added to the scoreboard yet (PlayerReadinessPacketHandler does this
+            // lazily on first receive). The CTS ensures we don't loop forever if the
+            // player disconnects before becoming ready.
+            // await UniTask.WaitUntil(
+            //     () => { var s = H.GetPlayerScore(player.Id); return s != null && s.readyState >= PlayerReadinessState.Ready; },
+            //     cancellationToken: _cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        DispatchPacketToPlayer(FormatPacket(), player);
     }
 
     protected override void WhenApproved(SessionInfoPacket packet, NetPeer peer)

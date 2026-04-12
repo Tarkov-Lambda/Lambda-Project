@@ -89,8 +89,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.OnGameStarted -= StartSession;
         H.OnGameDispose -= EndSession;
         OnFikaEvent -= ManageFikaEvents;
-        session = null;
         EndSession(H.GameWorld);
+        session = null;
         Release(this);
     }
 
@@ -138,7 +138,10 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             GameModeTicker.onLateUpdate = null;
 
             UnityEngine.Object.Destroy(_tickerObject);
+            _tickerObject = null;
+
             UnityEngine.Object.Destroy(_musicObject);
+            _musicObject = null;
         }
     }
 
@@ -242,7 +245,7 @@ public class GameModeTicker : MonoBehaviour
     private void Update()
     {
         onUpdate?.Invoke();
-        Singleton<ArenaController>.Instance.Update();
+        Singleton<ArenaController>.Instance?.Update(); // null-guard: Instance is cleared before deferred Destroy fires
         EventBus.OnUpdate?.Invoke();
     }
 

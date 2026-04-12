@@ -67,7 +67,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
         }
     }
 
-    public new void Dispose()
+    public override void Dispose()
     {
         _cts?.Cancel();
         _cts?.Dispose();

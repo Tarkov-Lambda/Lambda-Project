@@ -63,7 +63,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             gameMode = H.Session.currentGameMode
 
         };
-        DispatchPacketToPlayer(packet, player.Id);
+        DispatchPacketToPlayer(packet, player);
     }
 
     protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)

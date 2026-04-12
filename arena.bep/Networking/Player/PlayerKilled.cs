@@ -62,16 +62,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim = null, Player killer = null)
     {
-        if (killer == null)
-        {
-            killer = H.GetPlayer(damage.Player.iPlayer.Id);
-        }
-
-        if (victim == null && !H.IsHeadless)
-        {
-            victim = H.MainPlayer;
-        }
-
         var packet = new PlayerKilledPacket
         {
             killer = killer,
@@ -80,6 +70,16 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
+
+        if (killer == null && damage.Player?.iPlayer != null)
+        {
+            packet.killer = H.GetPlayer(damage.Player.iPlayer.Id);
+        }
+
+        if (victim == null && !H.IsHeadless)
+        {
+            packet.killer = H.MainPlayer;
+        }
 
         try
         {

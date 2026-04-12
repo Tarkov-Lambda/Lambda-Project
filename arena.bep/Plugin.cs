@@ -52,6 +52,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
+    private readonly List<Action> _releases = new();
     private readonly List<IMemoryPackFormatter> _memoryPackFormatters = new();
 
     private CancellationTokenSource _cts;
@@ -75,6 +76,10 @@ public class Plugin : BaseUnityPlugin
         var instance = new T();
         Singleton<T>.Create(instance);
         _disposables.Add(instance);
+        // Capture a typed release delegate now, while T is known at compile time.
+        // PacketHandler<T>.Dispose() cannot clear Singleton<ConcreteType> because it only
+        // has access to Singleton<PacketHandler<TPacket>> (a different generic slot).
+        _releases.Add(() => Singleton<T>.Release(instance));
     }
 
     public async UniTask RegisterSingletonInRaid<T>() where T : class, IDisposable, new()
@@ -306,6 +311,13 @@ public class Plugin : BaseUnityPlugin
             disposable.Dispose();
 
         _disposables.Clear();
+
+        // Release concrete singleton slots AFTER all Dispose() calls so that
+        // singletons can still safely access each other's Instance during teardown.
+        foreach (var release in _releases)
+            release();
+
+        _releases.Clear();
 
         BepInEx.Logging.Logger.Sources.Add(Logger);
         Logger = null;

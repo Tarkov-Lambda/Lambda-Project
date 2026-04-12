@@ -53,7 +53,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
             serverNowSeconds = NetworkTime.ServerNowSeconds, // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
-        DispatchPacketToPlayer(packet, player.Id);
+        DispatchPacketToPlayer(packet, player);
     }
 
     protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)

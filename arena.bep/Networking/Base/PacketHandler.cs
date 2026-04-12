@@ -38,7 +38,7 @@ public struct RejectionPacket<T> : INetSerializable where T : INetSerializable, 
     }
 }
 
-public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposable where T : INetSerializable, new()
+public abstract class PacketHandler<T> : IDisposable where T : INetSerializable, new()
 {
     protected DeliveryMethod deliveryMethod;
     protected PacketAuthority authority;
@@ -61,12 +61,12 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         if (H.IsInRaid() && H.FikaNet != null) RegisterPacket();
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         OnFikaEvent -= ManageFikaEvent;
 
         if (H.IsInRaid() && H.FikaNet != null) UnregisterPacket();
-        Release(this);
+        // Singleton slot cleanup is handled by Plugin.RegisterSingleton via a stored release delegate.
     }
 
     protected void ManageFikaEvent(FikaEvent fikaEvent)
@@ -124,7 +124,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     // OPTIONAL ENTRY POINT
     // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
-    protected void DispatchPacketToPlayer(T packet, int playerId)
+    protected void DispatchPacketToPlayer(T packet, Player player)
     {
         if (!H.IsInRaid()) return;
 
@@ -138,9 +138,16 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         //     return;
         // }
 
-
-        var peer = H.NetManager.GetPeerById(playerId) as NetPeer;
-        DispatchPacket(packet, peer);
+        var cachedConnections = H.GetCachedConnections();
+        if (cachedConnections.TryGetValue(player.ProfileId, out var netId))
+        {
+            var peer = H.NetManager.GetPeerById(netId) as NetPeer;
+            DispatchPacket(packet, peer);
+        }
+        else
+        {
+            D.LogError($"Can't find peer by the specified Profile ID: {player.ProfileId}");
+        }
     }
 
     protected void DispatchPacketToPeer(T packet, int netId)

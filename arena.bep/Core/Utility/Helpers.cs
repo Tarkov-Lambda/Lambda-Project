@@ -160,4 +160,14 @@ public static class Helpers
 
         return field?.GetValue(manager) as NetManager;
     }
+
+    public static Dictionary<string, int> GetCachedConnections()
+    {
+        var manager = FikaNet;
+        if (manager == null) return null;
+
+        var field = AccessTools.Field(FikaNet.GetType(), "_cachedConnections");
+
+        return field?.GetValue(manager) as Dictionary<string, int>;
+    }
 }
