@@ -224,6 +224,16 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void Dispose()
     {
+        EventBus.OnEnter  -= OnEnter;
+        EventBus.OnEnd    -= OnEnd;
+        EventBus.OnUpdate -= Update;
+
+        if (bombVisuals != null)
+        {
+            UnityEngine.Object.Destroy(bombVisuals);
+            bombVisuals = null;
+        }
+
         Reset();
         Release(this);
     }

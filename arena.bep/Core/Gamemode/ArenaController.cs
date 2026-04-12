@@ -128,8 +128,14 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         // inventory after the session has been torn down
         // IU.ResetInventoryLock();
 
+        _currentState?.OnExit();
+        _currentState = null;
+
         if (_tickerObject != null)
         {
+            GameModeTicker.onUpdate     = null;
+            GameModeTicker.onLateUpdate = null;
+
             UnityEngine.Object.Destroy(_tickerObject);
             UnityEngine.Object.Destroy(_musicObject);
         }
