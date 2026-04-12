@@ -1,6 +1,7 @@
 ﻿using arena.ui;
 using EFT.InputSystem;
 using EFT.UI.Screens;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.shared;
 using System;
 
@@ -52,6 +53,11 @@ namespace ifp.arena.bep.Core.UI
         {
             ScreenController.SendSelected(faction);
             ScreenController.CloseScreen();
+        }
+
+        public void Cancel()
+        {
+            ScreenController?.CloseScreen();
         }
 
         public override ETranslateResult TranslateCommand(ECommand command) => ETranslateResult.BlockAll;

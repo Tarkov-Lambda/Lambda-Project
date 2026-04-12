@@ -5121,13 +5121,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1963320509}
     m_Modifications:
+    - target: {fileID: 42357349046555853, guid: f32467a1733f9c04799268e6fa3f6701, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 337.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3900832066815729586, guid: f32467a1733f9c04799268e6fa3f6701, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 337.3
+      objectReference: {fileID: 0}
     - target: {fileID: 5763773947049328965, guid: f32467a1733f9c04799268e6fa3f6701, type: 3}
       propertyPath: m_Name
       value: FactionSelection
       objectReference: {fileID: 0}
     - target: {fileID: 5763773947049328965, guid: f32467a1733f9c04799268e6fa3f6701, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8704906166703568363, guid: f32467a1733f9c04799268e6fa3f6701, type: 3}
       propertyPath: m_Pivot.x
