@@ -124,7 +124,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
 
     // OPTIONAL ENTRY POINT
     // SERVER ONLY: Some packets will choose to use this (like bomb assignment, admin auth)
-    protected void RequestSendToPlayer(T packet, int playerId)
+    protected void DispatchPacketToPlayer(T packet, int playerId)
     {
         if (!H.IsInRaid()) return;
 
@@ -143,7 +143,7 @@ public abstract class PacketHandler<T> : Singleton<PacketHandler<T>>, IDisposabl
         DispatchPacket(packet, peer);
     }
 
-    protected void RequestSendToPeer(T packet, int netId)
+    protected void DispatchPacketToPeer(T packet, int netId)
     {
         if (!H.IsInRaid()) return;
 

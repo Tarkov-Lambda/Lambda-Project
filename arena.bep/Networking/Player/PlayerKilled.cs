@@ -14,6 +14,7 @@ using ifp.arena.shared;
 using MemoryPack;
 using System;
 using ifp.arena.bep.Patches.Tarkov;
+using UnityEngine;
 
 namespace ifp.arena.bep.networking;
 
@@ -61,7 +62,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim = null, Player killer = null)
     {
-        if (killer == null)
+        if (killer == null && damage.Player?.iPlayer != null)
         {
             killer = H.GetPlayer(damage.Player.iPlayer.Id);
         }
@@ -70,7 +71,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         {
             victim = H.MainPlayer;
         }
-
 
         var packet = new PlayerKilledPacket
         {
@@ -81,7 +81,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             bodyPartCollider = damage.BodyPartColliderType,
         };
 
-
         try
         {
             packet.weaponId = killer?.HandsController?.Item?.TemplateId ?? "";
@@ -90,13 +89,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         {
             D.Log(ex.ToString());
         }
-
-        if (packet.weaponId == null)
-        {
-            packet.weaponId = "safasdf";
-        }
-
-        D.Log("Server was here");
 
         DispatchPacket(packet);
     }
@@ -111,11 +103,11 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         HandleKill(packet);
     }
 
+
+    // this logic needs to be abstracted elsewhere
     private void HandleKill(PlayerKilledPacket packet)
     {
-
-        D.Log("asdsadasda");
-        if (packet.weaponId == "safasdf")
+        if (packet.weaponId == "")
         {
             packet.weaponId = packet.killer?.HandsController?.Item?.TemplateId;
         }
@@ -124,7 +116,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         if (!victimScore.IsAlive) return;
 
         PlayerScore killerScore = H.GetPlayerScore(packet.killer);
-
         victimScore.Kill();
 
         if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
@@ -132,28 +123,94 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
-        if (!H.IsHeadless)
+        if (H.IsHeadless)
         {
-            if (packet.victim.IsYourPlayer)
-            {
-                HU.HealMe().Forget();
-                Singleton<ReplenishPacketHandler>.Instance.Send();
-
-                packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-                Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
-
-                _ = PU.CloseEyes(true, true);
-
-                H.MainPlayer.SetEmptyHands(delegate { });
-            }
-            else
-            {
-                Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
-            }
+            Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+            return;
         }
 
+        if (packet.victim.IsYourPlayer)
+        {
+            HandleLocalPlayerDeath(packet).Forget();
+        }
+        else
+        {
+            Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
 
-        Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+            // 2. Banish them 500 meters underground instantly to hide network latency
+            Vector3 shadowRealmPos = packet.victim.Position + new Vector3(0, 0, 0);
+            HoldPlayerOut(packet.victim, shadowRealmPos, 2.0f).Forget();
+
+            Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+        }
+
         EventBus.OnPlayerKill.Invoke(packet);
+    }
+
+    private async UniTaskVoid HandleLocalPlayerDeath(PlayerKilledPacket packet)
+    {
+        Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
+
+        // 2. Do local cleanup
+        HU.HealMe().Forget();
+        Singleton<ReplenishPacketHandler>.Instance.Send();
+        packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+        _ = PU.CloseEyes(true, true);
+        H.MainPlayer.SetEmptyHands(delegate { });
+
+        // 3. Hide the real player body so it doesn't stand inside the death camera!
+        // We drop them just 3 meters down. We CANNOT move them to the lobby yet, 
+        // otherwise EFT's occlusion culling will unload the map around the death cam!
+        Vector3 deathPos = packet.victim.Position;
+        Vector3 hiddenPos = deathPos + new Vector3(0, -3f, 0);
+        HoldPlayerOut(packet.victim, hiddenPos, 4.0f).Forget();
+
+        // 4. Wait for the death cam sequence to finish (RagdollCreator uses 4000ms)
+        await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
+
+        // 5. NOW teleport them to the lobby safely!
+        Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+    }
+
+    private async UniTaskVoid HoldPlayerOut(Player victim, Vector3 targetPos, float duration)
+    {
+        float elapsed = 0f;
+
+        // Force position immediately before loop starts
+        ForcePlayerPosition(victim, targetPos);
+
+        while (elapsed < duration && victim != null && !victim.Destroyed)
+        {
+            // PostLateUpdate ensures we override AFTER EFT's networking and IK calculates
+            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+
+            if (victim == null || victim.Destroyed) break;
+
+            ForcePlayerPosition(victim, targetPos);
+            elapsed += Time.deltaTime;
+        }
+
+        // Safely re-enable their controller once the hold duration is over
+        if (victim != null && !victim.Destroyed && victim._characterController != null)
+        {
+            victim._characterController.isEnabled = true;
+        }
+    }
+
+    private void ForcePlayerPosition(Player victim, Vector3 pos)
+    {
+        // Disable controller so gravity doesn't make them fall endlessly
+        if (victim._characterController != null)
+            victim._characterController.isEnabled = false;
+
+        victim.gameObject.transform.position = pos;
+        victim.Transform.position = pos;
+        victim.Position = pos;
+
+        if (victim.PlayerBones?.BodyTransform != null)
+            victim.PlayerBones.BodyTransform.position = pos;
+
+        if (victim.MovementContext != null)
+            victim.MovementContext.TransformPosition = pos;
     }
 }

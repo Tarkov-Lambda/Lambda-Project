@@ -103,7 +103,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         if (session == null) return;
 
         await UniTask.WaitUntil(() => H.GetPlayerScore(player.Id).readyState >= PlayerReadinessState.Ready);
-        RequestSendToPlayer(FormatPacket(), player.Id);
+        DispatchPacketToPlayer(FormatPacket(), player.Id);
     }
 
     protected override void WhenApproved(SessionInfoPacket packet, NetPeer peer)

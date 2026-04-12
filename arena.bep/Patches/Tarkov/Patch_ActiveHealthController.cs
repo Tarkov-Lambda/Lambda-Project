@@ -24,6 +24,25 @@ namespace ifp.arena.bep.Patches.Tarkov;
 public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 {
     public static DamageInfoStruct LastReceivedDamageInfo { get; private set; }
+    public static bool IsLastDamageByOtherPlayer
+    {
+        get
+        {
+            if (LastReceivedDamageInfo.Damage != 0)
+            {
+                // ща блять заебато будет
+                switch (LastReceivedDamageInfo.DamageType)
+                {
+                    case EDamageType.Bullet:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            return false;
+        }
+    }
+
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
 
@@ -65,14 +84,24 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 
         _lastKillTime = now;
 
-        // if (!H.GetPlayerScore(__instance.Player.Id).isAlive) return false;
+
+        if (!H.GetPlayerScore(__instance.Player.Id).IsAlive) return false;
 
         var lastDamage = Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo;
-        if (H.IsServer || lastDamage.Player?.iPlayer?.Id == 1)
-        // if (__instance.Player.IsYourPlayer)
+
+        if (H.IsServer || lastDamage.Player?.iPlayer?.Id == 1 || !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer)
         {
             D.Log($"{__instance.Player.Profile.Nickname} died");
-            Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage);
+
+            // killer can be null for environmental damage (fall, bleed, etc.)
+            Player killer = null;
+            if (lastDamage.Player?.iPlayer != null)
+                killer = H.GetPlayer(lastDamage.Player.iPlayer.Id);
+
+            Player victim = null;
+            if (!H.IsHeadless) victim = H.MainPlayer;
+
+            Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, killer, victim);
         }
 
         return false;

@@ -36,28 +36,32 @@ public class Patch_Player_Teleport : ModulePatch
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.Teleport));
 
     [PatchPrefix]
-    static void Prefix(Player __instance, ref float ____dampVelocity, Vector3 position, bool onServerToo = false)
+    static void Prefix(Player __instance)
     {
-        // disable controller 
-        __instance._characterController.isEnabled = false;
+        // Safely disable the controller before the original teleport logic runs
+        if (__instance._characterController != null)
+        {
+            __instance._characterController.isEnabled = false;
+        }
+    }
 
-        // Hard snap to position
+    [PatchPostfix]
+    static void Postfix(Player __instance, Vector3 position)
+    {
+        // Ensure the movement context and transforms are perfectly snapped
         __instance.Position = position;
         __instance.Transform.position = position;
 
-        // enable controller
-        __instance._characterController.isEnabled = true;
-
-        // Set the target for the Movement Context
-        __instance.MovementContext.TransformPosition = position;
-
-        __instance.method_14();
-
-        ____dampVelocity = 0f;
-        __instance.MovementContext.ResetFlying();
-        if (EnvironmentManager.Instance)
+        if (__instance.MovementContext != null)
         {
-            EnvironmentManager.Instance.UpdateEnvironmentForPlayer(__instance);
+            __instance.MovementContext.TransformPosition = position;
+            __instance.MovementContext.ResetFlying();
+        }
+
+        // Re-enable controller
+        if (__instance._characterController != null)
+        {
+            __instance._characterController.isEnabled = true;
         }
     }
 }
