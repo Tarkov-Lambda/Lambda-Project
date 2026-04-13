@@ -18,7 +18,7 @@ namespace arena.ui.scoreboard
 
         private readonly List<RowPlayer> pool = new List<RowPlayer>();
 
-        public void Set(List<PlayerStats> players, Color teamColor, int score, Faction mainPlayerFaction)
+        public void Set(List<PlayerScoreInfo> players, Color teamColor, int score, Faction mainPlayerFaction)
         {
             scoreContainer.SetActive(score >= 0);
             textTeamScore.text = score.ToString();

@@ -8,7 +8,7 @@ namespace arena.ui
     {
         [SerializeField] private TMP_Text textPlayerName;
 
-        public void SetSpectatingPlayer(PlayerStats player)
+        public void SetSpectatingPlayer(PlayerScoreInfo player)
         {
             textPlayerName.text = player.Name;
         }

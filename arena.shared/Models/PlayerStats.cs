@@ -1,47 +1,28 @@
 ﻿namespace ifp.arena.shared.Models
 {
     [System.Serializable]
-    public struct PlayerStats
+    public struct PlayerScoreInfo
     {
-        public int Id;
-        public bool Alive;
-        public Faction Faction;
         public string Name;
-        public int Money;
-        public int Kills;
-        public int Deaths;
-        public int Assists;
+        public Faction Faction;
+
+        public PlayerReadinessState ReadyState;
         public int Ping;
-        public int Headshots;
+        public bool IsAdmin;
+
+        public int Kills;
         public int Damage;
+        public int Headshots;
+        public int Assists;
+        public int Deaths;
+        public int Mvps;
 
-        public override string ToString()
-        {
-            return $"{Id} {Name} {Faction} {Kills}";
-        }
-    }
+        public int RoundDamage;
+        public int RoundKills;
+        public int RoundHeadshots;
+        public bool IsAlive;
+        public int Money;
 
-    public struct PlayerScoreInformationSChipsami
-    {
-        public Faction faction;
-
-        public PlayerReadinessState readyState;
-        public int ping;
-        public bool isAdmin;
-
-        public int kills;
-        public int damage;
-        public int headshots;
-        public int assists;
-        public int deaths;
-        public int mvps;
-
-        public int roundDamage;
-        public int roundKills;
-        public int roundHeadshots;
-        public bool isAlive;
-        public int money;
-
-        public int skolkoChipsovOstalos; // skolkoChipsovOstalos
+        public int SkolkoChipsovOstalos; // skolkoChipsovOstalos
     }
 }

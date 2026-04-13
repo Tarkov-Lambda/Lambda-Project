@@ -12,17 +12,17 @@ namespace arena.ui.scoreboard
         [SerializeField] private FactionColors factionColors;
 
         private readonly List<TeamBoard> pool = new List<TeamBoard>();
-        private readonly Dictionary<Faction, List<PlayerStats>> buckets = new Dictionary<Faction, List<PlayerStats>>();
+        private readonly Dictionary<Faction, List<PlayerScoreInfo>> buckets = new Dictionary<Faction, List<PlayerScoreInfo>>();
 
-        public void SetPlayers(PlayerStats[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
+        public void SetPlayers(PlayerScoreInfo[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
         {
             buckets.Clear();
 
-            foreach (PlayerStats p in players)
+            foreach (var p in players)
             {
-                if (!buckets.TryGetValue(p.Faction, out List<PlayerStats> list))
+                if (!buckets.TryGetValue(p.Faction, out List<PlayerScoreInfo> list))
                 {
-                    list = new List<PlayerStats>();
+                    list = new List<PlayerScoreInfo>();
                     buckets[p.Faction] = list;
                 }
                 list.Add(p);
@@ -30,7 +30,7 @@ namespace arena.ui.scoreboard
 
             int index = 0;
 
-            foreach (KeyValuePair<Faction, List<PlayerStats>> kvp in buckets)
+            foreach (KeyValuePair<Faction, List<PlayerScoreInfo>> kvp in buckets)
             {
                 TeamBoard board;
 

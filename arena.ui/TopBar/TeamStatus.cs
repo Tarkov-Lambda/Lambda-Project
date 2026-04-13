@@ -25,7 +25,7 @@ namespace arena.ui
             }
         }
 
-        public void Set(PlayerStats[] players)
+        public void Set(PlayerScoreInfo[] players)
         {
             Init();
             if (players == null) return;
@@ -44,7 +44,7 @@ namespace arena.ui
                 {
                     uiPlayer.gameObject.SetActive(true);
 
-                    if (players[i].Alive)
+                    if (players[i].IsAlive)
                         uiPlayer.SetAlive();
                     else
                         uiPlayer.SetDead();

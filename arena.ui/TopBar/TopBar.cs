@@ -39,7 +39,7 @@ namespace arena.ui
             textTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
         }
 
-        public void SetTeamStatuses(PlayerStats[] leftTeam, PlayerStats[] rightTeam)
+        public void SetTeamStatuses(PlayerScoreInfo[] leftTeam, PlayerScoreInfo[] rightTeam)
         {
             teamStatusLeft?.Set(leftTeam);
             teamStatusRight?.Set(rightTeam);

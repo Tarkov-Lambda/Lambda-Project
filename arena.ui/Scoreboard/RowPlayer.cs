@@ -20,7 +20,7 @@ namespace arena.ui.scoreboard
         [SerializeField] private Graphic bg;
         [SerializeField] private CanvasGroup canvasGroup;
 
-        public void Set(in PlayerStats stats, bool isTeammate, int index)
+        public void Set(in PlayerScoreInfo stats, bool isTeammate, int index)
         {
             textName.text = stats.Name;
 
@@ -36,13 +36,13 @@ namespace arena.ui.scoreboard
 
             textDamage.text = stats.Damage.ToString();
 
-            canvasGroup.alpha = stats.Alive ? 1f : 0.5f;
+            canvasGroup.alpha = stats.IsAlive ? 1f : 0.5f;
 
             bool even = index % 2 == 0;
             bg.SetAlpha(even ? 0.8f : 0.6f);
         }
 
-        void SetHeadshotRatio(PlayerStats stats)
+        void SetHeadshotRatio(PlayerScoreInfo stats)
         {
             if (stats.Kills <= 0)
             {

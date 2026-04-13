@@ -81,9 +81,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
     private void OnStartSpectating(Player player)
     {
         PlayerScore playerScore = H.GetPlayerScore(player);
-        PlayerStats stats = GetPlayerStats(playerScore);
-
-        matchUIController.Spectator.SetSpectatingPlayer(stats);
+        matchUIController.Spectator.SetSpectatingPlayer(playerScore.Score);
         matchUIController.ToggleSpectator(true);
     }
 
@@ -223,7 +221,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
             if (playerVictim == H.MainPlayerScore)
             {
-                OnSelfDeath(GetPlayerStats(playerKiller));
+                OnSelfDeath(playerKiller.Score);
             }
 
             Refresh();
@@ -234,7 +232,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         }
     }
 
-    void OnSelfDeath(PlayerStats killer)
+    void OnSelfDeath(PlayerScoreInfo killer)
     {
         matchUIController.DeathInfo.Pop(killer);
 
@@ -253,51 +251,16 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         matchUIController.TopBar.SetScores(scoreCT, scoreT);
 
-        PlayerStats[] allPlayerStats = GetAllPlayersStats();
+        PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Score).ToArray();
 
-        PlayerStats[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
-        PlayerStats[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
+        PlayerScoreInfo[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
+        PlayerScoreInfo[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
 
         matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
 
         matchUIController.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.Faction);
 
         shop.SetCurrentMoneyBalance(H.MainPlayerScore.Money);
-    }
-
-    PlayerStats[] GetAllPlayersStats()
-    {
-        List<PlayerStats> playerStats = new List<PlayerStats>();
-        foreach (var kvp in H.Scoreboard)
-        {
-            int id = kvp.Key;
-            PlayerScore playerScore = kvp.Value;
-
-            playerStats.Add(GetPlayerStats(playerScore));
-        }
-
-        return playerStats.ToArray();
-    }
-
-    PlayerStats GetPlayerStats(PlayerScore playerScore)
-    {
-        return new PlayerStats
-        {
-            Id = playerScore.player.Id,
-            Alive = playerScore.IsAlive,
-            Faction = playerScore.Faction,
-
-            Name = playerScore.player.Profile.Nickname,
-
-            Money = playerScore.Money,
-
-            Kills = playerScore.Kills,
-            Deaths = playerScore.Deaths,
-            Assists = playerScore.Assists,
-            Ping = playerScore.Ping,
-            Headshots = playerScore.Headshots,
-            Damage = playerScore.Damage
-        };
     }
 
     void OnInventoryScreenOpen(CompoundItem containerLooting)
