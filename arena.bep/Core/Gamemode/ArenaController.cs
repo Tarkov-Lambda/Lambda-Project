@@ -52,7 +52,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public ArenaController()
     {
-        if (H.GameWorld != null) StartSession(H.GameWorld);
+        if (H.GameWorld != null) StartSession();
         H.OnGameStarted += StartSession;
         H.OnGameDispose += EndSession;
         OnFikaEvent += ManageFikaEvents;
@@ -78,12 +78,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.OnGameStarted -= StartSession;
         H.OnGameDispose -= EndSession;
         OnFikaEvent -= ManageFikaEvents;
-        EndSession(H.GameWorld);
+        EndSession();
         session = null;
         Release(this);
     }
 
-    public async void StartSession(GameWorld gameWorld)
+    public async void StartSession()
     {
         if (!H.IsInRaid()) return;
 
@@ -111,7 +111,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         NetworkTime.Reset();
     }
 
-    public void EndSession(GameWorld gameWorld)
+    public void EndSession()
     {
         Physics.simulationMode = SimulationMode.Script;
         // Cancel any in-flight ClientRequestGiveItem calls so they don't touch

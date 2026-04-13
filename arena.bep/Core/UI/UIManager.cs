@@ -52,7 +52,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         if (Singleton<CommonUI>.Instantiated)
             LoadUI(Singleton<CommonUI>.Instance);
 
-        if (Singleton<GameWorld>.Instantiated) AddInventoryHotkeyInterceptor(Singleton<GameWorld>.Instance);
+        if (Singleton<GameWorld>.Instantiated) AddInventoryHotkeyInterceptor();
 
         EventBus.OnEnter += OnMatchStateEnter;
         EventBus.OnRoundActionEnd += OnRoundActionEnd;
@@ -103,9 +103,9 @@ public class UIManager : Singleton<UIManager>, IDisposable
         shop?.SetCurrentMoneyBalance(money);
     }
 
-    private void AddInventoryHotkeyInterceptor(GameWorld gameWorld)
+    private void AddInventoryHotkeyInterceptor()
     {
-        inventoryHotkeyListener = gameWorld.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
+        inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
         inventoryHotkeyListener.OnHoldBegin += () => matchUIController.ToggleScoreboard(true);
         inventoryHotkeyListener.OnHoldEnd += () => matchUIController.ToggleScoreboard(false);
     }

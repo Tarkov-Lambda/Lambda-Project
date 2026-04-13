@@ -9,7 +9,7 @@ namespace ifp.arena.bep.Patches.Tarkov;
 
 internal class Patch_Gameworld_OnGameStarted : ModulePatch
 {
-    public static event Action<GameWorld> OnGameStarted;
+    public static event Action OnGameStarted;
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.OnGameStarted));
 
@@ -19,13 +19,13 @@ internal class Patch_Gameworld_OnGameStarted : ModulePatch
         if (__instance is HideoutGameWorld) return;
 
         NetworkTime.Reset();
-        OnGameStarted?.Invoke(__instance);
+        OnGameStarted?.Invoke();
     }
 }
 
 internal class Patch_Gameworld_OnDispose : ModulePatch
 {
-    public static event Action<GameWorld> OnDispose;
+    public static event Action OnDispose;
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GameWorld), nameof(GameWorld.Dispose));
 
@@ -35,6 +35,6 @@ internal class Patch_Gameworld_OnDispose : ModulePatch
         if (!H.IsInRaid()) return;
 
         NetworkTime.Reset();
-        OnDispose?.Invoke(__instance);
+        OnDispose?.Invoke();
     }
 }

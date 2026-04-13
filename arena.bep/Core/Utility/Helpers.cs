@@ -62,13 +62,13 @@ public static class Helpers
     public static SessionManager Session => Arena.session;
     public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
-    public static event Action<GameWorld> OnGameStarted
+    public static event Action OnGameStarted
     {
         add => Patch_Gameworld_OnGameStarted.OnGameStarted += value;
         remove => Patch_Gameworld_OnGameStarted.OnGameStarted -= value;
     }
 
-    public static event Action<GameWorld> OnGameDispose
+    public static event Action OnGameDispose
     {
         add => Patch_Gameworld_OnDispose.OnDispose += value;
         remove => Patch_Gameworld_OnDispose.OnDispose -= value;

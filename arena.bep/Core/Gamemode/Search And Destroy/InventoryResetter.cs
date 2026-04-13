@@ -23,7 +23,7 @@ public static class InventoryResetter
                 if (string.IsNullOrEmpty(shopItem.ammoId))
                     continue;
 
-                var immutable = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(shopItem.bsgId);
+                var immutable = Singleton<PresetItemsCache>.Instance.GetImmutableItem(shopItem.bsgId);
                 if (immutable is not PistolItemClass)
                     continue;
 
@@ -41,7 +41,7 @@ public static class InventoryResetter
         if (defaultPistolBsgId == null)
             return null;
 
-        var pistol = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId) as Weapon;
+        var pistol = Singleton<PresetItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId) as Weapon;
         return pistol?.GetCurrentMagazine()?.TemplateId;
     }
 
@@ -141,7 +141,7 @@ public static class InventoryResetter
 
             if (needsDefaultPistol && defaultPistolBsgId != null)
             {
-                var defaultPistolItem = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId);
+                var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId);
                 if (defaultPistolItem != null) await IU.ClientRequestGiveItem(defaultPistolItem);
             }
 

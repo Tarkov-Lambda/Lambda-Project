@@ -6,9 +6,15 @@ using EFT.InventoryLogic;
 
 namespace ifp.arena.bep.Core.UI;
 
-internal class ImmutableItemsCache : Singleton<ImmutableItemsCache>, IDisposable
+internal class PresetItemsCache : Singleton<PresetItemsCache>, IDisposable
 {
     Dictionary<string, Item> cacheImmutableItems = new Dictionary<string, Item>();
+
+    public PresetItemsCache()
+    {
+        H.OnGameStarted += ClearCache;
+        H.OnGameDispose += ClearCache;
+    }
 
     public Item GetImmutableItem(string bsgId)
     {
@@ -26,9 +32,21 @@ internal class ImmutableItemsCache : Singleton<ImmutableItemsCache>, IDisposable
         return newImmutableItem;
     }
 
-    public void Dispose()
+    private void ClearCache()
     {
         cacheImmutableItems.Clear();
+    }
+
+    public void ResetCachedItem(string bsgId)
+    {
+        cacheImmutableItems.Remove(bsgId);
+    }
+
+    public void Dispose()
+    {
+        H.OnGameStarted -= ClearCache;
+        H.OnGameDispose -= ClearCache;
+        ClearCache();
         Release(this);
     }
 }

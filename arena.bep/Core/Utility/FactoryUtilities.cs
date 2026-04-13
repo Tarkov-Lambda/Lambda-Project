@@ -26,7 +26,6 @@ public static class FactoryUtilities
     // Fetch a build that exists in the user's gun builds (defaults to stock preset)
     public static WeaponBuildClass GetCustomTemplate(string bsgId)
     {
-
         return Templates.FirstOrDefault((build) =>
         {
             return build.Item.TemplateId == bsgId;
@@ -37,7 +36,7 @@ public static class FactoryUtilities
     {
         if (BuyMenuSelection.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
         {
-            ammo = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
+            ammo = Singleton<PresetItemsCache>.Instance.GetImmutableItem(weaponData.ammoId) as AmmoItemClass;
             return true;
         }
 

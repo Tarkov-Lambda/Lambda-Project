@@ -79,8 +79,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
     }
 
-    protected void RegisterPacket(GameWorld gWorld = null) => RegisterPacket();
-
     protected void RegisterPacket()
     {
         D.Log($"Registering {typeof(T).Name}");
@@ -95,8 +93,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             H.FikaNet.RegisterPacket<RejectionPacket<T>, NetPeer>(WhenClientReceivesRejection);
         }
     }
-
-    protected void UnregisterPacket(GameWorld gWorld = null) => UnregisterPacket();
 
     protected void UnregisterPacket()
     {

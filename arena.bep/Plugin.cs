@@ -220,7 +220,7 @@ public class Plugin : BaseUnityPlugin
 
         RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
         RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
-        RegisterSingleton<ImmutableItemsCache>();                                   // Caching gun presets
+        RegisterSingleton<PresetItemsCache>();                                   // Caching gun presets
         RegisterSingleton<PresetManager>();                                         // Collects
 
         try

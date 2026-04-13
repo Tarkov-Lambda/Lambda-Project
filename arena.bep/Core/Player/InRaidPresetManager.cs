@@ -16,7 +16,7 @@ public struct PresetManagerSlotInfo
     public bool isRequired;
 }
 
-// WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
 public class PresetManager : Singleton<PresetManager>, IDisposable
 {
@@ -46,7 +46,7 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
         PresetInfoConfig = JsonConvert.DeserializeObject<Dictionary<EquipmentSlot, PresetManagerSlotInfo>>(json);
     }
 
-    private void CapturePreset(GameWorld gWorld = null)
+    private void CapturePreset()
     {
         if (H.IsHeadless) return;
 
@@ -59,7 +59,7 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
             || presetInfo.Key is EquipmentSlot.ArmorVest
             )
             {
-                item = Singleton<ImmutableItemsCache>.Instance.GetImmutableItem(presetInfo.Value.defaultBsgId);
+                item = Singleton<PresetItemsCache>.Instance.GetImmutableItem(presetInfo.Value.defaultBsgId);
             }
 
             // If the tactical rig is armoured, skip armor vest

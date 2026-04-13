@@ -81,7 +81,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         return bundle;
     }
 
-    void UnloadEverythingOnGameWorldDispose(GameWorld gWorld)
+    void UnloadEverythingOnGameWorldDispose()
     {
         UnloadAll(true);
     }
