@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
@@ -13,9 +14,13 @@ namespace ifp.arena.bep.Core;
 public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 {
     private string playerWeaponPresetDataPath;
+    private string WeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", "Builds");
 
     // template bsgId -> WeaponBuildClass.MongoID_0 (either points to a custom preset, or )
     public Dictionary<string, string> SelectedGunPreset = new();
+
+    // exported weapon builds (hash collision warning) keyed by the json name (preset name)
+    public Dictionary<string, Weapon> WeaponPresetBuilds = new();
 
     public WeaponPresetManager()
     {
@@ -38,6 +43,8 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         {
             InitializeData();
         }
+
+        LoadExistingWeaponPresets();
     }
 
     public void Dispose()
@@ -66,7 +73,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     private void LoadExistingData(string json)
     {
         D.Log("Loading Existing Weapon Presets");
-        
+
         var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
         if (data != null)
@@ -94,6 +101,87 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
             string json = JsonConvert.SerializeObject(SelectedGunPreset, Formatting.Indented);
             File.WriteAllText(playerWeaponPresetDataPath, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to save weapon presets: {ex}");
+        }
+    }
+
+    // Serialize the item build and export it as a json file
+    public void SaveWeaponPreset(string json, string name)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                throw new ArgumentException("JSON content is empty");
+
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(c, '_');
+            }
+
+            Directory.CreateDirectory(WeaponPresetDataPath);
+            var buildPath = Path.Combine(WeaponPresetDataPath, $"{name}.json");
+
+            File.WriteAllText(buildPath, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to save weapon presets: {ex}");
+        }
+    }
+
+    public void LoadExistingWeaponPresets()
+    {
+        try
+        {
+            if (!Directory.Exists(WeaponPresetDataPath))
+            {
+                D.Log("Weapon preset directory does not exist.");
+                return;
+            }
+
+            string[] files = Directory.GetFiles(WeaponPresetDataPath, "*.json", SearchOption.TopDirectoryOnly);
+
+            foreach (string file in files)
+            {
+                try
+                {
+                    string json = File.ReadAllText(file);
+
+                    if (string.IsNullOrWhiteSpace(json))
+                        continue;
+
+                    string name = Path.GetFileNameWithoutExtension(file);
+
+                    LoadWeaponPreset(json, name);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to load preset file {file}: {ex}");
+                }
+            }
+
+            D.Log($"Loaded {WeaponPresetBuilds.Count} weapon presets.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load weapon presets directory: {ex}");
+        }
+    }
+
+    public void LoadWeaponPreset(string json, string name)
+    {
+        try
+        {
+            Item item = FU.InstantiatePreset(json);
+
+            if (item != null && item is Weapon weaponPreset)
+            {
+                WeaponPresetBuilds[name] = weaponPreset;
+                FU.CreateAndSaveWeaponPreset(weaponPreset, name).Forget();
+            }
         }
         catch (Exception ex)
         {
