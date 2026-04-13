@@ -34,7 +34,6 @@ public class UIManager : IDisposable
             LoadUI(Singleton<CommonUI>.Instance);
 
 
-        EventBus.OnRoundActionEnd += OnRoundActionEnd;
         EventBus.OnPlayerKill += OnPlayerKill;
 
         EventBus.OnUpdate += OnUpdate;
@@ -52,7 +51,7 @@ public class UIManager : IDisposable
     }
 
 
-    async void LoadUI(CommonUI commonUI)
+    void LoadUI(CommonUI commonUI)
     {
         BSGItemInfoProvider itemInfoProvider = new BSGItemInfoProvider();
 
@@ -66,6 +65,7 @@ public class UIManager : IDisposable
         disposables.Add(new TopBarController(matchUIController));
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
         disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
+        disposables.Add(new MatchResultController(matchUIController));
         disposables.Add(new NameplateController(commonUI, uibundle));
         disposables.Add(new SpectatorController(matchUIController));
         disposables.Add(new EditBuildController(commonUI, uibundle));
@@ -99,21 +99,6 @@ public class UIManager : IDisposable
         screenController.ShowScreen(EScreenState.Temporary);
     }
 
-    void OnRoundActionEnd(RoundActionPhaseEnd data)
-    {
-        bool win = data.winner == H.MainPlayerScore.Faction;
-        string mainTitle = win ? "ROUND WON" : "ROUND LOST";
-
-        string subTitle = "";
-
-        if (H.GetPlayer(data.mvpId) != null && data.mvpReason != null)
-        {
-            subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
-        }
-
-        matchUIController.PopupMatchEnd.Pop(win, mainTitle, subTitle);
-    }
-
     void OnPlayerKill(PlayerKilledPacket killPacket)
     {
         if (killPacket.victim == H.MainPlayer)
@@ -140,7 +125,6 @@ public class UIManager : IDisposable
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
 
-        EventBus.OnRoundActionEnd -= OnRoundActionEnd;
         EventBus.OnPlayerKill -= OnPlayerKill;
         EventBus.OnUpdate -= OnUpdate;
 
