@@ -1,41 +1,40 @@
 using System;
-using Comfort.Common;
 using EFT;
-using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
+using ifp.arena.shared.Models;
 
 public class PlayerScore
 {
     public readonly Player player;
 
-    public Faction Faction { get; private set; }
+    // this is absolutely fucking retarded but my hand was forced
+    public PlayerScoreInformationSChipsami score;
+
+    public Faction Faction => score.faction;
 
     // meta gaming (previously known as facebook gaming)
-    public PlayerReadinessState readyState;
-    public int ping;
-    public bool isAdmin;
+    public PlayerReadinessState ReadyState => score.readyState;
+    public int Ping => score.ping;
+    public bool IsAdmin => score.isAdmin;
 
     // Round scope
-    public int Kills { get; private set; }
-    public int Damage { get; private set; }
-    public int Headshots { get; private set; }
-    public int Assists { get; private set; }
-    public int Deaths { get; private set; }
-    public int Mvps { get; private set; }
+    public int Kills => score.kills;
+    public int Damage => score.damage;
+    public int Headshots => score.headshots;
+    public int Assists => score.assists;
+    public int Deaths => score.deaths;
+    public int Mvps => score.mvps;
 
     // only the server knows this value
-    public int RoundDamage { get; private set; }
-
-    public int RoundKills { get; private set; }
-    public int RoundHeadshots { get; private set; }
-
-    public bool IsAlive { get; private set; }
-    public int Money { get; private set; }
+    public int RoundDamage => score.roundDamage;
+    public int RoundKills => score.roundKills;
+    public int RoundHeadshots => score.roundHeadshots;
+    public bool IsAlive => score.isAlive;
+    public int Money => score.money;
 
 
     public PlayerScore(int id)
@@ -45,24 +44,29 @@ public class PlayerScore
         if (H.IsHeadless) return;
         if (H.IsServer && H.MainPlayer.Id == id)
         {
-            isAdmin = true;
+            score.isAdmin = true;
         }
     }
 
     public void AddFrag(bool isHeadshot)
     {
-        Kills++;
-        RoundKills++;
+        score.kills++;
+        score.roundKills++;
         if (isHeadshot)
         {
-            Headshots++;
-            RoundHeadshots++;
+            score.headshots++;
+            score.roundHeadshots++;
         }
+    }
+
+    public void ChangeReadiness(PlayerReadinessState readyState)
+    {
+        score.readyState = readyState;
     }
 
     public void ChangeFaction(Faction faction)
     {
-        this.Faction = faction;
+        score.faction = faction;
 
         if (H.IsHeadless) return;
         if (player == H.MainPlayer)
@@ -75,76 +79,81 @@ public class PlayerScore
         }
     }
 
+    public void SetAdmin(bool isAdmin)
+    {
+        score.isAdmin = isAdmin;
+    }
+
     public void AddDamage(int newDamage)
     {
-        RoundDamage += newDamage;
+        score.roundDamage += newDamage;
     }
 
     public void Kill()
     {
-        Deaths++;
-        IsAlive = false;
+        score.deaths++;
+        score.isAlive = false;
     }
 
     public void Spawn()
     {
-        IsAlive = true;
+        score.isAlive = true;
         if (!H.IsHeadless && player == H.MainPlayer)
             EventBus.OnSelfRespawn?.Invoke();
     }
 
     public void SessionReset()
     {
-        Mvps = 0;
-        Kills = 0;
-        Damage = 0;
-        Headshots = 0;
-        Assists = 0;
-        Deaths = 0;
-        IsAlive = true;
+        score.mvps = 0;
+        score.kills = 0;
+        score.damage = 0;
+        score.headshots = 0;
+        score.assists = 0;
+        score.deaths = 0;
+        score.isAlive = true;
 
-        RoundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
-        RoundHeadshots = 0;
-        RoundKills = 0;
+        score.roundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
+        score.roundHeadshots = 0;
+        score.roundKills = 0;
     }
 
     public void RoundReset()
     {
-        Damage += RoundDamage; // apply damage to the total counter after round
-        RoundDamage = 0;
-        RoundHeadshots = 0;
-        RoundKills = 0;
+        score.damage += RoundDamage; // apply damage to the total counter after round
+        score.roundDamage = 0;
+        score.roundHeadshots = 0;
+        score.roundKills = 0;
     }
 
     public void Sync(PlayerScoreSyncData packet)
     {
         var newFaction = (Faction)packet.faction;
         bool factionChanged = newFaction != Faction;
-        Faction = newFaction;
+        score.faction = newFaction;
 
         // Mirror the event that ChangeFaction fires on the server, so clients get
         // the side-swap notification without needing to go through ChangeFaction().
         if (factionChanged && !H.IsHeadless && player == H.MainPlayer)
             EventBus.OnSelfFactionChanged?.Invoke(Faction);
 
-        Mvps = packet.mvps;
-        Kills = packet.kills;
-        Headshots = packet.headshots;
-        Assists = packet.assists;
-        Deaths = packet.deaths;
-        Money = packet.money;
-        IsAlive = packet.isAlive;
-        readyState = packet.readyState;
+        score.mvps = packet.mvps;
+        score.kills = packet.kills;
+        score.headshots = packet.headshots;
+        score.assists = packet.assists;
+        score.deaths = packet.deaths;
+        score.money = packet.money;
+        score.isAlive = packet.isAlive;
+        score.readyState = packet.readyState;
 
-        RoundKills = packet.roundKills;
-        RoundHeadshots = packet.roundHeadshots;
+        score.roundKills = packet.roundKills;
+        score.roundHeadshots = packet.roundHeadshots;
     }
 
     public void AddMoney(int amount)
     {
-        Money += amount;
+        score.money += amount;
 
-        Money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
+        score.money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
 
         if (H.IsHeadless) return;
         if (player == H.MainPlayer)
@@ -153,9 +162,9 @@ public class PlayerScore
 
     public void SpendMoney(int amount)
     {
-        Money -= amount;
+        score.money -= amount;
         if (Money < 0)
-            Money = 0;
+            score.money = 0;
 
         if (H.IsHeadless) return;
         EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
@@ -163,7 +172,7 @@ public class PlayerScore
 
     public void SetMoney(int newMoney)
     {
-        Money = newMoney;
+        score.money = newMoney;
     }
 
     public bool CanBuy()

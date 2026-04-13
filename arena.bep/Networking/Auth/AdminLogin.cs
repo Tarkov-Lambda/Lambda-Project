@@ -53,7 +53,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
     {
         if (H.IsServer)
         {
-            H.MainPlayerScore.isAdmin = true;
+            H.MainPlayerScore.SetAdmin(true);
             return;
         }
 
@@ -118,7 +118,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         else if (packet.Step == AdminAuthStep.Success)
         {
             D.Log($"{packet.player.Profile.Nickname} is now an Admin");
-            H.GetPlayerScore(packet.player)?.isAdmin = true;
+            H.GetPlayerScore(packet.player)?.SetAdmin(true);
         }
     }
 

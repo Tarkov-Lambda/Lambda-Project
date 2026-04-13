@@ -66,6 +66,9 @@ public class SteamAudioSceneTracker : MonoBehaviour
 
         if (_instance != null) return;
 
+        foreach (var stale in host.GetComponents<SteamAudioSceneTracker>())
+            UnityEngine.Object.Destroy(stale);
+
         _instance = host.GetOrAddComponent<SteamAudioSceneTracker>();
         Debug.Log($"[SteamAudioSceneTracker] Registered on '{host.name}'.");
     }

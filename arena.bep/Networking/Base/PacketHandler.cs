@@ -120,7 +120,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (authority == PacketAuthority.Admin)
         {
             PlayerScore score = H.GetPlayerScore(id);
-            return score == null || !score.isAdmin; // unauthorized only if NOT admin
+            return score == null || !score.IsAdmin; // unauthorized only if NOT admin
         }
         else if (authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
         {

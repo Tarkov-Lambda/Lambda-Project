@@ -42,7 +42,7 @@ public class SharedWarmup : IGameState
     public virtual MatchState? OnUpdate()
     {
         if (!H.IsServer) return null;
-        if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.readyState != PlayerReadinessState.Connected)) // Either Disconnected or ready
+        if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected)) // Either Disconnected or ready
             return MatchState.WarmupEnd;
         return null;
     }

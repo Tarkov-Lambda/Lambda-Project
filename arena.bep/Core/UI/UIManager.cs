@@ -186,7 +186,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         matchUIController.PopupMatchEnd.Pop(win, mainTitle, subTitle);
     }
 
-    void OnMatchStateEnter(GameTypes.MatchState matchState)
+    void OnMatchStateEnter(MatchState matchState)
     {
         if (itemInfoProvider == null)
         {
@@ -294,7 +294,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
             Kills = playerScore.Kills,
             Deaths = playerScore.Deaths,
             Assists = playerScore.Assists,
-            Ping = playerScore.ping,
+            Ping = playerScore.Ping,
             Headshots = playerScore.Headshots,
             Damage = playerScore.Damage
         };

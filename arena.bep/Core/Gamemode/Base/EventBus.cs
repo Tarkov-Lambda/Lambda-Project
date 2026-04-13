@@ -19,6 +19,7 @@ public static class EventBus
     public static Action OnItemBuy;
 
     public static Action OnSelfRespawn;
+    public static Action<PlayerReadinessState> OnSelfReadinessChanged;
     public static Action<Faction> OnSelfFactionChanged;
 
     public static Action OnUpdate;

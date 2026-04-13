@@ -54,7 +54,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public RoundActionPhaseEnd? LastRoundActionEnd;
     public int LastObjectivePlayerId = -1; // planter/defuser
     public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
-    // End of absolute bullshit
+    // End of bullshit
 
     private IGameState _currentState;
 

@@ -1,19 +1,15 @@
-﻿
-namespace ifp.arena.shared
+﻿public enum GameModes
 {
-    public enum GameModes
-    {
-        TDM,
-        SND,
-        FFA,
-        PRACTICE
-    }
+    TDM,
+    SND,
+    FFA,
+    PRACTICE
+}
 
-    public enum Faction
-    {
-        None, // FFA
-        CT,
-        T,
-        Spectator
-    }
+public enum Faction
+{
+    None, // FFA
+    CT,
+    T,
+    Spectator
 }

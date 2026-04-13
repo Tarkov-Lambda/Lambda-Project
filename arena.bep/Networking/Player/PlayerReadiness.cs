@@ -60,7 +60,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             playerScore = H.Scoreboard[packet.Player.Id];
         }
 
-        playerScore.readyState = packet.readyState;
+        playerScore.ChangeReadiness(packet.readyState);
 
         if (!H.IsClient)
         {

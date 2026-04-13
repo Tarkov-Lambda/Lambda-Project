@@ -43,10 +43,9 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
 
     public void CreateLocalPlayerRagdoll()
     {
-        Player mainPlayer = H.GetMainPlayer();
-        FakeCorpse fakeCorpse = CreateRagdollFromPlayer(mainPlayer);
+        FakeCorpse fakeCorpse = CreateRagdollFromPlayer(H.MainPlayer);
 
-        PlayerCameraController playerCameraController = mainPlayer.GetComponent<PlayerCameraController>();
+        PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
         fakeCorpse.SetAttachedCamera(playerCameraController.Camera);
         playerCameraController.enabled = false;
         UniTask.Delay(4000).ContinueWith(() =>

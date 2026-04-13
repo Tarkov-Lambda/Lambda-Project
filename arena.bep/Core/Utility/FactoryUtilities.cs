@@ -26,6 +26,7 @@ public static class FactoryUtilities
     // Fetch a build that exists in the user's gun builds (defaults to stock preset)
     public static WeaponBuildClass GetCustomTemplate(string bsgId)
     {
+
         return Templates.FirstOrDefault((build) =>
         {
             return build.Item.TemplateId == bsgId;

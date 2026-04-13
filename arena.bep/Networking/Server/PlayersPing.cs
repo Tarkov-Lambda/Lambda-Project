@@ -47,7 +47,7 @@ public class PlayersPingPacketHandler : PacketHandler<PlayersPingPacket>
         {
             if (H.Scoreboard.TryGetValue(syncScore.playerId, out var playerScore))
             {
-                playerScore.ping = syncScore.ping;
+                // playerScore.ping = syncScore.ping;
             }
         }
     }

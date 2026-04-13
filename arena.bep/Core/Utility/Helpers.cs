@@ -81,7 +81,7 @@ public static class Helpers
     }
 
     // bro thinks he's the main character
-    public static Player GetMainPlayer()
+    private static Player GetMainPlayer()
     {
         try
         {

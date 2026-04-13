@@ -90,7 +90,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
                 deaths = kvp.Value.Deaths,
                 money = kvp.Value.Money,
                 isAlive = kvp.Value.IsAlive,
-                readyState = kvp.Value.readyState,
+                readyState = kvp.Value.ReadyState,
 
                 RoundDamage = kvp.Value.RoundDamage,
                 roundKills = kvp.Value.RoundKills,

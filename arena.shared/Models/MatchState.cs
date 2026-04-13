@@ -1,5 +1,3 @@
-namespace ifp.arena.bep.GameTypes;
-
 public enum MatchState
 {
     // Just chilling type beat
@@ -22,29 +20,3 @@ public enum MatchState
     SideSwap,
     MatchEnd,
 }
-
-public enum PlayerReadinessState
-{
-    Disconnected,
-    Connected,
-    Ready
-}
-
-public enum BombState
-{
-    None,
-    Planting,
-    Planted,
-    Defusing,
-    Defused,
-    Exploded
-}
-
-public enum RoundWinReason
-{
-    None,
-    Objective,
-    Elimination,
-    Timeout
-}
-
