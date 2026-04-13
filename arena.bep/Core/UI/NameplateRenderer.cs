@@ -52,6 +52,7 @@ internal class NameplateRenderer : MonoBehaviour
         if (!H.IsInRaid())
         {
             DisableAll();
+            gameObject.SetActive(false);
             return;
         }
 

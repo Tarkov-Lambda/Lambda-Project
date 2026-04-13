@@ -1,20 +1,16 @@
 using arena.ui;
 using Comfort.Common;
-using EFT;
 using EFT.UI;
 using EFT.UI.Screens;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
-using ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds;
 using ifp.arena.shared.Models;
 using ifp.arena.ui.Nameplate;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.UI;
@@ -26,8 +22,6 @@ public class UIManager : IDisposable
     List<IDisposable> disposables = new();
 
     ArenaMatchUI matchUIController;
-
-    NameplateRenderer nameplateRenderer;
 
     FactionSelectionScreen factionSelectionScreen;
 
@@ -43,7 +37,7 @@ public class UIManager : IDisposable
         EventBus.OnRoundActionEnd += OnRoundActionEnd;
         EventBus.OnPlayerKill += OnPlayerKill;
 
-        EventBus.OnUpdate += UpdateTime;
+        EventBus.OnUpdate += OnUpdate;
 
         EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
         EventBus.OnSelfRespawn += OnSelfRespawn;
@@ -72,12 +66,9 @@ public class UIManager : IDisposable
         disposables.Add(new TopBarController(matchUIController));
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
         disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
+        disposables.Add(new NameplateController(commonUI, uibundle));
         disposables.Add(new SpectatorController(matchUIController));
         disposables.Add(new EditBuildController(commonUI, uibundle));
-
-        nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
-        GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
-        nameplateRenderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
 
         GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/FactionSelection/FactionSelection.prefab");
         factionSelectionScreen = GameObject.Instantiate(prefabFactionSelection, commonUI.transform.GetChild(0)).AddComponent<FactionSelectionScreen>();
@@ -92,10 +83,10 @@ public class UIManager : IDisposable
 
     }
 
-    private void UpdateTime()
+    private void OnUpdate()
     {
 #if DEBUG
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.M))
         {
             ShowFactionSelectionScreen();
         }
@@ -151,7 +142,7 @@ public class UIManager : IDisposable
 
         EventBus.OnRoundActionEnd -= OnRoundActionEnd;
         EventBus.OnPlayerKill -= OnPlayerKill;
-        EventBus.OnUpdate -= UpdateTime;
+        EventBus.OnUpdate -= OnUpdate;
 
         EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
         EventBus.OnSelfRespawn -= OnSelfRespawn;
@@ -172,9 +163,6 @@ public class UIManager : IDisposable
 
         if (matchUIController != null)
             GameObject.Destroy(matchUIController.gameObject);
-
-        if (nameplateRenderer != null)
-            GameObject.Destroy(nameplateRenderer.gameObject);
 
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
 
