@@ -40,7 +40,6 @@ public class UIManager : IDisposable
             LoadUI(Singleton<CommonUI>.Instance);
 
 
-        EventBus.OnEnter += OnMatchStateEnter;
         EventBus.OnRoundActionEnd += OnRoundActionEnd;
         EventBus.OnPlayerKill += OnPlayerKill;
 
@@ -70,6 +69,7 @@ public class UIManager : IDisposable
         matchUIController.transform.SetAsFirstSibling();
 
         disposables.Add(new ScoreboardController(matchUIController));
+        disposables.Add(new TopBarController(matchUIController));
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
         disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
         disposables.Add(new SpectatorController(matchUIController));
@@ -94,9 +94,6 @@ public class UIManager : IDisposable
 
     private void UpdateTime()
     {
-        if (H.Arena is null) return;
-        matchUIController.TopBar.SetTime(H.Arena.StateTimer);
-
 #if DEBUG
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -126,11 +123,6 @@ public class UIManager : IDisposable
         matchUIController.PopupMatchEnd.Pop(win, mainTitle, subTitle);
     }
 
-    void OnMatchStateEnter(MatchState matchState)
-    {
-        Refresh();
-    }
-
     void OnPlayerKill(PlayerKilledPacket killPacket)
     {
         if (killPacket.victim == H.MainPlayer)
@@ -138,8 +130,6 @@ public class UIManager : IDisposable
             PlayerScore killerScore = H.GetPlayerScore(killPacket.killer);
             OnSelfDeath(killerScore.Score);
         }
-
-        Refresh();
     }
 
     void OnSelfDeath(PlayerScoreInfo killer)
@@ -154,27 +144,11 @@ public class UIManager : IDisposable
         Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(true);
     }
 
-    void Refresh()
-    {
-        int scoreCT = H.Session.factionWins[Faction.CT];
-        int scoreT = H.Session.factionWins[Faction.T];
-
-        matchUIController.TopBar.SetScores(scoreCT, scoreT);
-
-        PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Score).ToArray();
-
-        PlayerScoreInfo[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
-        PlayerScoreInfo[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
-
-        matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
-    }
-
 
     public void Dispose()
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
 
-        EventBus.OnEnter -= OnMatchStateEnter;
         EventBus.OnRoundActionEnd -= OnRoundActionEnd;
         EventBus.OnPlayerKill -= OnPlayerKill;
         EventBus.OnUpdate -= UpdateTime;
