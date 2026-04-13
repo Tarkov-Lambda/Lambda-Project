@@ -214,14 +214,14 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
-        //------------------------------------------ //
+                                                                                    //------------------------------------------ //
 
         // Internal Classses (order matters)
-
-        RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
-        RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
-        RegisterSingleton<PresetItemsCache>();                                   // Caching gun presets
-        RegisterSingleton<PresetManager>();                                         // Collects
+        RegisterSingleton<MapAssetBundleHandler>();                             // Handler of map asset loading
+        RegisterSingleton<RagdollCreator>();                                    // Fake Corpse Creation
+        RegisterSingleton<PresetItemsCache>();                                  // Caching gun presets
+        RegisterSingleton<WeaponPresetManager>();                               // Initializes/Saves/Loads what gun preset is selected for in raid spawning
+        RegisterSingleton<DefaultEquipmentManager>();                           // Collects
 
         try
         {

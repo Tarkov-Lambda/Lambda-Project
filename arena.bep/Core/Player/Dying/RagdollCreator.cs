@@ -143,7 +143,7 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
                     foreStillCorpse: false
                 );
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // because we keep creating a corpse for the same player over and over
                 // there is some kind of a non lethal error happening here

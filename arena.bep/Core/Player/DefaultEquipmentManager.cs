@@ -16,18 +16,17 @@ public struct PresetManagerSlotInfo
     public bool isRequired;
 }
 
-// WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
-public class PresetManager : Singleton<PresetManager>, IDisposable
+// this manager deals with capturing the equipment that the player brings into the raid
+// for later use during inventory resetting (in case the player's corpse was looted)
+public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
 {
-
-    private string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "PresetData.jsonc");
+    private string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "DefaultEquipment.jsonc");
 
     private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 
     public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; } = new(); // What is actually used
 
-    public PresetManager()
+    public DefaultEquipmentManager()
     {
         LoadItems(File.ReadAllText(PresetDataPath));
         H.OnGameStarted += CapturePreset;
@@ -46,6 +45,8 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
         PresetInfoConfig = JsonConvert.DeserializeObject<Dictionary<EquipmentSlot, PresetManagerSlotInfo>>(json);
     }
 
+    // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
     private void CapturePreset()
     {
         if (H.IsHeadless) return;
@@ -59,7 +60,7 @@ public class PresetManager : Singleton<PresetManager>, IDisposable
             || presetInfo.Key is EquipmentSlot.ArmorVest
             )
             {
-                item = Singleton<PresetItemsCache>.Instance.GetImmutableItem(presetInfo.Value.defaultBsgId);
+                item = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
             }
 
             // If the tactical rig is armoured, skip armor vest

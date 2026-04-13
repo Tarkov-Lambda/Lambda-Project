@@ -23,7 +23,7 @@ public static class InventoryResetter
                 if (string.IsNullOrEmpty(shopItem.ammoId))
                     continue;
 
-                var immutable = Singleton<PresetItemsCache>.Instance.GetImmutableItem(shopItem.bsgId);
+                var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
                 if (immutable is not PistolItemClass)
                     continue;
 
@@ -41,7 +41,7 @@ public static class InventoryResetter
         if (defaultPistolBsgId == null)
             return null;
 
-        var pistol = Singleton<PresetItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId) as Weapon;
+        var pistol = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId) as Weapon;
         return pistol?.GetCurrentMagazine()?.TemplateId;
     }
 
@@ -125,9 +125,9 @@ public static class InventoryResetter
 
 
             // If the currently equipped item doesn't match the recorded preset, remove it.
-            if (PresetManager.Instance != null)
+            if (DefaultEquipmentManager.Instance != null)
             {
-                foreach (var kvp in PresetManager.Instance.RecordedItems)
+                foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
                 {
                     var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
                     if (currentItem != null && kvp.Value != null && currentItem.TemplateId != kvp.Value.TemplateId) AddItem(ref itemsToRemove, currentItem);
@@ -141,11 +141,11 @@ public static class InventoryResetter
 
             if (needsDefaultPistol && defaultPistolBsgId != null)
             {
-                var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetImmutableItem(defaultPistolBsgId);
+                var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId);
                 if (defaultPistolItem != null) await IU.ClientRequestGiveItem(defaultPistolItem);
             }
 
-            var presetItems = PresetManager.Instance?.RecordedItems;
+            var presetItems = DefaultEquipmentManager.Instance?.RecordedItems;
             if (presetItems != null)
             {
                 foreach (var kvp in presetItems)

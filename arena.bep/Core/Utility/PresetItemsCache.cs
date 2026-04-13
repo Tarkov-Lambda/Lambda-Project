@@ -16,7 +16,7 @@ internal class PresetItemsCache : Singleton<PresetItemsCache>, IDisposable
         H.OnGameDispose += ClearCache;
     }
 
-    public Item GetImmutableItem(string bsgId)
+    public Item GetPresetItem(string bsgId)
     {
         if (cacheImmutableItems.ContainsKey(bsgId))
             return cacheImmutableItems[bsgId];

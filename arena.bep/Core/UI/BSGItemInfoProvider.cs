@@ -61,7 +61,7 @@ internal class BSGItemInfoProvider : IItemInfoProvider
             return;
         }
 
-        Item immutableItem = Singleton<PresetItemsCache>.Instance.GetImmutableItem(bsgId);
+        Item immutableItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(bsgId);
 
         if (immutableItem == null)
         {

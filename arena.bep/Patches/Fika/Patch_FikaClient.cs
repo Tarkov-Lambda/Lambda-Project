@@ -32,22 +32,3 @@ internal class Patch_FikaClient_OnCommonPlayerPacketReceived : ModulePatch
         return true;
     }
 }
-
-internal class Patch_FikaClient_OnNetworkSettingsPacketReceived : ModulePatch
-{
-    public static event Action OnNetworkManagerInitialized;
-
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(NetManagerUtils), nameof(NetManagerUtils.CreateNetManager));
-
-    [PatchPostfix]
-    static void Postfix(bool isServer)
-    {
-        if (!isServer)
-        {
-            // OnNetworkManagerInitialized.Invoke();
-        }
-    }
-}
-
-
-
