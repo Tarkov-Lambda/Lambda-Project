@@ -80,23 +80,33 @@ public static class ItemUtilities
         if (H.IsHeadless) return false;
 
         await _lock.WaitAsync();
+
         try
         {
             if (templateItem == null)
                 return false;
 
             var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
+            if (placement.Kind == PlacementKind.None)
+            {
+                D.LogError("Local player can not find a placement for an item, aborting.");
+                return false;
+            }
 
             if (placement.Kind == PlacementKind.EquipmentSlot)
             {
+
                 var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
                 if (slot.ContainedItem != null)
                 {
                     bool removed;
                     if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
+                    {
                         removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
+                    }
                     else
                     {
+                        D.LogInventory("Trying to remove an item");
                         if (templateItem is Weapon)
                             removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
                         else
@@ -129,7 +139,7 @@ public static class ItemUtilities
         }
         finally
         {
-            await UniTask.Delay(25);
+            await UniTask.Delay(100);
             _lock.Release();
         }
     }
@@ -171,13 +181,10 @@ public static class ItemUtilities
 
         if (waitUntilStationary)
         {
-            await UniTask.WaitUntil(() =>
-                player.MovementContext.CurrentState is IdleStateClass ||
-                player.MovementContext.CurrentState is not SprintStateClass && player.MovementContext.Velocity.sqrMagnitude == 0f);
+            await UniTask.WaitUntil(() => player.MovementContext.CurrentState is IdleStateClass);
             if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
             {
                 await PU.WaitUntilStationary(player);
-
             }
         }
 
@@ -303,7 +310,7 @@ public static class ItemUtilities
             if (oldMagTemplateId != null)
             {
                 var vest = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
-                magsToThrow = PU.GetMatchingMags(player, vest, oldMagTemplateId);
+                magsToThrow = PU.GetMatchingMags(player, vest, oldMagTemplateId)?.ToList();
             }
         }
 
@@ -326,32 +333,68 @@ public static class ItemUtilities
         {
             case PlacementKind.VestAddress:
             case PlacementKind.EquipmentSlot:
-                // if (player.IsYourPlayer)
-                // {
-                player.InventoryController.AddAndRaiseEvents(item, placement.Address);
-                // }
-                // else
-                // {
-                //     placement.Address.Add(item, false);
-                // }
-                break;
-
             case PlacementKind.ArmorPlate:
                 placement.Address.AddWithoutRestrictions(item);
                 break;
         }
+
+        AutoExamineAndSearch(item, player);
 
         placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
         placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
 
         if (placement.Kind == PlacementKind.ArmorPlate)
         {
-            FikaPlayer fikaPlayer = player as FikaPlayer;
             MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-            method.Invoke(fikaPlayer, [AU.GetPlateCarrier(player)]);
+            method.Invoke(player as FikaPlayer, [AU.GetPlateCarrier(player)]);
         }
 
         return true;
+    }
+
+    private static void AutoExamineAndSearch(Item rootItem, Player player)
+    {
+        var searchController = player.InventoryController.SearchController;
+        Type searchType = searchController?.GetType();
+
+        // 6. BRUTEFORCE REFLECTION: 
+        // The SearchController tracks "SearchedItems", "KnownItems", and "SearchedContainers" in private HashSets/Dictionaries.
+        // iterate over its fields and forcefully inject our item IDs into any collection we find.
+        if (searchController != null && searchType != null)
+        {
+            var fields = AccessTools.GetDeclaredFields(searchType);
+            foreach (var field in fields)
+            {
+                var value = field.GetValue(searchController);
+                if (value == null) continue;
+
+                if (value is HashSet<string> hashSetStr)
+                {
+                    foreach (var item in rootItem.GetAllItems())
+                        hashSetStr.Add(item.Id.ToString());
+                }
+                else if (value is HashSet<MongoID> hashSetMongo)
+                {
+                    foreach (var item in rootItem.GetAllItems())
+                        hashSetMongo.Add(item.Id);
+                }
+                else if (value is Dictionary<string, bool> dictStr)
+                {
+                    foreach (var item in rootItem.GetAllItems())
+                        dictStr[item.Id.ToString()] = true;
+                }
+                else if (value is Dictionary<MongoID, bool> dictMongo)
+                {
+                    foreach (var item in rootItem.GetAllItems())
+                        dictMongo[item.Id] = true;
+                }
+                else if (value is HashSet<Item> hashSetItem)
+                {
+                    foreach (var item in rootItem.GetAllItems())
+                        hashSetItem.Add(item);
+                }
+            }
+        }
     }
 
     private static void PlayEquipSound(Item item)

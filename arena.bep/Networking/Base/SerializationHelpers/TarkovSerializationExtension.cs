@@ -11,12 +11,12 @@ public static class TarkovSerializationExtension
 {
     public static void PutPlayer(this NetDataWriter writer, Player player)
     {
-        writer.Put(player.Id);
+        writer.Put(player.ProfileId);
     }
 
     public static Player GetPlayer(this NetDataReader reader)
     {
-        var playerId = reader.GetInt();
+        var playerId = reader.GetString();
         return H.GetPlayer(playerId);
     }
 

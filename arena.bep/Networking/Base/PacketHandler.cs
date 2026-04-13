@@ -46,6 +46,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
     protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
 
+    public static event Action<T> OnWhenApprovedPacket; // Misleading because this happens AFTER the execution of WhenApproved
+
     protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
     {
         this.deliveryMethod = deliveryMethod;
@@ -212,6 +214,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
 
         WhenApproved(packet, peer);
+        OnWhenApprovedPacket?.Invoke(packet);
     }
 
     protected void WhenClientReceivesPacket(T packet, NetPeer netPeer)
@@ -222,6 +225,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 
         WhenApproved(packet, netPeer);
+        OnWhenApprovedPacket?.Invoke(packet);
     }
 
     protected void SendRejection(ref T packet, NetPeer peer, string reason = "")

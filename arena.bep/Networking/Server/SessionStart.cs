@@ -10,6 +10,7 @@ using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
+using ifp.arena.bep.networking.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
@@ -80,6 +81,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         if (!H.IsHeadless)
         {
+            NetworkTime.Reset();
             Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
 
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);

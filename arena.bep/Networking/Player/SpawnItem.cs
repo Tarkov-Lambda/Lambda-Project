@@ -40,14 +40,14 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
 {
     private readonly Dictionary<int, UniTask> _chains = new();
 
-    protected override RateLimitConfig ServerRateLimit => new(
-        enabled: true,
-        refillPerSecond: 5,
-        burst: 20,
-        costPerPacket: 1,
-        action: RateLimitAction.Reject,
-        stateTtlSeconds: 60,
-        rejectCooldownSeconds: 1.0);
+    // protected override RateLimitConfig ServerRateLimit => new(
+    //     enabled: true,
+    //     refillPerSecond: 5,
+    //     burst: 20,
+    //     costPerPacket: 1,
+    //     action: RateLimitAction.Reject,
+    //     stateTtlSeconds: 60,
+    //     rejectCooldownSeconds: 1.0);
 
     public void Send(Item item, ItemPlacement placement)
     {
@@ -80,7 +80,7 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         // }
 
         // if (placement.Address != packet.placement.Address)
-            // D.Log($"Placement mismatch for {packet.Player.Id}");
+        // D.Log($"Placement mismatch for {packet.Player.Id}");
         // packet.placement = placement;
         return true;
     }
@@ -98,7 +98,8 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
 
     private async void SpawnItem(SpawnItemPacket packet, Player player)
     {
-        await IU.LoadBundlesForItem(packet.item);
+        if (!H.IsHeadless)
+            await IU.LoadBundlesForItem(packet.item);
         await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
     }
 

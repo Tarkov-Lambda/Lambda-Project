@@ -112,16 +112,24 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             packet.weaponId = packet.killer?.HandsController?.Item?.TemplateId;
         }
 
-        PlayerScore victimScore = H.GetPlayerScore(packet.victim);
-        if (!victimScore.IsAlive) return;
-
-        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
-        victimScore.Kill();
-
-        if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
+        try
         {
-            killerScore.AddFrag(packet.IsHeadshot);
+            PlayerScore victimScore = H.GetPlayerScore(packet.victim);
+            if (!victimScore.IsAlive) return;
+
+            PlayerScore killerScore = H.GetPlayerScore(packet.killer);
+            victimScore.Kill();
+
+            if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
+            {
+                killerScore.AddFrag(packet.IsHeadshot);
+            }
+        } 
+        catch (Exception ex)
+        {
+            // заебал
         }
+
 
         EventBus.OnPlayerKill.Invoke(packet);
 

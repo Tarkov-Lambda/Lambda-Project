@@ -16,28 +16,31 @@ namespace ifp.arena.bep.Core.Dying;
 public class Teleporter
 {
     // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
-    static public void Teleport(Player player, string mapName = "", Faction faction = Faction.None)
+    static public void Teleport(Player player, string mapName, Faction faction)
     {
         PlayerScore pScore = H.GetPlayerScore(player.Id);
 
-        string targetMap;
-        Faction targetFaction;
+        string targetMap = mapName;
+        Faction targetFaction = faction;
 
-        if (!string.IsNullOrEmpty(mapName))
-        {
-            targetMap = mapName;
-            targetFaction = faction;
-        }
-        else if (pScore.IsAlive)
-        {
-            targetMap = H.Session.mapName;
-            targetFaction = pScore.Faction;
-        }
-        else
-        {
-            targetMap = "lobby";
-            targetFaction = Faction.None;
-        }
+        // string targetMap;
+        // Faction targetFaction;
+
+        // if (!string.IsNullOrEmpty(mapName))
+        // {
+        //     targetMap = mapName;
+        //     targetFaction = faction;
+        // }
+        // else if (pScore.IsAlive)
+        // {
+        //     targetMap = H.Session.mapName;
+        //     targetFaction = pScore.Faction;
+        // }
+        // else
+        // {
+        //     targetMap = "lobby";
+        //     targetFaction = Faction.None;
+        // }
 
         if (!TryGetNewPosition(targetMap, targetFaction, out Vector3 nextPlayerPosition))
         {

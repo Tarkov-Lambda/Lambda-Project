@@ -128,7 +128,7 @@
     Condition="'$(Configuration)' == 'Release'">
 
     <PropertyGroup>
-      <ZipOutput>$(SolutionDir)builds\$(MSBuildProjectName).zip</ZipOutput>
+      <ZipOutput>$(SolutionDir)builds\Lambda-$(Version).zip</ZipOutput>
       <StagingDir>$(BaseIntermediateOutputPath)zip_staging</StagingDir>
     </PropertyGroup>
 

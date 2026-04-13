@@ -88,7 +88,7 @@ namespace ifp.arena.shared
         private SteamAudioSource _steamSrc;
 #endif
 
-        // ── Per-frame data (game thread → audio thread, protected by _lock) ───
+        // per-frame data (game thread -> audio thread, protected by _lock)
         private PVec3 _dir = new PVec3 { z = 1f };
         private float _distAtten = 1f;
         private float _occlusion = 1f;
@@ -98,7 +98,7 @@ namespace ifp.arena.shared
         private bool _applyTransmission = false;
         private IntPtr _hrtf = IntPtr.Zero;
 
-        // Reflection per-frame cache
+        // reflection per-frame cache
         private ReflectionEffectParams _cachedReflParams;
         private bool _hasValidReflData = false;
         private PCoordinateSpace3 _listenerCS;
@@ -106,25 +106,26 @@ namespace ifp.arena.shared
 
         private readonly object _lock = new object();
 
-        // ── Managed scratch buffers for the direct path ───────────────────────
+        // managed scratch buffers for the direct path
         private float[] _monoIn;
         private float[] _monoOut;
         private float[] _leftOut;
         private float[] _rightOut;
 
-        // ── Distance attenuation curve cache ──────────────────────────────────
+        // distance attenuation curve cache
         private AnimationCurve _cachedRolloffCurve;
         private float _lastMaxDist = -1f;
 
-        // ── Inspector ─────────────────────────────────────────────────────────
-        [Header("Spatial Blend")]
-        [Range(0f, 1f)]
-        public float spatialBlendOverride = 1f;
+        // proxying these unity calls to this field and forcing real spatialize and spatialBlend fields to false and 0f
+        // AudioSource_set_spatialize
+        // AudioSource_set_spatialBlend
+        // AudioSource_get_spatialBlend
+        public float spatialBlend = 1f;
 
         [Header("Debug")]
         public bool verboseLogging = false;
 
-        [Header("Bypass")]
+        // turn off the audio source silently
         public bool IsBypass = false;
 
         private string _instanceId;
@@ -138,10 +139,6 @@ namespace ifp.arena.shared
 #endif
         private void LogW(string msg) { Debug.LogWarning($"[PhononDSPBridge:{_instanceId}] {msg}"); }
         private void LogE(string msg) { Debug.LogError($"[PhononDSPBridge:{_instanceId}] {msg}"); }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Unity lifecycle
-        // ─────────────────────────────────────────────────────────────────────
 
         private void Awake()
         {
@@ -160,14 +157,14 @@ namespace ifp.arena.shared
             _leftOut = new float[cap];
             _rightOut = new float[cap];
 
-            // First attempt; will silently no-op if SteamAudioManager / HRTF not ready yet.
+            // first attempt; will silently no-op if SteamAudioManager / HRTF not ready yet.
             // Update() retries every frame until everything is created.
             InitEffects();
         }
 
         private void OnDestroy()
         {
-            // Destroy is called from the game thread; the audio thread should be
+            // destroy is called from the game thread; the audio thread should be
             // quiesced by Unity before this point, but we lock anyway to be safe.
             lock (_lock)
             {
@@ -189,10 +186,6 @@ namespace ifp.arena.shared
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Initialization (lazy – retried in Update until successful)
-        // ─────────────────────────────────────────────────────────────────────
-
         private void InitEffects()
         {
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Context == null) return;
@@ -212,7 +205,7 @@ namespace ifp.arena.shared
 #endif
             var audio = new PAudioSettings { samplingRate = rate, frameSize = frameSize };
 
-            // ── Binaural effect ───────────────────────────────────────────────
+            // binaural
             if (_binaural == IntPtr.Zero)
             {
                 var binS = new PBinauralEffectSettings { hrtf = hrtf };
@@ -226,7 +219,7 @@ namespace ifp.arena.shared
                 LogV("BinauralEffect created.");
             }
 
-            // ── Direct effect ─────────────────────────────────────────────────
+            // direct
             if (_direct == IntPtr.Zero)
             {
                 var dirS = new PDirectEffectSettings { numChannels = 1 };
@@ -234,7 +227,7 @@ namespace ifp.arena.shared
                 LogV("DirectEffect created.");
             }
 
-            // ── Reflection + AmbisonicsDecode (require Simulator AND reflections enabled) ──
+            // reflection + ambisonics
             if (SteamAudioManager.Simulator == null) return;
 
             // Guard: only allocate the expensive reflection pipeline (IR buffers ~700 KB each)
@@ -294,7 +287,7 @@ namespace ifp.arena.shared
                 else LogV("AmbisonicsDecodeEffect created.");
             }
 
-            // ── Allocate native audio buffers for reflection pipeline ─────────
+            // alocate native audio buffers for reflection pipeline
             if (!_reflBufsAllocated && _reflectionEffect != IntPtr.Zero && _ambiDecodeEffect != IntPtr.Zero)
             {
                 PAudioBuffer localAmbi, localStereo;
@@ -304,7 +297,7 @@ namespace ifp.arena.shared
                 if (r1 == 0 && r2 == 0)
                 {
                     _cachedContext = ctx;
-                    // Store pipeline params before publishing the flag
+                    // store pipeline params before publishing the flag
                     _cachedMaxOrder = maxOrder;
                     _maxAmbiChannels = ambiCh;
                     _irSize = irSz;
@@ -312,7 +305,7 @@ namespace ifp.arena.shared
                     _reflAmbiNative = localAmbi;
                     _reflStereoNative = localStereo;
 
-                    // Publish: volatile write acts as a full memory fence.
+                    // publish: volatile write acts as a full memory fence.
                     _reflBufsAllocated = true;
                     LogV($"Reflection buffers allocated ({ambiCh}ch ambi + stereo, {frameSize} frames).");
                 }
@@ -325,9 +318,6 @@ namespace ifp.arena.shared
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Game-thread update: direction, occlusion, reflection data
-        // ─────────────────────────────────────────────────────────────────────
 
         private void Update()
         {
@@ -356,7 +346,7 @@ namespace ifp.arena.shared
             Transform listener = GetListenerTransform();
             if (listener == null) return;
 
-            // ── Direction (source relative to listener, in listener space) ────
+            // direction (source relative to listener, in listener space)
             UnityEngine.Vector3 localPos = listener.InverseTransformPoint(transform.position);
             UnityEngine.Vector3 d = localPos.sqrMagnitude < 1e-6f
                 ? UnityEngine.Vector3.forward
@@ -364,12 +354,12 @@ namespace ifp.arena.shared
 
             float dist = (transform.position - listener.position).magnitude;
 
-            // ── Occlusion / transmission / distance attenuation ───────────────
+            // Occlusion / transmission / distance attenuation
             bool shouldApplyDistAtten = true;
             float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
             bool applyTrans = false;
 
-            // ── Reflection data ───────────────────────────────────────────────
+            // Reflection data
             bool hasRefl = false;
             ReflectionEffectParams reflParams = default;
             PCoordinateSpace3 listenerCS = default;
@@ -389,7 +379,7 @@ namespace ifp.arena.shared
                     tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
                 }
 
-                // ── Reflection simulation outputs ─────────────────────────────
+                // Reflection simulation outputs
                 if (_steamSrc.reflections && _reflBufsAllocated && _reflectionEffect != IntPtr.Zero)
                 {
                     try
@@ -449,10 +439,7 @@ namespace ifp.arena.shared
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Audio-thread DSP
-        // ─────────────────────────────────────────────────────────────────────
-
+        // AUDIO THREAD
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
             if (IsBypass || channels != 2 || _binaural == IntPtr.Zero)
@@ -465,7 +452,7 @@ namespace ifp.arena.shared
             {
                 int n = data.Length / channels;
 
-                // Grow managed scratch buffers if Unity's DSP buffer expanded
+                // grow managed scratch buffers if Unity's DSP buffer expanded
                 if (n > _monoIn.Length)
                 {
                     _monoIn = new float[n];
@@ -474,10 +461,10 @@ namespace ifp.arena.shared
                     _rightOut = new float[n];
                 }
 
-                float blend = Mathf.Clamp01(spatialBlendOverride);
+                float blend = Mathf.Clamp01(spatialBlend);
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
 
-                // Downmix stereo → mono with distance attenuation
+                // downmix stereo -> mono with distance attenuation
                 for (int i = 0; i < n; i++)
                     _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
 
@@ -486,7 +473,7 @@ namespace ifp.arena.shared
                               pLeft = _leftOut,
                               pRight = _rightOut)
                 {
-                    // Build PAudioBuffer views over managed memory (no native allocation here)
+                    // build PAudioBuffer views over managed memory (no native allocation here)
                     IntPtr* inPtrs = stackalloc IntPtr[1]; inPtrs[0] = (IntPtr)pIn;
                     IntPtr* outPtrs = stackalloc IntPtr[1]; outPtrs[0] = (IntPtr)pOut;
                     IntPtr* binPtrs = stackalloc IntPtr[2]; binPtrs[0] = (IntPtr)pLeft;
@@ -496,7 +483,7 @@ namespace ifp.arena.shared
                     var outBuf = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)outPtrs };
                     var binBuf = new PAudioBuffer { numChannels = 2, numSamples = n, data = (IntPtr)binPtrs };
 
-                    // ── STAGE 1: DirectEffect — occlusion + transmission ───────
+                    // STAGE 1: DirectEffect — occlusion + transmission
                     if (_direct != IntPtr.Zero)
                     {
                         int dflags = (int)DirectEffectFlags.ApplyOcclusion;
@@ -523,7 +510,7 @@ namespace ifp.arena.shared
                         for (int i = 0; i < n; i++) _monoOut[i] = _monoIn[i];
                     }
 
-                    // ── STAGE 2: BinauralEffect — HRTF on the direct signal ───
+                    // STAGE 2: BinauralEffect - HRTF on the direct signal (Happens when we load a scene and it contains static geometry)
                     if (_hrtf != IntPtr.Zero)
                     {
                         var bp = new PBinauralEffectParams
@@ -546,7 +533,7 @@ namespace ifp.arena.shared
                         }
                     }
 
-                    // ── STAGE 3: ReflectionEffect + AmbisonicsDecodeEffect ─────
+                    // STAGE 3: ReflectionEffect + AmbisonicsDecodeEffect
                     // Only when simulation has produced valid IR data and native
                     // buffers are allocated for the correct frame size.
                     bool doReflections =
@@ -561,7 +548,7 @@ namespace ifp.arena.shared
 
                     if (doReflections)
                     {
-                        // 3a: Convolve mono input with the room IR → ambisonic buffer
+                        // convolve mono input with the room IR -> ambisonic buffer
                         var reflP = _cachedReflParams;
                         iplReflectionEffectApply(
                             _reflectionEffect,
@@ -570,7 +557,7 @@ namespace ifp.arena.shared
                             ref _reflAmbiNative,
                             IntPtr.Zero); // no shared mixer
 
-                        // 3b: Decode ambisonics → binaural stereo using HRTF
+                        // decode ambisonics -> binaural stereo using HRTF
                         var ambiP = new PAmbisonicsDecodeEffectParams
                         {
                             order = _cachedMaxOrder,
@@ -584,7 +571,7 @@ namespace ifp.arena.shared
                             ref _reflAmbiNative,
                             ref _reflStereoNative);
 
-                        // 3c: Additively mix decoded reflections into the direct binaural output
+                        // additively mix decoded reflections into the direct binaural output
                         float** reflChPtrs = (float**)_reflStereoNative.data.ToPointer();
                         float* reflL = reflChPtrs[0];
                         float* reflR = reflChPtrs[1];
@@ -598,7 +585,7 @@ namespace ifp.arena.shared
                     }
                 }
 
-                // Write final stereo back to Unity's interleaved output buffer
+                // write final stereo back to Unity's interleaved output buffer
                 for (int i = 0; i < n; i++)
                 {
                     data[i * channels] = _leftOut[i];
@@ -607,10 +594,7 @@ namespace ifp.arena.shared
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Distance attenuation
-        // ─────────────────────────────────────────────────────────────────────
-
+        // distance attentuation
         private float CalculateDistanceAttenuation(float dist)
         {
             if (_src == null) return 0f;
@@ -660,10 +644,6 @@ namespace ifp.arena.shared
 
             return 1f;
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Listener transform
-        // ─────────────────────────────────────────────────────────────────────
 
         private Transform GetListenerTransform()
         {

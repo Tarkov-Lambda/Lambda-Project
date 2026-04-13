@@ -97,27 +97,30 @@ public class SharedPrepare : IGameState
         H.Session.ResetRoundScopeFields(); // I've lost the plot and I have no clue how to sync states correctly anymore
         IU.GarbageCollectWorldLoot();
 
+        if (!H.IsHeadless)
+        {
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+
+            async UniTaskVoid PrepareAsync()
+            {
+                if (!H.MainPlayerScore.IsAlive)
+                {
+                    await InventoryResetter.ResetInventory();
+                    PU.OpenEyes();
+                }
+
+                Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
+                HU.HealMe().Forget();
+                HU.ResetObservedPlayersHealth();
+            }
+            PrepareAsync().Forget();
+        }
+
         foreach (var p in H.Arena.session.scoreboard.Values)
         {
             p.Spawn();
         }
 
-
-        if (!H.IsHeadless)
-        {
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-
-            if (!H.MainPlayerScore.IsAlive)
-            {
-                InventoryResetter.ResetInventory().Forget();
-                PU.OpenEyes();
-            }
-
-            Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
-            HU.HealMe().Forget();
-
-            HU.ResetObservedPlayersHealth();
-        }
     }
 
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;

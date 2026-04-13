@@ -33,11 +33,11 @@ internal class Patch_AudioSource_set_spatialBlend : ModulePatch
 
         var spatCache = SteamSourceDict.cache[__instance];
 
-        spatCache.bridge.spatialBlendOverride = Mathf.Clamp01(value);
-        // D.Log("SETTING spatialBlend");
+        spatCache.bridge.spatialBlend = Mathf.Clamp01(value);
 
         __instance.spatialize = false;
         value = 0f;
+        
         return true;
     }
 }
@@ -69,7 +69,7 @@ internal class Patch_AudioSource_get_spatialBlend : ModulePatch
 
         var spatCache = SteamSourceDict.cache[__instance];
 
-        __result = spatCache.bridge.spatialBlendOverride;
+        __result = spatCache.bridge.spatialBlend;
         // D.Log("Getting spatialBlend");
 
         return false;

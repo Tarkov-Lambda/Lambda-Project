@@ -32,7 +32,7 @@ public static class ReplenishmentUtilities
                             ReplenishGun(weapon, ammo);
                         }
 
-                        ReplenishVestMagazines(weapon, ammo, player).Forget();
+                        if (player.IsYourPlayer) ReplenishVestMagazines(weapon, ammo, player).Forget();
                     }
                 }
             }

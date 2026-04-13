@@ -81,7 +81,7 @@ public static class PlayerUtilities
     // MUST be called before any operation that locks the inventory controller.
     public static async UniTask WaitUntilStationary(Player player)
     {
-        await UniTask.WaitUntil(() => !player.MovementContext.CanWalk);
-        await UniTask.Delay(200);
+        await UniTask.WaitUntil(() => !player.MovementContext.CanWalk || player.MovementContext.Velocity.sqrMagnitude == 0f);
+        // await UniTask.Delay(200);
     }
 }

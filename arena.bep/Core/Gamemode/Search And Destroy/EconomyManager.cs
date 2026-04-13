@@ -77,6 +77,7 @@ public class EconomyManager : IDisposable
 
     private void HandleKillReward(PlayerKilledPacket packet)
     {
+        if(packet.killer == null || packet.victim == null) return;
         if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
         if (packet.killer == packet.victim) return; // Suicide handled in Round End usually
 

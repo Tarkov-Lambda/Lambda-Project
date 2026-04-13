@@ -64,7 +64,7 @@ public class AudioSourceWorldDebug : MonoBehaviourSingleton<AudioSourceWorldDebu
                     var bridge = cacheData.bridge;
 
                     // Show Phonon's calculated attenuation & occlusion, alongside Unity's blend settings
-                    dspStat = $" | Blend: {bridge.spatialBlendOverride:F2} | Spatialize: {audio.spatialize} | SpatialBlend: {audio.spatialBlend}";
+                    dspStat = $" | Blend: {bridge.spatialBlend:F2} | Spatialize: {audio.spatialize} | SpatialBlend: {audio.spatialBlend}";
                 }
 
                 // Construct formatted text

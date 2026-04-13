@@ -1,9 +1,12 @@
 using System;
+using Comfort.Common;
 using EFT;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
+using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.shared;
 
 public class PlayerScore
@@ -63,7 +66,13 @@ public class PlayerScore
 
         if (H.IsHeadless) return;
         if (player == H.MainPlayer)
+        {
+            if (faction == Faction.Spectator)
+            {
+                player.ActiveHealthController.Kill(EDamageType.HotGases);
+            }
             EventBus.OnSelfFactionChanged?.Invoke(faction);
+        }
     }
 
     public void AddDamage(int newDamage)

@@ -112,7 +112,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             HU.ApplyPainkiller();
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
-            Teleporter.Teleport(H.MainPlayer, "lobby");
+            Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
             Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude = 1f;
             Physics.simulationMode = SimulationMode.FixedUpdate;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
