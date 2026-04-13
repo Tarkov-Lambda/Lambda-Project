@@ -12,6 +12,8 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 
 internal class PatchGroup_QuickAccessPanel_ModifyItemIcon : PatchGroup
 {
+    public static Material MatteMaterial { get; set; }
+
     private class Patch_QuickSlotItemView_UpdateInfo : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -39,9 +41,9 @@ internal class PatchGroup_QuickAccessPanel_ModifyItemIcon : PatchGroup
         ___MainImage.rectTransform.pivot = new Vector2(0f, 0.5f);
         ___MainImage.rectTransform.anchoredPosition = new Vector2(-20f, 0f);
 
-        if (Singleton<UIManager>.Instantiated)
+        if (MatteMaterial != null)
         {
-            ___MainImage.material = Singleton<UIManager>.Instance.MatteMaterial;
+            ___MainImage.material = MatteMaterial;
             ___MainImage.color = new Color(1, 1, 1, 1);
         }
     }

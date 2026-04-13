@@ -8,12 +8,12 @@ using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.Core.UI.Controllers;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
+using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 using ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds;
-using ifp.arena.shared;
 using ifp.arena.shared.Models;
 using ifp.arena.ui.Nameplate;
 using System;
@@ -23,13 +23,14 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.UI;
 
-public class UIManager : Singleton<UIManager>, IDisposable
+public class UIManager : IDisposable
 {
     AssetBundle uibundle;
 
+    List<IDisposable> disposables = new();
+
     ArenaMatchUI matchUIController;
 
-    Shop shop;
     BSGItemInfoProvider itemInfoProvider;
 
     InventoryHotkeyListener inventoryHotkeyListener;
@@ -42,14 +43,11 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
     EditBuildLambdaPanel editBuildPanel;
 
-    public Material MatteMaterial { get; private set; }
-
     public UIManager()
     {
         if (H.IsHeadless) return;
 
         Patch_CommonUI_Awake.OnAwake += LoadUI;
-        Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
         Patch_EditBuildScreen_Show.OnShow += EditBuildScreen_OnShow;
         Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
 
@@ -63,9 +61,6 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EventBus.OnPlayerKill += OnPlayerKill;
 
         EventBus.OnUpdate += UpdateTime;
-
-        EventBus.OnFixedUpdate += SetInteractable;
-        EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
 
         SpectatorManager.OnSelfStartSpectating += OnStartSpectating;
         SpectatorManager.OnSelfStopSpectating += OnStopSpectating;
@@ -99,17 +94,6 @@ public class UIManager : Singleton<UIManager>, IDisposable
         matchUIController.ToggleSpectator(false);
     }
 
-    public void SetInteractable()
-    {
-        if (H.MainPlayerScore is null) return;
-        shop?.SetInteractable(H.MainPlayerScore.CanBuy());
-    }
-
-    void OnSelfMoneyChanged(int money)
-    {
-        shop?.SetCurrentMoneyBalance(money);
-    }
-
     private void AddInventoryHotkeyInterceptor()
     {
         inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
@@ -119,6 +103,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
     async void LoadUI(CommonUI commonUI)
     {
+        itemInfoProvider = new BSGItemInfoProvider();
+
         uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "arenaui"));
 
         foreach (var item in uibundle.GetAllAssetNames())
@@ -132,17 +118,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
         matchUIController.ToggleScoreboard(false);
         matchUIController.transform.SetAsFirstSibling();
 
-        GameObject prefabShopUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
-
-        ItemsPanel itemsPanel = AccessTools.Field(typeof(InventoryScreen), "_itemsPanel").GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
-        Transform shopParent = (AccessTools.Field(typeof(ItemsPanel), "_simpleStashPanel").GetValue(itemsPanel) as SimpleStashPanel).transform.parent;
-
-        shop = GameObject.Instantiate(prefabShopUI, shopParent).GetComponent<Shop>();
-        RectTransform shopRectTransform = shop.transform as RectTransform;
-        shopRectTransform.anchorMin = new Vector2(0, 0);
-        shopRectTransform.anchorMax = new Vector2(1, 1);
-        shopRectTransform.offsetMin = new Vector2(0, 0);
-        shopRectTransform.offsetMax = new Vector2(0, 0);
+        disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
 
         nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
         GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
@@ -154,7 +130,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EftScreenManager.Instance.RegisterScreen(FactionSelectionScreen.FAKETYPE, factionSelectionScreen);
         factionSelectionScreen.Close();
 
-        MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
+        //bruh
+        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat"); 
 
         matchUIController.ToggleSpectator(false);
 
@@ -200,13 +177,6 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
     void OnMatchStateEnter(MatchState matchState)
     {
-        if (itemInfoProvider == null)
-        {
-            itemInfoProvider = new BSGItemInfoProvider();
-            shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
-        }
-
-        shop.SetFaction(H.MainPlayerScore.Faction);
         Refresh();
     }
 
@@ -273,21 +243,12 @@ public class UIManager : Singleton<UIManager>, IDisposable
         matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
 
         matchUIController.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.Faction);
-
-        shop.SetCurrentMoneyBalance(H.MainPlayerScore.Money);
     }
 
-    void OnInventoryScreenOpen(CompoundItem containerLooting)
-    {
-        if (shop == null) return;
-
-        shop.gameObject.SetActive(containerLooting == null);
-    }
 
     public void Dispose()
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
-        Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
         Patch_EditBuildScreen_Show.OnShow -= EditBuildScreen_OnShow;
         Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
@@ -296,11 +257,14 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EventBus.OnPlayerKill -= OnPlayerKill;
         EventBus.OnUpdate -= UpdateTime;
 
-        EventBus.OnFixedUpdate -= SetInteractable;
-        EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
-
         EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
         EventBus.OnSelfRespawn -= OnSelfRespawn;
+
+        foreach (var controller in disposables)
+        {
+            controller.Dispose();
+        }
+        disposables.Clear();
 
         cameraHook?.Dispose();
 
@@ -315,9 +279,6 @@ public class UIManager : Singleton<UIManager>, IDisposable
         if (matchUIController != null)
             GameObject.Destroy(matchUIController.gameObject);
 
-        if (shop != null)
-            GameObject.Destroy(shop.gameObject);
-
         if (nameplateRenderer != null)
             GameObject.Destroy(nameplateRenderer.gameObject);
 
@@ -327,8 +288,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
         if (inventoryHotkeyListener != null)
             Component.Destroy(inventoryHotkeyListener);
 
-        uibundle.Unload(unloadAllLoadedObjects: false);
+        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
 
-        Release(this);
+        uibundle.Unload(unloadAllLoadedObjects: false);
     }
 }
