@@ -7,9 +7,18 @@ namespace ifp.arena.bep.Core.Economy;
 
 public static class BuyMenuSelection
 {
-    public static string EconomyDataPath = Path.Combine(Plugin.pathToConfigs, "Economy.jsonc");
+    private readonly static string EconomyDataPath = Path.Combine(Plugin.pathToConfigs, "Economy.jsonc");
 
     public static List<BuyCategory> buyCategories = new();
+
+    static BuyMenuSelection()
+    {
+        LoadItems(File.ReadAllText(EconomyDataPath));
+    }
+    private static void LoadItems(string json)
+    {
+        buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
+    }
 
     public static bool TryGetItemData(string bsgId, out ShopItem itemData)
     {
@@ -31,15 +40,5 @@ public static class BuyMenuSelection
         }
         itemData = new ShopItem();
         return false;
-    }
-
-    public static void LoadItems(string json)
-    {
-        buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
-    }
-
-    static BuyMenuSelection()
-    {
-        LoadItems(File.ReadAllText(EconomyDataPath));
     }
 }

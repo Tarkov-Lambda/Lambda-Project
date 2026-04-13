@@ -6,6 +6,7 @@ using Comfort.Common;
 using ifp.arena.bep.Patches.Tarkov.UI.BattleStance;
 using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 using EFT.UI;
+using ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI;
 
@@ -56,6 +57,11 @@ internal static class UIPatches
             Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<EFT.UI.CommonUI>.Instance);
             Patch_CommonUI_Awake.StretchInventoryScreen(Singleton<EFT.UI.CommonUI>.Instance);
         }
+
+
+        RegisterAndEnable(new Patch_OpenBuildWindow_Show());
+        RegisterAndEnable(new Patch_CategoryView_Show());
+        RegisterAndEnable(new Patch_SubcategoryView_Show());
     }
 
     internal static void Disable()
