@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -13,8 +14,8 @@ namespace ifp.arena.bep.Core;
 
 public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 {
-    private string playerWeaponPresetDataPath;
-    private string WeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", "Builds");
+    private string playerWeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets");
+    private readonly string WeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", "Builds");
 
     // template bsgId -> WeaponBuildClass.MongoID_0 (either points to a custom preset, or )
     public Dictionary<string, string> SelectedGunPreset = new();
@@ -52,6 +53,30 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         Release(this);
     }
 
+    // Fetch a build that exists in the user's gun builds
+    // priority: explicitly selected -> any user made build -> bsg made
+    // NOTE: During profile creation stage, if the player picks a profile with existing presets
+    // those presets will be instantly chosen
+    public WeaponBuildClass GetCustomTemplate(string bsgId)
+    {
+        if (SelectedGunPreset.TryGetValue(bsgId, out var mongoId))
+        {
+            var matchByMongo = FU.WeaponPresets.FirstOrDefault(b => b.MongoID_0 == mongoId);
+            if (matchByMongo != null)
+                return matchByMongo;
+        }
+
+        var userBuild = FU.WeaponPresets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
+        if (userBuild != null)
+        {
+            var serializedItem = FU.SerializeItem(userBuild.Item);
+            SaveWeaponPreset(serializedItem, userBuild.HandbookName);
+            return userBuild;
+        }
+
+        return FU.WeaponPresets.FirstOrDefault(b => b.Item?.TemplateId == bsgId);
+    }
+
     private void InitializeData()
     {
         D.Log("Initializing Weapon Presets");
@@ -60,7 +85,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
         foreach (string weaponTemplateId in allWeaponsTemplateIds)
         {
-            var customPreset = FU.GetCustomTemplate(weaponTemplateId);
+            var customPreset = GetCustomTemplate(weaponTemplateId);
 
             if (customPreset == null) continue;
 
@@ -180,7 +205,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
             if (item != null && item is Weapon weaponPreset)
             {
                 WeaponPresetBuilds[name] = weaponPreset;
-                FU.CreateAndSaveWeaponPreset(weaponPreset, name).Forget();
+                FU.CreateAndSaveWeaponPreset(item, name).Forget();
             }
         }
         catch (Exception ex)

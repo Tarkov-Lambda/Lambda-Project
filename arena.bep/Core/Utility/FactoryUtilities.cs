@@ -28,37 +28,6 @@ public static class FactoryUtilities
     // BSG or user made weapon presets.
     public static IEnumerable<WeaponBuildClass> WeaponPresets => WeaponBuildsStorage.Dictionary_0.Values;
 
-    // Fetch a build that exists in the user's gun builds
-    // priority: explicitly selected -> any user made build -> bsg made
-    // NOTE: During profile creation stage, if the player picks a profile with existing presets
-    // those presets will be instantly chosen
-    public static WeaponBuildClass GetCustomTemplate(string bsgId)
-    {
-        if (WeaponPresetManager.Instance.SelectedGunPreset.TryGetValue(bsgId, out var mongoId))
-        {
-            var matchByMongo = WeaponPresets.FirstOrDefault(b => b.MongoID_0 == mongoId);
-            if (matchByMongo != null)
-                return matchByMongo;
-        }
-
-        var userBuild = WeaponPresets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
-        if (userBuild != null)
-        {
-            try
-            {
-                // var serializedItem = SerializeItem(userBuild.Item);
-                // SendDelayed(serializedItem, userBuild.HandbookName).Forget();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to save weapon presets: {ex}");
-            }
-            return userBuild;
-        }
-
-        return WeaponPresets.FirstOrDefault(b => b.Item?.TemplateId == bsgId);
-    }
-
     public static List<string> GetAllWeaponTemplateIds()
     {
         List<string> weaponTemplateIds = ItemFactory.ItemTemplates.Values
