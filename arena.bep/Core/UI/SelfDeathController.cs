@@ -10,11 +10,11 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class SelfDeathController : IDisposable
     {
-        readonly ArenaMatchUI matchUI;
+        readonly DeathInfo deathInfo;
 
-        internal SelfDeathController(ArenaMatchUI matchUI)
+        internal SelfDeathController(DeathInfo deathInfo)
         {
-            this.matchUI = matchUI;
+            this.deathInfo = deathInfo;
 
             EventBus.OnPlayerKill += OnPlayerKill;
             EventBus.OnSelfRespawn += OnSelfRespawn;
@@ -31,7 +31,7 @@ namespace ifp.arena.bep.Core.UI
 
         void OnSelfDeath(PlayerScoreInfo killer)
         {
-            matchUI.DeathInfo.Pop(killer);
+            deathInfo.Pop(killer);
 
             Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(false);
         }

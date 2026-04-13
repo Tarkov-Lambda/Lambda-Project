@@ -52,6 +52,7 @@ public class UIManager : IDisposable
         disposables.Add(new TopBarController(matchUI.TopBar));
         disposables.Add(new KillFeedController(matchUI.KillFeed, itemInfoProvider));
         disposables.Add(new MatchResultController(matchUI.PopupMatchEnd));
+        disposables.Add(new SelfDeathController(matchUI.DeathInfo));
         disposables.Add(new SpectatorController(matchUI.Spectator));
 
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
