@@ -66,7 +66,7 @@ namespace arena.ui.scoreboard.Editor
                 "Papa", "Quebec", "Romeo", "Sierra", "Tango"
             };
 
-            PlayerStats[] players = new PlayerStats[playerCount];
+            PlayerScoreInfo[] players = new PlayerScoreInfo[playerCount];
             Dictionary<Faction, int> teamScores = new Dictionary<Faction, int>();
 
             foreach (Faction f in activeFactions)
@@ -78,9 +78,8 @@ namespace arena.ui.scoreboard.Editor
             {
                 Faction faction = activeFactions[i % activeFactions.Count];
 
-                players[i] = new PlayerStats
+                players[i] = new PlayerScoreInfo
                 {
-                    Id = i + 1,
                     Faction = faction,
                     Name = names[i % names.Length],
                     Kills = Random.Range(0, 30),
@@ -94,8 +93,8 @@ namespace arena.ui.scoreboard.Editor
 
             for (int i = 0; i < players.Length; i++)
             {
-                PlayerStats p = players[i];
-                Debug.Log($"  [{i}] Id={p.Id} Faction={p.Faction} Name={p.Name} K={p.Kills} D={p.Deaths} A={p.Assists} Ping={p.Ping}");
+                var p = players[i];
+                Debug.Log($"  [{i}] Faction={p.Faction} Name={p.Name} K={p.Kills} D={p.Deaths} A={p.Assists} Ping={p.Ping}");
             }
 
             foreach (var kvp in teamScores)
@@ -109,7 +108,7 @@ namespace arena.ui.scoreboard.Editor
         private void ClearScoreboard()
         {
             Scoreboard scoreboard = (Scoreboard)target;
-            scoreboard.SetPlayers(new PlayerStats[0], new Dictionary<Faction, int>(), Faction.None);
+            scoreboard.SetPlayers(new PlayerScoreInfo[0], new Dictionary<Faction, int>(), Faction.None);
             Debug.Log("[ScoreboardEditor] Scoreboard cleared.");
         }
     }

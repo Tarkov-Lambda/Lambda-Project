@@ -12,6 +12,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
+using ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds;
 using ifp.arena.shared;
 using ifp.arena.shared.Models;
 using ifp.arena.ui.Nameplate;
@@ -39,6 +40,8 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
     FactionSelectionScreen factionSelectionScreen;
 
+    EditBuildLambdaPanel editBuildPanel;
+
     public Material MatteMaterial { get; private set; }
 
     public UIManager()
@@ -47,6 +50,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         Patch_CommonUI_Awake.OnAwake += LoadUI;
         Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
+        Patch_EditBuildScreen_Show.OnShow += EditBuildScreen_OnShow;
         Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
 
         if (Singleton<CommonUI>.Instantiated)
@@ -70,6 +74,11 @@ public class UIManager : Singleton<UIManager>, IDisposable
         EventBus.OnSelfRespawn += OnSelfRespawn;
 
         cameraHook = new EFTCameraHook();
+    }
+
+    private void EditBuildScreen_OnShow()
+    {
+        editBuildPanel.gameObject.SetActive(false);
     }
 
     void OnSelfFactionChanged(Faction faction)
@@ -148,6 +157,11 @@ public class UIManager : Singleton<UIManager>, IDisposable
         MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
 
         matchUIController.ToggleSpectator(false);
+
+
+        GameObject prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/EditBuild/EditBuildLambdaPanel.prefab");
+        editBuildPanel = GameObject.Instantiate(prefabEditBuildPanel, commonUI.EditBuildScreen.transform.Find("ButtonsPanel")).GetComponent<EditBuildLambdaPanel>();
+
     }
 
     private void UpdateTime()
@@ -274,6 +288,7 @@ public class UIManager : Singleton<UIManager>, IDisposable
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
         Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
+        Patch_EditBuildScreen_Show.OnShow -= EditBuildScreen_OnShow;
         Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
         EventBus.OnEnter -= OnMatchStateEnter;
@@ -305,6 +320,9 @@ public class UIManager : Singleton<UIManager>, IDisposable
 
         if (nameplateRenderer != null)
             GameObject.Destroy(nameplateRenderer.gameObject);
+
+        if (editBuildPanel != null)
+            GameObject.Destroy(editBuildPanel.gameObject);
 
         if (inventoryHotkeyListener != null)
             Component.Destroy(inventoryHotkeyListener);
