@@ -8,17 +8,20 @@ using UnityEngine;
 using System.Linq;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
+using arena.ui.scoreboard;
 
 namespace ifp.arena.bep.Core.UI
 {
     internal class ScoreboardController : IDisposable
     {
-        readonly ArenaMatchUI matchUI;
+        readonly Scoreboard scoreboardUI;
 
         InventoryHotkeyListener inventoryHotkeyListener;
 
-        internal ScoreboardController(ArenaMatchUI matchUI)
+        internal ScoreboardController(Scoreboard scoreboardUI)
         {
+            this.scoreboardUI = scoreboardUI;
+
             EventBus.OnPlayerKill += OnPlayerKill;
             EventBus.OnEnter += OnMatchStateEnter;
 
@@ -26,7 +29,7 @@ namespace ifp.arena.bep.Core.UI
             if (Singleton<GameWorld>.Instantiated) 
                 AddInventoryHotkeyInterceptor();
 
-            matchUI.Scoreboard.gameObject.SetActive(false);
+            scoreboardUI.gameObject.SetActive(false);
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
@@ -35,14 +38,14 @@ namespace ifp.arena.bep.Core.UI
         private void AddInventoryHotkeyInterceptor()
         {
             inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
-            inventoryHotkeyListener.OnHoldBegin += () => matchUI.Scoreboard.gameObject.SetActive(true);
-            inventoryHotkeyListener.OnHoldEnd += () => matchUI.Scoreboard.gameObject.SetActive(false);
+            inventoryHotkeyListener.OnHoldBegin += () => scoreboardUI.gameObject.SetActive(true);
+            inventoryHotkeyListener.OnHoldEnd += () => scoreboardUI.gameObject.SetActive(false);
         }
 
         void Refresh()
         {
             PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Score).ToArray();
-            matchUI.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.Faction);
+            scoreboardUI.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.Faction);
         }
 
         public void Dispose()

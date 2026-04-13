@@ -71,7 +71,7 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    public void RegisterSingleton<T>() where T : class, IDisposable, new()
+    private void RegisterSingleton<T>() where T : class, IDisposable, new()
     {
         var instance = new T();
         Singleton<T>.Create(instance);
@@ -232,7 +232,7 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
-            RegisterSingleton<UIManager>();                                         // ENTRY POINT FOR UI
+            _disposables.Add(new UIManager());  // not a singleton (fuck you)
 
             var warmup = typeof(Ladder);
             await RegisterSingletonInRaid<LadderEventManager>();                 // Overwrites Player Controller on Ladder Collision and moves them.

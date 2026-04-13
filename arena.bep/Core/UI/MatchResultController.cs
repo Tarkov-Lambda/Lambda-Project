@@ -6,11 +6,11 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class MatchResultController : IDisposable
     {
-        readonly ArenaMatchUI matchUI;
+        readonly PopupMatchEnd popupMatchEnd;
 
-        internal MatchResultController(ArenaMatchUI matchUI)
+        internal MatchResultController(PopupMatchEnd popupMatchEnd)
         {
-            this.matchUI = matchUI;
+            this.popupMatchEnd = popupMatchEnd;
 
             EventBus.OnRoundActionEnd += OnRoundActionEnd;
         }
@@ -27,7 +27,7 @@ namespace ifp.arena.bep.Core.UI
                 subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
             }
 
-            matchUI.PopupMatchEnd.Pop(win, mainTitle, subTitle);
+            popupMatchEnd.Pop(win, mainTitle, subTitle);
         }
 
         public void Dispose()

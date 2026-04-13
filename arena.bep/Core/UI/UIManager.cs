@@ -19,7 +19,7 @@ public class UIManager : IDisposable
 
     List<IDisposable> disposables = new();
 
-    ArenaMatchUI matchUIController;
+    ArenaMatchUI matchUI;
 
     FactionSelectionScreen factionSelectionScreen;
 
@@ -45,16 +45,17 @@ public class UIManager : IDisposable
         uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "arenaui"));
 
         GameObject prefabMatchUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/ArenaMatchUI.prefab");
-        matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
-        matchUIController.transform.SetAsFirstSibling();
+        matchUI = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
+        matchUI.transform.SetAsFirstSibling();
 
-        disposables.Add(new ScoreboardController(matchUIController));
-        disposables.Add(new TopBarController(matchUIController));
+        disposables.Add(new ScoreboardController(matchUI.Scoreboard));
+        disposables.Add(new TopBarController(matchUI.TopBar));
+        disposables.Add(new KillFeedController(matchUI.KillFeed, itemInfoProvider));
+        disposables.Add(new MatchResultController(matchUI.PopupMatchEnd));
+        disposables.Add(new SpectatorController(matchUI.Spectator));
+
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
-        disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
-        disposables.Add(new MatchResultController(matchUIController));
         disposables.Add(new NameplateController(commonUI, uibundle));
-        disposables.Add(new SpectatorController(matchUIController));
         disposables.Add(new EditBuildController(commonUI, uibundle));
 
         GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/FactionSelection/FactionSelection.prefab");
@@ -109,8 +110,8 @@ public class UIManager : IDisposable
             GameObject.Destroy(factionSelectionScreen.gameObject);
         }
 
-        if (matchUIController != null)
-            GameObject.Destroy(matchUIController.gameObject);
+        if (matchUI != null)
+            GameObject.Destroy(matchUI.gameObject);
 
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
 

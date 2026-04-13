@@ -28,7 +28,7 @@ namespace arena.ui.killfeed
             }
         }
 
-        public void Add(string killerName, Faction killerFaction, string victimName, Faction victimFaction, Sprite weapon, bool isHeadshot)
+        public void Pop(string killerName, Faction killerFaction, string victimName, Faction victimFaction, Sprite weapon, bool isHeadshot)
         {
             KillNotification notif = SpawnOrGetFromPool();
             notif.gameObject.SetActive(true);

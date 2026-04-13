@@ -1,4 +1,5 @@
 ﻿using arena.ui;
+using arena.ui.killfeed;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using System;
@@ -7,12 +8,12 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class KillFeedController : IDisposable
     {
-        private readonly ArenaMatchUI matchUI;
+        private readonly KillFeed killFeed;
         private readonly BSGItemInfoProvider itemInfoProvider;
 
-        internal KillFeedController(ArenaMatchUI matchUI, BSGItemInfoProvider itemInfoProvider)
+        internal KillFeedController(KillFeed killFeed, BSGItemInfoProvider itemInfoProvider)
         {
-            this.matchUI = matchUI;
+            this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
             EventBus.OnPlayerKill += OnPlayerKill;
@@ -31,7 +32,7 @@ namespace ifp.arena.bep.Core.UI
 
             itemInfoProvider.RequestIcon(killPacket.weaponId, onRendered: (weaponSprite) =>
             {
-                matchUI.KillFeed.Add(
+                killFeed.Pop(
                     leftName, leftFaction,
                     rightName, rightFaction,
                     weaponSprite, killPacket.IsHeadshot);

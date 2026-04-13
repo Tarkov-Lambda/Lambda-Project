@@ -6,28 +6,28 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class SpectatorController : IDisposable
     {
-        readonly ArenaMatchUI matchUI;
+        readonly Spectator spectator;
 
-        internal SpectatorController(ArenaMatchUI matchUI)
+        internal SpectatorController(Spectator spectator)
         {
-            this.matchUI = matchUI;
+            this.spectator = spectator;
 
             SpectatorManager.OnSelfStartSpectating += OnStartSpectating;
             SpectatorManager.OnSelfStopSpectating += OnStopSpectating;
 
-            matchUI.Spectator.gameObject.SetActive(false);
+            spectator.gameObject.SetActive(false);
         }
 
         private void OnStartSpectating(Player player)
         {
             PlayerScore playerScore = H.GetPlayerScore(player);
-            matchUI.Spectator.SetSpectatingPlayer(playerScore.Score);
-            matchUI.Spectator.gameObject.SetActive(true);
+            spectator.SetSpectatingPlayer(playerScore.Score);
+            spectator.gameObject.SetActive(true);
         }
 
         private void OnStopSpectating()
         {
-            matchUI.Spectator.gameObject.SetActive(false);
+            spectator.gameObject.SetActive(false);
         }
 
         public void Dispose()

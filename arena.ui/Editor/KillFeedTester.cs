@@ -31,7 +31,7 @@ public class KillFeedTester : MonoBehaviour
         {
             counter++;
             t = 0f;
-            killfeed.Add(playerLeft, factionLeft, playerRight, factionRight,  placeholdergun, Random.value > 0.9f);
+            killfeed.Pop(playerLeft, factionLeft, playerRight, factionRight,  placeholdergun, Random.value > 0.9f);
         }
     }
 }

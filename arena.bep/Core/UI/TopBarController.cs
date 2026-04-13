@@ -9,15 +9,15 @@ namespace ifp.arena.bep.Core.UI
 {
     internal class TopBarController : IDisposable
     {
-        readonly ArenaMatchUI matchUI;
+        readonly TopBar topBar;
 
-        internal TopBarController(ArenaMatchUI matchUI)
+        internal TopBarController(TopBar topBar)
         {
             EventBus.OnPlayerKill += OnPlayerKill;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnUpdate += OnUpdate;
 
-            this.matchUI = matchUI;
+            this.topBar = topBar;
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
@@ -28,19 +28,19 @@ namespace ifp.arena.bep.Core.UI
             int scoreCT = H.Session.factionWins[Faction.CT];
             int scoreT = H.Session.factionWins[Faction.T];
 
-            matchUI.TopBar.SetScores(scoreCT, scoreT);
+            topBar.SetScores(scoreCT, scoreT);
 
             PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Score).ToArray();
 
             PlayerScoreInfo[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
             PlayerScoreInfo[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
 
-            matchUI.TopBar.SetTeamStatuses(teamCT, teamT);
+            topBar.SetTeamStatuses(teamCT, teamT);
         }
 
         private void OnUpdate()
         {
-            matchUI.TopBar.SetTime(H.Arena.StateTimer);
+            topBar.SetTime(H.Arena.StateTimer);
         }
 
         public void Dispose()
