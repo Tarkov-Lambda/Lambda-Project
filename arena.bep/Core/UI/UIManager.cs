@@ -27,8 +27,6 @@ public class UIManager : IDisposable
 
     ArenaMatchUI matchUIController;
 
-    InventoryHotkeyListener inventoryHotkeyListener;
-
     NameplateRenderer nameplateRenderer;
 
     FactionSelectionScreen factionSelectionScreen;
@@ -38,12 +36,9 @@ public class UIManager : IDisposable
         if (H.IsHeadless) return;
 
         Patch_CommonUI_Awake.OnAwake += LoadUI;
-        Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
-
         if (Singleton<CommonUI>.Instantiated)
             LoadUI(Singleton<CommonUI>.Instance);
 
-        if (Singleton<GameWorld>.Instantiated) AddInventoryHotkeyInterceptor();
 
         EventBus.OnEnter += OnMatchStateEnter;
         EventBus.OnRoundActionEnd += OnRoundActionEnd;
@@ -63,12 +58,6 @@ public class UIManager : IDisposable
             factionSelectionScreen.Cancel();
     }
 
-    private void AddInventoryHotkeyInterceptor()
-    {
-        inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
-        inventoryHotkeyListener.OnHoldBegin += () => matchUIController.Scoreboard.gameObject.SetActive(true);
-        inventoryHotkeyListener.OnHoldEnd += () => matchUIController.Scoreboard.gameObject.SetActive(false);
-    }
 
     async void LoadUI(CommonUI commonUI)
     {
@@ -76,17 +65,11 @@ public class UIManager : IDisposable
 
         uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "arenaui"));
 
-        foreach (var item in uibundle.GetAllAssetNames())
-        {
-            D.Log("in arena UI bundle found " + item);
-        }
-
         GameObject prefabMatchUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/ArenaMatchUI.prefab");
-
         matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
-        matchUIController.Scoreboard.gameObject.SetActive(false);
         matchUIController.transform.SetAsFirstSibling();
 
+        disposables.Add(new ScoreboardController(matchUIController));
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
         disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
         disposables.Add(new SpectatorController(matchUIController));
@@ -184,15 +167,12 @@ public class UIManager : IDisposable
         PlayerScoreInfo[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
 
         matchUIController.TopBar.SetTeamStatuses(teamCT, teamT);
-
-        matchUIController.Scoreboard.SetPlayers(allPlayerStats, H.Session.factionWins, H.MainPlayerScore.Faction);
     }
 
 
     public void Dispose()
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
-        Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
         EventBus.OnEnter -= OnMatchStateEnter;
         EventBus.OnRoundActionEnd -= OnRoundActionEnd;
@@ -221,9 +201,6 @@ public class UIManager : IDisposable
 
         if (nameplateRenderer != null)
             GameObject.Destroy(nameplateRenderer.gameObject);
-
-        if (inventoryHotkeyListener != null)
-            Component.Destroy(inventoryHotkeyListener);
 
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
 
