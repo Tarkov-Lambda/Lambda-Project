@@ -3,9 +3,7 @@ using EFT;
 using EFT.InputSystem;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.UI;

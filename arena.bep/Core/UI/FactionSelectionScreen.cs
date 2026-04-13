@@ -1,8 +1,6 @@
 ﻿using arena.ui;
 using EFT.InputSystem;
 using EFT.UI.Screens;
-using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.shared;
 using System;
 
 namespace ifp.arena.bep.Core.UI

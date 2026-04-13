@@ -11,7 +11,7 @@ using ifp.arena.shared;
 using System;
 using UnityEngine;
 
-namespace ifp.arena.bep.Core.UI.Controllers
+namespace ifp.arena.bep.Core.UI
 {
     internal class ShopUIController : IDisposable
     {

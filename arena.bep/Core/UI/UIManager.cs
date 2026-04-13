@@ -1,14 +1,10 @@
 using arena.ui;
 using Comfort.Common;
 using EFT;
-using EFT.InventoryLogic;
 using EFT.UI;
 using EFT.UI.Screens;
-using HarmonyLib;
 using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.Core.UI.Controllers;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
@@ -86,19 +82,19 @@ public class UIManager : IDisposable
     {
         PlayerScore playerScore = H.GetPlayerScore(player);
         matchUIController.Spectator.SetSpectatingPlayer(playerScore.Score);
-        matchUIController.ToggleSpectator(true);
+        matchUIController.Spectator.gameObject.SetActive(true);
     }
 
     private void OnStopSpectating()
     {
-        matchUIController.ToggleSpectator(false);
+        matchUIController.Spectator.gameObject.SetActive(false);
     }
 
     private void AddInventoryHotkeyInterceptor()
     {
         inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
-        inventoryHotkeyListener.OnHoldBegin += () => matchUIController.ToggleScoreboard(true);
-        inventoryHotkeyListener.OnHoldEnd += () => matchUIController.ToggleScoreboard(false);
+        inventoryHotkeyListener.OnHoldBegin += () => matchUIController.Scoreboard.gameObject.SetActive(true);
+        inventoryHotkeyListener.OnHoldEnd += () => matchUIController.Scoreboard.gameObject.SetActive(false);
     }
 
     async void LoadUI(CommonUI commonUI)
@@ -115,10 +111,11 @@ public class UIManager : IDisposable
         GameObject prefabMatchUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/ArenaMatchUI.prefab");
 
         matchUIController = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
-        matchUIController.ToggleScoreboard(false);
+        matchUIController.Scoreboard.gameObject.SetActive(false);
         matchUIController.transform.SetAsFirstSibling();
 
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
+        disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
 
         nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
         GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
@@ -133,7 +130,7 @@ public class UIManager : IDisposable
         //bruh
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat"); 
 
-        matchUIController.ToggleSpectator(false);
+        matchUIController.Spectator.gameObject.SetActive(false);
 
 
         GameObject prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/EditBuild/EditBuildLambdaPanel.prefab");
@@ -182,38 +179,13 @@ public class UIManager : IDisposable
 
     void OnPlayerKill(PlayerKilledPacket killPacket)
     {
-        Plugin.Logger.LogInfo(killPacket);
-
-        try
+        if (killPacket.victim == H.MainPlayer)
         {
-            H.Scoreboard.TryGetValue(killPacket.killer.Id, out PlayerScore playerKiller);
-            H.Scoreboard.TryGetValue(killPacket.victim.Id, out PlayerScore playerVictim);
-
-            string leftName = playerKiller?.player.Profile.Nickname;
-            string rightName = playerVictim?.player.Profile.Nickname;
-
-            Faction leftFaction = playerKiller == null ? Faction.None : playerKiller.Faction;
-            Faction rightFaction = playerVictim == null ? Faction.None : playerVictim.Faction;
-
-            itemInfoProvider.RequestIcon(killPacket.weaponId, (weaponSprite) =>
-            {
-                matchUIController.KillFeed.Add(
-                    leftName, leftFaction,
-                    rightName, rightFaction,
-                    weaponSprite, killPacket.IsHeadshot);
-            });
-
-            if (playerVictim == H.MainPlayerScore)
-            {
-                OnSelfDeath(playerKiller.Score);
-            }
-
-            Refresh();
+            PlayerScore killerScore = H.GetPlayerScore(killPacket.killer);
+            OnSelfDeath(killerScore.Score);
         }
-        catch (Exception ex)
-        {
-            Plugin.Logger.LogError(ex);
-        }
+
+        Refresh();
     }
 
     void OnSelfDeath(PlayerScoreInfo killer)
