@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ifp.arena.bep.GameTypes;
 
-public class SessionInfo
+public class SessionManager
 {
     public MatchState matchState = MatchState.None;
     public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
@@ -32,7 +32,7 @@ public class SessionInfo
             {MatchState.MatchEnd, 15}
         };
 
-    public SessionInfo()
+    public SessionManager()
     {
         InitializeScoreBoard();
     }

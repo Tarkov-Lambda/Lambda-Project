@@ -59,7 +59,7 @@ public static class Helpers
     public static NetManager NetManager => GetNetManager();
 
     public static ArenaController Arena => Singleton<ArenaController>.Instance;
-    public static SessionInfo Session => Arena.session;
+    public static SessionManager Session => Arena.session;
     public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
 
     public static event Action<GameWorld> OnGameStarted

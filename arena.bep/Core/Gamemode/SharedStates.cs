@@ -193,7 +193,7 @@ public class SharedSideSwap : IGameState
                 playerScore.ChangeFaction(swappedFaction);
             }
             (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
-            Singleton<SessionInfoPacketHandler>.Instance.Send();
+            Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
         }
     }
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;

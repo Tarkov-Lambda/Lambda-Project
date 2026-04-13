@@ -57,7 +57,6 @@
     <Reference Include="$(ManagedPath)\DOTween.dll" />
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
 
-    <!-- Our Dependencies -->
     <Reference Include="..\deps\libraries\*.dll" />
   </ItemGroup>
 
@@ -75,7 +74,13 @@
 
 
     <ItemGroup>
-      <Dependencies Include="../deps/libraries/*.dll" />
+      <Dependencies Include="../deps/libraries/audioplugin_phonon.dll" />
+      <Dependencies Include="../deps/libraries/phonon.dll" />
+
+      <Dependencies Include="$(OutputPath)\MemoryPack.Core.dll" />
+      <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
+      <Dependencies Include="$(OutputPath)\Unitask.dll" />
+      <Dependencies Include="$(OutputPath)\Unitask.*.dll" />
 
       <DebugDependencies Include="../deps/libraries/ScriptEngine.dll"
         Condition="'$(Configuration)' == 'Debug'" />

@@ -205,7 +205,7 @@ public class Plugin : BaseUnityPlugin
 
         // Session
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Server/Client reports specific player's status
-        RegisterSingleton<SessionInfoPacketHandler>();                              // Server sends a snapshot of the entire session info (start of the match / on round end)
+        RegisterSingleton<SessionManagerSyncPacketHandler>();                              // Server sends a snapshot of the entire session info (start of the match / on round end)
         RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast

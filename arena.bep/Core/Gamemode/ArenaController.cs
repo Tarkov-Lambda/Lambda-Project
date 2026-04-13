@@ -17,18 +17,7 @@ using static Fika.Core.Modding.FikaEventDispatcher;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
-public interface IGameState
-{
-    MatchState StateType { get; }
-    void OnEnter();
-    MatchState? OnUpdate(); // Returns next state, or null to stay
-    void OnExit();
-}
-
-public abstract class GameModeRules
-{
-    public abstract IGameState CreateState(MatchState state);
-}
+using MemoryPack;
 
 [MemoryPackable]
 public partial struct RoundActionPhaseEnd
@@ -42,7 +31,7 @@ public partial struct RoundActionPhaseEnd
 // This is the place where we manage both server/client arena behaviour
 public class ArenaController : Singleton<ArenaController>, IDisposable
 {
-    public SessionInfo session;
+    public SessionManager session;
     public GameModeRules ActiveRules { get; set; } = new SND_ModeRules();
     public EconomyManager EconomyManager = new();
 
@@ -104,7 +93,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
         UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
-        session = new SessionInfo();
+        session = new SessionManager();
 
         if (!H.IsHeadless)
         {
@@ -234,7 +223,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
     }
 
-    public void OnRoundEnd() => Singleton<SessionInfoPacketHandler>.Instance.Send();
+    public void OnRoundEnd() => Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
 }
 
 public class GameModeTicker : MonoBehaviour

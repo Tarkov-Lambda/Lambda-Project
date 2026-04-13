@@ -33,9 +33,7 @@
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopy)"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      SkipUnchangedFiles="true"
-      ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
+      SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
   </Target>
 </Project>

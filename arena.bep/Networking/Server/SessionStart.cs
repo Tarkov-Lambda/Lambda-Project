@@ -75,7 +75,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         if (!H.IsClient)
         {
-            Singleton<SessionInfoPacketHandler>.Instance.Send();
+            Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
             H.Arena.ChangeState(MatchState.Warmup);
         }
 

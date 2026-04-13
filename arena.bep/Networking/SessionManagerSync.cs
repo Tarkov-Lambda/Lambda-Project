@@ -34,7 +34,7 @@ public partial struct PlayerScoreSyncData
 }
 
 [MemoryPackable]
-public partial struct SessionInfoPacket : INetSerializable
+public partial struct SessionManagerSyncPacket : INetSerializable
 {
     public MatchState roundState;
     public GameModes gameMode;
@@ -46,15 +46,15 @@ public partial struct SessionInfoPacket : INetSerializable
     public PlayerScoreSyncData[] scores;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionInfoPacket>(reader);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionManagerSyncPacket>(reader);
 }
 
 // This only runs explicitly, not on interval
-public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
+public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncPacket>
 {
     private CancellationTokenSource _cts = new();
 
-    public SessionInfoPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    public SessionManagerSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
     public override void Dispose()
     {
@@ -64,12 +64,12 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         base.Dispose();
     }
 
-    public SessionInfoPacket FormatPacket()
+    public SessionManagerSyncPacket FormatPacket()
     {
         // Convert Faction Enum Dictionary to Int Dictionary for the packet
         var syncFactionWins = H.Session.factionWins.ToDictionary(k => (int)k.Key, v => v.Value);
 
-        var packet = new SessionInfoPacket
+        var packet = new SessionManagerSyncPacket
         {
             roundState = H.Session.matchState,
             gameMode = H.Session.currentGameMode,
@@ -114,7 +114,7 @@ public class SessionInfoPacketHandler : PacketHandler<SessionInfoPacket>
         DispatchPacketToPeer(FormatPacket(), peer);
     }
 
-    protected override void WhenApproved(SessionInfoPacket packet, NetPeer peer)
+    protected override void WhenApproved(SessionManagerSyncPacket packet, NetPeer peer)
     {
         if (H.IsServer) return;
 
