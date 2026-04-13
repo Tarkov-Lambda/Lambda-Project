@@ -125,7 +125,7 @@ public class SteamAudioSceneTracker : MonoBehaviour
 #endif
 
         IsSceneReady = true;
-        Debug.Log("[SteamAudioSceneTracker] Steam Audio scene geometry committed – " +
+        Debug.Log("[SteamAudioSceneTracker] Steam Audio scene geometry committed - " +
               "upgrading to Phase 2 (occlusion + transmission + reflections).");
         OnSceneReady?.Invoke();
     }
@@ -140,7 +140,7 @@ public class SteamAudioSceneTracker : MonoBehaviour
         if (!IsSceneReady) return;
 
         IsSceneReady = false;
-        Debug.Log("[SteamAudioSceneTracker] Map unloading – downgrading to Phase 1.");
+        Debug.Log("[SteamAudioSceneTracker] Map unloading - downgrading to Phase 1.");
         OnSceneCleared?.Invoke();
     }
 }

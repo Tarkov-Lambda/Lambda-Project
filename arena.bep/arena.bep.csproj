@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <Product>Lambda</Product>
-    <Version>0.0.1</Version>
+    <Version>0.3.51</Version>
     <Description>Developed by ifp and tarkin</Description>
   </PropertyGroup>
 
@@ -57,9 +57,8 @@
     <Reference Include="$(ManagedPath)\DOTween.dll" />
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
 
-    <Reference Include="..\deps\libraries\*.dll">
-      <Private>False</Private>
-    </Reference>
+    <!-- Our Dependencies -->
+    <Reference Include="..\deps\libraries\*.dll" />
   </ItemGroup>
 
   <ItemGroup>

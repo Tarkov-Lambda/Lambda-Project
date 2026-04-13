@@ -60,7 +60,7 @@ public partial struct PlayerKilledPacket : INetSerializable
 
 public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
-    public void Send(DamageInfoStruct damage, Player victim = null, Player killer = null)
+    public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
         var packet = new PlayerKilledPacket
         {
@@ -70,16 +70,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
-
-        if (killer == null && damage.Player?.iPlayer != null)
-        {
-            packet.killer = H.GetPlayer(damage.Player.iPlayer.Id);
-        }
-
-        if (victim == null && !H.IsHeadless)
-        {
-            packet.killer = H.MainPlayer;
-        }
 
         try
         {
@@ -107,29 +97,17 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     // this logic needs to be abstracted elsewhere
     private void HandleKill(PlayerKilledPacket packet)
     {
-        if (packet.weaponId == "")
+
+        PlayerScore victimScore = H.GetPlayerScore(packet.victim);
+        if (!victimScore.IsAlive) return;
+
+        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
+        victimScore.Kill();
+
+        if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
-            packet.weaponId = packet.killer?.HandsController?.Item?.TemplateId;
+            killerScore.AddFrag(packet.IsHeadshot);
         }
-
-        try
-        {
-            PlayerScore victimScore = H.GetPlayerScore(packet.victim);
-            if (!victimScore.IsAlive) return;
-
-            PlayerScore killerScore = H.GetPlayerScore(packet.killer);
-            victimScore.Kill();
-
-            if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
-            {
-                killerScore.AddFrag(packet.IsHeadshot);
-            }
-        } 
-        catch (Exception ex)
-        {
-            // заебал
-        }
-
 
         EventBus.OnPlayerKill.Invoke(packet);
 
@@ -148,8 +126,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
 
             // 2. Banish them 500 meters underground instantly to hide network latency
-            Vector3 shadowRealmPos = packet.victim.Position + new Vector3(0, -500f, 0);
-            HoldPlayerOut(packet.victim, shadowRealmPos, 2.0f).Forget();
+            HoldPlayerOut(packet.victim, Vector3.zero, 2.0f).Forget();
 
             Teleporter.Teleport(packet.victim, "lobby", Faction.None);
         }
@@ -176,7 +153,11 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         // 4. Wait for the death cam sequence to finish (RagdollCreator uses 4000ms)
         await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
 
-        // 5. NOW teleport them to the lobby safely!
+        // 5. If RoundPrepare fired during the delay and already respawned us, don't
+        //    override that respawn by sending the player back to lobby.
+        if (H.MainPlayerScore.IsAlive) return;
+
+        // 6. NOW teleport them to the lobby safely!
         Teleporter.Teleport(packet.victim, "lobby", Faction.None);
     }
 
@@ -194,6 +175,11 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
             if (victim == null || victim.Destroyed) break;
 
+            // If the player has been respawned (e.g. RoundPrepare fired mid-death sequence),
+            // stop fighting the respawn teleport and release control immediately.
+            var score = H.GetPlayerScore(victim.Id);
+            if (score != null && score.IsAlive) break;
+
             ForcePlayerPosition(victim, targetPos);
             elapsed += Time.deltaTime;
         }
@@ -203,6 +189,8 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         {
             victim._characterController.isEnabled = true;
         }
+
+        victim.MovementContext.ResetFlying();
     }
 
     private void ForcePlayerPosition(Player victim, Vector3 pos)
