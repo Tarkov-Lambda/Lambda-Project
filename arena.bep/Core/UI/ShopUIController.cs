@@ -9,12 +9,16 @@ using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
 using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.UI
 {
     internal class ShopUIController : IDisposable
     {
+        private static readonly FieldInfo Field_InventoryScreen__itemsPanel = AccessTools.Field(typeof(InventoryScreen), "_itemsPanel");
+        private static readonly FieldInfo Field_ItemsPanel__simpleStashPanel = AccessTools.Field(typeof(InventoryScreen), "_simpleStashPanel");
+
         private readonly IItemInfoProvider itemInfoProvider;
 
         Shop shop;
@@ -25,8 +29,8 @@ namespace ifp.arena.bep.Core.UI
 
             GameObject prefabShopUI = uiBundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
 
-            ItemsPanel itemsPanel = AccessTools.Field(typeof(InventoryScreen), "_itemsPanel").GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
-            Transform shopParent = (AccessTools.Field(typeof(ItemsPanel), "_simpleStashPanel").GetValue(itemsPanel) as SimpleStashPanel).transform.parent;
+            ItemsPanel itemsPanel = Field_InventoryScreen__itemsPanel.GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
+            Transform shopParent = (Field_ItemsPanel__simpleStashPanel.GetValue(itemsPanel) as SimpleStashPanel).transform.parent;
 
             shop = GameObject.Instantiate(prefabShopUI, shopParent).GetComponent<Shop>();
             RectTransform shopRectTransform = shop.transform as RectTransform;

@@ -27,13 +27,9 @@ public class UIManager : IDisposable
 
     ArenaMatchUI matchUIController;
 
-    BSGItemInfoProvider itemInfoProvider;
-
     InventoryHotkeyListener inventoryHotkeyListener;
 
     NameplateRenderer nameplateRenderer;
-
-    EFTCameraHook cameraHook;
 
     FactionSelectionScreen factionSelectionScreen;
 
@@ -58,13 +54,10 @@ public class UIManager : IDisposable
 
         EventBus.OnUpdate += UpdateTime;
 
-        SpectatorManager.OnSelfStartSpectating += OnStartSpectating;
-        SpectatorManager.OnSelfStopSpectating += OnStopSpectating;
-
         EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
         EventBus.OnSelfRespawn += OnSelfRespawn;
 
-        cameraHook = new EFTCameraHook();
+        disposables.Add(new EFTCameraHook());
     }
 
     private void EditBuildScreen_OnShow()
@@ -78,18 +71,6 @@ public class UIManager : IDisposable
             factionSelectionScreen.Cancel();
     }
 
-    private void OnStartSpectating(Player player)
-    {
-        PlayerScore playerScore = H.GetPlayerScore(player);
-        matchUIController.Spectator.SetSpectatingPlayer(playerScore.Score);
-        matchUIController.Spectator.gameObject.SetActive(true);
-    }
-
-    private void OnStopSpectating()
-    {
-        matchUIController.Spectator.gameObject.SetActive(false);
-    }
-
     private void AddInventoryHotkeyInterceptor()
     {
         inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
@@ -99,7 +80,7 @@ public class UIManager : IDisposable
 
     async void LoadUI(CommonUI commonUI)
     {
-        itemInfoProvider = new BSGItemInfoProvider();
+        BSGItemInfoProvider itemInfoProvider = new BSGItemInfoProvider();
 
         uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "arenaui"));
 
@@ -116,6 +97,7 @@ public class UIManager : IDisposable
 
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
         disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
+        disposables.Add(new SpectatorController(matchUIController));
 
         nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
         GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
@@ -130,7 +112,6 @@ public class UIManager : IDisposable
         //bruh
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat"); 
 
-        matchUIController.Spectator.gameObject.SetActive(false);
 
 
         GameObject prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/EditBuild/EditBuildLambdaPanel.prefab");
@@ -237,8 +218,6 @@ public class UIManager : IDisposable
             controller.Dispose();
         }
         disposables.Clear();
-
-        cameraHook?.Dispose();
 
         if (factionSelectionScreen != null)
         {
