@@ -7,8 +7,6 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
-using ifp.arena.shared.Models;
-using ifp.arena.ui.Nameplate;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -33,23 +31,12 @@ public class UIManager : IDisposable
         if (Singleton<CommonUI>.Instantiated)
             LoadUI(Singleton<CommonUI>.Instance);
 
-
-        EventBus.OnPlayerKill += OnPlayerKill;
-
         EventBus.OnUpdate += OnUpdate;
 
         EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
-        EventBus.OnSelfRespawn += OnSelfRespawn;
 
         disposables.Add(new EFTCameraHook());
     }
-
-    void OnSelfFactionChanged(Faction faction)
-    {
-        if (factionSelectionScreen.gameObject.activeSelf)
-            factionSelectionScreen.Cancel();
-    }
-
 
     void LoadUI(CommonUI commonUI)
     {
@@ -76,11 +63,7 @@ public class UIManager : IDisposable
         EftScreenManager.Instance.RegisterScreen(FactionSelectionScreen.FAKETYPE, factionSelectionScreen);
         factionSelectionScreen.Close();
 
-        //bruh
-        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat"); 
-
-
-
+        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
     }
 
     private void OnUpdate()
@@ -99,37 +82,18 @@ public class UIManager : IDisposable
         screenController.ShowScreen(EScreenState.Temporary);
     }
 
-    void OnPlayerKill(PlayerKilledPacket killPacket)
+    void OnSelfFactionChanged(Faction faction)
     {
-        if (killPacket.victim == H.MainPlayer)
-        {
-            PlayerScore killerScore = H.GetPlayerScore(killPacket.killer);
-            OnSelfDeath(killerScore.Score);
-        }
+        if (factionSelectionScreen.gameObject.activeSelf)
+            factionSelectionScreen.Cancel();
     }
-
-    void OnSelfDeath(PlayerScoreInfo killer)
-    {
-        matchUIController.DeathInfo.Pop(killer);
-
-        Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(false);
-    }
-
-    void OnSelfRespawn()
-    {
-        Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(true);
-    }
-
 
     public void Dispose()
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
 
-        EventBus.OnPlayerKill -= OnPlayerKill;
         EventBus.OnUpdate -= OnUpdate;
-
         EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
-        EventBus.OnSelfRespawn -= OnSelfRespawn;
 
         foreach (var controller in disposables)
         {
