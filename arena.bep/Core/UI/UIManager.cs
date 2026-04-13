@@ -33,14 +33,11 @@ public class UIManager : IDisposable
 
     FactionSelectionScreen factionSelectionScreen;
 
-    EditBuildLambdaPanel editBuildPanel;
-
     public UIManager()
     {
         if (H.IsHeadless) return;
 
         Patch_CommonUI_Awake.OnAwake += LoadUI;
-        Patch_EditBuildScreen_Show.OnShow += EditBuildScreen_OnShow;
         Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
 
         if (Singleton<CommonUI>.Instantiated)
@@ -58,11 +55,6 @@ public class UIManager : IDisposable
         EventBus.OnSelfRespawn += OnSelfRespawn;
 
         disposables.Add(new EFTCameraHook());
-    }
-
-    private void EditBuildScreen_OnShow()
-    {
-        editBuildPanel.gameObject.SetActive(false);
     }
 
     void OnSelfFactionChanged(Faction faction)
@@ -98,6 +90,7 @@ public class UIManager : IDisposable
         disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
         disposables.Add(new KillFeedController(matchUIController, itemInfoProvider));
         disposables.Add(new SpectatorController(matchUIController));
+        disposables.Add(new EditBuildController(commonUI, uibundle));
 
         nameplateRenderer = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer)).GetComponent<NameplateRenderer>();
         GameObject prefabNameplate = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
@@ -113,9 +106,6 @@ public class UIManager : IDisposable
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat"); 
 
 
-
-        GameObject prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/EditBuild/EditBuildLambdaPanel.prefab");
-        editBuildPanel = GameObject.Instantiate(prefabEditBuildPanel, commonUI.EditBuildScreen.transform.Find("ButtonsPanel")).GetComponent<EditBuildLambdaPanel>();
 
     }
 
@@ -202,7 +192,6 @@ public class UIManager : IDisposable
     public void Dispose()
     {
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
-        Patch_EditBuildScreen_Show.OnShow -= EditBuildScreen_OnShow;
         Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
 
         EventBus.OnEnter -= OnMatchStateEnter;
@@ -232,9 +221,6 @@ public class UIManager : IDisposable
 
         if (nameplateRenderer != null)
             GameObject.Destroy(nameplateRenderer.gameObject);
-
-        if (editBuildPanel != null)
-            GameObject.Destroy(editBuildPanel.gameObject);
 
         if (inventoryHotkeyListener != null)
             Component.Destroy(inventoryHotkeyListener);
