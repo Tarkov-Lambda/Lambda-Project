@@ -38,8 +38,9 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         DispatchPacket(packet);
     }
 
-    protected override bool PacketValidation(ref PausePacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref PausePacket packet, NetPeer peer, out string rejectionReason)
     {
+        rejectionReason = null;
         if (H.Session.matchState == MatchState.RoundPrepare)
         {
             return true;

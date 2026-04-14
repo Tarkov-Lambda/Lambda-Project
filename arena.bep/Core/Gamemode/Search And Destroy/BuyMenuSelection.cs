@@ -15,6 +15,7 @@ public static class BuyMenuSelection
     {
         LoadItems(File.ReadAllText(EconomyDataPath));
     }
+    
     private static void LoadItems(string json)
     {
         buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);

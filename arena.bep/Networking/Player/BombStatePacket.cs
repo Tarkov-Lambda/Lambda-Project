@@ -40,8 +40,9 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         DispatchPacket(packet);
     }
 
-    protected override bool PacketValidation(ref BombStatePacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref BombStatePacket packet, NetPeer peer, out string rejectionReason)
     {
+        rejectionReason = null;
         if (packet.state == BombState.Exploded) return false;
         return true;
     }

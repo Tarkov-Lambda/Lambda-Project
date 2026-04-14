@@ -70,8 +70,9 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         // we already spent money locally before requesting to begin with.
     }
 
-    protected override bool PacketValidation(ref SpawnItemPacket packet, NetPeer netPeer)
+    protected override bool PacketValidation(ref SpawnItemPacket packet, NetPeer peer, out string rejectionReason)
     {
+        rejectionReason = null;
         // var placement = AU.GetItemPlacement(packet.item, packet.Player);
 
         // if (packet.placement.Address == null)

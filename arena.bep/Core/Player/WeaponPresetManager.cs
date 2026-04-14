@@ -14,52 +14,54 @@ namespace ifp.arena.bep.Core;
 
 public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 {
-    private string playerWeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets");
-    private readonly string WeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", "Builds");
+    private string _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets");
+    private readonly string _buildsDirectoryPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", "Builds");
 
-    // template bsgId -> WeaponBuildClass.MongoID_0 (either points to a custom preset, or )
-    public Dictionary<string, string> SelectedGunPreset = new();
+    // template bsgId -> WeaponBuildClass.MongoID_0
+    public Dictionary<string, string> SelectedGunPresetMap = new();
 
-    // exported weapon builds (hash collision warning) keyed by the json name (preset name)
-    public Dictionary<string, Weapon> WeaponPresetBuilds = new();
+    // exported weapon builds keyed by the preset name
+    private Dictionary<string, Weapon> _loadedWeaponBuilds = new();
 
     public WeaponPresetManager()
     {
-        playerWeaponPresetDataPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", $"{H.TarkovISession.Profile_1.Id}.jsonc");
-
-        if (File.Exists(playerWeaponPresetDataPath))
-        {
-            string existingData = File.ReadAllText(playerWeaponPresetDataPath);
-
-            if (!string.IsNullOrWhiteSpace(existingData))
-            {
-                LoadExistingData(existingData);
-            }
-            else
-            {
-                InitializeData();
-            }
-        }
-        else
-        {
-            InitializeData();
-        }
-
-        LoadExistingWeaponPresets();
+        H.TarkovApp.AfterApplicationLoaded += InitializeOnApplicationLoad;
     }
 
     public void Dispose()
     {
+        H.TarkovApp.AfterApplicationLoaded -= InitializeOnApplicationLoad;
         Release(this);
     }
 
-    // Fetch a build that exists in the user's gun builds
-    // priority: explicitly selected -> any user made build -> bsg made
-    // NOTE: During profile creation stage, if the player picks a profile with existing presets
-    // those presets will be instantly chosen
-    public WeaponBuildClass GetCustomTemplate(string bsgId)
+    public void InitializeOnApplicationLoad()
     {
-        if (SelectedGunPreset.TryGetValue(bsgId, out var mongoId))
+        _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", $"{H.TarkovISession.Profile_1.Id}.jsonc");
+
+        if (File.Exists(_playerSelectionFilePath))
+        {
+            string existingData = File.ReadAllText(_playerSelectionFilePath);
+
+            if (!string.IsNullOrWhiteSpace(existingData))
+            {
+                DeserializePlayerSelections(existingData);
+            }
+            else
+            {
+                GenerateDefaultSelectionMap();
+            }
+        }
+        else
+        {
+            GenerateDefaultSelectionMap();
+        }
+
+        ImportExternalPresetsFromDisk();
+    }
+
+    public WeaponBuildClass GetPreferredBuildForTemplate(string bsgId)
+    {
+        if (SelectedGunPresetMap.TryGetValue(bsgId, out var mongoId))
         {
             var matchByMongo = FU.WeaponPresets.FirstOrDefault(b => b.MongoID_0 == mongoId);
             if (matchByMongo != null)
@@ -69,72 +71,72 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         var userBuild = FU.WeaponPresets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
         if (userBuild != null)
         {
-            var serializedItem = FU.SerializeItem(userBuild.Item);
-            SaveWeaponPreset(serializedItem, userBuild.HandbookName);
             return userBuild;
         }
 
         return FU.WeaponPresets.FirstOrDefault(b => b.Item?.TemplateId == bsgId);
     }
 
-    private void InitializeData()
+    private void GenerateDefaultSelectionMap()
     {
-        D.Log("Initializing Weapon Presets");
+        D.Log("Initializing Weapon Presets Selection Map");
 
         List<string> allWeaponsTemplateIds = FU.GetAllWeaponTemplateIds();
 
         foreach (string weaponTemplateId in allWeaponsTemplateIds)
         {
-            var customPreset = GetCustomTemplate(weaponTemplateId);
+            var preferredBuild = GetPreferredBuildForTemplate(weaponTemplateId);
 
-            if (customPreset == null) continue;
+            if (preferredBuild == null) continue;
 
-            SelectedGunPreset[weaponTemplateId] = customPreset.MongoID_0;
+            SelectedGunPresetMap[weaponTemplateId] = preferredBuild.MongoID_0;
         }
 
-        SaveData();
+        PersistPlayerSelectionsToDisk();
     }
 
-    private void LoadExistingData(string json)
+    private void DeserializePlayerSelections(string json)
     {
-        D.Log("Loading Existing Weapon Presets");
+        D.Log("Loading Existing Weapon Selections");
 
         var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
         if (data != null)
-            SelectedGunPreset = data;
+            SelectedGunPresetMap = data;
         else
-            InitializeData();
+            GenerateDefaultSelectionMap();
     }
 
-    public void SetChosenWeaponPreset(string bsgId, string mongoId)
+    public void UpdateSelectedPreset(string bsgId, string mongoId)
     {
-        SelectedGunPreset[bsgId] = mongoId;
-        SaveData();
+        SelectedGunPresetMap[bsgId] = mongoId;
+        PersistPlayerSelectionsToDisk();
     }
 
-    private void SaveData()
+    private void PersistPlayerSelectionsToDisk()
     {
         try
         {
-            string directory = Path.GetDirectoryName(playerWeaponPresetDataPath);
+            string directory = Path.GetDirectoryName(_playerSelectionFilePath);
 
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            string json = JsonConvert.SerializeObject(SelectedGunPreset, Formatting.Indented);
-            File.WriteAllText(playerWeaponPresetDataPath, json);
+            string json = JsonConvert.SerializeObject(SelectedGunPresetMap, Formatting.Indented);
+            File.WriteAllText(_playerSelectionFilePath, json);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to save weapon presets: {ex}");
+            Console.WriteLine($"Failed to save weapon selections: {ex}");
         }
     }
 
-    // Serialize the item build and export it as a json file
-    public void SaveWeaponPreset(string json, string name)
+    /// <summary>
+    /// Exports a specific weapon build configuration to a JSON file.
+    /// </summary>
+    public void ExportBuildToFile(string json, string presetName)
     {
         try
         {
@@ -143,31 +145,34 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
             foreach (char c in Path.GetInvalidFileNameChars())
             {
-                name = name.Replace(c, '_');
+                presetName = presetName.Replace(c, '_');
             }
 
-            Directory.CreateDirectory(WeaponPresetDataPath);
-            var buildPath = Path.Combine(WeaponPresetDataPath, $"{name}.json");
+            Directory.CreateDirectory(_buildsDirectoryPath);
+            var buildPath = Path.Combine(_buildsDirectoryPath, $"{presetName}.json");
 
             File.WriteAllText(buildPath, json);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to save weapon presets: {ex}");
+            Console.WriteLine($"Failed to export weapon build: {ex}");
         }
     }
 
-    public void LoadExistingWeaponPresets()
+    /// <summary>
+    /// Scans the builds directory and imports all found .json weapon presets.
+    /// </summary>
+    public void ImportExternalPresetsFromDisk()
     {
         try
         {
-            if (!Directory.Exists(WeaponPresetDataPath))
+            if (!Directory.Exists(_buildsDirectoryPath))
             {
-                D.Log("Weapon preset directory does not exist.");
+                D.Log("Weapon builds directory does not exist.");
                 return;
             }
 
-            string[] files = Directory.GetFiles(WeaponPresetDataPath, "*.json", SearchOption.TopDirectoryOnly);
+            string[] files = Directory.GetFiles(_buildsDirectoryPath, "*.json", SearchOption.TopDirectoryOnly);
 
             foreach (string file in files)
             {
@@ -180,7 +185,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
                     string name = Path.GetFileNameWithoutExtension(file);
 
-                    LoadWeaponPreset(json, name);
+                    RegisterPresetToSystem(json, name);
                 }
                 catch (Exception ex)
                 {
@@ -188,29 +193,33 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
                 }
             }
 
-            D.Log($"Loaded {WeaponPresetBuilds.Count} weapon presets.");
+            D.Log($"Loaded {_loadedWeaponBuilds.Count} weapon presets.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to load weapon presets directory: {ex}");
+            Console.WriteLine($"Failed to load weapon builds directory: {ex}");
         }
     }
 
-    public void LoadWeaponPreset(string json, string name)
+    /// <summary>
+    /// Deserializes a weapon build JSON and registers it into the Tarkov preset system.
+    /// </summary>
+    public void RegisterPresetToSystem(string json, string presetName)
     {
         try
         {
-            Item item = FU.InstantiatePreset(json);
+            Item item = FU.DeserializeItem(json);
+            Item clonedItem = item.CloneItem(H.MainPlayer.InventoryController);
 
-            if (item != null && item is Weapon weaponPreset)
+            if (clonedItem != null && clonedItem is Weapon weaponPreset)
             {
-                WeaponPresetBuilds[name] = weaponPreset;
-                FU.CreateAndSaveWeaponPreset(item, name).Forget();
+                _loadedWeaponBuilds[presetName] = weaponPreset;
+                FU.CreateAndSaveWeaponPreset(weaponPreset, presetName).Forget();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to save weapon presets: {ex}");
+            Console.WriteLine($"Failed to register weapon preset '{presetName}': {ex}");
         }
     }
 }

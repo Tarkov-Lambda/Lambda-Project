@@ -58,6 +58,16 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         OnFikaEvent += ManageFikaEvents;
     }
 
+    public void Dispose()
+    {
+        H.OnGameStarted -= StartSession;
+        H.OnGameDispose -= EndSession;
+        OnFikaEvent -= ManageFikaEvents;
+        EndSession();
+        session = null;
+        Release(this);
+    }
+
     public void ManageFikaEvents(FikaEvent fikaEvent)
     {
         if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
@@ -71,16 +81,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
                 // Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
             }
         }
-    }
-
-    public void Dispose()
-    {
-        H.OnGameStarted -= StartSession;
-        H.OnGameDispose -= EndSession;
-        OnFikaEvent -= ManageFikaEvents;
-        EndSession();
-        session = null;
-        Release(this);
     }
 
     public async void StartSession()

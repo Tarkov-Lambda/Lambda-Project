@@ -22,19 +22,19 @@ public enum PacketAuthority
 public struct RejectionPacket<T> : INetSerializable where T : INetSerializable, new()
 {
     public T Payload;
-    public string reason;
+    public string rejectionReason;
 
     public void Serialize(NetDataWriter writer)
     {
         Payload.Serialize(writer);
-        writer.Put(reason);
+        writer.Put(rejectionReason);
     }
 
     public void Deserialize(NetDataReader reader)
     {
         Payload = new T();
         Payload.Deserialize(reader);
-        reason = reader.GetString();
+        rejectionReason = reader.GetString();
     }
 }
 
@@ -112,7 +112,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected bool IsUnauthorized(int id)
     {
         if (H.IsServer) return false;
-        
+
         if (authority == PacketAuthority.Admin)
         {
             PlayerScore score = H.GetPlayerScore(id);
@@ -198,9 +198,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-        if (!PacketValidation(ref packet, peer))
+        if (!PacketValidation(ref packet, peer, out string rejectionReason))
         {
-            SendRejection(ref packet, peer);
+            SendRejection(ref packet, peer, rejectionReason);
             return;
         }
 
@@ -213,36 +213,36 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         OnWhenApprovedPacket?.Invoke(packet);
     }
 
-    protected void WhenClientReceivesPacket(T packet, NetPeer netPeer)
+    protected void WhenClientReceivesPacket(T packet, NetPeer peer)
     {
         if (!H.IsInRaid() || H.FikaNet == null) return;
 
         if (this is not TimeSyncResponsePacketHandler)
             D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 
-        WhenApproved(packet, netPeer);
+        WhenApproved(packet, peer);
         OnWhenApprovedPacket?.Invoke(packet);
     }
 
-    protected void SendRejection(ref T packet, NetPeer peer, string reason = "")
+    protected void SendRejection(ref T packet, NetPeer peer, string rejectionReason = null)
     {
-        var rejected = new RejectionPacket<T> { Payload = packet, reason = reason };
+        var rejected = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
         H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, peer);
     }
 
-    protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer netPeer)
+    protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer peer)
     {
 #if DEBUG
         D.Log($"Server Rejected {GetType().Name}");
-        if (rejectedPacket.reason != "")
-            D.Log(rejectedPacket.reason);
+        if (rejectedPacket.rejectionReason != "")
+            D.Log(rejectedPacket.rejectionReason);
 #endif
-        WhenRejected(rejectedPacket.Payload, netPeer);
+        WhenRejected(rejectedPacket.Payload, peer);
     }
 
-    protected virtual void OnRateLimited(T packet, NetPeer netPeer, in RateLimitConfig config)
+    protected virtual void OnRateLimited(T packet, NetPeer peer, in RateLimitConfig config)
     {
-        D.Log($"Rate-limiting peer {netPeer.Id}, Packet {GetType().Name}");
+        D.Log($"Rate-limiting peer {peer.Id}, Packet {GetType().Name}");
     }
 
     protected bool TryPassServerRateLimit(T packet, NetPeer peer)
@@ -289,27 +289,18 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
     }
 
-    // OPTIONAL
+    // In cases where data needs to be a secret like admin login
     protected virtual bool ShouldBroadcastPacket(T packet) => true;
 
     // OPTIONAL
     // core Generic packet validation
     // runs before packet specific validation
-    protected virtual bool SanitizeMetadata(ref T packet, NetPeer netPeer)
+    protected virtual bool SanitizeMetadata(ref T packet, NetPeer peer)
     {
         if (packet is IAuthoredPacket authoredPacket)
         {
-            // var isPlayerFound = H.FikaNet.CoopHandler.Players.TryGetValue(netPeer.Id, out FikaPlayer playerToApply);
-            // D.Log(playerToApply.Id.ToString());
-            // if (isPlayerFound == false) return false;
-
-            // // Anti-spoofing
-            // if (playerToApply != authoredPacket.Player)
-            // {
-            //     authoredPacket.Player = playerToApply;
-            //     packet = (T)(object)authoredPacket;
-            //     return false;
-            // }
+            // if (authoredPacket.Player != peer.Player)
+            // return false;
         }
 
         if (packet is IServerTimestampedPacket serverTimestampedPacket)
@@ -321,9 +312,13 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         return true;
     }
 
-
     // optional packet validation
-    protected virtual bool PacketValidation(ref T packet, NetPeer peer) { return true; }
+    // though this adds a bit of boilerplate, it's a good practice to explain rejection.
+    protected virtual bool PacketValidation(ref T packet, NetPeer peer, out string rejectionReason)
+    {
+        rejectionReason = null;
+        return true;
+    }
 
     // OPTIONAL
     // In case client is quite sure that the packet is gonna get approved
@@ -332,9 +327,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // ENTRY POINT
     // packet type specific way of applying the received packet
-    protected abstract void WhenApproved(T packet, NetPeer netPeer);
+    protected abstract void WhenApproved(T packet, NetPeer peer);
 
     // OPTIONAL
     // kinda only using this to notify or negate anything done in ClientPrediction
-    protected virtual void WhenRejected(T packet, NetPeer netPeer) { }
+    protected virtual void WhenRejected(T packet, NetPeer peer) { }
 }

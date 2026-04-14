@@ -28,7 +28,8 @@ public static class Helpers
 {
     public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
     public static Class308 TarkovISession => Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
-
+    public static TarkovApplication TarkovApp => Singleton<ClientApplication<ISession>>.Instance as TarkovApplication;
+    
     // public static Player MainPlayer => IsInRaid() ? GameWorld.MainPlayer : null;
     public static Player MainPlayer => GetMainPlayer();
 

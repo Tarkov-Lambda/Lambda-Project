@@ -44,18 +44,18 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer netPeer)
+    protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer peer)
     {
         if (H.IsClient)
             return;
 
         var response = new TimeSyncResponsePacket
         {
-            targetPeerId = netPeer.Id,
+            targetPeerId = peer.Id,
             clientSendLocalSeconds = packet.clientSendLocalSeconds,
             serverSendSeconds = NetworkTime.LocalNowSeconds
         };
 
-        H.FikaNet.SendDataToPeer(ref response, DeliveryMethod.ReliableOrdered, netPeer);
+        H.FikaNet.SendDataToPeer(ref response, DeliveryMethod.ReliableOrdered, peer);
     }
 }

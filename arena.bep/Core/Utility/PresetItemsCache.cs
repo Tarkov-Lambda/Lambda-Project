@@ -21,7 +21,7 @@ internal class PresetItemsCache : Singleton<PresetItemsCache>, IDisposable
         if (cacheImmutableItems.ContainsKey(bsgId))
             return cacheImmutableItems[bsgId];
 
-        var weaponBuild = Singleton<WeaponPresetManager>.Instance.GetCustomTemplate(bsgId);
+        var weaponBuild = Singleton<WeaponPresetManager>.Instance.GetPreferredBuildForTemplate(bsgId);
         if (weaponBuild != null)
             return weaponBuild.Item;
 
