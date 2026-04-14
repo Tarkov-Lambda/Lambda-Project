@@ -49,8 +49,8 @@ namespace ifp.arena.bep.Core.UI
 
         private void Module_OnFactionSelected(Faction faction)
         {
-            ScreenController.SendSelected(faction);
-            ScreenController.CloseScreen();
+            ScreenController?.SendSelected(faction);
+            ScreenController?.CloseScreen();
         }
 
         public void Cancel()

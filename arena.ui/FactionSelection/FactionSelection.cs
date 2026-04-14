@@ -20,9 +20,9 @@ namespace arena.ui
             buttonCT.onClick.AddListener(() => OnFactionSelected?.Invoke(Faction.CT));
             buttonSpectator.onClick.AddListener(() => OnFactionSelected?.Invoke(Faction.Spectator));
 
-            buttonT.GetComponent<ColoredGraphics>().Set(factionColors.Get(Faction.T));
-            buttonCT.GetComponent<ColoredGraphics>().Set(factionColors.Get(Faction.CT));
-            buttonSpectator.GetComponent<ColoredGraphics>().Set(factionColors.Get(Faction.Spectator));
+            buttonT.SetColoredGraphicsColor(factionColors.Get(Faction.T));
+            buttonCT.SetColoredGraphicsColor(factionColors.Get(Faction.CT));
+            buttonSpectator.SetColoredGraphicsColor(factionColors.Get(Faction.Spectator));
         }
     }
 }

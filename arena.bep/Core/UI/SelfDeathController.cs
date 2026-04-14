@@ -33,12 +33,21 @@ namespace ifp.arena.bep.Core.UI
         {
             deathInfo.Pop(killer);
 
-            Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(false);
+            TryToggleTarkovBattleUI(false);
         }
 
         void OnSelfRespawn()
         {
-            Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(true);
+            TryToggleTarkovBattleUI(true);
+        }
+
+        void TryToggleTarkovBattleUI(bool toggle)
+        {
+            try
+            {
+                Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(toggle);
+            }
+            catch { }
         }
 
         public void Dispose()
