@@ -17,7 +17,7 @@ namespace ifp.arena.bep.Core.UI
     internal class ShopUIController : IDisposable
     {
         private static readonly FieldInfo Field_InventoryScreen__itemsPanel = AccessTools.Field(typeof(InventoryScreen), "_itemsPanel");
-        private static readonly FieldInfo Field_ItemsPanel__simpleStashPanel = AccessTools.Field(typeof(InventoryScreen), "_simpleStashPanel");
+        private static readonly FieldInfo Field_ItemsPanel__simpleStashPanel = AccessTools.Field(typeof(ItemsPanel), "_simpleStashPanel");
 
         private readonly IItemInfoProvider itemInfoProvider;
 
