@@ -28,7 +28,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         H.TarkovApp.AfterApplicationLoaded += InitializeOnApplicationLoad;
 
         // Hot-reload
-        if (H.TarkovISession?.Profile_1?.Id != null) InitializeOnApplicationLoad();
+        if (H.TarkovClientISession?.Profile_1?.Id != null) InitializeOnApplicationLoad();
     }
 
     public void Dispose()
@@ -39,7 +39,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
     public void InitializeOnApplicationLoad()
     {
-        _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", $"{H.TarkovISession.Profile_1.Id}.jsonc");
+        _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
 
         if (File.Exists(_playerSelectionFilePath))
         {

@@ -171,8 +171,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
             if (H.IsServer)
             {
-                // WhenServerReceivesPacket(packet, Singleton<NetPeer>.Instance);
-                WhenApproved(packet, Singleton<NetPeer>.Instance);
+                // WhenServerReceivesPacket(packet, H.NetPeer);
+                WhenApproved(packet, H.NetPeer);
             }
         }
     }
