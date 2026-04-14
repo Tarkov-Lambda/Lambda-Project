@@ -18,8 +18,6 @@ public partial struct TimeSynchronizationPacket : INetSerializable
 
 public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>
 {
-    public TimeSynchronizationPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
-
     protected override bool ShouldLog => false;
 
     protected override RateLimitConfig ServerRateLimit => new(

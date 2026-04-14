@@ -26,8 +26,6 @@ public partial struct PausePacket : INetSerializable, IAuthoredPacket, IServerTi
 
 public class PausePacketHandler : PacketHandler<PausePacket>
 {
-    public PausePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
-
     public void Send()
     {
         var packet = new PausePacket { Timestamp = NetworkTime.ServerNowSeconds };

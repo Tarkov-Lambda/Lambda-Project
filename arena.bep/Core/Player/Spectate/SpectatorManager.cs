@@ -117,6 +117,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SpectatePlayer(Player player)
     {
+        if (H.MainPlayer == null) return;
         if (player.IsYourPlayer) return;
 
         if (observedPlayer != null)
@@ -148,8 +149,9 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void StopSpectating()
     {
+        if (!H.IsInRaid()) return;
         if (H.IsHeadless) return;
-        
+
         if (observedPlayer != null)
         {
             UpdatePointOfView(observedPlayer, EPointOfView.ThirdPerson);
