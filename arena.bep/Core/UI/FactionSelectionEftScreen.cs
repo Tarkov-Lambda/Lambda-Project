@@ -5,11 +5,11 @@ using System;
 
 namespace ifp.arena.bep.Core.UI
 {
-    internal class FactionSelectionScreen : EftScreen<FactionSelectionScreen.FactionSelectionScreenController, FactionSelectionScreen>
+    internal class FactionSelectionEftScreen : EftScreen<FactionSelectionEftScreen.FactionSelectionEftScreenController, FactionSelectionEftScreen>
     {
         public const EEftScreenType FAKETYPE = EEftScreenType.DressRoom; // unused for screen register
 
-        internal class FactionSelectionScreenController : EftScreenManager.GClass3861<FactionSelectionScreenController, FactionSelectionScreen>
+        internal class FactionSelectionEftScreenController : EftScreenManager.GClass3861<FactionSelectionEftScreenController, FactionSelectionEftScreen>
         {
             public override EEftScreenType ScreenType => FAKETYPE;
             public override EStateSwitcher UnrestrictedFrameRate => EStateSwitcher.Enabled;
@@ -23,7 +23,7 @@ namespace ifp.arena.bep.Core.UI
 
             readonly Action<Faction> onSelected;
 
-            internal FactionSelectionScreenController(Action<Faction> selectionCallback) : base()
+            internal FactionSelectionEftScreenController(Action<Faction> selectionCallback) : base()
             {
                 this.onSelected = selectionCallback;
             }
@@ -42,7 +42,7 @@ namespace ifp.arena.bep.Core.UI
             module.OnFactionSelected += Module_OnFactionSelected;
         }
 
-        public override void Show(FactionSelectionScreenController controller)
+        public override void Show(FactionSelectionEftScreenController controller)
         {
             ShowGameObject();
         }
