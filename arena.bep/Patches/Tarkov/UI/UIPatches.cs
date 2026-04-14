@@ -60,6 +60,7 @@ internal static class UIPatches
 
 
         RegisterAndEnable(new Patch_EditBuildScreen_Show());
+        RegisterAndEnable(new Patch_EditBuildScreen_UpdateItem());
 
         RegisterAndEnable(new Patch_OpenBuildWindow_Show());
         RegisterAndEnable(new Patch_CategoryView_Show());

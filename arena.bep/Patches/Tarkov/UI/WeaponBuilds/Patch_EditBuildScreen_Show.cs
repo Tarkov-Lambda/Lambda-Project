@@ -9,7 +9,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds
 {
     internal class Patch_EditBuildScreen_Show : ModulePatch
     {
-        public static event Action OnShow;
+        public static event Action OnPostfix;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds
         {
             try
             {
-                OnShow?.Invoke();
+                OnPostfix?.Invoke();
             }
             catch { }
         }
