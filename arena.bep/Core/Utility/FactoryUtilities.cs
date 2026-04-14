@@ -55,7 +55,7 @@ public static class FactoryUtilities
     public static async UniTaskVoid SendDelayed(string serializedItem, string presetName, int delayMs = 3000)
     {
         await UniTask.Delay(delayMs);
-        Singleton<WeaponPresetManager>.Instance.SaveWeaponPreset(serializedItem, presetName);
+        Singleton<WeaponPresetManager>.Instance.UpdateSelectedPreset(serializedItem, presetName);
     }
 
 
