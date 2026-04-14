@@ -44,7 +44,7 @@ public class TemplatePacketHandler : PacketHandler<TemplatePacket>
         DispatchPacket(packet);
     }
 
-    protected override bool PacketValidation(ref TemplatePacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool EvaluatePacket(ref TemplatePacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
         return true;

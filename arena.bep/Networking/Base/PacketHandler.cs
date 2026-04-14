@@ -44,7 +44,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected PacketAuthority authority;
 
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
-    protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
+    protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Default; // OPTIONAl
 
     protected virtual bool ShouldLog => true; // Debugging
 
@@ -144,7 +144,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         DispatchPacket(packet, peer as NetPeer);
     }
 
-
     // ENTRY POINT
     // SERVER ONLY: If a peer is provided, we will not approve-locally/broadcast and instead only send it to that peer.
     protected void DispatchPacket(T packet, NetPeer targetPeer = null)
@@ -193,7 +192,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-        if (!PacketValidation(ref packet, peer, out string rejectionReason))
+        if (!EvaluatePacket(ref packet, peer, out string rejectionReason))
         {
             SendRejection(ref packet, peer, rejectionReason);
             return;
@@ -287,8 +286,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldBroadcastPacket(T packet) => true;
 
     // OPTIONAL
-    // core Generic packet validation
-    // runs before packet specific validation
+    // core generic sanitization/validation
     protected virtual bool SanitizeMetadata(ref T packet, NetPeer peer)
     {
         // Anti-Spoofing
@@ -303,7 +301,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // optional packet validation
     // though this adds a bit of boilerplate, it's a good practice to explain rejection.
-    protected virtual bool PacketValidation(ref T packet, NetPeer peer, out string rejectionReason)
+    protected virtual bool EvaluatePacket(ref T packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
         return true;

@@ -76,7 +76,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
         base.Dispose();
     }
 
-    protected override bool PacketValidation(ref FactionChangePacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool EvaluatePacket(ref FactionChangePacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
         if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction)) return false;

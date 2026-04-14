@@ -42,7 +42,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         DispatchPacket(packet);
     }
 
-    protected override bool PacketValidation(ref BombStatePacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool EvaluatePacket(ref BombStatePacket packet, NetPeer peer, out string rejectionReason)
     {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;

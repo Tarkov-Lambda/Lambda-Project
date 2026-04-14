@@ -11,7 +11,7 @@ public static class TarkovSerializationExtension
 {
     public static void PutPlayer(this NetDataWriter writer, Player player)
     {
-        writer.Put(player.ProfileId);
+        writer.Put(player.Id);
     }
 
     public static Player GetPlayer(this NetDataReader reader)

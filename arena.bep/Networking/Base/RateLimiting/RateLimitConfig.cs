@@ -31,22 +31,4 @@ public readonly struct RateLimitConfig
         StateTtlSeconds = Math.Max(1, stateTtlSeconds);
         RejectCooldownSeconds = Math.Max(0, rejectCooldownSeconds);
     }
-
-    public static RateLimitConfig Disabled => new(
-        enabled: false,
-        refillPerSecond: 0,
-        burst: 0,
-        costPerPacket: 1,
-        action: RateLimitAction.Drop);
-
-    // Default policy: 20/s sustained, burst 40, cost 1, reject by default.
-    // This is giga relaxed
-    public static RateLimitConfig Default => new(
-        enabled: true,
-        refillPerSecond: 20,
-        burst: 40,
-        costPerPacket: 1,
-        action: RateLimitAction.Reject,
-        stateTtlSeconds: 30,
-        rejectCooldownSeconds: 0.25);
 }
