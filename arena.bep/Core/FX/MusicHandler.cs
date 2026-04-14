@@ -24,7 +24,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         if (H.IsHeadless) return;
         EventBus.OnEnter += OnEnter;
         EventBus.OnEnd += OnEnd;
-        EventBus.OnUpdate += Update;
+        UnityTicker.OnUpdate += Update;
     }
 
     public void Update() { }
@@ -89,7 +89,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
     {
         EventBus.OnEnter -= OnEnter;
         EventBus.OnEnd -= OnEnd;
-        EventBus.OnUpdate -= Update;
+        UnityTicker.OnUpdate -= Update;
 
         _cts.Cancel();
         _cts.Dispose();

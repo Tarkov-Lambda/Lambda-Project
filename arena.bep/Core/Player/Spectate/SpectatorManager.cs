@@ -22,14 +22,14 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     public SpectatorManager()
     {
         if (H.IsHeadless) return;
-        EventBus.OnLateUpdate += onUpdate;
+        UnityTicker.OnLateUpdate += onUpdate;
         EventBus.OnEnter += OnEnter;
         EventBus.OnSelfFactionChanged += OnFactionChanged;
     }
 
     public void Dispose()
     {
-        EventBus.OnLateUpdate -= onUpdate;
+        UnityTicker.OnLateUpdate -= onUpdate;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
         StopSpectating();

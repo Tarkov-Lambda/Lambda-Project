@@ -22,9 +22,4 @@ public static class EventBus
     public static Action OnSelfRespawn;
     public static Action<PlayerReadinessState> OnSelfReadinessChanged;
     public static Action<Faction> OnSelfFactionChanged;
-
-    // Sometimes, I like to make classes that are not monobehaviour, but still subscribe to some of their events
-    public static Action OnUpdate;
-    public static Action OnLateUpdate;
-    public static Action OnFixedUpdate;
 }

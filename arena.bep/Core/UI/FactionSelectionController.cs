@@ -14,7 +14,7 @@ namespace ifp.arena.bep.Core.UI
 
         internal FactionSelectionController(CommonUI commonUI, AssetBundle uibundle)
         {
-            EventBus.OnUpdate += OnUpdate;
+            UnityTicker.OnUpdate += OnUpdate;
             EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
 
             GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/FactionSelection/FactionSelection.prefab");
@@ -49,7 +49,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void Dispose()
         {
-            EventBus.OnUpdate -= OnUpdate;
+            UnityTicker.OnUpdate -= OnUpdate;
             EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
 
             if (factionSelectionScreen != null)

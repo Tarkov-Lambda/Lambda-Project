@@ -37,7 +37,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
         EventBus.OnEnter += OnEnter;
         EventBus.OnEnd += OnEnd;
-        EventBus.OnUpdate += Update;
+        UnityTicker.OnUpdate += Update;
     }
 
     public void Update()
@@ -226,7 +226,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     {
         EventBus.OnEnter  -= OnEnter;
         EventBus.OnEnd    -= OnEnd;
-        EventBus.OnUpdate -= Update;
+        UnityTicker.OnUpdate -= Update;
 
         if (bombVisuals != null)
         {

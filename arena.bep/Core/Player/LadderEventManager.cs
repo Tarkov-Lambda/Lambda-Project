@@ -24,16 +24,16 @@ public class LadderEventManager : Singleton<LadderEventManager>, IDisposable
     {
         Ladder.onPlayerEnterLadder += OnTriggerEnter;
         Ladder.onPlayerExitLadder += OnTriggerExit;
-        GameModeTicker.onUpdate += OnUpdate;
-        GameModeTicker.onLateUpdate += OnLateUpdate;
+        UnityTicker.OnUpdate += OnUpdate;
+        UnityTicker.OnLateUpdate += OnLateUpdate;
     }
 
     public void Dispose()
     {
         Ladder.onPlayerEnterLadder -= OnTriggerEnter;
         Ladder.onPlayerExitLadder -= OnTriggerExit;
-        GameModeTicker.onUpdate -= OnUpdate;
-        GameModeTicker.onLateUpdate -= OnLateUpdate;
+        UnityTicker.OnUpdate -= OnUpdate;
+        UnityTicker.OnLateUpdate -= OnLateUpdate;
         Release(this);
     }
 

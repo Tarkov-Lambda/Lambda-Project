@@ -54,6 +54,8 @@ public class Plugin : BaseUnityPlugin
 
     private CancellationTokenSource _cts;
 
+    private UnityTicker _unityTickListner;
+
     private void RegisterPatch(ModulePatch patch)
     {
         patch.Enable();
@@ -103,6 +105,9 @@ public class Plugin : BaseUnityPlugin
         BepInEx.Logging.Logger.Sources.Add(Logger);
         Logger.LogInfo("Load");
         InitConfiguration();
+
+        _unityTickListner = new GameObject("UnityTickListener").AddComponent<UnityTicker>();
+        DontDestroyOnLoad(_unityTickListner.gameObject);
 
         // Steam Audio
         if (!H.IsHeadless) SteamAudioInitializer.Initialize();
@@ -305,6 +310,9 @@ public class Plugin : BaseUnityPlugin
             disposable.Dispose();
 
         _disposables.Clear();
+
+        if (_unityTickListner != null)
+            GameObject.Destroy(_unityTickListner.gameObject);
 
         // Release concrete singleton slots AFTER all Dispose() calls so that
         // singletons can still safely access each other's Instance during teardown.

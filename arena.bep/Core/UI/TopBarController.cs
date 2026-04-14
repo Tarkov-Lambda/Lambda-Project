@@ -15,7 +15,7 @@ namespace ifp.arena.bep.Core.UI
         {
             EventBus.OnPlayerKill += OnPlayerKill;
             EventBus.OnEnter += OnMatchStateEnter;
-            EventBus.OnUpdate += OnUpdate;
+            UnityTicker.OnUpdate += OnUpdate;
 
             this.topBar = topBar;
         }
@@ -47,7 +47,7 @@ namespace ifp.arena.bep.Core.UI
         {
             EventBus.OnPlayerKill -= OnPlayerKill;
             EventBus.OnEnter -= OnMatchStateEnter;
-            EventBus.OnUpdate -= OnUpdate;
+            UnityTicker.OnUpdate -= OnUpdate;
         }
     }
 }

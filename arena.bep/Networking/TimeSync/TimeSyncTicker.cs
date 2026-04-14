@@ -1,25 +1,22 @@
 using Comfort.Common;
-using EFT;
-using Fika.Core.Main.Utils;
-using ifp.arena.bep.Core;
+using System;
 using UnityEngine;
 
 namespace ifp.arena.bep.networking.TimeSync;
 
-public class TimeSyncTicker : MonoBehaviour
+public class TimeSyncTicker : IDisposable
 {
     private double _nextSendLocalSeconds;
 
     private const double IntervalSeconds = 1.0;
 
-    private void Awake()
+    public TimeSyncTicker()
     {
         _nextSendLocalSeconds = NetworkTime.LocalNowSeconds;
     }
 
-    private void Update()
+    public void Update()
     {
-
         if (H.IsServer)
             return;
 
@@ -38,7 +35,7 @@ public class TimeSyncTicker : MonoBehaviour
         Singleton<TimeSynchronizationPacketHandler>.Instance.Send();
     }
 
-    private void OnDestroy()
+    public void Dispose()
     {
         NetworkTime.Reset();
     }

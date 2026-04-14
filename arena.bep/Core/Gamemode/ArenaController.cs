@@ -47,7 +47,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     private IGameState _currentState;
 
-    public GameObject _tickerObject;
+    private TimeSyncTicker timeSyncTicker;
+
     public GameObject _musicObject;
 
     public ArenaController()
@@ -87,11 +88,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (!H.IsInRaid()) return;
 
-        _tickerObject = new GameObject("Arena Gamesession");
-        _tickerObject.GetOrAddComponent<GameModeTicker>();
-        _tickerObject.GetOrAddComponent<TimeSyncTicker>();
+        UnityTicker.OnUpdate += Update;
+
+        timeSyncTicker = new TimeSyncTicker();
+        UnityTicker.OnUpdate += timeSyncTicker.Update;
+
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
-        UnityEngine.Object.DontDestroyOnLoad(_tickerObject);
 
         session = new SessionManager();
 
@@ -121,14 +123,16 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         _currentState?.OnExit();
         _currentState = null;
 
-        if (_tickerObject != null)
+        UnityTicker.OnUpdate -= Update;
+
+        if (timeSyncTicker != null)
         {
-            GameModeTicker.onUpdate = null;
-            GameModeTicker.onLateUpdate = null;
+            UnityTicker.OnUpdate -= timeSyncTicker.Update;
+            timeSyncTicker.Dispose();
+        }
 
-            UnityEngine.Object.Destroy(_tickerObject);
-            _tickerObject = null;
-
+        if (_musicObject != null)
+        {
             UnityEngine.Object.Destroy(_musicObject);
             _musicObject = null;
         }
@@ -226,29 +230,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public void OnRoundEnd() => Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
 }
 
-public class GameModeTicker : MonoBehaviour
+public class UnityTicker : MonoBehaviour
 {
-    public static Action onUpdate;
-    public static Action onLateUpdate;
+    public static event Action OnUpdate;
+    public static event Action OnLateUpdate;
 
-    private void Update()
-    {
-        onUpdate?.Invoke();
-        Singleton<ArenaController>.Instance?.Update(); // null-guard: Instance is cleared before deferred Destroy fires
-        EventBus.OnUpdate?.Invoke();
-    }
-
-    private void FixedUpdate()
-    {
-        onUpdate?.Invoke();
-        // Singleton<ArenaController>.Instance.Update();
-        EventBus.OnFixedUpdate?.Invoke();
-    }
-
-    private void LateUpdate()
-    {
-        onLateUpdate?.Invoke();
-        EventBus.OnLateUpdate?.Invoke();
-
-    }
+    private void Update() => OnUpdate?.Invoke();
+    private void LateUpdate() => OnLateUpdate?.Invoke();
 }

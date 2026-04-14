@@ -40,7 +40,6 @@ namespace ifp.arena.bep.Core.UI
             shopRectTransform.offsetMax = new Vector2(0, 0);
 
             Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
-            EventBus.OnFixedUpdate += SetInteractable;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnPlayerKill += OnPlayerKill;
@@ -56,17 +55,18 @@ namespace ifp.arena.bep.Core.UI
         private void OnMatchStateEnter(MatchState state)
         {
             shop.SetFaction(H.MainPlayerScore.Faction);
+            SetInteractable();
         }
 
         void SetInteractable()
         {
-            if (H.MainPlayerScore == null) return;
             shop?.SetInteractable(H.MainPlayerScore.CanBuy());
         }
 
         void OnSelfMoneyChanged(int money)
         {
             shop?.SetCurrentMoneyBalance(money);
+            SetInteractable();
         }
 
         void OnInventoryScreenOpen(CompoundItem containerLooting)
@@ -79,7 +79,6 @@ namespace ifp.arena.bep.Core.UI
         public void Dispose()
         {
             Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
-            EventBus.OnFixedUpdate -= SetInteractable;
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
             EventBus.OnEnter -= OnMatchStateEnter;
             EventBus.OnPlayerKill -= OnPlayerKill;
