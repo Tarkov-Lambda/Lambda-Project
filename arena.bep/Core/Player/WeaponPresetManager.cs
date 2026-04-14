@@ -202,10 +202,10 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     {
         try
         {
-            Item item = FU.DeserializeItem(json);
-            Item clonedItem = item.CloneItem(H.MainPlayer.InventoryController);
+            Item item = FU.InstantiatePreset(json);
+            // Item clonedItem = item.CloneItem(H.MainPlayer.InventoryController);
 
-            if (clonedItem != null && clonedItem is Weapon weaponPreset)
+            if (item != null && item is Weapon weaponPreset)
             {
                 _loadedWeaponBuilds[presetName] = weaponPreset;
                 FU.CreateAndSaveWeaponPreset(weaponPreset, presetName).Forget();

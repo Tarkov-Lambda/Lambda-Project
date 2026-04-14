@@ -25,7 +25,7 @@ public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
         var packet = new BlindFirePacket
         {
             Player = H.MainPlayer,
-            value = value
+            value  = value
         };
         DispatchPacket(packet);
     }

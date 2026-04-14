@@ -47,8 +47,8 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
     {
         var packet = new PopPacket
         {
-            Player = H.MainPlayer,
-            item = item,
+            Player      = H.MainPlayer,
+            item        = item,
             itemAddress = item.CurrentAddress
         };
 

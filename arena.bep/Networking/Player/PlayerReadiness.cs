@@ -78,7 +78,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
                 Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
                 Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peer);
-                Singleton<MatchStateSyncPacketHandler>.Instance.SendToPeer(peer);
+                Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peer);
             }
         }
 

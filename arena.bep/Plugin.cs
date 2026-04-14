@@ -107,6 +107,9 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
+        // Steam Audio
+        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
+
         // AUDIO
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
@@ -209,9 +212,6 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
-
-        // Steam Audio
-        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
 
         // Internal Classses (order matters)
         RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading

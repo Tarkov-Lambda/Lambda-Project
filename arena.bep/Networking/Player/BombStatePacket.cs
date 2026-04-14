@@ -33,9 +33,9 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         var packet = new BombStatePacket
         {
-            Player = player,
-            state = state,
-            position = position,
+            Player    = player,
+            state     = state,
+            position  = position,
             Timestamp = NetworkTime.ServerNowSeconds
         };
 

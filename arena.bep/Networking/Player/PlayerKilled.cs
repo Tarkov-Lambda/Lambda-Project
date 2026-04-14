@@ -64,10 +64,10 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
         var packet = new PlayerKilledPacket
         {
-            killer = killer,
-            victim = victim,
-            assist = null,
-            damageType = damage.DamageType,
+            killer           = killer,
+            victim           = victim,
+            assist           = null,
+            damageType       = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
 

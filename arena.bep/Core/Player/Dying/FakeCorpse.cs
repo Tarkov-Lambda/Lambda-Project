@@ -101,7 +101,7 @@ namespace ifp.arena.bep.Core.Dying
 
             BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Character, true);
             speaker.StartTrackingPosition(head);
-            speaker.SetMixerGroup(MonoBehaviourH.BetterAudio.ObservedPlayerSpeechMixer);
+            speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
             speaker.Play(taggedClip.Clip, null, 1f);
         }
 

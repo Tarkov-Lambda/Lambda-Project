@@ -1,12 +1,8 @@
-﻿using EFT;
-using Fika.Core.Networking.LiteNetLib;
+﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.shared;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking;
@@ -30,13 +26,12 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
 
     public void Send(MatchState matchState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
     {
-        double now = NetworkTime.ServerNowSeconds;
         var packet = new MatchStateSyncPacket
         {
-            matchState = matchState,
-            Timestamp = now,          // phase start = right now
-            serverNowSeconds = now,   // same value; both fields identical for new phase starts
-            roundActionEnd = roundActionEnd
+            matchState       = matchState,
+            Timestamp        = NetworkTime.ServerNowSeconds,    // phase start = right now
+            serverNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
+            roundActionEnd   = roundActionEnd
         };
         DispatchPacket(packet);
     }
@@ -44,14 +39,14 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
     // Send current phase state to a late/mid-session joiner.
     // Timestamp = ServerPhaseStartSeconds (historical) so the client computes correct remaining time.
     // serverNowSeconds = current server time so the client can bootstrap its NTP offset immediately.
-    public void SendToPeer(NetPeer peer)
+    public void SendToLateJoiner(NetPeer peer)
     {
         var packet = new MatchStateSyncPacket
         {
-            matchState = H.Session.matchState,
-            Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
+            matchState       = H.Session.matchState,
+            Timestamp        = H.Arena.ServerPhaseStartSeconds, // historical phase start — preserved by DispatchPacket fix
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
-            roundActionEnd = H.Arena.PendingRoundActionEnd
+            roundActionEnd   = H.Arena.PendingRoundActionEnd
         };
         DispatchPacketToPeer(packet, peer);
     }
