@@ -49,11 +49,18 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         var packet = new MatchStateSyncPacket
         {
             matchState = H.Session.matchState,
-            Timestamp = H.Arena.ServerPhaseStartSeconds,   // historical phase start — preserved by DispatchPacket fix
-            serverNowSeconds = NetworkTime.ServerNowSeconds, // current time — used for NTP bootstrap
+            Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
+            serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
         DispatchPacketToPeer(packet, peer);
+    }
+
+    protected override bool PacketValidation(ref MatchStateSyncPacket packet, NetPeer peer, out string rejectionReason)
+    {
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
+        rejectionReason = null;
+        return true;
     }
 
     protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)

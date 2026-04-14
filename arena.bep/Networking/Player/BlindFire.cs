@@ -22,7 +22,11 @@ public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
 {
     public void Send(int value)
     {
-        var packet = new BlindFirePacket { value = value };
+        var packet = new BlindFirePacket
+        {
+            Player = H.MainPlayer,
+            value = value
+        };
         DispatchPacket(packet);
     }
 

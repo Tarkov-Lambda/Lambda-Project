@@ -5,6 +5,7 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using ifp.arena.shared;
+using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
 using UnityEngine;
 
@@ -34,7 +35,8 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         {
             Player = player,
             state = state,
-            position = position
+            position = position,
+            Timestamp = NetworkTime.ServerNowSeconds
         };
 
         DispatchPacket(packet);
@@ -42,6 +44,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
 
     protected override bool PacketValidation(ref BombStatePacket packet, NetPeer peer, out string rejectionReason)
     {
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;
         if (packet.state == BombState.Exploded) return false;
         return true;

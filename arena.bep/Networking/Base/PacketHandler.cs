@@ -1,6 +1,4 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Modding.Events;
+﻿using Fika.Core.Modding.Events;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler.RateLimiting;
@@ -139,26 +137,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected void DispatchPacket(T packet, NetPeer targetPeer = null)
     {
         if (!H.IsInRaid()) return;
+
         if (!H.IsHeadless)
             if (IsUnauthorized(H.MainPlayer.Id)) return;
 
         if (ShouldLog) D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
-
-        // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency
-        // Note that this does not apply to the server generated packets due to the fact that sometimes we will send the packet FOR a player.
-        if (packet is IAuthoredPacket authoredPacket && !H.IsHeadless)
-        {
-            if (authoredPacket.Player == null) authoredPacket.Player = H.MainPlayer;
-            packet = (T)(object)authoredPacket;
-        }
-
-        // Only auto-stamp for broadcasts. Targeted sends (targetPeer != null) preserve
-        // the caller-provided timestamp (e.g. ServerPhaseStartSeconds for late joiners).
-        if (packet is IServerTimestampedPacket serverTimestampedPacket && H.IsServer && targetPeer == null)
-        {
-            serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
-            packet = (T)(object)serverTimestampedPacket;
-        }
 
         if (targetPeer != null)
         {
@@ -296,16 +279,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     // runs before packet specific validation
     protected virtual bool SanitizeMetadata(ref T packet, NetPeer peer)
     {
+        // Anti-Spoofing
         if (packet is IAuthoredPacket authoredPacket)
         {
             // if (authoredPacket.Player != peer.Player)
             // return false;
-        }
-
-        if (packet is IServerTimestampedPacket serverTimestampedPacket)
-        {
-            serverTimestampedPacket.Timestamp = NetworkTime.ServerNowSeconds;
-            packet = (T)(object)serverTimestampedPacket;
         }
 
         return true;

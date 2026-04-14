@@ -31,6 +31,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
         var packet = new PlayerReadinessPacket
         {
+            Player = H.MainPlayer,
             readyState = readyState,
             progress = progress
         };

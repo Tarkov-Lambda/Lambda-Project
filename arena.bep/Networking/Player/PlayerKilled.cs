@@ -125,7 +125,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         {
             H.RagdollCreator.OnPacket(packet.victim);
 
-            // 2. Banish them 500 meters underground instantly to hide network latency
+            // teleport without interpolation
             HoldPlayerOut(packet.victim, Vector3.zero, 2.0f).Forget();
 
             Teleporter.Teleport(packet.victim, "lobby", Faction.None);
@@ -143,22 +143,20 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         _ = PU.CloseEyes(true, true);
         H.MainPlayer.SetEmptyHands(delegate { });
 
-        // 3. Hide the real player body so it doesn't stand inside the death camera!
-        // We drop them just 3 meters down. We CANNOT move them to the lobby yet, 
-        // otherwise EFT's occlusion culling will unload the map around the death cam!
+        // essentially teleport without interpolation
         Vector3 deathPos = packet.victim.Position;
-        Vector3 hiddenPos = deathPos + new Vector3(0, -3f, 0);
+        Vector3 hiddenPos = deathPos + new Vector3(0, -10f, 0);
         HoldPlayerOut(packet.victim, hiddenPos, 4.0f).Forget();
 
-        // 4. Wait for the death cam sequence to finish (RagdollCreator uses 4000ms)
+        // wait for the death cam sequence to finish (RagdollCreator)
         await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
 
-        // 5. If RoundPrepare fired during the delay and already respawned us, don't
-        //    override that respawn by sending the player back to lobby.
-        if (H.MainPlayerScore.IsAlive) return;
-
-        // 6. NOW teleport them to the lobby safely!
-        Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+        // if the player has not respawned yet (in case the player dies at the end of the round)
+        // send them to the lobby
+        if (!H.MainPlayerScore.IsAlive)
+        {
+            Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+        }
     }
 
     private async UniTaskVoid HoldPlayerOut(Player victim, Vector3 targetPos, float duration)
@@ -184,7 +182,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             elapsed += Time.deltaTime;
         }
 
-        // Safely re-enable their controller once the hold duration is over
+        // re-enable player controller once the hold is over
         if (victim != null && !victim.Destroyed && victim._characterController != null)
         {
             victim._characterController.isEnabled = true;
@@ -195,7 +193,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
     private void ForcePlayerPosition(Player victim, Vector3 pos)
     {
-        // Disable controller so gravity doesn't make them fall endlessly
+        // disable the character controller for a bit
         if (victim._characterController != null)
             victim._characterController.isEnabled = false;
 

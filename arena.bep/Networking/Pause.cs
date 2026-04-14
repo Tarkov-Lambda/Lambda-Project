@@ -30,22 +30,15 @@ public class PausePacketHandler : PacketHandler<PausePacket>
 
     public void Send()
     {
-        var packet = new PausePacket { };
-
-        if (H.IsServer)
-            packet.Timestamp = NetworkTime.ServerNowSeconds;
-
+        var packet = new PausePacket { Timestamp = NetworkTime.ServerNowSeconds };
         DispatchPacket(packet);
     }
 
     protected override bool PacketValidation(ref PausePacket packet, NetPeer peer, out string rejectionReason)
     {
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;
-        if (H.Session.matchState == MatchState.RoundPrepare)
-        {
-            return true;
-        }
-        else return false;
+        return H.Session.matchState == MatchState.RoundPrepare;
     }
 
     protected override void WhenApproved(PausePacket packet, NetPeer peer)

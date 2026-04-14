@@ -43,6 +43,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
     {
         var packet = new FactionChangePacket
         {
+            Player = H.MainPlayer,
             faction = faction
         };
 

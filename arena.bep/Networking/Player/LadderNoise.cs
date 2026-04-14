@@ -22,7 +22,7 @@ public partial struct LadderNoisePacket : INetSerializable, IAuthoredPacket
 
 public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
 {
-    public void Send(LadderMaterial ladderMaterial) => DispatchPacket(new LadderNoisePacket { ladderMaterial = ladderMaterial });
+    public void Send(LadderMaterial ladderMaterial) => DispatchPacket(new LadderNoisePacket { Player = H.MainPlayer, ladderMaterial = ladderMaterial });
 
     protected override void LocalPredictApproved(LadderNoisePacket packet)
     {
