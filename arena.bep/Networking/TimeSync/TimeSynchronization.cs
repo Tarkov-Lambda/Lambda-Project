@@ -20,6 +20,8 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 {
     public TimeSynchronizationPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Both) { }
 
+    protected override bool ShouldLog => false;
+
     protected override RateLimitConfig ServerRateLimit => new(
         enabled: false,
         refillPerSecond: 5,

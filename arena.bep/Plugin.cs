@@ -107,9 +107,6 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
-        // STEAM AUDIO
-        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
-
         // AUDIO
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
@@ -158,18 +155,18 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
 
-        //--------------- ANIMATIONS --------------- //
+        // Animation Patches
         // RegisterPatch(new Patch_GClass2963_Spawn());
         RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());                 // Instant Grenade Unequip
         // RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop());                          // Instant Weapon Unequip
         // RegisterPatch(new Patch_FirearmController_InitiateOperation());
         RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Send Hands Examination Packet to other players
-        //------------------------------------------ //
 
+        // UI Patches
         UIPatches.Enable();
 
-        //--------------- FIKA --------------- //
+        // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
         RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
@@ -185,13 +182,11 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_ObservedPlayer_HandleDamagePacket());
         // RegisterPatch(new ObservedPlayer_PauseAllEffectsOnPlayer_Patch());
         // RegisterPatch(new ObservedPlayer_UnpauseAllEffectsOnPlayer_Patch());
-        //------------------------------------------ //
 
-        //--------------- NETWORK --------------- //
-        // MemoryPack Custom Formats
-        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> int
+        // Memory Pack Formatters
+        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
 
-        // Player
+        // Player Related Packets
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
         RegisterSingleton<FactionChangePacketHandler>();                            // Player swaps factions
         RegisterSingleton<SpawnItemPacketHandler>();                                // Player asks to spawn an item
@@ -203,9 +198,9 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
         RegisterSingleton<RemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
 
-        // Session
+        // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Server/Client reports specific player's status
-        RegisterSingleton<SessionManagerSyncPacketHandler>();                              // Server sends a snapshot of the entire session info (start of the match / on round end)
+        RegisterSingleton<SessionManagerSyncPacketHandler>();                       // Server sends a snapshot of the entire session info (start of the match / on round end)
         RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
@@ -214,14 +209,16 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
-                                                                                    //------------------------------------------ //
+
+        // Steam Audio
+        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
 
         // Internal Classses (order matters)
-        RegisterSingleton<MapAssetBundleHandler>();                             // Handler of map asset loading
-        RegisterSingleton<RagdollCreator>();                                    // Fake Corpse Creation
-        RegisterSingleton<PresetItemsCache>();                                  // Caching gun presets
-        RegisterSingleton<WeaponPresetManager>();                               // Initializes/Saves/Loads what gun preset is selected for in raid spawning
-        RegisterSingleton<DefaultEquipmentManager>();                           // Collects
+        RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
+        RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
+        RegisterSingleton<PresetItemsCache>();                                      // Caching gun presets
+        RegisterSingleton<WeaponPresetManager>();                                   // Initializes/Saves/Loads what gun preset is selected for in raid spawning
+        RegisterSingleton<DefaultEquipmentManager>();                               // Collects
 
         try
         {
@@ -232,11 +229,11 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
-            _disposables.Add(new UIManager());  // not a singleton (fuck you)
+            _disposables.Add(new UIManager());  // not a singleton (fuck you) - тебе ебало разбить сука? не зли меня
 
             var warmup = typeof(Ladder);
-            await RegisterSingletonInRaid<LadderEventManager>();                 // Overwrites Player Controller on Ladder Collision and moves them.
-            await RegisterSingletonInRaid<BombHandler>();                        // Handler for the entirety of Bomb's lifecycle
+            await RegisterSingletonInRaid<LadderEventManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
+            await RegisterSingletonInRaid<BombHandler>();                           // Handler for the entirety of Bomb's lifecycle
         }
         catch (Exception ex)
         {

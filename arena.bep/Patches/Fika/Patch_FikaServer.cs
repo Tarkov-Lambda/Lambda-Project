@@ -163,7 +163,7 @@ namespace ifp.arena.bep.Patches
                         }
                     }
 
-                    float num4 = num2 * Singleton<BackendConfigSettingsClass>.Instance.OverDamageFactor[bodyPart];
+                    float num4 = num2 * H.BackendConfigSettingsClass.OverDamageFactor[bodyPart];
                     DamageInfoStruct overDamage = damageInfo.GetOverDamage(bodyPart);
 
                     foreach (var kvp in healthController.Dictionary_0)
@@ -253,7 +253,7 @@ internal sealed class Patch_FikaServer_OnNetworkReceiveUnconnected : ModulePatch
     private static bool Prefix(FikaServer __instance, CoopHandler ____coopHandler, NetManager ____netServer, IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
     {
         bool flag = false;
-        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && Singleton<IFikaGame>.Instance.GameController.RaidStarted)
+        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && H.IFikaGame.GameController.RaidStarted)
         {
             flag = true;
         }
@@ -305,7 +305,7 @@ internal sealed class Patch_FikaServer_OnConnectionRequest : ModulePatch
         return false;
 
 
-        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && Singleton<IFikaGame>.Instance.GameController.RaidStarted)
+        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && H.IFikaGame.GameController.RaidStarted)
         {
             if (request.Data.GetString() == "fika.reconnect")
             {

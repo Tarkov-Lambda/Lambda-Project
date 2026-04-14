@@ -123,7 +123,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         }
         else
         {
-            Singleton<RagdollCreator>.Instance.OnPacket(packet.victim);
+            H.RagdollCreator.OnPacket(packet.victim);
 
             // 2. Banish them 500 meters underground instantly to hide network latency
             HoldPlayerOut(packet.victim, Vector3.zero, 2.0f).Forget();
@@ -134,7 +134,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
     private async UniTaskVoid HandleLocalPlayerDeath(PlayerKilledPacket packet)
     {
-        Singleton<RagdollCreator>.Instance.CreateLocalPlayerRagdoll();
+        H.RagdollCreator.CreateLocalPlayerRagdoll();
 
         // 2. Do local cleanup
         HU.HealMe().Forget();

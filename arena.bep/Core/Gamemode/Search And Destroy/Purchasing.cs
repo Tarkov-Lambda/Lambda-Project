@@ -67,7 +67,7 @@ public static class Purchasing
         if (isSuccessful)
         {
             H.EFTGUISounds.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);
-            EventBus.OnItemBuy?.Invoke();
+            EventBus.OnItemBuy?.Invoke(request);
         }
         else H.MainPlayerScore.AddMoney(request.price);
     }

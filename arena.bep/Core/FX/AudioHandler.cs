@@ -24,7 +24,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
 
     public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 10000, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Environment)
     {
-        return Singleton<BetterAudio>.Instance.PlayAtPoint(
+        return H.BetterAudio.PlayAtPoint(
             pos,
             clip,
             distance: CameraClass.Instance.Distance(pos),

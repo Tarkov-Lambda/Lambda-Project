@@ -128,7 +128,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
         if (H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID handsId))
         {
-            var customizationSolver = Singleton<CustomizationSolverClass>.Instance;
+            var customizationSolver = H.CustomizationSolverClass;
             ResourceKey handsBundle = customizationSolver.GetBundle(handsId);
 
             if (handsBundle != null)

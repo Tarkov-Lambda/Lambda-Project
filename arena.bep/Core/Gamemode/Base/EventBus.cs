@@ -3,6 +3,7 @@ using System;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.shared;
+using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
@@ -16,12 +17,13 @@ public static class EventBus
     public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
 
     public static Action<int> OnSelfMoneyChanged;
-    public static Action OnItemBuy;
+    public static Action<ShopItem> OnItemBuy;
 
     public static Action OnSelfRespawn;
     public static Action<PlayerReadinessState> OnSelfReadinessChanged;
     public static Action<Faction> OnSelfFactionChanged;
 
+    // Sometimes, I like to make classes that are not monobehaviour, but still subscribe to some of their events
     public static Action OnUpdate;
     public static Action OnLateUpdate;
     public static Action OnFixedUpdate;

@@ -64,6 +64,10 @@ public class PlayerScore
     public void ChangeReadiness(PlayerReadinessState readyState)
     {
         score.ReadyState = readyState;
+
+        if (H.IsHeadless) return;
+        if (player == H.MainPlayer)
+            EventBus.OnSelfReadinessChanged?.Invoke(readyState);
     }
 
     public void ChangeFaction(Faction faction)

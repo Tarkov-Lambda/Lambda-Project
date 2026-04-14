@@ -32,7 +32,7 @@ internal static class UIPatches
 
         RegisterAndEnable(new Patch_PreloaderUI_RefreshCornerLabel());
         if (Singleton<PreloaderUI>.Instantiated)
-            Singleton<PreloaderUI>.Instance.method_6(); // PreloaderUI.RefreshCornerLabel();
+            H.PreloaderUI.method_6(); // PreloaderUI.RefreshCornerLabel();
 
         RegisterAndEnable(new Patch_CommonUI_Awake());
 

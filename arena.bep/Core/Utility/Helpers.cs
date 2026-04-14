@@ -31,6 +31,7 @@ namespace ifp.arena.bep.Core;
 // Helper class for singleton refences & helper functions
 public static class Helpers
 {
+    // вертел я ваши анти паттерны
     // EFT Singleton pointers
     public static GameWorld GameWorld                                   => Singleton<GameWorld>.Instance;
     public static Class308 TarkovClientISession                         => Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
@@ -47,8 +48,7 @@ public static class Helpers
     public static SharedGameSettingsClass SharedGameSettingsClass       => Singleton<SharedGameSettingsClass>.Instance;
     public static CustomizationSolverClass CustomizationSolverClass     => Singleton<CustomizationSolverClass>.Instance;
     public static IEasyAssets IEasyAssets                               => Singleton<IEasyAssets>.Instance;
-
-    public static GUISounds EFTGUISounds                                => IsInRaid() ? Singleton<GUISounds>.Instance : null;
+    public static GUISounds EFTGUISounds                                => Singleton<GUISounds>.Instance;
 
     // EFT Main Player
     public static Player MainPlayer                                     => GetMainPlayer();
@@ -84,17 +84,25 @@ public static class Helpers
     public static MapAssetBundleHandler MapAssetBundleHandler           => Singleton<MapAssetBundleHandler>.Instance;
     public static WeaponPresetManager WeaponPresetManager               => Singleton<WeaponPresetManager>.Instance;
 
-
+    // When the player fully spawns into the raid; after raid spawn countdown timer is 0 (Geneburn - Countdown reference)
     public static event Action OnGameStarted
     {
         add => Patch_Gameworld_OnGameStarted.OnGameStarted += value;
         remove => Patch_Gameworld_OnGameStarted.OnGameStarted -= value;
     }
 
+    // When we are getting out of the raid
     public static event Action OnGameDispose
     {
         add => Patch_Gameworld_OnDispose.OnDispose += value;
         remove => Patch_Gameworld_OnDispose.OnDispose -= value;
+    }
+
+    // Happens when the user fully loads into the main menu and can interact with stash/traders/etc
+    public static event Action AfterApplicationLoaded
+    {
+        add => TarkovApp.AfterApplicationLoaded += value;
+        remove => TarkovApp.AfterApplicationLoaded -= value;
     }
 
     // bro thinks he's the main character

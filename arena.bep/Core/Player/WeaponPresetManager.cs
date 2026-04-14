@@ -25,7 +25,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
     public WeaponPresetManager()
     {
-        H.TarkovApp.AfterApplicationLoaded += InitializeOnApplicationLoad;
+        H.AfterApplicationLoaded += InitializeOnApplicationLoad;
 
         // Hot-reload
         if (H.TarkovClientISession?.Profile_1?.Id != null) InitializeOnApplicationLoad();
@@ -33,7 +33,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
     public void Dispose()
     {
-        H.TarkovApp.AfterApplicationLoaded -= InitializeOnApplicationLoad;
+        H.AfterApplicationLoaded -= InitializeOnApplicationLoad;
         Release(this);
     }
 
@@ -136,9 +136,6 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         }
     }
 
-    /// <summary>
-    /// Exports a specific weapon build configuration to a JSON file.
-    /// </summary>
     public void ExportBuildToFile(string json, string presetName)
     {
         try
@@ -162,9 +159,6 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         }
     }
 
-    /// <summary>
-    /// Scans the builds directory and imports all found .json weapon presets.
-    /// </summary>
     public void ImportExternalPresetsFromDisk()
     {
         try
@@ -204,9 +198,6 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         }
     }
 
-    /// <summary>
-    /// Deserializes a weapon build JSON and registers it into the Tarkov preset system.
-    /// </summary>
     public void RegisterPresetToSystem(string json, string presetName)
     {
         try

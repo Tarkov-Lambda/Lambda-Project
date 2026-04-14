@@ -184,7 +184,7 @@ public static class SteamAudioInitializer
     {
         if (SteamAudioManager.Singleton == null) return;
 
-        var betterAudio = Singleton<BetterAudio>.Instance;
+        var betterAudio = H.BetterAudio;
         if (betterAudio == null) return;
 
         Transform listenerTransform = betterAudio.ListenerTransform != null ? betterAudio.ListenerTransform : betterAudio.AudioListener?.transform;

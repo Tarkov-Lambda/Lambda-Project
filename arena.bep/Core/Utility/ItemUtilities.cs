@@ -64,7 +64,7 @@ public static class ItemUtilities
 
         if (prefabsToLoad.Count > 0)
         {
-            await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(
+            await H.PoolManagerClass.LoadBundlesAndCreatePools(
                 PoolManagerClass.PoolsCategory.Raid,
                 PoolManagerClass.AssemblyType.Local,
                 prefabsToLoad,

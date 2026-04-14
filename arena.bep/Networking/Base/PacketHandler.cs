@@ -46,17 +46,19 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
     protected virtual RateLimitConfig ServerRateLimit => RateLimitConfig.Default; // OPTIONAl
 
-    public static event Action<T> OnWhenApprovedPacket; // Misleading because this happens AFTER the execution of WhenApproved
+    protected virtual bool ShouldLog => true; // Debugging
+
+    public event Action<T> AfterPacketApproved; // Misleading because this happens AFTER the execution of WhenApproved
 
     protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
     {
         this.deliveryMethod = deliveryMethod;
         this.authority = authority;
 
-        Inititalize();
+        Initialize();
     }
 
-    protected virtual void Inititalize()
+    protected virtual void Initialize()
     {
         OnFikaEvent += ManageFikaEvent;
 
@@ -68,7 +70,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         OnFikaEvent -= ManageFikaEvent;
 
         if (H.IsInRaid() && H.FikaNet != null) UnregisterPacket();
-        // Singleton slot cleanup is handled by Plugin.RegisterSingleton via a stored release delegate.
     }
 
     protected void ManageFikaEvent(FikaEvent fikaEvent)
@@ -141,8 +142,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (!H.IsHeadless)
             if (IsUnauthorized(H.MainPlayer.Id)) return;
 
-        if (this is not TimeSynchronizationPacketHandler)
-            D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+        if (ShouldLog) D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 
         // These are helper boxer/unboxers but overall hurt performance, avoid in high frequency
         // Note that this does not apply to the server generated packets due to the fact that sometimes we will send the packet FOR a player.
@@ -179,8 +179,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected void WhenServerReceivesPacket(T packet, NetPeer peer)
     {
-        if (this is not TimeSynchronizationPacketHandler)
-            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {peer.Id}");
+        if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {peer.Id}");
 
         if (!TryPassServerRateLimit(packet, peer))
             return;
@@ -210,7 +209,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
 
         WhenApproved(packet, peer);
-        OnWhenApprovedPacket?.Invoke(packet);
+        AfterPacketApproved?.Invoke(packet);
     }
 
     protected void WhenClientReceivesPacket(T packet, NetPeer peer)
@@ -221,7 +220,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 
         WhenApproved(packet, peer);
-        OnWhenApprovedPacket?.Invoke(packet);
+        AfterPacketApproved?.Invoke(packet);
     }
 
     protected void SendRejection(ref T packet, NetPeer peer, string rejectionReason = null)

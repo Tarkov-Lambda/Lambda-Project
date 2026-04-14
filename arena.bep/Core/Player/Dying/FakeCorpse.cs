@@ -70,7 +70,7 @@ namespace ifp.arena.bep.Core.Dying
             Transform head = bones.HeadCameraCollider.transform;
 
             string key = ResourceKeyManagerAbstractClass.TakePhrasePath(playerVoiceId);
-            if (!EasyAssetsExtensions.TryGetAsset<Voice>(Singleton<IEasyAssets>.Instance, out var asset, key))
+            if (!EasyAssetsExtensions.TryGetAsset<Voice>(H.IEasyAssets, out var asset, key))
             {
                 return;
             }
@@ -99,9 +99,9 @@ namespace ifp.arena.bep.Core.Dying
                 return;
             }
 
-            BetterSource speaker = Singleton<BetterAudio>.Instance.GetSource(BetterAudio.AudioSourceGroupType.Character, true);
+            BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Character, true);
             speaker.StartTrackingPosition(head);
-            speaker.SetMixerGroup(MonoBehaviourSingleton<BetterAudio>.Instance.ObservedPlayerSpeechMixer);
+            speaker.SetMixerGroup(MonoBehaviourH.BetterAudio.ObservedPlayerSpeechMixer);
             speaker.Play(taggedClip.Clip, null, 1f);
         }
 

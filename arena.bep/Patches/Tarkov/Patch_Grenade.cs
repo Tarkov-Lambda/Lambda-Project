@@ -25,7 +25,7 @@ namespace ifp.arena.bep.Patches.Tarkov;
                 // explosion sfx
                 if (!string.IsNullOrEmpty(__instance.WeaponSource.ExplosionEffectType))
                 {
-                    Singleton<Effects>.Instance.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
+                    H.Effects.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
                 }
 
                 if (H.IsServer)

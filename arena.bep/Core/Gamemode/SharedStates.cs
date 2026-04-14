@@ -174,7 +174,7 @@ public class SharedEnd : IGameState
     public virtual void OnExit()
     {
         IU.GarbageCollectWorldLoot();
-        Singleton<RagdollCreator>.Instance.ClearAllCorpses();
+        H.RagdollCreator.ClearAllCorpses();
         H.BombHandler.bombVisuals?.SetActive(false);
     }
 }

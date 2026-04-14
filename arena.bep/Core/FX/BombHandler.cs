@@ -167,7 +167,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     {
         Item bombItem = IU.CreateItemFromTemplateId(SND_ModeRules.bombTemplateId);
         await IU.LoadBundlesForItem(bombItem);
-        bombVisuals = Singleton<PoolManagerClass>.Instance.CreateLootPrefab(bombItem, ECameraType.Default);
+        bombVisuals = H.PoolManagerClass.CreateLootPrefab(bombItem, ECameraType.Default);
         bombVisuals?.SetActive(false);
 
         foreach (var component in bombVisuals.GetComponentsInChildren<Component>(true))
@@ -211,7 +211,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                 {
                     H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);
                 }
-                Singleton<Effects>.Instance.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
+                H.Effects.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
             }
         }
     }
