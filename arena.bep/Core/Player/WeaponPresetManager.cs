@@ -26,6 +26,9 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     public WeaponPresetManager()
     {
         H.TarkovApp.AfterApplicationLoaded += InitializeOnApplicationLoad;
+
+        // Hot-reload
+        if (H.TarkovISession?.Profile_1?.Id != null) InitializeOnApplicationLoad();
     }
 
     public void Dispose()
