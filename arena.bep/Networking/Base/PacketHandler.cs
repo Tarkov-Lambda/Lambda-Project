@@ -7,12 +7,14 @@ using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
+using EFT;
+using Fika.Core.Main.Players;
 
 namespace PacketHandler;
 
 public enum PacketAuthority
 {
-    Both,       // Anyone can send/receive
+    Anyone,     // Anyone can send/receive
     Admin,      // Server or Admin
     ServerOnly  // Only Server can send. Clients only receive.
 }
@@ -48,7 +50,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     public event Action<T> AfterPacketApproved; // Misleading because this happens AFTER the execution of WhenApproved
 
-    protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Both)
+    protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Anyone)
     {
         this.deliveryMethod = deliveryMethod;
         this.authority = authority;
@@ -129,6 +131,17 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (!H.IsInRaid()) return;
         DispatchPacket(packet, peer);
+    }
+
+    protected void DispatchPacketToPlayer(T packet, Player player)
+    {
+        if (!H.IsInRaid()) return;
+        if (player.IsAI) return;
+
+        FikaPlayer fikaPlayer = player as FikaPlayer;
+        var peer = H.NetManager.GetPeerById(fikaPlayer.NetId);
+
+        DispatchPacket(packet, peer as NetPeer);
     }
 
 
@@ -214,11 +227,10 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer peer)
     {
-#if DEBUG
         D.Log($"Server Rejected {GetType().Name}");
         if (rejectedPacket.rejectionReason != "")
             D.Log(rejectedPacket.rejectionReason);
-#endif
+
         WhenRejected(rejectedPacket.Payload, peer);
     }
 

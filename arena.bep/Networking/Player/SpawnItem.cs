@@ -61,9 +61,8 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         DispatchPacket(packet);
     }
 
-    // we have to blindly accept our packet here otherwise ItemPlacement is not aware
-    // and tries to spawn multiple things in one grid
-    // otherwise we have to rewrite the logic to make the server give us spawn item packages effectivelly (gun + mags, 2 armor plates)
+    // we have to blindly accept our packet here otherwise ItemPlacement is not aware and tries to spawn multiple things in one grid
+    // this entire packet needs to 
     protected override async void LocalPredictApproved(SpawnItemPacket packet)
     {
         SpawnItem(packet, packet.Player);

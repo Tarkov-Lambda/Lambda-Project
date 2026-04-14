@@ -160,12 +160,12 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         string serverPassword = Plugin.Password.Value;
         if (string.IsNullOrEmpty(serverPassword))
         {
-            D.Log("AdminLoginPacketHandler [Server]: Verification failed. Server password (Plugin.Password.Value) is empty/null!");
+            D.Log("AdminLoginPacketHandler [Server]: Verification failed. Server password is empty/null!");
             return false;
         }
 
         string expectedHash = ComputeHash(serverPassword, nonce);
-        bool isMatch = (packet.Payload == expectedHash);
+        bool isMatch = packet.Payload == expectedHash;
 
         return isMatch;
     }

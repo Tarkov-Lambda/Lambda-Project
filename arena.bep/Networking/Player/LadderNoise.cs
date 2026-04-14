@@ -48,8 +48,8 @@ public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
     private void MakeLadderNoise(Player player, LadderNoisePacket packet)
     {
         Vector3 pos = player.PlayerBody.transform.position;
-        AudioClip[] audioClips = packet.ladderMaterial == LadderMaterial.Metal ? H.Sounds.LadderNoiseMetal : H.Sounds.LadderNoiseWood;
 
+        AudioClip[] audioClips = packet.ladderMaterial == LadderMaterial.Metal ? H.Sounds.LadderNoiseMetal : H.Sounds.LadderNoiseWood;
         H.AudioHandler.PlayAtPoint(pos, audioClips.RandomElement());
     }
 }

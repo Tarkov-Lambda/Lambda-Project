@@ -43,11 +43,16 @@
 ## For Nerds
 
 - Unity Spatializer Engine bypass *(Steam Audio DSP bridge)*  
-- Custom LiteNetLib Packet Handler  
-  - Approval / Rejection System
+- Custom LiteNetLib Packet Handler
+  - MemoryPack Automatic De/Serialization
+  - MemoryPack Formatters For EFT Classes (Player)
+  - Approval / Rejection System (With rejection reason)
   - Local Approval Prediction Handling
-  - Packet Validation
-  - Packet Authority
+  - Timestamped Packet Interface (For Time Dependant Packets)
+  - Authored Packet Interface (For Anti-Spoofing)
+  - Server-Side Packet-Specific Validation
+  - Packet Authority (Anyone, Admin, Server Only)
+  - Admin Authentication
   - Rate limiting
 - Unity Tracer  
   - Class-wide method observation via Harmony postfixing  
