@@ -40,11 +40,6 @@ public static class SteamAudioInitializer
         }
     }
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  0. Native DLL pre-load
-    // ─────────────────────────────────────────────────────────────────────────
-
     private static void PreloadNativeDlls()
     {
 
@@ -81,10 +76,6 @@ public static class SteamAudioInitializer
     {
         if (SteamAudioSettings.Singleton != null)
         {
-            // The singleton was auto-created by [RuntimeInitializeOnLoadMethod] inside
-            // SteamAudioUnity.dll when BepInEx loaded it.  That code path may leave
-            // reference-type fields null (e.g. SOFAFiles), which causes NREs later in
-            // OnApplicationStart.  Patch them up here.
             var existing = SteamAudioSettings.Singleton;
 
             if (existing.SOFAFiles == null)
@@ -108,19 +99,14 @@ public static class SteamAudioInitializer
 
         // Audio engine
         settings.audioEngine = AudioEngineType.Unity;
-
-        // Scene type: Default (PhononLib CPU raytracer).  Embree/RadeonRays require extra DLLs.
         settings.sceneType = SceneType.Default;
-
-        // Reflection effect: Convolution (CPU).  TrueAudioNext needs OpenCL.
         settings.reflectionEffectType = ReflectionEffectType.Convolution;
 
         // HRTF
         settings.hrtfVolumeGainDB = 0f;
         settings.hrtfNormalizationType = HRTFNormType.None;
-        settings.SOFAFiles = Array.Empty<SOFAFile>();   // use default built-in HRTF
+        settings.SOFAFiles = Array.Empty<SOFAFile>();
 
-        // Simulation quality (real-time, low cost for Phase 1 – reflections disabled anyway)
         settings.realTimeRays = 1024;
         settings.realTimeBounces = 2;
         settings.realTimeDuration = 1.0f;
@@ -128,10 +114,8 @@ public static class SteamAudioInitializer
         settings.realTimeMaxSources = 32;
         settings.realTimeCPUCoresPercentage = 25;
 
-        // Occlusion
         settings.maxOcclusionSamples = 16;
 
-        // Default material (absorptive concrete; used if geometry is added in Phase 2)
         var mat = ScriptableObject.CreateInstance<SteamAudioMaterial>();
         settings.defaultMaterial = mat;
 

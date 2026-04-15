@@ -8,20 +8,6 @@ using SteamAudio;
 
 namespace ifp.arena.shared;
 
-/// <summary>
-/// Tracks Steam Audio scene geometry readiness and bridges
-/// <see cref="MapAssetBundleHandler"/> load/unload events to Steam Audio simulation phases.
-///
-/// <para>
-/// Phase 1 (no geometry loaded): HRTF binaural only. Occlusion/transmission/reflections are off.
-/// </para>
-/// <para>
-/// Phase 2 (geometry committed): Occlusion, transmission, and reflections are enabled
-/// on all active <see cref="SteamAudioSpatialAudioSource"/> components.
-/// </para>
-///
-/// Attach to the <see cref="SteamAudioManager"/> GameObject via <see cref="Register"/>.
-/// </summary>
 public class SteamAudioSceneTracker : MonoBehaviour
 {
     // ─────────────────────────────────────────────────────────────────────

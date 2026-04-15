@@ -21,10 +21,10 @@ public class SessionManager
     public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
         {
             {MatchState.None, 0},
-            {MatchState.Warmup, 5},
+            {MatchState.Warmup, 120},
             {MatchState.WarmupEnd, 5},
             {MatchState.Pause, 45},
-            {MatchState.RoundPrepare, 3},
+            {MatchState.RoundPrepare, 5},
             {MatchState.RoundAction, 115},
             {MatchState.RoundEnd, 8},
             {MatchState.RoundPlanted, 45},

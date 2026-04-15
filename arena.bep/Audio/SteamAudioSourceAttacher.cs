@@ -105,8 +105,10 @@ public static class SteamAudioSourceAttacher
         // turn off internal spatializer
         audioSource.spatialize = false;
         var cachedSpatialBlend = audioSource.spatialBlend;
-        audioSource.spatialBlend = 0.1268321f;              // force the spatialBlend to change
-        audioSource.spatialBlend = cachedSpatialBlend;      // retrieve the cached real value, send it to PhononDSPBridge through the harmony patch
+        // force the spatialBlend to change
+        audioSource.spatialBlend = 0.1268321f;
+        // retrieve the cached real value, send it to PhononDSPBridge through the Unity spatialBlend harmony patch
+        audioSource.spatialBlend = cachedSpatialBlend;
 
 
         return SteamSourceDict.cache[audioSource];
