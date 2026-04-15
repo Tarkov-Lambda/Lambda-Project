@@ -1,26 +1,58 @@
 ﻿using System;
+using System.Reflection;
 using UnityEngine;
 using arena.ui;
 using EFT.UI;
 using ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds;
 using EFT.InventoryLogic;
 using Comfort.Common;
+// Assuming you have access to your WeaponBuildClass namespace
 
 namespace ifp.arena.bep.Core.UI
 {
     internal class EditBuildController : IDisposable
     {
+        FieldInfo _weaponBuildClassField = typeof(EditBuildScreen).GetField("weaponBuildClass", BindingFlags.NonPublic | BindingFlags.Instance);
+
         EditBuildLambdaPanel panel;
+        EditBuildScreen editBuildScreen;
+
+        readonly CommonUI commonUI;
+        readonly AssetBundle uibundle;
+
+        readonly GameObject prefabEditBuildPanel;
+
 
         internal EditBuildController(CommonUI commonUI, AssetBundle uibundle)
         {
-            GameObject prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/EditBuild/EditBuildLambdaPanel.prefab");
+            this.commonUI = commonUI;
+            this.uibundle = uibundle;
+
+            prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/EditBuild/EditBuildLambdaPanel.prefab");
+
+            Initialize();
+        }
+
+        private void Initialize()
+        {
             panel = GameObject.Instantiate(prefabEditBuildPanel, commonUI.EditBuildScreen.transform.Find("ButtonsPanel")).GetComponent<EditBuildLambdaPanel>();
 
+            editBuildScreen = commonUI.EditBuildScreen;
             Patch_EditBuildScreen_Show.OnPostfix += EditBuildScreen_Show;
             Patch_EditBuildScreen_UpdateItem.OnPostfix += EditBuildScreen_UpdateItem;
 
             panel.gameObject.SetActive(false);
+        }
+
+        public void Dispose()
+        {
+            H.AfterApplicationLoaded -= Initialize;
+
+            Patch_EditBuildScreen_Show.OnPostfix -= EditBuildScreen_Show;
+            Patch_EditBuildScreen_UpdateItem.OnPostfix -= EditBuildScreen_UpdateItem;
+
+            if (panel != null)
+                GameObject.Destroy(panel.gameObject);
         }
 
         private void EditBuildScreen_Show()
@@ -37,25 +69,34 @@ namespace ifp.arena.bep.Core.UI
             }
             panel.gameObject.SetActive(true);
 
+            WeaponBuildClass currentBuild = _weaponBuildClassField.GetValue(editBuildScreen) as WeaponBuildClass;
 
-            bool isPreferredLambdaPreset = false; // uhhhhhh idk
+            bool isPreferredLambdaPreset = false;
 
-            panel.SetEquipped(isPreferredLambdaPreset, () => SetPreferredLambdaPreset(newItem));
+            if (WeaponPresetManager.Instantiated && currentBuild != null)
+            {
+                if (WeaponPresetManager.Instance.SelectedGunPresetMap.TryGetValue(newItem.TemplateId, out string preferredMongoId))
+                {
+                    isPreferredLambdaPreset = currentBuild.Id.ToString() == preferredMongoId;
+                }
+            }
+
+            panel.SetEquipped(isPreferredLambdaPreset, () => SetPreferredLambdaPreset(newItem, currentBuild));
         }
 
-        // when the user click the EQUIP AS PREFERRED button
-        void SetPreferredLambdaPreset(Item item)
+        void SetPreferredLambdaPreset(Item item, WeaponBuildClass build)
         {
-            // todo
+            if (build == null)
+            {
+                D.Notify("The build must be saved first.");
+                return;
+            }
+
+            WeaponPresetManager.Instance.UpdateSelectedPreset(item.TemplateId, build.Id.ToString());
+
+            panel.SetEquipped(true, () => SetPreferredLambdaPreset(item, build));
         }
 
-        public void Dispose()
-        {
-            Patch_EditBuildScreen_Show.OnPostfix -= EditBuildScreen_Show;
-            Patch_EditBuildScreen_UpdateItem.OnPostfix -= EditBuildScreen_UpdateItem;
 
-            if (panel != null)
-                GameObject.Destroy(panel.gameObject);
-        }
     }
 }

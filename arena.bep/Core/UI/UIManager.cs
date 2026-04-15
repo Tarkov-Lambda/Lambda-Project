@@ -22,11 +22,39 @@ public class UIManager : IDisposable
     {
         if (H.IsHeadless) return;
 
+        H.AfterApplicationLoaded += Initialize;
+
+        // hot reload
+        if (H.HasMainMenuLoaded()) Initialize();
+    }
+
+    public void Initialize()
+    {
+        H.AfterApplicationLoaded -= Initialize;
+        
         Patch_CommonUI_Awake.OnAwake += LoadUI;
         if (Singleton<CommonUI>.Instantiated)
             LoadUI(Singleton<CommonUI>.Instance);
 
         disposables.Add(new EFTCameraHook());
+    }
+
+    public void Dispose()
+    {
+        Patch_CommonUI_Awake.OnAwake -= LoadUI;
+
+        foreach (var controller in disposables)
+        {
+            controller.Dispose();
+        }
+        disposables.Clear();
+
+        if (matchUI != null)
+            GameObject.Destroy(matchUI.gameObject);
+
+        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
+
+        uibundle.Unload(unloadAllLoadedObjects: false);
     }
 
     void LoadUI(CommonUI commonUI)
@@ -56,7 +84,7 @@ public class UIManager : IDisposable
 
             disposables.Add(new FactionSelectionController(commonUI, uibundle));
         }
-        catch (Exception e) 
+        catch (Exception e)
         {
             Plugin.Logger.LogError(e);
         }
@@ -64,21 +92,5 @@ public class UIManager : IDisposable
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
     }
 
-    public void Dispose()
-    {
-        Patch_CommonUI_Awake.OnAwake -= LoadUI;
 
-        foreach (var controller in disposables)
-        {
-            controller.Dispose();
-        }
-        disposables.Clear();
-
-        if (matchUI != null)
-            GameObject.Destroy(matchUI.gameObject);
-
-        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
-
-        uibundle.Unload(unloadAllLoadedObjects: false);
-    }
 }

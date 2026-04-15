@@ -165,6 +165,11 @@ public static class Helpers
         return GameWorld.AllAlivePlayersList;
     }
 
+    public static bool HasMainMenuLoaded()
+    {
+        return H.TarkovClientISession?.Profile_1?.Id != null;
+    }
+
     public static bool IsInRaid()
     {
         // D.Log((GameWorld != null && GameWorld is not HideoutGameWorld).ToString());

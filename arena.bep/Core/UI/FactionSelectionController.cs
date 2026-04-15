@@ -40,7 +40,7 @@ namespace ifp.arena.bep.Core.UI
         private void OnUpdate()
         {
 #if DEBUG
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKeyDown(KeyCode.M) && H.IsInRaid())
             {
                 ShowFactionSelectionEftScreen();
             }
