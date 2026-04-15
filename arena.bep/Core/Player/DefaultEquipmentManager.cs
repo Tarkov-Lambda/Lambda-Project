@@ -6,6 +6,7 @@ using Comfort.Common;
 using EFT.InventoryLogic;
 using EFT.UI;
 using ifp.arena.bep.Core.UI;
+using ifp.arena.bep.Patches.Tarkov.UI;
 using Newtonsoft.Json;
 
 namespace ifp.arena.bep.Core;
@@ -21,8 +22,6 @@ public struct PresetManagerSlotInfo
 // also it equips a random upper/lower whenever a new profile has been created
 public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
 {
-    public bool isNewProfile = false;
-
     private readonly string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "DefaultEquipment.jsonc");
 
     private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
@@ -49,7 +48,7 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
 
     public void AfterApplicationLoaded()
     {
-        if (!isNewProfile)
+        if (Patch_LoginUI_Awake.isNewProfile)
         {
             EquipRandomTacticalClothing();
         }
