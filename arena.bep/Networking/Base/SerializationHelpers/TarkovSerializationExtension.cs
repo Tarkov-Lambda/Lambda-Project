@@ -16,7 +16,7 @@ public static class TarkovSerializationExtension
 
     public static Player GetPlayer(this NetDataReader reader)
     {
-        var playerId = reader.GetString();
+        var playerId = reader.GetInt();
         return H.GetPlayer(playerId);
     }
 

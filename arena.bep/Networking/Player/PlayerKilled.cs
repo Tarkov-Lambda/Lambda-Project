@@ -62,12 +62,15 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
+        D.Log(victim.Profile.Nickname);
+        D.Log(killer.Profile.Nickname);
+
         var packet = new PlayerKilledPacket
         {
-            killer           = killer,
-            victim           = victim,
-            assist           = null,
-            damageType       = damage.DamageType,
+            killer = killer,
+            victim = victim,
+            assist = null,
+            damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
 
@@ -97,7 +100,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     // this logic needs to be abstracted elsewhere
     private void HandleKill(PlayerKilledPacket packet)
     {
-
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.IsAlive) return;
 
@@ -136,7 +138,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     {
         H.RagdollCreator.CreateLocalPlayerRagdoll();
 
-        // 2. Do local cleanup
+        // Do local cleanup
         HU.HealMe().Forget();
         Singleton<ReplenishPacketHandler>.Instance.Send();
         packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
@@ -148,11 +150,10 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         Vector3 hiddenPos = deathPos + new Vector3(0, -10f, 0);
         HoldPlayerOut(packet.victim, hiddenPos, 4.0f).Forget();
 
-        // wait for the death cam sequence to finish (RagdollCreator)
+        // wait for the death cam sequence to finish in RagdollCreator
         await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
 
-        // if the player has not respawned yet (in case the player dies at the end of the round)
-        // send them to the lobby
+        // if we are already alive after 4 seconds, do not teleport ourselves into the lobby
         if (!H.MainPlayerScore.IsAlive)
         {
             Teleporter.Teleport(packet.victim, "lobby", Faction.None);

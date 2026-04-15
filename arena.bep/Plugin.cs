@@ -170,6 +170,7 @@ public class Plugin : BaseUnityPlugin
 
         // UI Patches
         UIPatches.Enable();
+        RegisterPatch(new Patch_LoginUI_Awake());                                   // Whether this is a fresh start
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting

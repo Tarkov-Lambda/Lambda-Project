@@ -7,6 +7,7 @@ using PacketHandler;
 using ifp.arena.shared.Models;
 using Comfort.Common;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.Core.UI;
 
 namespace ifp.arena.bep.networking;
 
@@ -79,6 +80,8 @@ public class GiftMoneyPacketHandler : PacketHandler<GiveMoneyPacket>
 
             if (packet.TargetPlayer.IsYourPlayer)
             {
+                var presetItem = PresetItemsCache.Instance.GetPresetItem(packet.ItemBsgId);
+                D.Notify($"{packet.Player} bought {presetItem.LocalizedName()} for you");
                 Purchasing.BuyItem(itemData);
             }
 

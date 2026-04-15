@@ -61,7 +61,7 @@ public static class Purchasing
     public static async void BuyItem(ShopItem request)
     {
         // delai
-        Item item = Singleton<PresetItemsCache>.Instance.GetPresetItem(request.bsgId);
+        Item item = PresetItemsCache.Instance.GetPresetItem(request.bsgId);
         H.MainPlayerScore.SpendMoney(request.price);
         bool isSuccessful = await IU.ClientRequestGiveItem(item);
         if (isSuccessful)

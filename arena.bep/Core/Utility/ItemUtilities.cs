@@ -227,9 +227,19 @@ public static class ItemUtilities
         itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
         itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
 
-        FikaPlayer fikaPlayer = player as FikaPlayer;
-        MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-        method.Invoke(fikaPlayer, [AU.GetPlateCarrier(player)]);
+        if (item is ArmorPlateItemClass)
+        {
+            var plateCarrier = AU.GetPlateCarrier(player);
+            if (plateCarrier == null)
+            {
+                D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
+                return false;
+            }
+
+            FikaPlayer fikaPlayer = player as FikaPlayer;
+            MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
+            method.Invoke(fikaPlayer, [plateCarrier]);
+        }
 
         return true;
     }

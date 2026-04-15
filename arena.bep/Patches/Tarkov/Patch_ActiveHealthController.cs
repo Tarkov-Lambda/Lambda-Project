@@ -12,9 +12,10 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
+
 // Place for patching out damage application if the shooter is already dead.
 // On the server if a shooter headshots, instead of waiting for the victim to report that they are dead
-// the server preemptively will report death (via PlayerKilledPacket). -- (when I figure out how to actually do this correctly)
+// the server preemptively will report death (via PlayerKilledPacket).
 // however, considering the server will broadcast any damage packet
 // the victim may also be shooting the original shooter.
 // This will result in non stop kill trading.
@@ -24,6 +25,7 @@ namespace ifp.arena.bep.Patches.Tarkov;
 public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 {
     public static DamageInfoStruct LastReceivedDamageInfo { get; private set; }
+
     public static bool IsLastDamageByOtherPlayer
     {
         get
@@ -50,10 +52,8 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     [PatchPrefix]
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
     {
-        if (__instance.Player.IsYourPlayer)
-        {
-            LastReceivedDamageInfo = damageInfo;
-        }
+        LastReceivedDamageInfo = damageInfo;
+
         return true;
     }
 
@@ -95,14 +95,17 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 
             // killer can be null for environmental damage (fall, bleed, etc.)
             Player killer = null;
-            if (lastDamage.Player?.iPlayer != null)
-                killer = H.GetPlayer(lastDamage.Player.iPlayer.Id);
+            if (lastDamage.Player?.iPlayer?.Id != null)
+                killer = H.GetPlayerScore(lastDamage.Player.iPlayer.Id).player;
 
             Player victim = null;
-            if (!H.IsHeadless && !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer)
+
+            if (!H.IsHeadless)
             {
-                victim = H.MainPlayer;
-                killer = H.MainPlayer;
+                victim = __instance.Player;
+
+                if (!Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer && killer == null)
+                    killer = __instance.Player;
             }
 
             Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, victim, killer);

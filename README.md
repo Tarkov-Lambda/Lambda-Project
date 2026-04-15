@@ -6,7 +6,7 @@
 ## Features
 
 ### Gameplay
-- Custom Preset Buy Menu  
+- Custom Preset Buy Menu
 - First Person Spectator Mode  
 - Gamemode Framework  
 - Search and Destroy  
@@ -19,6 +19,7 @@
 
 ### UI / UX
 - Buy Menu
+- Hideout Weapon Build Selector for Buy Menu
 - Teammate Nameplates
 - Scoreboard
 - Top Faction Score

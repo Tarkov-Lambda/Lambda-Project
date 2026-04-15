@@ -25,13 +25,12 @@ namespace ifp.arena.bep.Patches
 {
     internal sealed class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
 
         [PatchPostfix]
         private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
         {
-            // D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
+            D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
             if (packet.Type is ECommonSubPacketType.HealthSync)
             {
                 HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
@@ -49,7 +48,7 @@ namespace ifp.arena.bep.Patches
 
             int victimNetId = packet.NetId;
 
-            if (!____coopHandler.Players.TryGetValue(victimNetId, out var victim)) return;
+            if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return;
 
             // D.Log(peer.Id.ToString());
             // D.Log(damage.ProfileId);
@@ -58,7 +57,7 @@ namespace ifp.arena.bep.Patches
             // D.Log(shooter.Profile.Nickname);
             // D.Log(damagePlayer.Id.ToString());
 
-            // we handle the server owner player natively
+            // we handle the server owner player natively through ActiveHealthController
             if (victim.IsYourPlayer) return;
 
             DamageInfoStruct damageInfo = new()
@@ -80,7 +79,7 @@ namespace ifp.arena.bep.Patches
             // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
             Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
 
-            victim.HandleDamagePacket(damage);
+            // victim.HandleDamagePacket(damage); // is this even supposed to be here? I'm in postfix lol
 
             H.GetPlayerScore(shooter).AddDamage((int)Math.Round(damageInfo.Damage));
         }
@@ -203,8 +202,6 @@ namespace ifp.arena.bep.Patches
             var headHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Head, false);
             var chestHP = victim.HealthController.GetBodyPartHealth(EBodyPart.Chest, false);
 
-            D.Dump(headHP);
-            D.Dump(chestHP);
             if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
             {
                 Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damagePacket.ProfileId);

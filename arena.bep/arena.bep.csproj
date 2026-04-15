@@ -108,8 +108,8 @@
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
 
-    <Copy SourceFiles="@(WeaponPresets)"
-      DestinationFiles="$(SPTPath)\BepInEx\plugins\ifp\json\WeaponPresets\Builds\" />
+    <!-- <Copy SourceFiles="@(WeaponPresets)"
+      DestinationFiles="$(SPTPath)\BepInEx\plugins\ifp\json\WeaponPresets\Builds\" /> -->
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
       Condition="'$(Configuration)' == 'Debug'" />

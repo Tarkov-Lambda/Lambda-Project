@@ -141,6 +141,7 @@ public static class AddressUtilities
     public static IEnumerable<Item> GetArmorPlates(Player player)
     {
         var plateHolder = GetPlateCarrier(player);
+
         if (plateHolder == null) yield break;
 
         foreach (var component in plateHolder.Components)

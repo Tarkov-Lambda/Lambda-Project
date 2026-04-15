@@ -3,14 +3,14 @@
     "defaultBsgId": "67ab3f146d7ece17bf0096ff",
     "isRequired": true
   },
-  // "ArmorVest": {
-  //   "defaultBsgId": "5b44d0de86f774503d30cba8",
-  //   "isRequired": true
-  // },
   "ArmorVest": {
-    "defaultBsgId": "64be79c487d1510151095552",
+    "defaultBsgId": "5b44d0de86f774503d30cba8",
     "isRequired": true
   },
+  // "ArmorVest": {
+  //   "defaultBsgId": "64be79c487d1510151095552",
+  //   "isRequired": true
+  // },
   "Eyewear": {
     "defaultBsgId": "",
     "isRequired": false

@@ -72,16 +72,13 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     protected override bool EvaluatePacket(ref SpawnItemPacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
-        // var placement = AU.GetItemPlacement(packet.item, packet.Player);
-
-        // if (packet.placement.Address == null)
+        
+        // if (!H.MainPlayerScore.CanBuy())
         // {
+        //     rejectionReason = "Buy time is over.";
         //     return false;
         // }
 
-        // if (placement.Address != packet.placement.Address)
-        // D.Log($"Placement mismatch for {packet.Player.Id}");
-        // packet.placement = placement;
         return true;
     }
 
@@ -93,6 +90,14 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
             H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+        }
+    }
+
+    protected override void WhenRejected(SpawnItemPacket packet, NetPeer peer)
+    {
+        if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+        {
+            H.MainPlayerScore.AddMoney(itemData.price);
         }
     }
 

@@ -103,25 +103,25 @@ public static class InventoryResetter
             if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
 
             VestItemClass tacRig = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as VestItemClass;
-            // if (tacRig != null && AU.IsTacRigArmored(tacRig))
-            // {
-            //     AddItem(ref itemsToRemove, tacRig);
-            // }
-            // else
-            // {
-            // Remove everything from vest + pockets that isn't the default pistol mag
-            foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
+            if (tacRig != null && tacRig.TemplateId != DefaultEquipmentManager.Instance.RecordedItems[EquipmentSlot.TacticalVest].TemplateId)
             {
-                bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
+                AddItem(ref itemsToRemove, tacRig);
             }
-            // }
+            else
+            {
+                // Remove everything from vest + pockets that isn't the default pistol mag
+                foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
+                {
+                    bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
+                    if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
+                }
+            }
 
-            // ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
-            // if (armorVest != null && armorVest != PresetManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
-            // {
-            //     AddItem(ref itemsToRemove, armorVest);
-            // }
+            ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
+            if (armorVest != null && armorVest != DefaultEquipmentManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
+            {
+                AddItem(ref itemsToRemove, armorVest);
+            }
 
 
             // If the currently equipped item doesn't match the recorded preset, remove it.
@@ -138,7 +138,6 @@ public static class InventoryResetter
 
 
             // GIVING
-
             if (needsDefaultPistol && defaultPistolBsgId != null)
             {
                 var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId);
@@ -160,15 +159,17 @@ public static class InventoryResetter
             }
 
             // plate removal in case the player just got a fresh plate carrier
-            // List<Item> platesToRemove = new List<Item>();
-            // AddRange(ref platesToRemove, AU.GetArmorPlates(player));
+            List<Item> platesToRemove = new List<Item>();
+            AddRange(ref platesToRemove, AU.GetArmorPlates(player));
 
-            // foreach (Item plateToRemove in platesToRemove)
-            // {
-            //     D.Log(plateToRemove.LocalizedName());
-            //     IU.ClientRequestPopItem(plateToRemove);
-            //     await UniTask.Delay(25);
-            // }
+            foreach (Item plateToRemove in platesToRemove)
+            {
+                // because we are bruteforce popping plates out of an equipped plate carrier
+                // we bypass the normal transaction system
+                // in order to both pop the equipped plate and recalculate equipped armored components
+                IU.ClientRequestPopItem(plateToRemove);
+                await UniTask.Delay(25);
+            }
         }
         finally
         {

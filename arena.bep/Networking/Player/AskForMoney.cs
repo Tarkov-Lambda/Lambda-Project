@@ -13,11 +13,13 @@ using PacketHandler;
 using PacketHandler.RateLimiting;
 using ifp.arena.shared.Models;
 using ifp.arena.bep.Core.Gamemode;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
 public struct AskForMoneyPacket : INetSerializable, IAuthoredPacket
 {
+    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
     public string ItemBsgId;
 
