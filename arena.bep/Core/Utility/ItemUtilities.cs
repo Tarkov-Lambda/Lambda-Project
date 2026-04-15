@@ -133,7 +133,11 @@ public static class ItemUtilities
 
             Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
             clonedItem.StackObjectsCount = 1;
+
+#if DEBUG
             D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+#endif
+
             Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
             return true;
         }
@@ -249,7 +253,9 @@ public static class ItemUtilities
         Player player,
         Func<Item, InventoryController, bool, GStruct154<T>> action, string actionName) where T : IRaiseEvents
     {
+#if DEBUG
         D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
+#endif
 
         var opResult = action(item, player.InventoryController, true);
 
@@ -276,7 +282,10 @@ public static class ItemUtilities
         Player player,
         Func<Item, InventoryController, GStruct154<T>> action, string actionName) where T : IRaiseEvents
     {
+#if DEBUG
         D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
+#endif
+
         var address = item.CurrentAddress;
         var opResult = action(item, player.InventoryController);
 
@@ -314,20 +323,21 @@ public static class ItemUtilities
             }
         }
 
-        bool removed = await TryThrowContainedItem(equipmentSlot, player, waitUntilStationary);
-
-        if (removed && magsToThrow != null)
+        if (magsToThrow != null)
         {
             await TryThrowItems(magsToThrow, player, 25);
         }
 
+        bool removed = await TryThrowContainedItem(equipmentSlot, player, false);
+
         return removed;
     }
 
-
     private static async UniTask<bool> PlaceItem(Item item, Player player, ItemPlacement placement)
     {
+#if DEBUG
         D.LogTransaction($"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
+#endif
 
         switch (placement.Kind)
         {
@@ -345,8 +355,15 @@ public static class ItemUtilities
 
         if (placement.Kind == PlacementKind.ArmorPlate)
         {
+            var plateCarrier = AU.GetPlateCarrier(player);
+            if (plateCarrier == null)
+            {
+                D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
+                return false;
+            }
+
             MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-            method.Invoke(player as FikaPlayer, [AU.GetPlateCarrier(player)]);
+            method.Invoke(player as FikaPlayer, [plateCarrier]);
         }
 
         return true;

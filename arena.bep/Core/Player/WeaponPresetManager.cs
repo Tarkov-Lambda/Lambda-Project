@@ -37,9 +37,12 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         Release(this);
     }
 
-    public void InitializeOnApplicationLoad()
+    public async void InitializeOnApplicationLoad()
     {
         _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
+
+        // Wait for all custom presets to finish importing and saving
+        await ImportExternalPresetsFromDisk();
 
         if (File.Exists(_playerSelectionFilePath))
         {
@@ -58,8 +61,6 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         {
             GenerateDefaultSelectionMap();
         }
-
-        ImportExternalPresetsFromDisk();
     }
 
     public WeaponBuildClass GetPreferredBuildForTemplate(string bsgId)
@@ -74,6 +75,8 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         var userBuild = FU.WeaponPresets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
         if (userBuild != null)
         {
+            // var build = FU.SerializeItem(userBuild.Item);
+            // ExportBuildToFile(build, userBuild.HandbookName);
             return userBuild;
         }
 
@@ -159,7 +162,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         }
     }
 
-    public void ImportExternalPresetsFromDisk()
+    public async UniTask ImportExternalPresetsFromDisk()
     {
         try
         {
@@ -170,6 +173,9 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
             }
 
             string[] files = Directory.GetFiles(_buildsDirectoryPath, "*.json", SearchOption.TopDirectoryOnly);
+
+            // Track all of our registration tasks
+            List<UniTask> importTasks = new List<UniTask>();
 
             foreach (string file in files)
             {
@@ -182,13 +188,17 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
                     string name = Path.GetFileNameWithoutExtension(file);
 
-                    RegisterPresetToSystem(json, name);
+                    // Add the task to our list instead of fire-and-forgetting
+                    importTasks.Add(RegisterPresetToSystem(json, name));
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Failed to load preset file {file}: {ex}");
                 }
             }
+
+            // Wait until ALL weapon presets are completely registered to the system
+            await UniTask.WhenAll(importTasks);
 
             D.Log($"Loaded {_loadedWeaponBuilds.Count} weapon presets.");
         }
@@ -198,17 +208,18 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         }
     }
 
-    public void RegisterPresetToSystem(string json, string presetName)
+    public async UniTask RegisterPresetToSystem(string json, string presetName)
     {
         try
         {
             Item item = FU.InstantiatePreset(json);
-            // Item clonedItem = item.CloneItem(H.MainPlayer.InventoryController);
 
             if (item != null && item is Weapon weaponPreset)
             {
                 _loadedWeaponBuilds[presetName] = weaponPreset;
-                FU.CreateAndSaveWeaponPreset(weaponPreset, presetName).Forget();
+
+                // Await the creation to ensure WeaponBuildsStorage is updated before we continue
+                await FU.CreateAndSaveWeaponPreset(weaponPreset, presetName);
             }
         }
         catch (Exception ex)

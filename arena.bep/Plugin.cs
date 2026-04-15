@@ -202,6 +202,8 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<CustomGrenadeExplosionPacketHandler>();                   // Explosion of a custom grenade
         RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
         RegisterSingleton<RemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
+        RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
+        RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Server/Client reports specific player's status

@@ -47,6 +47,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Default; // OPTIONAl
 
     protected virtual bool ShouldLog => true; // Debugging
+    protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
 
     public event Action<T> AfterPacketApproved; // Misleading because this happens AFTER the execution of WhenApproved
 
@@ -74,8 +75,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected void ManageFikaEvent(FikaEvent fikaEvent)
     {
+#if DEBUG
         if (this is PlayerKilledPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
-
+#endif
         if (fikaEvent is FikaNetworkManagerCreatedEvent) RegisterPacket();
         if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
     }
@@ -153,7 +155,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (!H.IsHeadless)
             if (IsUnauthorized(H.MainPlayer.Id)) return;
 
+#if DEBUG
         if (ShouldLog) D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+#endif
 
         if (targetPeer != null)
         {
@@ -174,7 +178,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected void WhenServerReceivesPacket(T packet, NetPeer peer)
     {
+#if DEBUG
         if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {peer.Id}");
+#endif
 
         if (!TryPassServerRateLimit(packet, peer))
             return;
@@ -211,8 +217,10 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (!H.IsInRaid() || H.FikaNet == null) return;
 
+#if DEBUG
         if (this is not TimeSyncResponsePacketHandler)
             D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
+#endif
 
         WhenApproved(packet, peer);
         AfterPacketApproved?.Invoke(packet);
@@ -227,8 +235,13 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer peer)
     {
         D.Log($"Server Rejected {GetType().Name}");
-        if (rejectedPacket.rejectionReason != "")
+        if (!string.IsNullOrEmpty(rejectedPacket.rejectionReason))
             D.Log(rejectedPacket.rejectionReason);
+
+        if (ShouldNotifyAboutRejection && !string.IsNullOrEmpty(rejectedPacket.rejectionReason))
+        {
+            D.Notify(rejectedPacket.rejectionReason);
+        }
 
         WhenRejected(rejectedPacket.Payload, peer);
     }

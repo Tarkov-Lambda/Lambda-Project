@@ -53,8 +53,8 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     {
         var packet = new SpawnItemPacket
         {
-            Player    = H.MainPlayer,
-            item      = item,
+            Player = H.MainPlayer,
+            item = item,
             placement = placement
         };
 

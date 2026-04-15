@@ -66,8 +66,8 @@ public static class FactoryUtilities
 
         MongoID newPresetId = new MongoID(Guid.NewGuid().ToString("N").Substring(0, 24));
 
-        // The constructor automatically clones the weapon (item.CloneItemWithSameId<Item>()) 
-        // it should safely detach, but I'm regenerating all ID's as a secondary measure just in case down below
+        // The constructor automatically clones the weapon using item.CloneItemWithSameId()).
+        // it should safely detach, but I'm regenerating all ID's as a secondary measure just in case via InstantiatePreset
         WeaponBuildClass newPreset = new WeaponBuildClass(
             id: newPresetId,
             itemIconName: string.Empty,

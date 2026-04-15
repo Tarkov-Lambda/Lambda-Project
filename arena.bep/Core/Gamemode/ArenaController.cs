@@ -116,9 +116,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public void EndSession()
     {
         Physics.simulationMode = SimulationMode.Script;
-        // Cancel any in-flight ClientRequestGiveItem calls so they don't touch
-        // inventory after the session has been torn down
-        // IU.ResetInventoryLock();
 
         _currentState?.OnExit();
         _currentState = null;
@@ -170,10 +167,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     // Everyone runs this when the match state packet is approved
     public void TransitionToState(MatchStateSyncPacket packet)
     {
-        // Capture the previous state BEFORE updating any fields.
-        // We assign _currentState and session fields first so that if OnExit() throws,
-        // the state machine is already pointing at the new state and won't spam on
-        // the next Update() tick.
+        // cache current state
         var previousState = _currentState;
 
         // Bootstrap the NTP offset from the packet's embedded current-server-time stamp.
@@ -207,7 +201,9 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             EventBus.OnEnd?.Invoke(previousState.StateType);
         }
 
+#if DEBUG
         D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
+#endif
 
         if (_currentState != null)
         {

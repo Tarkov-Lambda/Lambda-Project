@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Collections.Generic;
 using ifp.arena.bep;
+using Cysharp.Threading.Tasks;
 
 namespace ifp.arena.shared;
 
@@ -14,7 +15,7 @@ public static class Debugging
     public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
     public static void NotifyLong(string msg) => NotificationManagerClass.DisplayMessageNotification(msg, EFT.Communications.ENotificationDurationType.Long);
 
-#if DEBUG
+    // #if DEBUG
     public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
     public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg); // for stuff that goes over the wire
     public static void LogArenaController(string msg) => Plugin.Logger.LogInfo(msg);
@@ -22,20 +23,38 @@ public static class Debugging
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
     public static string DumpFile(object obj, int depth = 0, bool log = false, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
 
-    // public static void Log(string msg) => null;
-    // public static void LogTransaction(string msg) { }
-    // public static void LogArenaController(string msg) { }
-    // public static void LogInventory(string msg) { }
-    // public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) {}};
-#else
-        public static void Log(string msg) {}
-        public static void LogArenaController(string msg) {}
-        public static void LogTransaction(string msg) {}
-        public static void LogInventory(string msg) {}
-        public static string Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { return ""; }
-#endif
+    //     // public static void Log(string msg) => null;
+    //     // public static void LogTransaction(string msg) { }
+    //     // public static void LogArenaController(string msg) { }
+    //     // public static void LogInventory(string msg) { }
+    //     // public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) {}};
+    // #else
+    //         public static void Log(string msg) {}
+    //         public static void LogArenaController(string msg) {}
+    //         public static void LogTransaction(string msg) {}
+    //         public static void LogInventory(string msg) {}
+    //         public static string Dump(object obj, string msg = "", [CallerArgumentExpression("obj")] string name = null) { return ""; }
+    // #endif
 
-    public static void LogError(string msg) => Plugin.Logger.LogError(msg);
+    private static bool _throttled;
+
+    public static void LogError(string msg)
+    {
+        Plugin.Logger.LogError(msg);
+
+        if (_throttled) return;
+        _throttled = true;
+
+        Notify("An error has occured, please check your console.");
+
+        ResetThrottle().Forget();
+    }
+
+    private static async UniTaskVoid ResetThrottle()
+    {
+        await UniTask.Delay(TimeSpan.FromSeconds(5));
+        _throttled = false;
+    }
 
     // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
     // public static void PlayMusic(MusicEvent musicEvent) => D.Notify(musicEvent.ToString());

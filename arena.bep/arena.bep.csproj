@@ -93,6 +93,7 @@
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
 
       <Configs Include="../deps/configs/*.cfg" />
+      <WeaponPresets Include="../deps/configs/WeaponPresets/Builds/*.json" />
       <JSON Include="../deps/configs/*.jsonc" />
     </ItemGroup>
 
@@ -106,6 +107,9 @@
 
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
+
+    <Copy SourceFiles="@(WeaponPresets)"
+      DestinationFiles="$(SPTPath)\BepInEx\plugins\ifp\json\WeaponPresets\Builds\" />
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
       Condition="'$(Configuration)' == 'Debug'" />
