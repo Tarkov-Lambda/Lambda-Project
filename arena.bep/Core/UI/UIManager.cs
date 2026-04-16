@@ -70,6 +70,8 @@ public class UIManager : IDisposable
 
         try
         {
+            disposables.Add(new LoadingScreenController(commonUI, uibundle));
+
             disposables.Add(new ScoreboardController(matchUI.Scoreboard));
             disposables.Add(new TopBarController(matchUI.TopBar));
             disposables.Add(new KillFeedController(matchUI.KillFeed, itemInfoProvider));
