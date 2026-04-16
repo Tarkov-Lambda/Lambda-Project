@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
+using System.Collections;
 
 namespace ifp.arena.bep.Core.UI;
 
@@ -11,12 +12,12 @@ internal class EFTScreenGrabber : MonoBehaviour
     private CommandBuffer _commandBuffer;
     private RenderTexture _screenCapture;
 
-    void OnEnable()
+    void Start()
     {
         _camera = GetComponent<Camera>();
         if (_camera == null)
         {
-            this.enabled = false;
+            Destroy(this);
             return;
         }
 
@@ -34,7 +35,12 @@ internal class EFTScreenGrabber : MonoBehaviour
 
     void RebuildResources()
     {
-        if (_commandBuffer == null) return;
+        StartCoroutine(RebuildResourcesCoroutine());
+    }
+
+    IEnumerator RebuildResourcesCoroutine()
+    {
+        if (_commandBuffer == null) yield break;
 
         _commandBuffer.Clear();
 
@@ -43,6 +49,8 @@ internal class EFTScreenGrabber : MonoBehaviour
             _screenCapture.Release();
             _screenCapture = null;
         }
+
+        yield return null; // camera's SSAA needs 1 frame to properly initialize
 
         int w = Screen.width;
         int h = Screen.height;
@@ -58,14 +66,14 @@ internal class EFTScreenGrabber : MonoBehaviour
             if (prop != null && prop.GetSourceDestination(out src, out dst) && src != null)
             {
                 _commandBuffer.Blit(src, _screenCapture, new Vector2(1, -1f), new Vector2(0, 1));
-                return;
+                yield break;
             }
         }
 
         _commandBuffer.Blit(BuiltinRenderTextureType.CameraTarget, _screenCapture);
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         if (_camera != null && _commandBuffer != null)
             _camera.RemoveCommandBuffer(CameraEvent.AfterImageEffects, _commandBuffer);

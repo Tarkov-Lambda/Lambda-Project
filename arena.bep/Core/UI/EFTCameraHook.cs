@@ -22,6 +22,8 @@ internal class EFTCameraHook : IDisposable
 
     public void Dispose()
     {
+        CameraManager.Instance.OnCameraChanged -= OnCameraChanged;
+
         if (CameraManager.Instance.Camera != null)
         {
             if (CameraManager.Instance.Camera.TryGetComponent<EFTScreenGrabber>(out var component))
