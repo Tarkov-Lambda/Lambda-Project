@@ -7,6 +7,7 @@ using ifp.arena.bep.Patches.Tarkov.UI.BattleStance;
 using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 using EFT.UI;
 using ifp.arena.bep.Patches.Tarkov.UI.WeaponBuilds;
+using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess.MagazineSelector;
 
 namespace ifp.arena.bep.Patches.Tarkov.UI;
 
@@ -51,6 +52,8 @@ internal static class UIPatches
         RegisterAndEnable(new PatchGroup_QuickAccessPanel_HideEmptySlots());
         RegisterAndEnable(new PatchGroup_QuickAccessPanel_HideItemBG());
         RegisterAndEnable(new PatchGroup_QuickAccessPanel_ModifyItemIcon());
+
+        RegisterAndEnable(new Patch_AmmoSelector_Position());
 
         if (Singleton<EFT.UI.CommonUI>.Instantiated)
         {

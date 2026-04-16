@@ -30,7 +30,7 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
             ref Color ____selectedCancelColor
             )
         {
-            ____arrowOffset = new Vector2(70, 70);
+            ____arrowOffset = new Vector2(70, 50);
 
 
             var cross = __instance.transform.Find("Cancel/Image");

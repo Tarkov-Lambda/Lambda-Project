@@ -82,10 +82,8 @@
       <Dependencies Include="$(OutputPath)\Unitask.dll" />
       <Dependencies Include="$(OutputPath)\Unitask.*.dll" />
 
-      <DebugDependencies Include="../deps/libraries/ScriptEngine.dll"
-        Condition="'$(Configuration)' == 'Debug'" />
-      <DebugDependencies Include="$(OutputPath)\tracer.dll"
-        Condition="'$(Configuration)' == 'Debug'" />
+      <DebugDependencies Include="../deps/libraries/ScriptEngine.dll" Condition="'$(Configuration)' == 'Debug'" />
+      <DebugDependencies Include="$(OutputPath)\tracer.dll" Condition="'$(Configuration)' == 'Debug'" />
 
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
@@ -98,25 +96,16 @@
     </ItemGroup>
 
 
-    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps"
-      SkipUnchangedFiles="true"
-      ContinueOnError="WarnAndContinue" />
-    <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
-      SkipUnchangedFiles="true"
-      ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
 
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
 
-    <Copy SourceFiles="@(Presets)"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\"
-      SkipUnchangedFiles="true"
-      ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
 
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
-      Condition="'$(Configuration)' == 'Debug'" />
-    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      Condition="'$(Configuration)' == 'Release'" />
+    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" Condition="'$(Configuration)' == 'Debug'" />
+    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" Condition="'$(Configuration)' == 'Release'" />
   </Target>
 
   <Target Name="DeleteConflictingLibraries" AfterTargets="CopyFilesAfterBuild">
@@ -134,8 +123,7 @@
     <Delete Files="@(DebugConflicts)" Condition="'$(Configuration)' == 'Debug'" />
   </Target>
 
-  <Target Name="CreateBuild" AfterTargets="DeleteConflictingLibraries"
-    Condition="'$(Configuration)' == 'Release'">
+  <Target Name="CreateBuild" AfterTargets="DeleteConflictingLibraries" Condition="'$(Configuration)' == 'Release'">
 
     <PropertyGroup>
       <ZipOutput>$(SolutionDir)builds\Lambda-$(Version).zip</ZipOutput>
@@ -151,14 +139,10 @@
       <PluginFiles Include="$(SPTPath)\BepInEx\plugins\ifp\**\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(PluginFiles)"
-      DestinationFiles="@(PluginFiles->'$(StagingDir)\BepInEx\plugins\ifp\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PluginFiles)" DestinationFiles="@(PluginFiles->'$(StagingDir)\BepInEx\plugins\ifp\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- Create zip from staging -->
-    <ZipDirectory
-      SourceDirectory="$(StagingDir)"
-      DestinationFile="$(ZipOutput)"
-      Overwrite="true" />
+    <ZipDirectory SourceDirectory="$(StagingDir)" DestinationFile="$(ZipOutput)" Overwrite="true" />
 
   </Target>
 
