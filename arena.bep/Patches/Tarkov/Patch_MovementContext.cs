@@ -15,23 +15,20 @@ namespace ifp.arena.bep.Patches.Tarkov;
 public class Patch_CanWalk : ModulePatch
 {
     private static bool wasOnLadder = false;
-
-    private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
+    
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
     [PatchPostfix]
-    static void Postfix(MovementContext __instance, ref bool __result)
+    static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
         if (!H.IsInRaid()) return;
-
-        Player player = playerRef(__instance);
 
         if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
         {
             __result = false;
         }
 
-        if (player.IsYourPlayer)
+        if (____player.IsYourPlayer)
         {
             if (LadderManager.isOnLadder)
             {

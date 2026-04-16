@@ -11,8 +11,9 @@ public class PlayerScore
 {
     public readonly Player player;
 
-    public PlayerScoreInfo Score => score;
     private PlayerScoreInfo score;
+
+    public PlayerScoreInfo Score => score;
 
     public Faction Faction => score.Faction;
 
@@ -80,6 +81,11 @@ public class PlayerScore
                 EventBus.OnSelfReadinessChanged?.Invoke(readyState);
         }
 
+    }
+
+    public void ChangeProgress(float loadingProgress)
+    {
+        score.loadingProgress = loadingProgress;
     }
 
     public void ChangeFaction(Faction faction)

@@ -158,18 +158,24 @@ public static class InventoryResetter
                 }
             }
 
-            // plate removal in case the player just got a fresh plate carrier
-            List<Item> platesToRemove = new List<Item>();
-            AddRange(ref platesToRemove, AU.GetArmorPlates(player));
 
-            foreach (Item plateToRemove in platesToRemove)
+            UniTask.RunOnThreadPool(async () =>
             {
-                // because we are bruteforce popping plates out of an equipped plate carrier
-                // we bypass the normal transaction system
-                // in order to both pop the equipped plate and recalculate equipped armored components
-                IU.ClientRequestPopItem(plateToRemove);
-                await UniTask.Delay(25);
-            }
+                await UniTask.Delay(1000);
+                // plate removal in case the player just got a fresh plate carrier
+                List<Item> platesToRemove = new List<Item>();
+                AddRange(ref platesToRemove, AU.GetArmorPlates(player));
+
+                foreach (Item plateToRemove in platesToRemove)
+                {
+                    // because we are bruteforce popping plates out of an equipped plate carrier
+                    // we bypass the normal transaction system
+                    // in order to both pop the equipped plate and recalculate equipped armored components
+                    IU.ClientRequestPopItem(plateToRemove);
+                    await UniTask.Delay(25);
+                }
+            }).Forget();
+            
         }
         finally
         {

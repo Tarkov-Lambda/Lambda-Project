@@ -31,6 +31,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
+        return;
         if (state is MatchState.RoundPrepare)
         {
             PlayMusicEvent(H.Sounds.RoundPrepare.RandomElement());
@@ -104,7 +105,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
 internal class MusicObject : MonoBehaviour
 {
-    public float MaxVolume = 0.5f;
+    public float MaxVolume = 0.25f;
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;

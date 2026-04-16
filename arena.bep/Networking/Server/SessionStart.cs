@@ -32,7 +32,11 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
     private void PrepareForStart(SessionStartPacket packet)
     {
-        H.Session.scoreboard.Clear();
+        foreach (var playerScore in H.Session.scoreboard.Values)
+        {
+            playerScore.SessionReset();
+        }
+        
         H.Session.factionWins.Clear();
         H.Session.matchState = MatchState.None;
         H.Session.mapName = packet.mapName;
@@ -75,6 +79,16 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         if (!H.IsClient)
         {
+            switch (H.Session.currentGameMode)
+            {
+                case GameModes.FFA:
+                    H.Arena.ActiveRules = new FFAModeRules();
+                    break;
+                case GameModes.SND:
+                    H.Arena.ActiveRules = new SND_ModeRules();
+                    break;
+            }
+
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
             H.Arena.ChangeState(MatchState.Warmup);
         }
@@ -87,17 +101,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
 
             // Report back to the server that the map is loaded
-            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready, 100);
-
-            switch (H.Session.currentGameMode)
-            {
-                case GameModes.FFA:
-                    H.Arena.ActiveRules = new FFAModeRules();
-                    break;
-                case GameModes.SND:
-                    H.Arena.ActiveRules = new SND_ModeRules();
-                    break;
-            }
+            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
 
             PU.OpenEyes();
         }

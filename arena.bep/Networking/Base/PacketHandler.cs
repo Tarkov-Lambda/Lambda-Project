@@ -49,7 +49,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldLog => true; // Debugging
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
 
-    public event Action<T> AfterPacketApproved; // Misleading because this happens AFTER the execution of WhenApproved
+    public event Action<T> AfterPacketApproved;
 
     protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Anyone)
     {

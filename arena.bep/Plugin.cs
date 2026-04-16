@@ -15,6 +15,7 @@ using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.shared;
+using ifp.tracer;
 using MemoryPack;
 using SPT.Reflection.Patching;
 using System;
@@ -207,7 +208,8 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
 
         // Session Related Packets
-        RegisterSingleton<PlayerReadinessPacketHandler>();                          // Server/Client reports specific player's status
+        RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map
+        RegisterSingleton<LoadProgressPacketHandler>();                             // Reporting map loading progress
         RegisterSingleton<SessionManagerSyncPacketHandler>();                       // Server sends a snapshot of the entire session info (start of the match / on round end)
         RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)

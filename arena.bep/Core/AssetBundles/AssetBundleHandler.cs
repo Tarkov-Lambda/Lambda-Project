@@ -106,7 +106,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         UnloadAll(true);
     }
 
-    async void UnloadAll(bool includingLobby = false)
+    void UnloadAll(bool includingLobby = false)
     {
         MapLoadEvent.OnBeginUnload?.Invoke();
         foreach (var kvp in loadedAssetBundles)
@@ -115,20 +115,15 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
             if (bundle != null)
             {
                 // we do not unload lobby so that we can teleport there during reloads
-                if (bundle.name == "lobby" && !includingLobby) continue;
-
-                var tasks = new List<UniTask>();
+                if (!includingLobby && bundle.name == "lobby") continue;
 
                 foreach (var scenePath in bundle.GetAllScenePaths())
                 {
                     if (SceneManager.GetSceneByPath(scenePath).isLoaded)
                     {
-                        tasks.Add(SceneManager.UnloadSceneAsync(scenePath).ToUniTask());
+                        SceneManager.UnloadSceneAsync(scenePath);
                     }
                 }
-
-                await UniTask.WhenAll(tasks);
-                bundle.Unload(true);
 
                 kvp.Value.Unload(true);
             }
@@ -157,7 +152,7 @@ class BundleLoadingProgressReport : IProgress<float>
         if (D.TryEnterThrottle("BundleLoadingProgressReport", 7500))
         {
             D.Notify($"Loading Progress: {value * 100}%");
-            // Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
+            Singleton<LoadProgressPacketHandler>.Instance.Send(value);
         }
     }
 }

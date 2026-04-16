@@ -30,8 +30,6 @@ public class UIManager : IDisposable
 
     public void Initialize()
     {
-        H.AfterApplicationLoaded -= Initialize;
-        
         Patch_CommonUI_Awake.OnAwake += LoadUI;
         if (Singleton<CommonUI>.Instantiated)
             LoadUI(Singleton<CommonUI>.Instance);
@@ -41,6 +39,7 @@ public class UIManager : IDisposable
 
     public void Dispose()
     {
+        H.AfterApplicationLoaded -= Initialize;
         Patch_CommonUI_Awake.OnAwake -= LoadUI;
 
         foreach (var controller in disposables)

@@ -17,7 +17,6 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
     public Player Player { get; set; }
 
     public PlayerReadinessState readyState;
-    public int progress;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
@@ -25,7 +24,7 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
 public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 {
-    public void Send(PlayerReadinessState readyState, int progress = 0)
+    public void Send(PlayerReadinessState readyState)
     {
         if (H.IsHeadless) return;
 
@@ -33,7 +32,6 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         {
             Player = H.MainPlayer,
             readyState = readyState,
-            progress = progress
         };
 
         DispatchPacket(packet);
@@ -41,13 +39,12 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     // Server-authoritative broadcast: announce a state change FOR another player (e.g. disconnect).
     // Does NOT check IsHeadless — the server is allowed to speak on behalf of a peer.
-    public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState, int progress = 0)
+    public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState)
     {
         var packet = new PlayerReadinessPacket
         {
             Player = targetPlayer,
             readyState = readyState,
-            progress = progress
         };
         DispatchPacket(packet);
     }
