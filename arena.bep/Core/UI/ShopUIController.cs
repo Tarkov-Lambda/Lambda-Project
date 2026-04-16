@@ -33,11 +33,6 @@ namespace ifp.arena.bep.Core.UI
             Transform shopParent = (Field_ItemsPanel__simpleStashPanel.GetValue(itemsPanel) as SimpleStashPanel).transform.parent;
 
             shop = GameObject.Instantiate(prefabShopUI, shopParent).GetComponent<Shop>();
-            RectTransform shopRectTransform = shop.transform as RectTransform;
-            shopRectTransform.anchorMin = new Vector2(0, 0);
-            shopRectTransform.anchorMax = new Vector2(1, 1);
-            shopRectTransform.offsetMin = new Vector2(0, 0);
-            shopRectTransform.offsetMax = new Vector2(0, 0);
 
             Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
