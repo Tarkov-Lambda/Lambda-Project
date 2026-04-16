@@ -10,28 +10,10 @@ using MemoryPack;
 using Cysharp.Threading.Tasks;
 using EFT;
 using PacketHandler;
+using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.shared.Models;
 
 namespace ifp.arena.bep.networking;
-
-[MemoryPackable]
-public partial struct PlayerScoreSyncData
-{
-    public string musicKit;
-    public int playerId;
-    public int faction;
-    public int mvps;
-    public int kills;
-    public int headshots;
-    public int assists;
-    public int deaths;
-    public int money;
-    public bool isAlive;
-    public PlayerReadinessState readyState;
-
-    public int RoundDamage;
-    public int roundKills;
-    public int roundHeadshots;
-}
 
 [MemoryPackable]
 public partial struct SessionManagerSyncPacket : INetSerializable
@@ -42,8 +24,8 @@ public partial struct SessionManagerSyncPacket : INetSerializable
     public int mvpId;
     public string mapName;
 
-    public Dictionary<int, int> factionWins;
-    public PlayerScoreSyncData[] scores;
+    public Dictionary<Faction, int> factionWins;
+    public Dictionary<int, PlayerScoreInfo> scores;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionManagerSyncPacket>(reader);
@@ -66,9 +48,6 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
 
     public SessionManagerSyncPacket FormatPacket()
     {
-        // Convert Faction Enum Dictionary to Int Dictionary for the packet
-        var syncFactionWins = H.Session.factionWins.ToDictionary(k => (int)k.Key, v => v.Value);
-
         var packet = new SessionManagerSyncPacket
         {
             roundState = H.Session.matchState,
@@ -76,26 +55,8 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
             bombState = H.Session.bombState,
             mvpId = H.Session.mvpId,
             mapName = H.Session.mapName,
-            factionWins = syncFactionWins,
-
-            // Loop through KeyValuePairs to create array
-            scores = H.Session.scoreboard.Select(kvp => new PlayerScoreSyncData
-            {
-                playerId = kvp.Key,
-                faction = (int)kvp.Value.Faction,
-                mvps = kvp.Value.Mvps,
-                kills = kvp.Value.Kills,
-                headshots = kvp.Value.Headshots,
-                assists = kvp.Value.Assists,
-                deaths = kvp.Value.Deaths,
-                money = kvp.Value.Money,
-                isAlive = kvp.Value.IsAlive,
-                readyState = kvp.Value.ReadyState,
-
-                RoundDamage = kvp.Value.RoundDamage,
-                roundKills = kvp.Value.RoundKills,
-                roundHeadshots = kvp.Value.RoundHeadshots
-            }).ToArray()
+            factionWins = H.Session.factionWins,
+            scores = H.Scoreboard.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Score)
         };
 
         return packet;
@@ -123,21 +84,25 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
         H.Session.bombState = packet.bombState;
         H.Session.mvpId = packet.mvpId;
         H.Session.mapName = packet.mapName;
+        H.Session.factionWins = packet.factionWins;
 
-        if (packet.factionWins != null)
+        foreach (var syncScore in packet.scores)
         {
-            H.Session.factionWins.Clear();
-            foreach (var kvp in packet.factionWins)
-            {
-                H.Session.factionWins[(Faction)kvp.Key] = kvp.Value;
-            }
-        }
+            var id = syncScore.Key;
+            var newInfo = syncScore.Value;
 
-        foreach (PlayerScoreSyncData syncScore in packet.scores)
-        {
-            if (!H.Session.scoreboard.ContainsKey(syncScore.playerId))
-                H.Session.scoreboard[syncScore.playerId] = new PlayerScore(syncScore.playerId);
-            H.Session.scoreboard[syncScore.playerId].Sync(syncScore);
+            if (!H.Scoreboard.ContainsKey(id))
+                H.Scoreboard[id] = new PlayerScore(id);
+
+            var playerScore = H.Scoreboard[id];
+
+            var oldFaction = playerScore.Faction;
+            bool factionChanged = oldFaction != newInfo.Faction;
+
+            playerScore.Apply(newInfo);
+
+            if (!H.IsHeadless && factionChanged && id == H.MainPlayer.Id)
+                EventBus.OnSelfFactionChanged?.Invoke(newInfo.Faction);
         }
     }
 }

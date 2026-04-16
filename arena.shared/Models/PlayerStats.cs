@@ -1,12 +1,16 @@
-﻿namespace ifp.arena.shared.Models
+﻿using MemoryPack;
+
+namespace ifp.arena.shared.Models
 {
     [System.Serializable]
-    public struct PlayerScoreInfo
+    [MemoryPackable]
+    public partial struct PlayerScoreInfo
     {
         public string Name;
         public Faction Faction;
 
         public PlayerReadinessState ReadyState;
+        public float loadingProgress;
         public int Ping;
         public bool IsAdmin;
 

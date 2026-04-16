@@ -237,7 +237,7 @@ public class Plugin : BaseUnityPlugin
             _disposables.Add(new UIManager());  // not a singleton (fuck you) - тебе ебало разбить сука? не зли меня
 
             var warmup = typeof(Ladder);
-            await RegisterSingletonInRaid<LadderEventManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
+            await RegisterSingletonInRaid<LadderManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
             await RegisterSingletonInRaid<BombHandler>();                           // Handler for the entirety of Bomb's lifecycle
         }
         catch (Exception ex)

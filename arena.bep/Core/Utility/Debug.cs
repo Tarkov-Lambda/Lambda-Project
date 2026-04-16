@@ -56,6 +56,24 @@ public static class Debugging
         _throttled = false;
     }
 
+    private static readonly Dictionary<string, bool> _throttledChannel = new();
+
+    public static bool TryEnterThrottle(string key, int cooldown)
+    {
+        if (_throttledChannel.TryGetValue(key, out var active) && active)
+            return false;
+
+        _throttledChannel[key] = true;
+        Reset(key, cooldown).Forget();
+        return true;
+    }
+
+    private static async UniTaskVoid Reset(string key, int cooldown)
+    {
+        await UniTask.Delay(cooldown);
+        _throttledChannel[key] = false;
+    }
+
     // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
     // public static void PlayMusic(MusicEvent musicEvent) => D.Notify(musicEvent.ToString());
 

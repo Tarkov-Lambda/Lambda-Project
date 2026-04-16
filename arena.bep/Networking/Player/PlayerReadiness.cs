@@ -62,7 +62,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         }
 
         playerScore.ChangeReadiness(packet.readyState);
-
+        
         if (!H.IsClient)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)

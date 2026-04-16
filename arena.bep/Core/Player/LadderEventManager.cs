@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core;
 
-public class LadderEventManager : Singleton<LadderEventManager>, IDisposable
+public class LadderManager : Singleton<LadderManager>, IDisposable
 {
     public static bool isOnLadder;
     public static bool wasOriginallyGrounded;
@@ -20,7 +20,7 @@ public class LadderEventManager : Singleton<LadderEventManager>, IDisposable
     private float _ladderDistanceAccumulator = 0f;
     private Ladder _currentLader;
 
-    public LadderEventManager()
+    public LadderManager()
     {
         Ladder.onPlayerEnterLadder += OnTriggerEnter;
         Ladder.onPlayerExitLadder += OnTriggerExit;
@@ -94,11 +94,19 @@ public class LadderEventManager : Singleton<LadderEventManager>, IDisposable
             Vector2 input = H.MainPlayer.InputDirection; // x = A/D, y = W/S
             Transform camTransform = CameraClass.Instance.Camera.transform;
 
-            Vector3 forwardMove = camTransform.forward * input.y;
+            Vector3 ladderUp = _currentLader.transform.up;
+
             Vector3 sideMove = camTransform.right * input.x;
 
-            Vector3 moveDirection = forwardMove + sideMove;
-            Vector3 motionThisFrame = moveDirection * _climbSpeed * H.MainPlayer.MovementContext.PoseLevel * Time.deltaTime;
+            Vector3 verticalMove = ladderUp * input.y;
+
+            Vector3 moveDirection = verticalMove + sideMove;
+
+            Vector3 motionThisFrame =
+                moveDirection *
+                _climbSpeed *
+                H.MainPlayer.MovementContext.PoseLevel *
+                Time.deltaTime;
 
             H.MainPlayer.MovementContext.PlatformMotion = motionThisFrame;
 

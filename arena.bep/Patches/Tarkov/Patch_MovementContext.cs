@@ -33,7 +33,7 @@ public class Patch_CanWalk : ModulePatch
 
         if (player.IsYourPlayer)
         {
-            if (LadderEventManager.isOnLadder)
+            if (LadderManager.isOnLadder)
             {
                 wasOnLadder = true;
                 __result = false;

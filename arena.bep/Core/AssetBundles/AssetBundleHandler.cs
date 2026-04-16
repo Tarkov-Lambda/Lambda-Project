@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using System;
 using System.Collections.Generic;
@@ -24,29 +25,49 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
 
     public async UniTask LoadMap(string mapName)
     {
-        if (mapName != "lobby") MapLoadEvent.OnBeginLoad?.Invoke();
+        if (mapName != "lobby")
+            MapLoadEvent.OnBeginLoad?.Invoke();
 
-        AssetBundle MapBundle = await LoadAssetBundle(mapName);
-        if (MapBundle == null) return;
+        AssetBundle bundle = await LoadAssetBundle(mapName);
+        if (bundle == null) return;
 
-        string[] scenePaths = MapBundle.GetAllScenePaths();
+        string[] scenePaths = bundle.GetAllScenePaths();
         if (scenePaths.Length == 0) D.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
 
         BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
 
         // Unloading in case it's already loaded (essentially to refresh for dev)
         // also making sure it's not the lobby, because it's a persistent player safety place
-        if (SceneManager.GetSceneByPath(scenePaths[0]).isLoaded && scenePaths[0] != "lobby")
+        if (scenePaths[0] != "lobby")
         {
-            await SceneManager.UnloadSceneAsync(scenePaths[0]).ToUniTask();
+            var unloadTasks = new List<UniTask>();
+
+            foreach (var scenePath in scenePaths)
+            {
+                if (SceneManager.GetSceneByPath(scenePath).isLoaded)
+                {
+                    unloadTasks.Add(SceneManager.UnloadSceneAsync(scenePath).ToUniTask());
+                }
+            }
+
+            await UniTask.WhenAll(unloadTasks);
         }
 
-        if (!SceneManager.GetSceneByPath(scenePaths[0]).isLoaded)
+        var loadTasks = new List<UniTask>();
+        foreach (var scenePath in scenePaths)
         {
-            await SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive).ToUniTask(progressReportScene);
+            if (!SceneManager.GetSceneByPath(scenePath).isLoaded)
+            {
+                UniTask sceneLoadTask = SceneManager.LoadSceneAsync(scenePath, LoadSceneMode.Additive).ToUniTask(progressReportScene);
+
+                loadTasks.Add(sceneLoadTask);
+            }
         }
 
-        if (mapName != "lobby") MapLoadEvent.OnSuccessfulLoad?.Invoke();
+        await UniTask.WhenAll(loadTasks);
+
+        if (mapName != "lobby")
+            MapLoadEvent.OnSuccessfulLoad?.Invoke();
     }
 
     public async UniTask<AssetBundle> LoadAssetBundle(string name)
@@ -61,7 +82,6 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         // Check if it's already loaded, OR if it was previously cached as null
         if (!loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) || bundle == null)
         {
-
             BundleLoadingProgressReport progressReportBundle = new BundleLoadingProgressReport();
 
             bundle = await AssetBundle.LoadFromFileAsync(fullPath).ToUniTask(progressReportBundle);
@@ -86,7 +106,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         UnloadAll(true);
     }
 
-    void UnloadAll(bool includingLobby = false)
+    async void UnloadAll(bool includingLobby = false)
     {
         MapLoadEvent.OnBeginUnload?.Invoke();
         foreach (var kvp in loadedAssetBundles)
@@ -95,15 +115,20 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
             if (bundle != null)
             {
                 // we do not unload lobby so that we can teleport there during reloads
-                if (!includingLobby && bundle.name == "lobby") continue;
+                if (bundle.name == "lobby" && !includingLobby) continue;
+
+                var tasks = new List<UniTask>();
 
                 foreach (var scenePath in bundle.GetAllScenePaths())
                 {
                     if (SceneManager.GetSceneByPath(scenePath).isLoaded)
                     {
-                        SceneManager.UnloadSceneAsync(scenePath);
+                        tasks.Add(SceneManager.UnloadSceneAsync(scenePath).ToUniTask());
                     }
                 }
+
+                await UniTask.WhenAll(tasks);
+                bundle.Unload(true);
 
                 kvp.Value.Unload(true);
             }
@@ -128,6 +153,11 @@ class BundleLoadingProgressReport : IProgress<float>
     public void Report(float value)
     {
         CurrentProgress = value;
-        D.Log($"Loading Progress: {value * 100}%");
+
+        if (D.TryEnterThrottle("BundleLoadingProgressReport", 7500))
+        {
+            D.Notify($"Loading Progress: {value * 100}%");
+            // Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
+        }
     }
 }

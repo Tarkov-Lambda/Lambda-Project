@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MemoryPack;
 
 namespace ifp.arena.shared.Models
 {
-    public struct BuyCategory
+
+    [MemoryPackable]
+    public partial struct BuyCategory
     {
         public string name;
         public bool verticalLayout;
         public List<ShopItem> items;
     }
 
-    public struct ShopItem
+    [MemoryPackable]
+    public partial struct ShopItem
     {
         // if the item is a weapon
         // we will be finding the actual build using PresetUtils

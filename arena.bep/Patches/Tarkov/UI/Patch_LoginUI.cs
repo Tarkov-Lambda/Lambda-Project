@@ -10,11 +10,11 @@ internal class Patch_LoginUI_Awake : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(LoginUI), nameof(LoginUI.Awake));
 
-    public static bool isNewProfile { get; private set; }
+    public static bool IsNewProfile { get; private set; }
 
     [PatchPostfix]
     static void Postfix()
     {
-        isNewProfile = true;
+        // IsNewProfile = true;
     }
 }

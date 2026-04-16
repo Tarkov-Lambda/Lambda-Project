@@ -42,8 +42,11 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void Update()
     {
-        if (H.Arena is null) return;
+        if (H.Arena == null) return;
         if (H.Arena.ActiveRules is not SND_ModeRules) return;
+        if (H.Session == null) return;   // ← add this
+        if (H.Sounds == null) return;    // ← add this
+
 
         if (_beforeExplodingPlayed) return;
         if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.matchState is MatchState.RoundPlanted)
@@ -224,8 +227,8 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void Dispose()
     {
-        EventBus.OnEnter  -= OnEnter;
-        EventBus.OnEnd    -= OnEnd;
+        EventBus.OnEnter -= OnEnter;
+        EventBus.OnEnd -= OnEnd;
         UnityTicker.OnUpdate -= Update;
 
         if (bombVisuals != null)

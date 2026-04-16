@@ -52,7 +52,27 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     [PatchPrefix]
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
     {
+        // if somehow the player falls through the map on roundprepare
+        if (damageInfo.DamageType == EDamageType.Fall)
+        {
+            if (H.Session.matchState == MatchState.RoundPrepare)
+            {
+                __instance.Player.MovementContext.ResetFlying();
+             
+                PlayerScore playerScore =  H.GetPlayerScore(__instance.Player);
+
+                if (playerScore != null)
+                {
+                    Teleporter.Teleport(H.MainPlayer, H.Session.mapName, playerScore.Faction);
+                }
+
+                __instance.Player.MovementContext.ResetFlying();
+                return false;
+            }
+        }
+
         LastReceivedDamageInfo = damageInfo;
+
 
         return true;
     }

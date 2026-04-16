@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);EFT_RUNTIME</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +27,8 @@
     <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
     <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
 
-    <Reference Include="$(ManagedPath)\*.dll" />
+    <Reference Include="$(ManagedPath)\*.dll"
+      Exclude="$(ManagedPath)\mscorlib.dll;$(ManagedPath)\netstandard.dll" />
 
     <!-- <Reference Include="..\deps\libraries\*.dll" /> -->
   </ItemGroup>

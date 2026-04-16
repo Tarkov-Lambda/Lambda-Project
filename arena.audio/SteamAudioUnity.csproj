@@ -24,9 +24,9 @@
     <Compile Remove="SteamAudio/Scripts/Editor/**/*.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <Reference Include="$(BepInExPath)\core\0Harmony.dll" />

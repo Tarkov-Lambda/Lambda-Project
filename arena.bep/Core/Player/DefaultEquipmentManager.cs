@@ -48,7 +48,7 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
 
     public void AfterApplicationLoaded()
     {
-        if (Patch_LoginUI_Awake.isNewProfile)
+        if (Patch_LoginUI_Awake.IsNewProfile)
         {
             EquipRandomTacticalClothing();
         }

@@ -18,10 +18,15 @@ public class PlayerScore
 
     // meta gaming (previously known as facebook gaming)
     public PlayerReadinessState ReadyState => score.ReadyState;
+    public float LoadingProgress => score.loadingProgress;
+
     public int Ping => score.Ping;
     public bool IsAdmin => score.IsAdmin;
 
-    // Round scope
+    public bool IsAlive => score.IsAlive;
+    public int Money => score.Money;
+
+    // Match Scope
     public int Kills => score.Kills;
     public int Damage => score.Damage;
     public int Headshots => score.Headshots;
@@ -29,12 +34,10 @@ public class PlayerScore
     public int Deaths => score.Deaths;
     public int Mvps => score.Mvps;
 
-    // only the server knows this value
+    // Round Scope
     public int RoundDamage => score.RoundDamage;
     public int RoundKills => score.RoundKills;
     public int RoundHeadshots => score.RoundHeadshots;
-    public bool IsAlive => score.IsAlive;
-    public int Money => score.Money;
 
 
     public PlayerScore(int id)
@@ -50,6 +53,11 @@ public class PlayerScore
         }
     }
 
+    public void Apply(PlayerScoreInfo info)
+    {
+        score = info;
+    }
+
     public void AddFrag(bool isHeadshot)
     {
         score.Kills++;
@@ -63,11 +71,15 @@ public class PlayerScore
 
     public void ChangeReadiness(PlayerReadinessState readyState)
     {
-        score.ReadyState = readyState;
+        if (score.ReadyState != readyState)
+        {
+            score.ReadyState = readyState;
 
-        if (H.IsHeadless) return;
-        if (player == H.MainPlayer)
-            EventBus.OnSelfReadinessChanged?.Invoke(readyState);
+            if (H.IsHeadless) return;
+            if (player == H.MainPlayer)
+                EventBus.OnSelfReadinessChanged?.Invoke(readyState);
+        }
+
     }
 
     public void ChangeFaction(Faction faction)
@@ -129,30 +141,6 @@ public class PlayerScore
         score.RoundDamage = 0;
         score.RoundHeadshots = 0;
         score.RoundKills = 0;
-    }
-
-    public void Sync(PlayerScoreSyncData packet)
-    {
-        var newFaction = (Faction)packet.faction;
-        bool factionChanged = newFaction != Faction;
-        score.Faction = newFaction;
-
-        // Mirror the event that ChangeFaction fires on the server, so clients get
-        // the side-swap notification without needing to go through ChangeFaction().
-        if (factionChanged && !H.IsHeadless && player == H.MainPlayer)
-            EventBus.OnSelfFactionChanged?.Invoke(Faction);
-
-        score.Mvps = packet.mvps;
-        score.Kills = packet.kills;
-        score.Headshots = packet.headshots;
-        score.Assists = packet.assists;
-        score.Deaths = packet.deaths;
-        score.Money = packet.money;
-        score.IsAlive = packet.isAlive;
-        score.ReadyState = packet.readyState;
-
-        score.RoundKills = packet.roundKills;
-        score.RoundHeadshots = packet.roundHeadshots;
     }
 
     public void AddMoney(int amount)
