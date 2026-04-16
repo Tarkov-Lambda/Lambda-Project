@@ -76,7 +76,8 @@ public static class Helpers
     public static List<Player> AllPlayers                               => IsInRaid() ? GetAllPlayers() : new();
 
     public static AudioHandler AudioHandler                             => IsInRaid() ? Singleton<AudioHandler>.Instance : null;
-    public static LambdaSounds Sounds                                   => IsInRaid() ? Singleton<AudioHandler>.Instance.prefabSounds : null;
+    public static LambdaSounds Sounds                                   => IsInRaid() ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
+    public static MusicKit MusicKit                                     => IsInRaid() ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
 
     public static BombHandler BombHandler                               => IsInRaid() ? Singleton<BombHandler>.Instance : null;
     public static FXHandler FXHandler                                   => IsInRaid() ? Singleton<FXHandler>.Instance : null;

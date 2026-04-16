@@ -106,8 +106,9 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                 else shouldPlay = false;
                 break;
             case BombState.Exploded:
-                pos = H.BombHandler.BombPlantedPosition;
-                clip = H.Sounds.Planted;
+                // pos = H.BombHandler.BombPlantedPosition;
+                // clip = H.Sounds.Planted;
+                shouldPlay = false;
                 StopBombTick();
                 break;
             default:
@@ -132,7 +133,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
         _bombTickCancellationSource = new CancellationTokenSource();
         Vector3 slightUpPos = pos;
-        slightUpPos.y += 0.5f;
+        slightUpPos.y += 0.05f;
         PlayEverySecondAsync(slightUpPos, H.Sounds.Tick, _bombTickCancellationSource.Token).Forget();
     }
 
@@ -157,7 +158,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                 if (token.IsCancellationRequested)
                     break;
 
-                H.AudioHandler.PlayAtPoint(pos, clip);
+                H.AudioHandler.PlayAtPoint(pos, clip, 75);
             }
         }
         catch (OperationCanceledException)

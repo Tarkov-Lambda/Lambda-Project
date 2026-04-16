@@ -13,16 +13,18 @@ namespace ifp.arena.bep.Core.FX;
 
 public class AudioHandler : Singleton<AudioHandler>, IDisposable
 {
-    public AssetBundle audioBundle { get; private set; }
-    public LambdaSounds prefabSounds { get; private set; }
+    public AssetBundle AudioBundle { get; private set; }
+    public LambdaSounds PrefabSounds { get; private set; }
+    public MusicKit MusicKitSounds { get; private set; }
 
     public AudioHandler()
     {
-        audioBundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "audio"));
-        prefabSounds = audioBundle.LoadAsset<LambdaSounds>("Assets/Sounds/SoundData.asset");
+        AudioBundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "audio"));
+        PrefabSounds = AudioBundle.LoadAsset<LambdaSounds>("Assets/Sounds/SoundData.asset");
+        MusicKitSounds = AudioBundle.LoadAsset<MusicKit>("Assets/Sounds/MusicKitSoundData.asset");
     }
 
-    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 10000, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Environment)
+    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 75, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Environment)
     {
         return H.BetterAudio.PlayAtPoint(
             pos,
@@ -36,7 +38,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
 
     public void Dispose()
     {
-        audioBundle.Unload(false);
+        AudioBundle.Unload(false);
         Release(this);
     }
 }

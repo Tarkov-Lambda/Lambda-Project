@@ -12,7 +12,6 @@ public class LambdaSounds : ScriptableObject
     public AudioClip[] HeadshotHelmet;
     public AudioClip[] HeadshotFlesh;
 
-
     [Header("Bomb SFX")]
     public AudioClip Tick;
     public AudioClip Planting;
@@ -31,11 +30,6 @@ public class LambdaSounds : ScriptableObject
     public AudioClip SmokeSmoking;
     public AudioClip SmokeDissipating;
 
-
-    [Header("Music")]
-    public AudioClip[] RoundPrepare;
-    public AudioClip BombPlanted45;
-    public AudioClip Round10Seconds;
-    public AudioClip RoundWon;
-    public AudioClip RoundLost;
+    [Header("Other")]
+    public AudioClip[] CountdownTick;
 }
