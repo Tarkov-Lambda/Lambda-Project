@@ -11,6 +11,6 @@ obj/
 .vs/
 .vsconfig
 
-builds/
+/builds/
 
 # Unfit for distribution

@@ -26,7 +26,7 @@ public static class FactoryUtilities
     // I assume this is like armor/headwear type shit
     public static IEnumerable<EquipmentBuildClass> EquipmentPresets => EquipmentBuildsStorage.EquipmentBuilds.Values;
     // BSG or user made weapon presets.
-    public static IEnumerable<WeaponBuildClass> WeaponPresets => WeaponBuildsStorage.Dictionary_0.Values;
+    public static IEnumerable<WeaponBuildClass> Presets => WeaponBuildsStorage.Dictionary_0.Values;
 
     public static List<string> GetAllWeaponTemplateIds()
     {

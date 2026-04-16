@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <Product>Lambda</Product>
-    <Version>0.3.51</Version>
+    <Version>0.4.12</Version>
     <Description>Developed by ifp and tarkin</Description>
   </PropertyGroup>
 
@@ -41,7 +41,7 @@
     <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
     <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
 
-    <!-- Escape From Tarkov Managed DLLs -->
+    <!-- EFT Managed DLLs -->
     <Reference Include="$(ManagedPath)\ItemComponent.Types.dll" />
     <Reference Include="$(ManagedPath)\Assembly-CSharp.dll" />
     <Reference Include="$(ManagedPath)\Comfort.Unity.dll" />
@@ -93,7 +93,7 @@
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
 
       <Configs Include="../deps/configs/*.cfg" />
-      <WeaponPresets Include="../deps/configs/WeaponPresets/Builds/*.json" />
+      <Presets Include="../deps/configs/Presets/Builds/*.json" />
       <JSON Include="../deps/configs/*.jsonc" />
     </ItemGroup>
 
@@ -108,8 +108,8 @@
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
 
-    <!-- <Copy SourceFiles="@(WeaponPresets)"
-      DestinationFiles="$(SPTPath)\BepInEx\plugins\ifp\json\WeaponPresets\Builds\" /> -->
+    <!-- <Copy SourceFiles="@(Presets)"
+      DestinationFiles="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\" /> -->
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
       Condition="'$(Configuration)' == 'Debug'" />

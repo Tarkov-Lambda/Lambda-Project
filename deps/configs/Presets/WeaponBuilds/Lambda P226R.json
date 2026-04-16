@@ -1,0 +1,87 @@
+[
+  {
+    "_id": "69df0645668a8d2956003e59",
+    "_tpl": "56d59856d2720bd8418b456a",
+    "upd": {
+      "Repairable": {
+        "MaxDurability": 100.0,
+        "Durability": 100.0
+      },
+      "FireMode": {
+        "FireMode": "single"
+      }
+    }
+  },
+  {
+    "_id": "69df022c78a677bdb1000aec",
+    "_tpl": "587de4282459771bca0ec90b",
+    "slotId": "mod_barrel",
+    "parentId": "69df0645668a8d2956003e59"
+  },
+  {
+    "_id": "69df022c78a677bdb1000b5f",
+    "_tpl": "5b39ffbd5acfc47a8773fb06",
+    "slotId": "mod_pistol_grip",
+    "parentId": "69df0645668a8d2956003e59"
+  },
+  {
+    "_id": "69df022c78a677bdb1000b2d",
+    "_tpl": "5bffe7c50db834001d23ece1",
+    "slotId": "mod_reciever",
+    "parentId": "69df0645668a8d2956003e59"
+  },
+  {
+    "_id": "69df0645668a8d2956003e5f",
+    "_tpl": "56d59948d2720bb7418b4582",
+    "slotId": "mod_magazine",
+    "parentId": "69df0645668a8d2956003e59"
+  },
+  {
+    "_id": "69df022c78a677bdb1000af9",
+    "_tpl": "5c6165902e22160010261b28",
+    "slotId": "mod_muzzle",
+    "parentId": "69df022c78a677bdb1000aec"
+  },
+  {
+    "_id": "69df022c78a677bdb1000b52",
+    "_tpl": "56ea7293d2720b8d4b8b45ba",
+    "slotId": "mod_sight_rear",
+    "upd": {
+      "Sight": {
+        "ScopesCurrentCalibPointIndexes": [
+          0
+        ],
+        "ScopesSelectedModes": [
+          0
+        ],
+        "SelectedScope": 0,
+        "ScopeZoomValue": 0.0
+      }
+    },
+    "parentId": "69df022c78a677bdb1000b2d"
+  },
+  {
+    "_id": "69df022c78a677bdb1000b56",
+    "_tpl": "577d128124597739d65d0e56",
+    "slotId": "mod_scope",
+    "parentId": "69df022c78a677bdb1000b52"
+  },
+  {
+    "_id": "69df022c78a677bdb1000b58",
+    "_tpl": "577d141e24597739c5255e01",
+    "slotId": "mod_scope",
+    "upd": {
+      "Sight": {
+        "ScopesCurrentCalibPointIndexes": [
+          0
+        ],
+        "ScopesSelectedModes": [
+          0
+        ],
+        "SelectedScope": 0,
+        "ScopeZoomValue": 0.0
+      }
+    },
+    "parentId": "69df022c78a677bdb1000b56"
+  }
+]

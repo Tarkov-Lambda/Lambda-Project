@@ -1,0 +1,102 @@
+[
+  {
+    "_id": "69df0692668a8d2956003f73",
+    "_tpl": "5e00903ae9dc277128008b87",
+    "upd": {
+      "Repairable": {
+        "MaxDurability": 100.0,
+        "Durability": 100.0
+      },
+      "Foldable": {
+        "Folded": false
+      },
+      "FireMode": {
+        "FireMode": "single"
+      }
+    }
+  },
+  {
+    "_id": "69df0692668a8d2956003f74",
+    "_tpl": "5de8eac42a78646d96665d91",
+    "slotId": "mod_magazine",
+    "parentId": "69df0692668a8d2956003f73"
+  },
+  {
+    "_id": "69df022c78a677bdb1000c07",
+    "_tpl": "5de8f237bbaf010b10528a70",
+    "slotId": "mod_muzzle",
+    "parentId": "69df0692668a8d2956003f73"
+  },
+  {
+    "_id": "69df0692668a8d2956003f75",
+    "_tpl": "5de910da8b6c4240ba2651b5",
+    "slotId": "mod_stock",
+    "parentId": "69df0692668a8d2956003f73"
+  },
+  {
+    "_id": "69df0692668a8d2956003f76",
+    "_tpl": "5e0090f7e9dc277128008b93",
+    "slotId": "mod_reciever",
+    "parentId": "69df0692668a8d2956003f73"
+  },
+  {
+    "_id": "69df0692668a8d2956003f78",
+    "_tpl": "5de922d4b11454561e39239f",
+    "slotId": "mod_charge",
+    "parentId": "69df0692668a8d2956003f73"
+  },
+  {
+    "_id": "69df0692668a8d2956003f79",
+    "_tpl": "5de8fbf2b74cd90030650c79",
+    "slotId": "mod_mount_000",
+    "parentId": "69df0692668a8d2956003f73"
+  },
+  {
+    "_id": "69df022c78a677bdb1000c09",
+    "_tpl": "5de8f2d5b74cd90030650c72",
+    "slotId": "mod_muzzle",
+    "parentId": "69df022c78a677bdb1000c07"
+  },
+  {
+    "_id": "69df022c78a677bdb1000c05",
+    "_tpl": "58491f3324597764bc48fa02",
+    "slotId": "mod_scope",
+    "upd": {
+      "Sight": {
+        "ScopesCurrentCalibPointIndexes": [
+          0
+        ],
+        "ScopesSelectedModes": [
+          0
+        ],
+        "SelectedScope": 0,
+        "ScopeZoomValue": 0.0
+      }
+    },
+    "parentId": "69df0692668a8d2956003f76"
+  },
+  {
+    "_id": "69df0692668a8d2956003f77",
+    "_tpl": "5de8fb539f98ac2bc659513a",
+    "slotId": "mod_sight_rear",
+    "upd": {
+      "Sight": {
+        "ScopesCurrentCalibPointIndexes": [
+          0
+        ],
+        "ScopesSelectedModes": [
+          0
+        ],
+        "SelectedScope": 0,
+        "ScopeZoomValue": 0.0
+      }
+    },
+    "parentId": "69df0692668a8d2956003f76"
+  },
+  {
+    "_id": "69df022c78a677bdb1000b7c",
+    "_tpl": "59f8a37386f7747af3328f06",
+    "slotId": "mod_foregrip",
+    "parentId": "69df0692668a8d2956003f79"
+  }
+]

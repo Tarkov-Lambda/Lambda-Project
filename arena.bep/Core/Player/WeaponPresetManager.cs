@@ -14,8 +14,8 @@ namespace ifp.arena.bep.Core;
 
 public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 {
-    private string _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets");
-    private readonly string _buildsDirectoryPath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", "Builds");
+    private string _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "Presets");
+    private readonly string _buildsDirectoryPath = Path.Combine(Plugin.pathToConfigs, "Presets", "WeaponBuilds");
 
     // template bsgId -> WeaponBuildClass.MongoID_0
     public Dictionary<string, string> SelectedGunPresetMap = new();
@@ -39,7 +39,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
     public async void InitializeOnApplicationLoad()
     {
-        _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "WeaponPresets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
+        _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "Presets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
 
         // Wait for all custom presets to finish importing and saving
         await ImportExternalPresetsFromDisk();
@@ -67,12 +67,12 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     {
         if (SelectedGunPresetMap.TryGetValue(bsgId, out var mongoId))
         {
-            var matchByMongo = FU.WeaponPresets.FirstOrDefault(b => b.MongoID_0 == mongoId);
+            var matchByMongo = FU.Presets.FirstOrDefault(b => b.MongoID_0 == mongoId);
             if (matchByMongo != null)
                 return matchByMongo;
         }
 
-        var userBuild = FU.WeaponPresets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
+        var userBuild = FU.Presets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
         if (userBuild != null)
         {
             // var build = FU.SerializeItem(userBuild.Item);
@@ -80,7 +80,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
             return userBuild;
         }
 
-        return FU.WeaponPresets.FirstOrDefault(b => b.Item?.TemplateId == bsgId);
+        return FU.Presets.FirstOrDefault(b => b.Item?.TemplateId == bsgId);
     }
 
     private void GenerateDefaultSelectionMap()
