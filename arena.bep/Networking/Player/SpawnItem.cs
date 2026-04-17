@@ -81,17 +81,17 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     {
         rejectionReason = null;
 
-        // if (!H.MainPlayerScore.CanBuy())
-        // {
-        //     rejectionReason = "Buy time is over.";
-        //     return false;
-        // }
+        if (!H.MainPlayerScore.CanBuy())
+        {
+            rejectionReason = "Buy time is over.";
+            return false;
+        }
 
         var placement = AU.GetItemPlacement(packet.item, packet.Player);
 
-        if(placement.Kind == PlacementKind.None)
+        if (placement.Kind == PlacementKind.None)
         {
-            rejectionReason = "Server can't locate a viable location for an item.";
+            rejectionReason = "Server can't locate a viable location for a bought item";
             return false;
         }
 
@@ -100,6 +100,10 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
             D.Log("Mismatching item placement, overriding");
             packet.placement = placement;
         }
+
+        // forcing the item to 1 count (sometimes unstackable items get an insane value that makes no sense and breaks shit)
+        if (packet.item.StackObjectsCount != 1)
+            packet.item.StackObjectsCount = 1;
 
         return true;
     }

@@ -175,7 +175,7 @@ public class SharedEnd : IGameState
     {
         IU.GarbageCollectWorldLoot();
         H.RagdollCreator.ClearAllCorpses();
-        H.BombHandler.bombVisuals?.SetActive(false);
+        H.BombHandler.BombVisuals?.SetActive(false);
     }
 }
 

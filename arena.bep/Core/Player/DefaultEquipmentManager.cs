@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Comfort.Common;
+using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using ifp.arena.bep.Core.UI;
@@ -17,8 +18,7 @@ public struct PresetManagerSlotInfo
     public bool isRequired;
 }
 
-// this manager deals with capturing the equipment that the player brings into the raid
-// for later use during inventory resetting (in case the player's corpse was looted)
+// this manager deals with capturing the equipment that the player brings into the raid for inventory resetting
 // also it equips a random upper/lower whenever a new profile has been created
 public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
 {
@@ -62,32 +62,46 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
 
     // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
+    // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     private void CapturePreset()
     {
         if (H.IsHeadless) return;
 
         foreach (var presetInfo in PresetInfoConfig)
-        {
-            // When a person enters the raid, their slots override defaults. if a required slot does not have an item, we use default.
-            Item item = H.MainInventory.Equipment.GetSlot(presetInfo.Key).ContainedItem;
-            if (item == null && presetInfo.Value.isRequired
-            // || (presetInfo.Key is EquipmentSlot.TacticalVest && AU.IsTacRigArmored(item as VestItemClass))
-            // || presetInfo.Key is EquipmentSlot.ArmorVest
-            )
+        { 
+            Item equippedItem = null;
+
+            // Whatever item the person brought in raid
+            Item existingItem = H.MainPlayer.GetSlotItem(presetInfo.Key);
+
+            if (existingItem != null)
             {
-                item = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
+                if (presetInfo.Key is EquipmentSlot.TacticalVest or EquipmentSlot.ArmorVest)
+                {
+                    CompoundItem armor = existingItem as CompoundItem;
+                    if (armor.CanFitPlates())
+                    {
+                        equippedItem = existingItem;
+                    }
+                }
+                else equippedItem = existingItem;
+            }
+
+            if (equippedItem == null && presetInfo.Value.isRequired)
+            {
+                equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
             }
 
             // If the tactical rig is armoured, skip armor vest
             if (presetInfo.Key is EquipmentSlot.ArmorVest)
             {
-                if (AU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                if (PU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
                 {
                     continue;
                 }
             }
 
-            RecordedItems[presetInfo.Key] = item;
+            RecordedItems[presetInfo.Key] = equippedItem;
         }
     }
 

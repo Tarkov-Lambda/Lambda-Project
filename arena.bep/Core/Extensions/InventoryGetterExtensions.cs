@@ -1,0 +1,136 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comfort.Common;
+using Cysharp.Threading.Tasks;
+using EFT;
+using EFT.InventoryLogic;
+using EFT.UI;
+using ifp.arena.bep.Core.Gamemode;
+using UnityEngine;
+
+namespace ifp.arena.bep.Core;
+
+public static class InventoryGetterExtensions
+{
+    public static Item GetSlotItem(this Player player, EquipmentSlot slotType) => player.Equipment.GetSlot(slotType).ContainedItem;
+
+    public static SearchableItemItemClass GetPlayerPockets(this Player player) => player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
+
+    public static VestItemClass GetTacRig(this Player player) => player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
+
+    public static IEnumerable<T> GetVestAndPocketGridItems<T>(this Player player, CompoundItem vest = null) where T : Item
+    {
+        vest ??= player.GetSlotItem(EquipmentSlot.TacticalVest) as CompoundItem;
+
+        var pockets = GetPlayerPockets(player);
+
+        if (vest?.Grids != null)
+        {
+            foreach (var grid in vest.Grids)
+            {
+                if (grid?.Items == null) continue;
+
+                foreach (var item in grid.Items)
+                {
+                    if (item is T typed)
+                        yield return typed;
+                }
+            }
+        }
+
+        if (pockets?.Grids != null)
+        {
+            foreach (var grid in pockets.Grids)
+            {
+                if (grid?.Items == null) continue;
+
+                foreach (var item in grid.Items)
+                {
+                    if (item is T typed)
+                        yield return typed;
+                }
+            }
+        }
+    }
+    public static IEnumerable<MagazineItemClass> GetMatchingMags(this Player player, string magTemplateId, CompoundItem vest = null)
+    {
+        return GetVestAndPocketGridItems<MagazineItemClass>(player, vest).Where(m => m.TemplateId == magTemplateId);
+    }
+
+    public static List<Weapon> GetAllWeapons(this Player player)
+    {
+        List<Weapon> weapons = new();
+        foreach (var slot in player.Equipment.AllSlots)
+        {
+            foreach (var item in slot.Items)
+            {
+                if (item is Weapon weapon)
+                {
+                    weapons.Add(weapon);
+                }
+            }
+        }
+        return weapons;
+    }
+
+    public static bool CanFitPlates(this CompoundItem compoundItem)
+    {
+        var armorHolder = compoundItem.GetItemComponent<ArmorHolderComponent>();
+        D.DumpFile(armorHolder, 2);
+        if (armorHolder == null)
+            return false;
+
+        var hasAnyPlateSlots = armorHolder.ArmorSlots.Any(slot => slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase));
+        return hasAnyPlateSlots;
+    }
+
+    public static CompoundItem GetPlateCarrier(this Player player)
+    {
+        CompoundItem plateCarrier = null;
+
+        if (player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem is VestItemClass tacRig)
+        {
+            if (tacRig.IsTacRigArmored())
+            {
+                plateCarrier = tacRig;
+            }
+        }
+
+        if (player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem is ArmorItemClass armorVest)
+            plateCarrier = armorVest;
+
+        if (plateCarrier != null && plateCarrier.CanFitPlates())
+            return plateCarrier;
+
+        return null;
+    }
+
+    public static bool IsTacRigArmored(this VestItemClass tacRig)
+    {
+        var tacRigTemplate = tacRig?.Template as VestTemplateClass;
+        if (tacRigTemplate.BlocksArmorVest) return true;
+        return false;
+    }
+
+    public static IEnumerable<Item> GetArmorPlates(this Player player)
+    {
+        CompoundItem plateHolder = player.GetPlateCarrier();
+
+        if (plateHolder == null) yield break;
+
+        foreach (var component in plateHolder.Components)
+        {
+            if (component is not ArmorHolderComponent armorHolder) continue;
+
+            foreach (var slot in armorHolder.ArmorSlots)
+            {
+                if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return slot.ContainedItem;
+                }
+            }
+        }
+    }
+}

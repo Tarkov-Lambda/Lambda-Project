@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,34 +14,18 @@ namespace ifp.arena.bep.Core;
 
 public static class PlayerUtilities
 {
-    public static SearchableItemItemClass GetPlayerPockets(Player player) => player.Equipment.GetSlot(EquipmentSlot.Pockets).ContainedItem as SearchableItemItemClass;
-    public static Item GetPlayerSlotItem(Player player, EquipmentSlot slotType) => player.Equipment.GetSlot(slotType).ContainedItem;
-
-    public static IEnumerable<T> GetVestAndPocketGridItems<T>(Player player, CompoundItem vest) where T : Item
+    public static bool IsTacRigArmored(VestItemClass tacRig)
     {
-        var pockets = GetPlayerPockets(player);
-        var vestItems = vest?.Grids.SelectMany(g => g.Items) ?? Enumerable.Empty<Item>();
-        var pocketItems = pockets?.Grids.SelectMany(g => g.Items) ?? Enumerable.Empty<Item>();
-        return vestItems.Concat(pocketItems).OfType<T>();
+        var tacRigTemplate = tacRig?.Template as VestTemplateClass;
+        if (tacRigTemplate.BlocksArmorVest) return true;
+        return false;
     }
 
-    public static IEnumerable<MagazineItemClass> GetMatchingMags(Player player, CompoundItem vest, string magTemplateId) =>
-    GetVestAndPocketGridItems<MagazineItemClass>(player, vest).Where(m => m.TemplateId == magTemplateId);
-
-    public static List<Weapon> GetPlayerWeapons(Player player)
+    public static bool CanArmorFitPlates(VestItemClass tacRig)
     {
-        List<Weapon> weapons = new();
-        foreach (var slot in player.Equipment.AllSlots)
-        {
-            foreach (var item in slot.Items)
-            {
-                if (item is Weapon weapon)
-                {
-                    weapons.Add(weapon);
-                }
-            }
-        }
-        return weapons;
+        var tacRigTemplate = tacRig?.Template as VestTemplateClass;
+        if (tacRigTemplate.BlocksArmorVest) return true;
+        return false;
     }
 
     public static async Task CloseEyes(bool playDeathAudio = true, bool openAfter = true, int closeDelay = 750, int openDelay = 4500)

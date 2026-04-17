@@ -13,7 +13,7 @@ public class LambdaSounds : ScriptableObject
     public AudioClip[] HeadshotFlesh;
 
     [Header("Bomb SFX")]
-    public AudioClip Tick;
+    public AudioClip BombTick;
     public AudioClip Planting;
     public AudioClip Planted;
     public AudioClip Defusing;

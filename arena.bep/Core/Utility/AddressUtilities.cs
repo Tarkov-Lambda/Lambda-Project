@@ -59,7 +59,7 @@ public static class AddressUtilities
 
     private static ItemPlacement ResolveArmorPlatePlacement(Player player)
     {
-        var plateHolder = AU.GetPlateCarrier(player);
+        var plateHolder = player.GetPlateCarrier();
         foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
         {
             foreach (var slot in armorHolder.ArmorSlots)
@@ -86,7 +86,7 @@ public static class AddressUtilities
         var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
         if (vest == null) return ItemPlacement.None;
 
-        var pockets = PU.GetPlayerPockets(player);
+        var pockets = player.GetPlayerPockets();
         var allContainers = pockets.Containers.Concat(vest.Containers);
 
         bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
@@ -111,61 +111,5 @@ public static class AddressUtilities
 
         // Fallback to any grid
         return FindPlacement(allContainers, _ => true);
-    }
-
-    public static CompoundItem GetPlateCarrier(Player player)
-    {
-        VestItemClass tacRig = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as VestItemClass;
-        if (tacRig != null)
-        {
-            if (IsTacRigArmored(tacRig))
-            {
-                return tacRig;
-            }
-        }
-
-        ArmorItemClass armorVest = player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorItemClass;
-        if (armorVest != null)
-            return armorVest;
-
-        return null;
-    }
-
-    public static bool IsTacRigArmored(VestItemClass tacRig)
-    {
-        var tacRigTemplate = tacRig?.Template as VestTemplateClass;
-        if (tacRigTemplate.BlocksArmorVest) return true;
-        return false;
-    }
-
-    public static IEnumerable<Item> GetArmorPlates(Player player)
-    {
-        var plateHolder = GetPlateCarrier(player);
-
-        if (plateHolder == null) yield break;
-
-        foreach (var component in plateHolder.Components)
-        {
-            if (component is not ArmorHolderComponent armorHolder) continue;
-
-            foreach (var slot in armorHolder.ArmorSlots)
-            {
-                if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return slot.ContainedItem;
-                }
-            }
-        }
-    }
-
-    public static void GarbageCollectWorldLoot()
-    {
-        ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
-
-        foreach (ObservedLootItem loot in allLoot)
-        {
-            if (!loot.isActiveAndEnabled) continue;
-            loot.Kill();
-        }
     }
 }

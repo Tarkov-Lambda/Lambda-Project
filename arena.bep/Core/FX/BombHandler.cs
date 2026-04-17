@@ -23,7 +23,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     public BetterSource LastBombSource { get; private set; }
     public BetterSource LastBombTickSource { get; private set; }
 
-    public GameObject bombVisuals { get; private set; }
+    public GameObject BombVisuals { get; private set; }
     public Vector3 BombPlantedPosition { get; set; } // yes it's not really supposed to be public set;
 
     private CancellationTokenSource _bombTickCancellationSource;
@@ -38,6 +38,27 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         EventBus.OnEnter += OnEnter;
         EventBus.OnEnd += OnEnd;
         UnityTicker.OnUpdate += Update;
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnEnter -= OnEnter;
+        EventBus.OnEnd -= OnEnd;
+        UnityTicker.OnUpdate -= Update;
+
+        if (BombVisuals != null)
+        {
+            UnityEngine.Object.Destroy(BombVisuals);
+        }
+
+        Reset();
+        Release(this);
+    }
+
+    public void Reset()
+    {
+        StopBombTick();
+        _beforeExplodingPlayed = false;
     }
 
     public void Update()
@@ -134,7 +155,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         _bombTickCancellationSource = new CancellationTokenSource();
         Vector3 slightUpPos = pos;
         slightUpPos.y += 0.05f;
-        PlayEverySecondAsync(slightUpPos, H.Sounds.Tick, _bombTickCancellationSource.Token).Forget();
+        PlayEverySecondAsync(slightUpPos, H.Sounds.BombTick, _bombTickCancellationSource.Token).Forget();
     }
 
     public void StopBombTick()
@@ -171,18 +192,18 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     {
         Item bombItem = IU.CreateItemFromTemplateId(SND_ModeRules.bombTemplateId);
         await IU.LoadBundlesForItem(bombItem);
-        bombVisuals = H.PoolManagerClass.CreateLootPrefab(bombItem, ECameraType.Default);
-        bombVisuals?.SetActive(false);
+        BombVisuals = H.PoolManagerClass.CreateLootPrefab(bombItem, ECameraType.Default);
+        BombVisuals?.SetActive(false);
 
-        foreach (var component in bombVisuals.GetComponentsInChildren<Component>(true))
+        foreach (var component in BombVisuals.GetComponentsInChildren<Component>(true))
         {
             if (component is Renderer or Transform or LODGroup or MeshFilter) continue;
             Component.Destroy(component);
         }
 
-        bombVisuals.GetOrAddComponent<bombasik>();
+        BombVisuals.GetOrAddComponent<bombasik>();
 
-        UnityEngine.Object.DontDestroyOnLoad(bombVisuals);
+        UnityEngine.Object.DontDestroyOnLoad(BombVisuals);
     }
 
     public void SetBombVisuals(BombStatePacket bombStatePacket)
@@ -190,7 +211,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         if (bombStatePacket.state == BombState.Planted)
         {
             BombPlantedPosition = bombStatePacket.position;
-            bombVisuals.transform.position = bombStatePacket.position;
+            BombVisuals.transform.position = bombStatePacket.position;
         }
 
         switch (bombStatePacket.state)
@@ -198,10 +219,10 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
             case BombState.Defusing:
             case BombState.Defused:
             case BombState.Planted:
-                bombVisuals?.SetActive(true);
+                BombVisuals?.SetActive(true);
                 break;
             default:
-                bombVisuals?.SetActive(false);
+                BombVisuals?.SetActive(false);
                 break;
         }
 
@@ -209,7 +230,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         {
             if (!H.IsHeadless)
             {
-                Vector3 explosionCenter = bombVisuals.transform.position;
+                Vector3 explosionCenter = BombVisuals.transform.position;
                 float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
                 if (distance <= 25f)
                 {
@@ -220,27 +241,6 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         }
     }
 
-    public void Reset()
-    {
-        StopBombTick();
-        _beforeExplodingPlayed = false;
-    }
-
-    public void Dispose()
-    {
-        EventBus.OnEnter -= OnEnter;
-        EventBus.OnEnd -= OnEnd;
-        UnityTicker.OnUpdate -= Update;
-
-        if (bombVisuals != null)
-        {
-            UnityEngine.Object.Destroy(bombVisuals);
-            bombVisuals = null;
-        }
-
-        Reset();
-        Release(this);
-    }
 }
 
 public class bombasik : InteractableObject

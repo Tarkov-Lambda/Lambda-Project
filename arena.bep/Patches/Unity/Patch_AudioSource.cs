@@ -35,7 +35,7 @@ internal class Patch_AudioSource_set_spatialBlend : ModulePatch
 
         spatCache.bridge.spatialBlend = Mathf.Clamp01(value);
 
-        __instance.spatialize = false;
+        // __instance.spatialize = false;
         value = 0f;
 
         return true;

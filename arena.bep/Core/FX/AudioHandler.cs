@@ -1,5 +1,7 @@
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using EFT.InventoryLogic;
+using EFT.UI;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
@@ -34,6 +36,12 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
             rolloff: rolloff,
             volume: 1f
         );
+    }
+
+    public static void PlayEquipSound(Item item)
+    {
+        AudioClip clip = H.EFTGUISounds.GetItemClip(item.ItemSound, EInventorySoundType.drop);
+        if (clip != null) H.EFTGUISounds.PlaySound(clip);
     }
 
     public void Dispose()

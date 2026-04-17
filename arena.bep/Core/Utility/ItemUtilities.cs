@@ -13,6 +13,7 @@ using EFT.Interactive;
 using Fika.Core.Main.Players;
 using HarmonyLib;
 using System.Reflection;
+using ifp.arena.bep.Core.FX;
 
 namespace ifp.arena.bep.Core;
 
@@ -102,15 +103,15 @@ public static class ItemUtilities
                     bool removed;
                     if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
                     {
-                        removed = await TryPopContainedItem(placement.Slot, H.MainPlayer);
+                        removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
                     }
                     else
                     {
                         D.LogInventory("Trying to remove an item");
                         if (templateItem is Weapon)
-                            removed = await TryThrowWeaponAndMags(placement.Slot, H.MainPlayer);
+                            removed = await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot);
                         else
-                            removed = await TryThrowContainedItem(placement.Slot, H.MainPlayer);
+                            removed = await H.MainPlayer.TryThrowContainedItem(placement.Slot);
                     }
 
                     if (!removed)
@@ -158,279 +159,12 @@ public static class ItemUtilities
     public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
     {
         await UniTask.Delay(25);
-        await PlaceItem(item, player, placement);
+        await player.PlaceItem(item, placement);
 
         if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
-        if (player.IsYourPlayer) PlayEquipSound(item);
+        if (player.IsYourPlayer) AudioHandler.PlayEquipSound(item);
     }
-
-    // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
-    // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
-    public static async UniTask<bool> TryPopContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
-        => await TryOperateOnSlot(equipmentSlot, player, TryPopItem, waitUntilStationary, extraBackpackWait: true);
-
-    public static async UniTask<bool> TryThrowContainedItem(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
-        => await TryOperateOnSlot(equipmentSlot, player, TryThrowItem, waitUntilStationary);
-
-
-    private static async UniTask<bool> TryOperateOnSlot(
-        EquipmentSlot equipmentSlot,
-        Player player,
-        Func<Item, Player, UniTask<bool>> operation,
-        bool waitUntilStationary,
-        bool extraBackpackWait = false)
-    {
-        Item item = PU.GetPlayerSlotItem(player, equipmentSlot);
-        if (item == null) return true;
-
-        if (waitUntilStationary)
-        {
-            await UniTask.WaitUntil(() => player.MovementContext.CurrentState is IdleStateClass);
-            if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
-            {
-                await PU.WaitUntilStationary(player);
-            }
-        }
-
-        return await operation(item, player);
-    }
-
-
-
-    public static async UniTask TryPopItems(IEnumerable<Item> items, Player player, int delayMs = 25)
-    {
-        foreach (var item in items)
-        {
-            await TryPopItem(item, player);
-            if (delayMs != 0) await UniTask.Delay(delayMs);
-        }
-    }
-
-    public static async UniTask<bool> TryPopItem(Item item, Player player)
-    {
-        return await TryDoItemAction(item, player, InteractionsHandlerClass.Remove, "remove");
-    }
-
-    // public static async UniTask TryPopItemsWithoutRestriction(IEnumerable<Item> items, Player player, int delayMs = 25)
-    // {
-    //     foreach (var item in items)
-    //     {
-    //         await TryPopItemWithoutRestriction(item, player);
-    //         if (delayMs != 0) await UniTask.Delay(delayMs);
-    //     }
-    // }
-
-    public static async UniTask<bool> TryPopItemWithoutRestriction(Item item, ItemAddress itemAddress, Player player)
-    {
-        itemAddress.RemoveWithoutRestrictions(item);
-
-        itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
-        itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
-
-        if (item is ArmorPlateItemClass)
-        {
-            var plateCarrier = AU.GetPlateCarrier(player);
-            if (plateCarrier == null)
-            {
-                D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
-                return false;
-            }
-
-            FikaPlayer fikaPlayer = player as FikaPlayer;
-            MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-            method.Invoke(fikaPlayer, [plateCarrier]);
-        }
-
-        return true;
-    }
-
-    public static async UniTask TryThrowItems(IEnumerable<Item> items, Player player, int delayMs = 25)
-    {
-        foreach (var item in items)
-        {
-            await TryThrowItem(item, player);
-            if (delayMs != 0) await UniTask.Delay(delayMs);
-        }
-    }
-
-    public static UniTask<bool> TryThrowItem(Item item, Player player)
-    {
-        return TryDoItemAction(item, player, InteractionsHandlerClass.Throw, "throw");
-    }
-
-    public static async UniTask<bool> TryDoItemAction<T>(
-        Item item,
-        Player player,
-        Func<Item, InventoryController, bool, GStruct154<T>> action, string actionName) where T : IRaiseEvents
-    {
-#if DEBUG
-        D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
-#endif
-
-        var opResult = action(item, player.InventoryController, true);
-
-        if (opResult.Failed)
-        {
-            D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
-            D.LogTransaction($"Reason: {opResult.Error}");
-            return false;
-        }
-
-        IResult result = await player.InventoryController.TryRunNetworkTransaction(opResult);
-
-        if (result.Failed)
-        {
-            D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
-            D.LogTransaction($"Reason: {result.Error}");
-        }
-
-        return !result.Failed;
-    }
-
-    public static async UniTask<bool> TryDoItemActionWithoutRestriction<T>(
-        Item item,
-        Player player,
-        Func<Item, InventoryController, GStruct154<T>> action, string actionName) where T : IRaiseEvents
-    {
-#if DEBUG
-        D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
-#endif
-
-        var address = item.CurrentAddress;
-        var opResult = action(item, player.InventoryController);
-
-        if (opResult.Failed)
-        {
-            D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
-            D.LogTransaction($"Reason: {opResult.Error}");
-            return false;
-        }
-
-        IResult result = await player.InventoryController.TryRunNetworkTransaction(opResult);
-
-        if (result.Failed)
-        {
-            D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
-            D.LogTransaction($"Reason: {result.Error}");
-        }
-
-        return !result.Failed;
-    }
-
-    public static async UniTask<bool> TryThrowWeaponAndMags(EquipmentSlot equipmentSlot, Player player, bool waitUntilStationary = true)
-    {
-        var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
-        if (slot.ContainedItem == null) return true;
-
-        IEnumerable<MagazineItemClass> magsToThrow = null;
-        if (slot.ContainedItem is Weapon oldWeapon)
-        {
-            string oldMagTemplateId = oldWeapon.GetCurrentMagazine()?.TemplateId;
-            if (oldMagTemplateId != null)
-            {
-                var vest = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as CompoundItem;
-                magsToThrow = PU.GetMatchingMags(player, vest, oldMagTemplateId)?.ToList();
-            }
-        }
-
-        if (magsToThrow != null)
-        {
-            await TryThrowItems(magsToThrow, player, 25);
-        }
-
-        bool removed = await TryThrowContainedItem(equipmentSlot, player, false);
-
-        return removed;
-    }
-
-    private static async UniTask<bool> PlaceItem(Item item, Player player, ItemPlacement placement)
-    {
-#if DEBUG
-        D.LogTransaction($"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
-#endif
-
-        switch (placement.Kind)
-        {
-            case PlacementKind.VestAddress:
-            case PlacementKind.EquipmentSlot:
-            case PlacementKind.ArmorPlate:
-                placement.Address.AddWithoutRestrictions(item);
-                break;
-        }
-
-        AutoExamineAndSearch(item, player);
-
-        placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
-        placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
-
-        if (placement.Kind == PlacementKind.ArmorPlate)
-        {
-            var plateCarrier = AU.GetPlateCarrier(player);
-            if (plateCarrier == null)
-            {
-                D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
-                return false;
-            }
-
-            MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-            method.Invoke(player as FikaPlayer, [plateCarrier]);
-        }
-
-        return true;
-    }
-
-    private static void AutoExamineAndSearch(Item rootItem, Player player)
-    {
-        var searchController = player.InventoryController.SearchController;
-        Type searchType = searchController?.GetType();
-
-        // 6. BRUTEFORCE REFLECTION: 
-        // The SearchController tracks "SearchedItems", "KnownItems", and "SearchedContainers" in private HashSets/Dictionaries.
-        // iterate over its fields and forcefully inject our item IDs into any collection we find.
-        if (searchController != null && searchType != null)
-        {
-            var fields = AccessTools.GetDeclaredFields(searchType);
-            foreach (var field in fields)
-            {
-                var value = field.GetValue(searchController);
-                if (value == null) continue;
-
-                if (value is HashSet<string> hashSetStr)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        hashSetStr.Add(item.Id.ToString());
-                }
-                else if (value is HashSet<MongoID> hashSetMongo)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        hashSetMongo.Add(item.Id);
-                }
-                else if (value is Dictionary<string, bool> dictStr)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        dictStr[item.Id.ToString()] = true;
-                }
-                else if (value is Dictionary<MongoID, bool> dictMongo)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        dictMongo[item.Id] = true;
-                }
-                else if (value is HashSet<Item> hashSetItem)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        hashSetItem.Add(item);
-                }
-            }
-        }
-    }
-
-    private static void PlayEquipSound(Item item)
-    {
-        AudioClip clip = H.EFTGUISounds.GetItemClip(item.ItemSound, EInventorySoundType.drop);
-        if (clip != null) H.EFTGUISounds.PlaySound(clip);
-    }
-
-
+    
     public static void GarbageCollectWorldLoot()
     {
         ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);

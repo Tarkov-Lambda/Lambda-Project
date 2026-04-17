@@ -57,7 +57,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         if (packet.state == BombState.Planted)
         {
             H.BombHandler.BombPlantedPosition = packet.position;
-            H.BombHandler.bombVisuals.transform.position = packet.position;
+            H.BombHandler.BombVisuals.transform.position = packet.position;
         }
 
         H.BombHandler.PlayBombAudio(packet);

@@ -78,14 +78,14 @@ public static class InventoryResetter
             List<Item> itemsToRemove = new List<Item>();
 
             // Primary / secondary weapons
-            Item primaryWeapon = PU.GetPlayerSlotItem(player, EquipmentSlot.FirstPrimaryWeapon);
+            Item primaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon);
             if (primaryWeapon != null) AddItem(ref itemsToRemove, primaryWeapon);
 
-            Item secondaryWeapon = PU.GetPlayerSlotItem(player, EquipmentSlot.SecondPrimaryWeapon);
+            Item secondaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
             if (secondaryWeapon != null) AddItem(ref itemsToRemove, secondaryWeapon);
 
             // Keep holster only if it already holds the default pistol
-            var pistol = PU.GetPlayerSlotItem(player, EquipmentSlot.Holster);
+            var pistol = player.GetSlotItem( EquipmentSlot.Holster);
             bool needsDefaultPistol;
             if (pistol != null)
             {
@@ -99,10 +99,10 @@ public static class InventoryResetter
             }
 
             // Helmet
-            Item helmetSlot = PU.GetPlayerSlotItem(player, EquipmentSlot.Headwear);
+            Item helmetSlot = player.GetSlotItem(EquipmentSlot.Headwear);
             if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
 
-            VestItemClass tacRig = PU.GetPlayerSlotItem(player, EquipmentSlot.TacticalVest) as VestItemClass;
+            VestItemClass tacRig = player.GetSlotItem(EquipmentSlot.TacticalVest) as VestItemClass;
             if (tacRig != null && tacRig.TemplateId != DefaultEquipmentManager.Instance.RecordedItems[EquipmentSlot.TacticalVest].TemplateId)
             {
                 AddItem(ref itemsToRemove, tacRig);
@@ -110,14 +110,14 @@ public static class InventoryResetter
             else
             {
                 // Remove everything from vest + pockets that isn't the default pistol mag
-                foreach (var item in PU.GetVestAndPocketGridItems<Item>(player, tacRig))
+                foreach (var item in player.GetVestAndPocketGridItems<Item>(tacRig))
                 {
                     bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
                     if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
                 }
             }
 
-            ArmorItemClass armorVest = PU.GetPlayerSlotItem(player, EquipmentSlot.ArmorVest) as ArmorItemClass;
+            ArmorItemClass armorVest = player.GetSlotItem(EquipmentSlot.ArmorVest) as ArmorItemClass;
             if (armorVest != null && armorVest != DefaultEquipmentManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
             {
                 AddItem(ref itemsToRemove, armorVest);
@@ -129,12 +129,12 @@ public static class InventoryResetter
             {
                 foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
                 {
-                    var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
+                    var currentItem = player.GetSlotItem(kvp.Key);
                     if (currentItem != null && kvp.Value != null && currentItem.TemplateId != kvp.Value.TemplateId) AddItem(ref itemsToRemove, currentItem);
                 }
             }
 
-            await IU.TryPopItems(itemsToRemove, player);
+            await player.TryPopItems(itemsToRemove);
 
 
             // GIVING
@@ -149,7 +149,7 @@ public static class InventoryResetter
             {
                 foreach (var kvp in presetItems)
                 {
-                    var currentItem = PU.GetPlayerSlotItem(player, kvp.Key);
+                    var currentItem = player.GetSlotItem(kvp.Key);
                     if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
                     {
                         await UniTask.Delay(25);
@@ -164,7 +164,7 @@ public static class InventoryResetter
                 await UniTask.Delay(1000);
                 // plate removal in case the player just got a fresh plate carrier
                 List<Item> platesToRemove = new List<Item>();
-                AddRange(ref platesToRemove, AU.GetArmorPlates(player));
+                AddRange(ref platesToRemove, player.GetArmorPlates());
 
                 foreach (Item plateToRemove in platesToRemove)
                 {
@@ -175,7 +175,7 @@ public static class InventoryResetter
                     await UniTask.Delay(25);
                 }
             }).Forget();
-            
+
         }
         finally
         {

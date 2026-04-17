@@ -12,6 +12,7 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.Core.FX;
+using ifp.arena.bep.Core;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
@@ -108,7 +109,7 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
                                 return;
                             }
 
-                            await IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, false);
+                            await H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, false);
                             Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, GetBombPlantPosition(player));
                             owner.ClearInteractionState();
                         });

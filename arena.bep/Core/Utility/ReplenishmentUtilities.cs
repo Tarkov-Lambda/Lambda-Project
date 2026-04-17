@@ -73,7 +73,7 @@ public static class ReplenishmentUtilities
         }
 
         // Collect all matching mags from vest grids and pockets in one pass.
-        var mags = PU.GetMatchingMags(player, vestCompound, weaponMagTemplate);
+        var mags = player.GetMatchingMags(weaponMagTemplate, vestCompound);
 
         foreach (var mag in mags)
         {

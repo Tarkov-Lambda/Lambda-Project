@@ -6,6 +6,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 using PacketHandler.RateLimiting;
+using ifp.arena.bep.Core;
 
 namespace ifp.arena.bep.networking;
 
@@ -63,6 +64,6 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
     protected override async void WhenApproved(PopPacket packet, NetPeer peer)
     {
         // if (packet.Player.IsYourPlayer) return;
-        IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
+        packet.Player.TryPopItemWithoutRestriction(packet.item, packet.itemAddress).Forget();
     }
 }

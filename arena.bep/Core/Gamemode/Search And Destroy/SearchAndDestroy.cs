@@ -33,7 +33,7 @@ public class SND_Prepare : SharedPrepare
 
         if (!H.IsHeadless)
         {
-            IU.TryPopContainedItem(EquipmentSlot.Backpack, H.MainPlayer, true).Forget();
+            H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, true).Forget();
         }
 
         base.OnEnter();
