@@ -16,6 +16,7 @@ namespace arena.ui
         void Awake()
         {
             frame.alpha = 0f;
+            t = 1f;
         }
 
         public void Pop(PlayerScoreInfo killer)

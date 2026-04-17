@@ -2,9 +2,11 @@
 using UnityEngine;
 
 using EFT.UI;
+using DG.Tweening;
 
-using ifp.arena.bep.networking;
 using arena.ui;
+using ifp.arena.bep.networking;
+using ifp.arena.bep.Core.Gamemode;
 
 namespace ifp.arena.bep.Core.UI
 {
@@ -12,18 +14,65 @@ namespace ifp.arena.bep.Core.UI
     {
         LoadingScreen screen;
 
+        bool selfCurrentlyLoadingMap;
+
         internal LoadingScreenController(CommonUI commonUI, AssetBundle uiBundle)
         {
             var prefab = uiBundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/LoadingScreen/LoadingScreen.prefab");
             screen = GameObject.Instantiate(prefab, commonUI.EftBattleUIScreen.transform).GetComponent<LoadingScreen>();
-
             screen.gameObject.SetActive(false);
 
-            PlayerReadinessPacketHandler.AfterPacketApplied += Instance_AfterPacketApproved;
+            PlayerReadinessPacketHandler.AfterPacketApplied += ReceivePlayerReadinessPacket;
+            EventBus.OnEnter += OnMatchStateEnter;
+            MapLoadEvent.OnBeginLoad += OnBeginLoad;
+            MapLoadEvent.OnSuccessfulLoad += OnSuccessfulMapLoad;
         }
 
-        private void Instance_AfterPacketApproved(PlayerReadinessPacket packet)
+        public void Dispose()
         {
+            PlayerReadinessPacketHandler.AfterPacketApplied -= ReceivePlayerReadinessPacket;
+            EventBus.OnEnter -= OnMatchStateEnter;
+            MapLoadEvent.OnBeginLoad -= OnBeginLoad;
+            MapLoadEvent.OnSuccessfulLoad -= OnSuccessfulMapLoad;
+
+            GameObject.Destroy(screen.gameObject);
+        }
+
+        private void OnBeginLoad()
+        {
+            selfCurrentlyLoadingMap = true;
+
+            screen.SetText("Loading map");
+            ToggleVisibility(true);
+        }
+
+        private void OnSuccessfulMapLoad()
+        {
+            selfCurrentlyLoadingMap = false;
+
+            if (IsWaitingOnOtherPlayers(out string text))
+                screen.SetText(text);
+        }
+
+        private void ReceivePlayerReadinessPacket(PlayerReadinessPacket packet)
+        {
+            if (!selfCurrentlyLoadingMap)
+            {
+                if (IsWaitingOnOtherPlayers(out string text))
+                    screen.SetText(text);
+            }
+        }
+
+        private void OnMatchStateEnter(MatchState state)
+        {
+            if (state == MatchState.WarmupEnd)
+                ToggleVisibility(false);
+        }
+
+        bool IsWaitingOnOtherPlayers(out string text)
+        {
+            text = string.Empty;
+
             int countReady = 0;
             string nameOfLastPlayerNotReady = "";
             foreach (var playerScore in H.Scoreboard.Values)
@@ -37,29 +86,37 @@ namespace ifp.arena.bep.Core.UI
                     countReady++;
             }
 
-            bool loading = countReady != H.Scoreboard.Values.Count;
+            if (countReady == H.Scoreboard.Values.Count)
+                return false;
 
-            screen.gameObject.SetActive(loading);
-            if (!loading)
-                return;
-
-            bool waitingOnLastPlayer = H.Scoreboard.Count - countReady == 1;
+            bool waitingOnLastPlayer = (H.Scoreboard.Count - countReady) == 1;
             if (waitingOnLastPlayer)
             {
-                screen.SetText($"Waiting on {nameOfLastPlayerNotReady}");
+                text = $"Waiting on {nameOfLastPlayerNotReady}";
             }
             else
             {
                 string textReadyPlayers = $"{countReady}/{H.Scoreboard.Count}";
-                screen.SetText($"Waiting for players ({textReadyPlayers})");
+                text = $"Waiting for players ({textReadyPlayers})";
             }
+            return true;
         }
 
-        public void Dispose()
+        void ToggleVisibility(bool show)
         {
-            PlayerReadinessPacketHandler.AfterPacketApplied -= Instance_AfterPacketApproved;
+            if (show)
+                screen.gameObject.SetActive(true);
 
-            GameObject.Destroy(screen.gameObject);
+            float fadeAlphaTarget = show ? 1f : 0f;
+            float fadeDuration = 0.3f;
+            CanvasGroup canvasGroup = screen.gameObject.GetComponent<CanvasGroup>();
+            canvasGroup.DOKill();
+            canvasGroup.DOFade(fadeAlphaTarget, fadeDuration)
+                .onComplete = () => 
+                {
+                    if (!show) 
+                        screen.gameObject.SetActive(false);
+                };
         }
     }
 }
