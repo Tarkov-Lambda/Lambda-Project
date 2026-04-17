@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using EFT;
 using EFT.InputSystem;
 using HarmonyLib;
@@ -18,6 +19,18 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
     {
         if (command == ECommand.ToggleInventory)
         {
+
+            // TODO: REFACTOR
+            // bruteforce disallow inventory to open during these states
+            if (H.Session.matchState
+            is MatchState.SideSwap
+            or MatchState.MatchEnd
+            or MatchState.None)
+            {
+                AllowOpenInventory = false;
+                return false;
+            }
+
             if (AllowOpenInventory && H.MainPlayerScore.IsAlive && !InventoryResetter.IsResetting)
             {
                 AllowOpenInventory = false;

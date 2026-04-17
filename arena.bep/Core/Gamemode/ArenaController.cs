@@ -73,7 +73,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
         {
-            if(H.IsClient) return;
+            if (H.IsClient) return;
 
             // Player player = ;
             // if (player != null)
@@ -111,6 +111,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Physics.simulationMode = SimulationMode.FixedUpdate;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
             SteamAudioInitializer.AttachListenerIfNeeded();
+
+            PU.OpenEyes();
         }
 
         NetworkTime.Reset();

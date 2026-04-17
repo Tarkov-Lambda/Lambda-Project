@@ -33,7 +33,12 @@ public class SND_Prepare : SharedPrepare
 
         if (!H.IsHeadless)
         {
-            H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, true).Forget();
+            var backpack = H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack);
+            if (backpack != null)
+            {
+                Singleton<ForceRemoveItemPacketHandler>.Instance.Send(backpack);
+            }
+            // H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, true).Forget();
         }
 
         base.OnEnter();

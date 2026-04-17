@@ -211,7 +211,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<BombAssignmentPacketHandler>();                           // Server tells a specific player to equip a bomb
         RegisterSingleton<CustomGrenadeExplosionPacketHandler>();                   // Explosion of a custom grenade
         RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
-        RegisterSingleton<RemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
+        RegisterSingleton<ForceRemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
         RegisterSingleton<InventoryResyncPacketHandler>();                          // Resynchronize Player's inventory on a client in case of an error

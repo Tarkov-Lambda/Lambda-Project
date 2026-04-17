@@ -101,7 +101,12 @@ public static class ItemUtilities
                 if (slot.ContainedItem != null)
                 {
                     bool removed;
-                    if (templateItem is BackpackItemClass or VestItemClass or ArmorItemClass)
+                    if (templateItem is BackpackItemClass)
+                    {
+                        removed = true;
+                        Singleton<ForceRemoveItemPacketHandler>.Instance.Send(H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack));
+                    }
+                    else if (templateItem is VestItemClass or ArmorItemClass)
                     {
                         removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
                     }
@@ -151,7 +156,7 @@ public static class ItemUtilities
 
     public static void ClientRequestPopItem(Item item)
     {
-        Singleton<RemoveItemPacketHandler>.Instance.Send(item);
+        Singleton<ForceRemoveItemPacketHandler>.Instance.Send(item);
         // IU.TryPopItemWithoutRestriction(item, item.CurrentAddress, H.MainPlayer).Forget();
     }
 
@@ -164,7 +169,7 @@ public static class ItemUtilities
         if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
         if (player.IsYourPlayer) AudioHandler.PlayEquipSound(item);
     }
-    
+
     public static void GarbageCollectWorldLoot()
     {
         ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);

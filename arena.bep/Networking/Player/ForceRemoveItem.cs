@@ -7,13 +7,14 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 using PacketHandler.RateLimiting;
 using ifp.arena.bep.Core;
+using System;
 
 namespace ifp.arena.bep.networking;
 
 public struct PopPacket : INetSerializable, IAuthoredPacket
 {
     public Player Player { get; set; }
-    
+
     public Item item;
     public ItemAddress itemAddress;
 
@@ -32,7 +33,7 @@ public struct PopPacket : INetSerializable, IAuthoredPacket
     }
 }
 
-public class RemoveItemPacketHandler : PacketHandler<PopPacket>
+public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
 {
 
     protected override RateLimitConfig ServerRateLimit => new(
@@ -48,8 +49,8 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
     {
         var packet = new PopPacket
         {
-            Player      = H.MainPlayer,
-            item        = item,
+            Player = H.MainPlayer,
+            item = item,
             itemAddress = item.CurrentAddress
         };
 
@@ -63,7 +64,15 @@ public class RemoveItemPacketHandler : PacketHandler<PopPacket>
 
     protected override async void WhenApproved(PopPacket packet, NetPeer peer)
     {
-        // if (packet.Player.IsYourPlayer) return;
-        packet.Player.TryPopItemWithoutRestriction(packet.item, packet.itemAddress).Forget();
+        try
+        {
+            packet.Player.TryPopItemWithoutRestriction(packet.item, packet.itemAddress).Forget();
+        }
+        catch (Exception e)
+        {
+            D.Log($"An error has occured in {GetType().Name}");
+            D.Log(e.Message);
+            D.Log(e.StackTrace);
+        }
     }
 }

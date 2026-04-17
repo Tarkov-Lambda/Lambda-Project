@@ -18,6 +18,14 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public FXHandler()
     {
+        H.OnGameStarted += Initialize;
+        H.OnGameDispose += Dispose;
+
+        if (H.IsInRaid()) Initialize();
+    }
+
+    public void Initialize()
+    {
         fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "fx"));
         prefabFire = fxbundle.LoadAsset<GameObject>("Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab").GetComponent<MolotovFXController>();
         parentEffects = new GameObject("FX").transform;

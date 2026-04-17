@@ -16,8 +16,6 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
     public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
     private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
 
-
-
     public MapAssetBundleHandler()
     {
         Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;

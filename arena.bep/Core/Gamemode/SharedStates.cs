@@ -1,16 +1,10 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using EFT.InventoryLogic;
 using Fika.Core;
-using Fika.Core.Main.Utils;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.bep.Patches.Tarkov;
-using ifp.arena.shared;
 using System.Linq;
 
 namespace ifp.arena.bep.Core.Gamemode;
@@ -103,24 +97,25 @@ public class SharedPrepare : IGameState
 
             async UniTaskVoid PrepareAsync()
             {
+                HU.HealMe().Forget();
+                HU.ResetObservedPlayersHealth();
+
                 if (!H.MainPlayerScore.IsAlive)
                 {
                     await InventoryResetter.ResetInventory();
-                    PU.OpenEyes();
                 }
 
                 Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
-                HU.HealMe().Forget();
-                HU.ResetObservedPlayersHealth();
             }
             PrepareAsync().Forget();
+
+            PU.OpenEyes();
         }
 
         foreach (var p in H.Arena.session.scoreboard.Values)
         {
             p.Spawn();
         }
-
     }
 
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
@@ -145,7 +140,15 @@ public class SharedEnd : IGameState
 
             H.Arena.OnRoundEnd();
         }
+
+        UniTask.RunOnThreadPool(async () =>
+        {
+            await UniTask.Delay((int)H.Arena.session.StateTimerConfig[MatchState.RoundEnd] * 1000 - 1500);
+
+            PU.CloseEyes(false, false).Forget();
+        }).Forget();
     }
+
     public virtual MatchState? OnUpdate()
     {
         if (H.IsClient) return null;
@@ -195,9 +198,14 @@ public class SharedSideSwap : IGameState
             (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
         }
+
+        InventoryResetter.ResetInventory().Forget();
     }
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-    public virtual void OnExit() { }
+    public virtual void OnExit()
+    {
+
+    }
 }
 
 // Really only used for UI and actions so doesn't really matter ig
