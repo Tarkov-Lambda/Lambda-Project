@@ -47,6 +47,7 @@ public static class InventoryResetter
 
     public static void AddItem(ref List<Item> itemList, Item item)
     {
+        if (itemList.Contains(item)) return;
         D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
         itemList.Add(item);
     }
@@ -60,11 +61,9 @@ public static class InventoryResetter
         itemList.AddRange(itemCollection);
     }
 
-    public static async UniTask ResetInventory()
+    public static async UniTask HardReset()
     {
         var player = H.MainPlayer;
-        if (player == null)
-            return;
 
         IsResetting = true;
         try
@@ -85,7 +84,7 @@ public static class InventoryResetter
             if (secondaryWeapon != null) AddItem(ref itemsToRemove, secondaryWeapon);
 
             // Keep holster only if it already holds the default pistol
-            var pistol = player.GetSlotItem( EquipmentSlot.Holster);
+            var pistol = player.GetSlotItem(EquipmentSlot.Holster);
             bool needsDefaultPistol;
             if (pistol != null)
             {
@@ -123,15 +122,13 @@ public static class InventoryResetter
                 AddItem(ref itemsToRemove, armorVest);
             }
 
+            AddRange(ref itemsToRemove, player.GetNonMatchingMags());
 
             // If the currently equipped item doesn't match the recorded preset, remove it.
-            if (DefaultEquipmentManager.Instance != null)
+            foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
             {
-                foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
-                {
-                    var currentItem = player.GetSlotItem(kvp.Key);
-                    if (currentItem != null && kvp.Value != null && currentItem.TemplateId != kvp.Value.TemplateId) AddItem(ref itemsToRemove, currentItem);
-                }
+                var currentItem = player.GetSlotItem(kvp.Key);
+                if (currentItem != null && kvp.Value != null && currentItem.TemplateId != kvp.Value.TemplateId) AddItem(ref itemsToRemove, currentItem);
             }
 
             await player.TryPopItems(itemsToRemove);
@@ -157,7 +154,6 @@ public static class InventoryResetter
                     }
                 }
             }
-
 
             // UniTask.RunOnThreadPool(async () =>
             // {

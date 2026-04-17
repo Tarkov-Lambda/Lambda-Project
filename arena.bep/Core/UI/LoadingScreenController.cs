@@ -104,8 +104,11 @@ namespace ifp.arena.bep.Core.UI
 
         void ToggleVisibility(bool show)
         {
-            if (show)
-                screen.gameObject.SetActive(true);
+            // if (show)
+            //     screen.gameObject.SetActive(true);
+
+            screen.gameObject.SetActive(show);
+
 
             float fadeAlphaTarget = show ? 1f : 0f;
             float fadeDuration = 0.3f;

@@ -7,7 +7,10 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
+using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.Core.UI;
+using ifp.arena.shared.Models;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core;
@@ -114,13 +117,13 @@ public static class InventoryGetterExtensions
         return false;
     }
 
-    public static IEnumerable<Item> GetArmorPlates(this Player player)
+    public static IEnumerable<ArmorPlateItemClass> GetArmorPlates(this Player player)
     {
-        CompoundItem plateHolder = player.GetPlateCarrier();
+        CompoundItem plateCarrier = player.GetPlateCarrier();
 
-        if (plateHolder == null) yield break;
+        if (plateCarrier == null) yield break;
 
-        foreach (var component in plateHolder.Components)
+        foreach (var component in plateCarrier.Components)
         {
             if (component is not ArmorHolderComponent armorHolder) continue;
 
@@ -128,9 +131,82 @@ public static class InventoryGetterExtensions
             {
                 if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return slot.ContainedItem;
+                    yield return slot.ContainedItem as ArmorPlateItemClass;
                 }
             }
         }
+    }
+
+    public static IEnumerable<ArmorPlateItemClass> GetArmorPlates(this CompoundItem plateCarrier)
+    {
+        foreach (var component in plateCarrier.Components)
+        {
+            if (component is not ArmorHolderComponent armorHolder) continue;
+
+            foreach (var slot in armorHolder.ArmorSlots)
+            {
+                if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return slot.ContainedItem as ArmorPlateItemClass;
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<MagazineItemClass> GetNonMatchingMags(this Player player)
+    {
+        var weapons = player.GetAllWeapons();
+
+        HashSet<string> validMagIds = new HashSet<string>();
+
+        foreach (var weapon in weapons)
+        {
+            var mag = GetMagTemplateForWeapon(weapon);
+            if (mag != null)
+            {
+                validMagIds.Add(mag.TemplateId);
+            }
+        }
+
+        var mags = player.GetVestAndPocketGridItems<MagazineItemClass>();
+
+        foreach (var mag in mags)
+        {
+            if (!validMagIds.Contains(mag.TemplateId))
+            {
+                yield return mag;
+            }
+        }
+    }
+
+    // tries to find a valid mag template for this weapon
+    public static MagazineItemClass GetMagTemplateForWeapon(Weapon weapon)
+    {
+        MagazineItemClass currentWeaponMag = weapon.GetCurrentMagazine();
+        if (currentWeaponMag != null)
+        {
+            return currentWeaponMag;
+        }
+
+        Weapon presetWeapon = PresetItemsCache.Instance.GetPresetItem(weapon.TemplateId) as Weapon;
+        MagazineItemClass presetWeaponMag = presetWeapon.GetCurrentMagazine();
+        if (presetWeaponMag != null)
+        {
+            return presetWeaponMag;
+        }
+
+        // thanks bsg for putting two different g36 mag holder variations
+        // whoever is reading this fuck you
+        WeaponBuildClass defaultPresetWeaponBuild = FU.Presets.FirstOrDefault(b => b.FromPreset && b.Item.TemplateId == weapon.TemplateId);
+        Weapon defaultPresetWeapon = defaultPresetWeaponBuild.Item as Weapon;
+
+        MagazineItemClass defaultWeaponMag = defaultPresetWeapon.GetCurrentMagazine();
+        if (defaultWeaponMag != null)
+        {
+            return defaultWeaponMag;
+        }
+
+        D.LogError($"Can't match a mag for {weapon.LocalizedName()}");
+        return null;
     }
 }

@@ -7,6 +7,8 @@ public enum MatchState
     Warmup,
     WarmupEnd,
 
+    Cleanup,
+
     // Shared
     Pause, // Can only be invoked when in RoundPrepare
     RoundPrepare,

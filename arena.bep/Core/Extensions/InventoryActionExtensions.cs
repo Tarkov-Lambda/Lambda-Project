@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
+using Fika.Core;
 using Fika.Core.Main.Players;
 using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
@@ -49,6 +50,24 @@ public static class InventoryActionExtensions
         }
 
         return await operation(player, item);
+    }
+
+    public static async UniTaskVoid Cleanup(this Player player)
+    {
+        H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+
+        await UniTask.RunOnThreadPool(async () =>
+        {
+            await UniTask.Delay(750);
+
+            HU.HealMe().Forget();
+            // HU.ResetObservedPlayersHealth();
+
+            if (!H.MainPlayerScore.IsAlive)
+            {
+                await InventoryResetter.HardReset();
+            }
+        });
     }
 
     public static async UniTask TryPopItems(this Player player, IEnumerable<Item> items, int delayMs = 25)

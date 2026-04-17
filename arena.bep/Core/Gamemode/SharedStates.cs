@@ -13,7 +13,11 @@ namespace ifp.arena.bep.Core.Gamemode;
 public class SharedNone : IGameState
 {
     public MatchState StateType => MatchState.None;
-    public virtual void OnEnter() { }
+    public virtual void OnEnter()
+    {
+        Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
+    }
+
     public virtual MatchState? OnUpdate()
     {
         return null;
@@ -30,20 +34,22 @@ public class SharedWarmup : IGameState
         {
             p.SetMoney(EconomyConstants.MAX_MONEY);
         }
+
         IU.GarbageCollectWorldLoot();
     }
 
     public virtual MatchState? OnUpdate()
     {
         if (!H.IsServer) return null;
+
         if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected)) // Either Disconnected or ready
             return MatchState.WarmupEnd;
+
         return null;
     }
 
     public virtual void OnExit()
     {
-
 
     }
 }
@@ -62,10 +68,32 @@ public class SharedWarmupEnd : IGameState
 
         if (!H.IsHeadless)
         {
-            InventoryResetter.ResetInventory().Forget();
+            InventoryResetter.HardReset().Forget();
         }
 
         H.Session.ResetSessionScopeFields(); // full reset
+    }
+}
+
+public class SharedCleanup : IGameState
+{
+    public MatchState StateType => MatchState.WarmupEnd;
+    public virtual void OnEnter()
+    {
+        IU.GarbageCollectWorldLoot();
+
+        if (!H.IsHeadless)
+        {
+            H.MainPlayer.Cleanup().Forget();
+        }
+    }
+    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public virtual void OnExit()
+    {
+        if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SND_ModeRules)
+        {
+            Singleton<BombAssignmentPacketHandler>.Instance.Send();
+        }
     }
 }
 
@@ -88,26 +116,10 @@ public class SharedPrepare : IGameState
     public MatchState StateType => MatchState.RoundPrepare;
     public virtual void OnEnter()
     {
-        H.Session.ResetRoundScopeFields(); // I've lost the plot and I have no clue how to sync states correctly anymore
-        IU.GarbageCollectWorldLoot();
 
         if (!H.IsHeadless)
         {
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-
-            async UniTaskVoid PrepareAsync()
-            {
-                HU.HealMe().Forget();
-                HU.ResetObservedPlayersHealth();
-
-                if (!H.MainPlayerScore.IsAlive)
-                {
-                    await InventoryResetter.ResetInventory();
-                }
-
-                Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
-            }
-            PrepareAsync().Forget();
+            Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
         }
@@ -122,10 +134,6 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-        if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SND_ModeRules)
-        {
-            Singleton<BombAssignmentPacketHandler>.Instance.SendDelayed().Forget();
-        }
 
     }
 }
@@ -137,14 +145,12 @@ public class SharedEnd : IGameState
     {
         if (H.IsServer)
         {
-
             H.Arena.OnRoundEnd();
         }
 
         UniTask.RunOnThreadPool(async () =>
         {
             await UniTask.Delay((int)H.Arena.session.StateTimerConfig[MatchState.RoundEnd] * 1000 - 1500);
-
             PU.CloseEyes(false, false).Forget();
         }).Forget();
     }
@@ -169,7 +175,7 @@ public class SharedEnd : IGameState
                     return MatchState.MatchEnd;
                 }
             }
-            return MatchState.RoundPrepare;
+            return MatchState.Cleanup;
         }
 
         return null;
@@ -199,9 +205,9 @@ public class SharedSideSwap : IGameState
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
         }
 
-        InventoryResetter.ResetInventory().Forget();
+        InventoryResetter.HardReset().Forget();
     }
-    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
 

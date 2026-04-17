@@ -50,8 +50,14 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 
     // Has to be prefix so that we can capture the damageInfo packet before Kill is invoked
     [PatchPrefix]
-    static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo)
+    static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {
+        if (damageInfo.DamageType == EDamageType.Flame)
+        {
+            damageInfo.Damage *= 2.5f;
+            damage *= 2.5f;
+        }
+
         // if somehow the player falls through the map on roundprepare
         if (damageInfo.DamageType == EDamageType.Fall)
         {

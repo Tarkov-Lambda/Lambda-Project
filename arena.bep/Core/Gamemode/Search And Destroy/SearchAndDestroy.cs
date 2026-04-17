@@ -38,7 +38,6 @@ public class SND_Prepare : SharedPrepare
             {
                 Singleton<ForceRemoveItemPacketHandler>.Instance.Send(backpack);
             }
-            // H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, true).Forget();
         }
 
         base.OnEnter();
@@ -59,9 +58,22 @@ public class SND_Action : IGameState
     {
         if (!H.IsServer) return null;
         Faction? winner = CheckWipe();
-        if (winner.HasValue) { H.Arena.Award(winner.Value, RoundWinReason.Elimination); return MatchState.RoundEnd; }
-        if (H.Session.bombState == BombState.Planted) return MatchState.RoundPlanted;
-        if (H.Arena.StateTimer <= 0) { H.Arena.Award(Faction.CT, RoundWinReason.Timeout); return MatchState.RoundEnd; }
+        if (winner.HasValue)
+        {
+            H.Arena.Award(winner.Value, RoundWinReason.Elimination);
+            return MatchState.RoundEnd;
+        }
+        if (H.Session.bombState == BombState.Planted)
+        {
+            return MatchState.RoundPlanted;
+        }
+
+        if (H.Arena.StateTimer <= 0)
+        {
+            H.Arena.Award(Faction.CT, RoundWinReason.Timeout);
+            return MatchState.RoundEnd;
+        }
+
         return null;
     }
     public void OnExit() { }
@@ -70,7 +82,15 @@ public class SND_Action : IGameState
     {
         var alive = H.Scoreboard.Values.Where(p => p.IsAlive).GroupBy(p => p.Faction).ToDictionary(g => g.Key, g => g.Count());
         var factions = H.Scoreboard.Values.Select(p => p.Faction).Where(f => f != Faction.None && f != Faction.Spectator).Distinct();
-        foreach (var f in factions) if (!alive.ContainsKey(f) || alive[f] == 0) return factions.FirstOrDefault(o => o != f);
+        
+        foreach (var f in factions)
+        {
+            if (!alive.ContainsKey(f) || alive[f] == 0)
+            {
+                return factions.FirstOrDefault(o => o != f);
+            }
+        }
+
         return null;
     }
 }
@@ -156,6 +176,7 @@ public class SND_ModeRules : GameModeRules
         MatchState.Warmup => new SharedWarmup(),
         MatchState.WarmupEnd => new SharedWarmupEnd(),
 
+        MatchState.Cleanup => new SharedCleanup(),
         MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new SND_Prepare(),
         MatchState.RoundAction => new SND_Action(),

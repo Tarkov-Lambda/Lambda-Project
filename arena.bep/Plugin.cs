@@ -129,9 +129,10 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
         RegisterPatch(new Patch_Gameworld_OnDispose());                             // Hooks
 
+        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for subsequent death packet
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
-                                                                                    // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
-                                                                                    // RegisterPatch(new Patch_ClientPlayer_method_1());                     // Bypass Dying entirely
+
+        // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
         // RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
@@ -156,7 +157,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_CanPressTrigger());                                 // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
 
-        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for subsequent death packet
+
+
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
 
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Looting Fake Corpses, Planting, Defusing
