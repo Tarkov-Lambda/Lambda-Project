@@ -27,12 +27,10 @@ namespace ifp.arena.bep.Patches
             if (IsLocalPlayerSource(__instance))
             {
                 spatCache.bridge.IsBypass = true;
-                spatCache.steam.reflections = true;
             }
             else
             {
                 spatCache.bridge.IsBypass = false;
-                spatCache.steam.reflections = false;
             }
         }
 
