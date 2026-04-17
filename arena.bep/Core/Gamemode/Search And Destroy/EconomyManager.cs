@@ -40,7 +40,7 @@ public class EconomyManager : IDisposable
         _lossCounters[Faction.T] = 1;
 
         // Subscribe to events
-        EventBus.OnPlayerKill += HandleKillReward;
+        PlayerKilledPacketHandler.AfterPacketApplied += HandleKillReward;
         EventBus.OnBombStateChange += HandleObjectiveReward;
         EventBus.OnRoundActionEnd += HandleRoundEndEconomy;
 
@@ -49,7 +49,7 @@ public class EconomyManager : IDisposable
 
     public void Dispose()
     {
-        EventBus.OnPlayerKill -= HandleKillReward;
+        PlayerKilledPacketHandler.AfterPacketApplied -= HandleKillReward;
         EventBus.OnBombStateChange -= HandleObjectiveReward;
         EventBus.OnRoundActionEnd -= HandleRoundEndEconomy;
         EventBus.OnEnter -= HandleStateChange;
@@ -77,7 +77,7 @@ public class EconomyManager : IDisposable
 
     private void HandleKillReward(PlayerKilledPacket packet)
     {
-        if(packet.killer == null || packet.victim == null) return;
+        if (packet.killer == null || packet.victim == null) return;
         if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
         if (packet.killer == packet.victim) return; // Suicide handled in Round End usually
 

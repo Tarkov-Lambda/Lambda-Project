@@ -16,7 +16,7 @@ namespace ifp.arena.bep.Core.UI
             this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
-            EventBus.OnPlayerKill += OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
         }
 
         private void OnPlayerKill(PlayerKilledPacket killPacket)
@@ -41,7 +41,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void Dispose()
         {
-            EventBus.OnPlayerKill -= OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
         }
     }
 }

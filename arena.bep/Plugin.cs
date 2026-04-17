@@ -116,13 +116,14 @@ public class Plugin : BaseUnityPlugin
         // AUDIO
         // RegisterPatch(new Patch_ReverbSimpleSource_MuteClientReverb());
         // RegisterPatch(new Patch_ReverbSimpleSource_Play_Bypass());
-        // RegisterPatch(new Patch_MetaXR_EnableSpatialization());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        // RegisterPatch(new Patch_MetaXR_EnableSpatialization());                  // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
-        RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
-        RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
+        RegisterPatch(new Patch_AudioSource_set_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
+        RegisterPatch(new Patch_AudioSource_get_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
         RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // Bypass MetaXR Occlusion
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
@@ -184,7 +185,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
-        RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer());
+        // RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer());
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 

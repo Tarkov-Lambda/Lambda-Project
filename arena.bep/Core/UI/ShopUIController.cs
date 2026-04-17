@@ -37,7 +37,7 @@ namespace ifp.arena.bep.Core.UI
             Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
             EventBus.OnEnter += OnMatchStateEnter;
-            EventBus.OnPlayerKill += OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
 
             shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
         }
@@ -76,7 +76,7 @@ namespace ifp.arena.bep.Core.UI
             Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
             EventBus.OnEnter -= OnMatchStateEnter;
-            EventBus.OnPlayerKill -= OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);

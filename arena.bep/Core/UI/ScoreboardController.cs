@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Core.UI
         {
             this.scoreboardUI = scoreboardUI;
 
-            EventBus.OnPlayerKill += OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
             EventBus.OnEnter += OnMatchStateEnter;
 
             Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
@@ -50,7 +50,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void Dispose()
         {
-            EventBus.OnPlayerKill -= OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
             EventBus.OnEnter -= OnMatchStateEnter;
 
             Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;

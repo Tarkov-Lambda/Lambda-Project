@@ -62,8 +62,9 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
-        D.Log(victim.Profile.Nickname);
-        D.Log(killer.Profile.Nickname);
+        // D.Log(victim.Profile.Nickname);
+        // D.Log(killer.Profile.Nickname);
+        // D.Dump(damage);
 
         var packet = new PlayerKilledPacket
         {
@@ -103,15 +104,15 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.IsAlive) return;
 
-        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
         victimScore.Kill();
 
-        if (killerScore != victimScore && killerScore.Faction != victimScore.Faction)
+        PlayerScore killerScore = H.GetPlayerScore(packet.killer);
+        if (killerScore != null && killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
-        EventBus.OnPlayerKill.Invoke(packet);
+        // EventBus.OnPlayerKill.Invoke(packet);
 
         if (H.IsHeadless)
         {
@@ -125,7 +126,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         }
         else
         {
-            H.RagdollCreator.OnPacket(packet.victim);
+            H.RagdollCreator.CreateRagdollFromPlayer(packet.victim);
 
             // teleport without interpolation
             HoldPlayerOut(packet.victim, Vector3.zero, 2.0f).Forget();

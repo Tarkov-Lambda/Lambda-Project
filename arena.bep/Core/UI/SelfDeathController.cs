@@ -16,7 +16,7 @@ namespace ifp.arena.bep.Core.UI
         {
             this.deathInfo = deathInfo;
 
-            EventBus.OnPlayerKill += OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
             EventBus.OnSelfRespawn += OnSelfRespawn;
         }
 
@@ -52,7 +52,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void Dispose()
         {
-            EventBus.OnPlayerKill -= OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
             EventBus.OnSelfRespawn -= OnSelfRespawn;
         }
     }

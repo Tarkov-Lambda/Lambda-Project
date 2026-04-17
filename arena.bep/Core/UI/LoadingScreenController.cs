@@ -19,7 +19,7 @@ namespace ifp.arena.bep.Core.UI
 
             screen.gameObject.SetActive(false);
 
-            PlayerReadinessPacketHandler.AfterPacketApproved += Instance_AfterPacketApproved;
+            PlayerReadinessPacketHandler.AfterPacketApplied += Instance_AfterPacketApproved;
         }
 
         private void Instance_AfterPacketApproved(PlayerReadinessPacket packet)
@@ -57,7 +57,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void Dispose()
         {
-            PlayerReadinessPacketHandler.AfterPacketApproved -= Instance_AfterPacketApproved;
+            PlayerReadinessPacketHandler.AfterPacketApplied -= Instance_AfterPacketApproved;
 
             GameObject.Destroy(screen.gameObject);
         }

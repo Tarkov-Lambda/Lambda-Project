@@ -1,6 +1,7 @@
 using HarmonyLib;
 using ifp.arena.shared;
 using SPT.Reflection.Patching;
+using SteamAudio;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -31,5 +32,17 @@ internal class Patch_MetaXR_EnableSpatialization : ModulePatch
         // D.Log(value.ToString());
 
         return true;
+    }
+}
+
+internal class Patch_MetaXRAudioSource_Awake : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(MetaXRAudioSource), "Awake");
+
+
+    [PatchPrefix]
+    public static void Postfix(MetaXRAudioSource __instance, AudioSource ___source_)
+    {
+        // SteamAudioSourceAttacher.
     }
 }

@@ -9,6 +9,7 @@ using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
 using EFT;
 using Fika.Core.Main.Players;
+using System.Runtime.CompilerServices;
 
 namespace PacketHandler;
 
@@ -49,7 +50,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldLog => true; // Debugging
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
 
-    public static event Action<T> AfterPacketApproved;
+    public static event Action<T> BeforePacketApplied;
+    public static event Action<T> AfterPacketApplied;
 
     protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Anyone)
     {
@@ -209,8 +211,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
         }
 
+        TryInvokeAction(BeforePacketApplied, packet);
         WhenApproved(packet, peer);
-        AfterPacketApproved?.Invoke(packet);
+        TryInvokeAction(AfterPacketApplied, packet);
     }
 
     protected void WhenClientReceivesPacket(T packet, NetPeer peer)
@@ -222,8 +225,23 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 #endif
 
+        TryInvokeAction(BeforePacketApplied, packet);
         WhenApproved(packet, peer);
-        AfterPacketApproved?.Invoke(packet);
+        TryInvokeAction(AfterPacketApplied, packet);
+    }
+
+    private void TryInvokeAction(Action<T> action, T packet)
+    {
+        try
+        {
+            action?.Invoke(packet);
+        }
+        catch (Exception e)
+        {
+            D.Log($"An error has occured in {GetType().Name}'s subscriber");
+            D.Log(e.Message);
+            D.Log(e.StackTrace);
+        }
     }
 
     protected void SendRejection(ref T packet, NetPeer peer, string rejectionReason = null)

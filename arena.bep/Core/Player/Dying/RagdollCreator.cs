@@ -35,12 +35,6 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         regsitry.Clear();
     }
 
-    // I need to rename this
-    public void OnPacket(Player player)
-    {
-        CreateRagdollFromPlayer(player);
-    }
-
     public void CreateLocalPlayerRagdoll()
     {
         FakeCorpse fakeCorpse = CreateRagdollFromPlayer(H.MainPlayer);
@@ -65,7 +59,7 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
     }
 
 
-    private FakeCorpse CreateRagdollFromPlayer(Player player)
+    public FakeCorpse CreateRagdollFromPlayer(Player player)
     {
         GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
             typeof(PlayerBody),

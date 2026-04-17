@@ -5,6 +5,7 @@ using Comfort.Common;
 using EFT;
 using EFT.UI;
 using Fika.Core.Main.ObservedClasses;
+using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using HarmonyLib;
 using ifp.arena.bep.networking;
@@ -42,6 +43,16 @@ public static class HealthUtilities
             {
                 kvp.Value.Health.Current = kvp.Value.Health.Maximum;
             }
+        }
+    }
+
+    public static void ResetObservedPlayerHealth(this ObservedPlayer player)
+    {
+        if (player.HealthController is not ObservedHealthController observedHC) return;
+
+        foreach (var kvp in observedHC.Dictionary_0)
+        {
+            kvp.Value.Health.Current = kvp.Value.Health.Maximum;
         }
     }
 

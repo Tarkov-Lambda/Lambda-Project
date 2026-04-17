@@ -30,18 +30,17 @@ namespace ifp.arena.bep.Patches
         [PatchPostfix]
         private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
         {
-            D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
-            if (packet.Type is ECommonSubPacketType.HealthSync)
-            {
-                HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
+            // D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
+            // if (packet.Type is ECommonSubPacketType.HealthSync)
+            // {
+                // HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
                 // if (subPacket.Packet.SyncType is NetworkHealthSyncPacketStruct.ESyncType.BodyHealth)
                 // {
                 //     D.Log(packet.NetId.ToString());
                 //     D.Log(packet.Type.GetType().ToString());
                 //     D.Dump(packet.SubPacket);
                 // }
-
-            }
+            // }
 
             if (packet.Type != ECommonSubPacketType.Damage) return;
             if (packet.SubPacket is not DamagePacket damage) return;

@@ -13,7 +13,7 @@ namespace ifp.arena.bep.Core.UI
 
         internal TopBarController(TopBar topBar)
         {
-            EventBus.OnPlayerKill += OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
             EventBus.OnEnter += OnMatchStateEnter;
             UnityTicker.OnUpdate += OnUpdate;
 
@@ -45,7 +45,7 @@ namespace ifp.arena.bep.Core.UI
 
         public void Dispose()
         {
-            EventBus.OnPlayerKill -= OnPlayerKill;
+            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
             EventBus.OnEnter -= OnMatchStateEnter;
             UnityTicker.OnUpdate -= OnUpdate;
         }
