@@ -73,14 +73,15 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
         {
-            Player player = H.GetPlayer(peerDisconnectedEvent.Peer.Id);
-            if (player != null)
-            {
-                if (H.IsClient) return;
+            // Player player = ;
+            // if (player != null)
+            // {
+            //     if (H.IsServer) Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player], player, player);
 
-                // Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player]);
-                // Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
-            }
+            //     player.GetScore().ChangeReadiness(PlayerReadinessState.Disconnected);
+            //     player.GetScore().ChangeFaction(Faction.Spectator);
+            //     // Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
+            // }
         }
     }
 

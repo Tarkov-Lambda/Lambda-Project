@@ -86,7 +86,7 @@ public class Plugin : BaseUnityPlugin
     {
         try
         {
-            // await UniTask.WaitUntil(() => H.isInRaid(), cancellationToken: _cts.Token);
+            // await UniTask.WaitUntil(()                             => H.isInRaid(), cancellationToken: _cts.Token);
             await UniTask.WaitUntil(() => H.IsInRaid());
         }
         catch (OperationCanceledException)
@@ -115,12 +115,12 @@ public class Plugin : BaseUnityPlugin
 
         // AUDIO
         // RegisterPatch(new Patch_ReverbSimpleSource_MuteClientReverb());
-        RegisterPatch(new Patch_ReverbSimpleSource_Play_Bypass());
-        RegisterPatch(new Patch_MetaXR_EnableSpatialization());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        // RegisterPatch(new Patch_ReverbSimpleSource_Play_Bypass());
+        // RegisterPatch(new Patch_MetaXR_EnableSpatialization());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
-        RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
-        RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
+        // RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
+        // RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
         RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
 
@@ -129,7 +129,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_Gameworld_OnDispose());                             // Hooks
 
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
-        // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
+                                                                                    // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
+                                                                                    // RegisterPatch(new Patch_ClientPlayer_method_1());                     // Bypass Dying entirely
 
         // RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
@@ -183,6 +184,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+        RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer());
+
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 
         RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
@@ -210,6 +213,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<RemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
+        RegisterSingleton<InventoryResyncPacketHandler>();                          // Resynchronize Player's inventory on a client in case of an error
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -290,7 +294,7 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Unload");
 
         // H.MainPlayer.MovementContext.ExitOverridenState();
-        // RunStateClass idleState = new RunStateClass(H.MainPlayer.MovementContext);
+        // RunStateClass idleState                                    = new RunStateClass(H.MainPlayer.MovementContext);
         // H.MainPlayer.MovementContext.ProcessStateEnter(idleState);
 
         _cts?.Cancel();
@@ -299,7 +303,7 @@ public class Plugin : BaseUnityPlugin
 
         // if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
         // {
-        //     H.Session.matchState = MatchState.None;
+        //     H.Session.matchState                                   = MatchState.None;
         //     Teleporter.Teleport(H.MainPlayer, "lobby");
         // }
 

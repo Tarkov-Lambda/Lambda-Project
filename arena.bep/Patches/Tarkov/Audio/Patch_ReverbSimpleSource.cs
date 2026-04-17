@@ -53,7 +53,7 @@ namespace ifp.arena.bep.Patches
                     var localPlayerRoot = BetterAudio.Instance.ListenerPlayer.Transform.Original;
                     var localFirearm = H.MainPlayer.HandsController.WeaponRoot;
 
-                    if (followTarget.IsChildOf(localPlayerRoot) || followTarget.IsChildOf(localFirearm))
+                    if (followTarget.IsChildOf(localPlayerRoot) ) // || followTarget.IsChildOf(localFirearm)
                         return true;
                 }
             }

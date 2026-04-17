@@ -121,7 +121,7 @@ namespace ifp.arena.shared
         // AudioSource_set_spatialBlend
         // AudioSource_get_spatialBlend
         public float spatialBlend = 1f;
-        public bool spatialize = false;
+        public bool spatialize = true;
 
         [Header("Debug")]
         public bool verboseLogging = false;

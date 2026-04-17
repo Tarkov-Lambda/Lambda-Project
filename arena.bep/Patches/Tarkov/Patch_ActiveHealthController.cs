@@ -58,8 +58,8 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
             if (H.Session.matchState == MatchState.RoundPrepare)
             {
                 __instance.Player.MovementContext.ResetFlying();
-             
-                PlayerScore playerScore =  H.GetPlayerScore(__instance.Player);
+
+                PlayerScore playerScore = H.GetPlayerScore(__instance.Player);
 
                 if (playerScore != null)
                 {
@@ -95,6 +95,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
         if (!H.IsInRaid()) return false; // mid raid connect protection
+        if (__instance.Player == null || __instance.Player.GetScore() == null) return false; // mid raid connect protection
         if (__instance.Player.IsAI) return true;
 
         long now = Stopwatch.GetTimestamp();

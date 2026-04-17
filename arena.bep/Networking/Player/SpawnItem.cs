@@ -38,7 +38,15 @@ public struct SpawnItemPacket : INetSerializable, IAuthoredPacket
 
 public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
 {
+    public override void Dispose()
+    {
+        _chains.Clear();
+        base.Dispose();
+    }
+
     private readonly Dictionary<int, UniTask> _chains = new();
+
+    protected override bool ShouldNotifyAboutRejection => true;
 
     // protected override RateLimitConfig ServerRateLimit => new(
     //     enabled: true,
@@ -65,26 +73,40 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
     // this entire packet needs to 
     protected override async void LocalPredictApproved(SpawnItemPacket packet)
     {
-        SpawnItem(packet, packet.Player);
+        // SpawnItem(packet, packet.Player);
         // we already spent money locally before requesting to begin with.
     }
 
     protected override bool EvaluatePacket(ref SpawnItemPacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
-        
+
         // if (!H.MainPlayerScore.CanBuy())
         // {
         //     rejectionReason = "Buy time is over.";
         //     return false;
         // }
 
+        var placement = AU.GetItemPlacement(packet.item, packet.Player);
+
+        if(placement.Kind == PlacementKind.None)
+        {
+            rejectionReason = "Server can't locate a viable location for an item.";
+            return false;
+        }
+
+        if (packet.placement.Address != placement.Address)
+        {
+            D.Log("Mismatching item placement, overriding");
+            packet.placement = placement;
+        }
+
         return true;
     }
 
     protected override async void WhenApproved(SpawnItemPacket packet, NetPeer peer)
     {
-        if (packet.Player.IsYourPlayer) return;
+        // if (packet.Player.IsYourPlayer) return;
         SpawnItem(packet, packet.Player);
 
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
@@ -106,11 +128,5 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         if (!H.IsHeadless)
             await IU.LoadBundlesForItem(packet.item);
         await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
-    }
-
-    public override void Dispose()
-    {
-        _chains.Clear();
-        base.Dispose();
     }
 }
