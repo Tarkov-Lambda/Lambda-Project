@@ -64,12 +64,12 @@ public static class SteamAudioSourceAttacher
     private static SteamSourceData GetOrAdd(AudioSource audioSource)
     {
         // Reinitialize on Hot Reload
-        // if (SteamSourceDict.cache.ContainsKey(audioSource))
-        // {
-        //     Object.Destroy(SteamSourceDict.cache[audioSource].bridge);
-        //     Object.Destroy(SteamSourceDict.cache[audioSource].steam);
-        //     SteamSourceDict.cache.Remove(audioSource);
-        // }
+        if (SteamSourceDict.cache.ContainsKey(audioSource))
+        {
+            Object.Destroy(SteamSourceDict.cache[audioSource].bridge);
+            Object.Destroy(SteamSourceDict.cache[audioSource].steam);
+            SteamSourceDict.cache.Remove(audioSource);
+        }
 
 
         if (SteamSourceDict.cache.ContainsKey(audioSource)) return SteamSourceDict.cache[audioSource];

@@ -35,9 +35,9 @@ internal class Patch_AudioSource_set_spatialBlend : ModulePatch
 
         spatCache.bridge.spatialBlend = Mathf.Clamp01(value);
 
-        __instance.spatialize = false;
+        // __instance.spatialize = false;
         value = 0f;
-        
+
         return true;
     }
 }
@@ -49,10 +49,13 @@ internal class Patch_AudioSource_set_spatialize : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref bool value)
     {
-        if (SteamSourceDict.cache.ContainsKey(__instance))
-        {
-            value = false;
-        }
+        if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+
+        var spatCache = SteamSourceDict.cache[__instance];
+
+        spatCache.bridge.spatialize = value;
+
+        value = false;
 
         return true;
     }
@@ -71,6 +74,24 @@ internal class Patch_AudioSource_get_spatialBlend : ModulePatch
 
         __result = spatCache.bridge.spatialBlend;
         // D.Log("Getting spatialBlend");
+
+        return false;
+    }
+}
+
+internal class Patch_AudioSource_get_spatialize : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(AudioSource), nameof(AudioSource.spatialize));
+
+    [PatchPrefix]
+    public static bool Prefix(AudioSource __instance, ref bool __result)
+    {
+        if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+
+        var spatCache = SteamSourceDict.cache[__instance];
+
+        __result = spatCache.bridge.spatialize;
+        // D.Log("Getting spatialize");
 
         return false;
     }

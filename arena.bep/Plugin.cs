@@ -114,9 +114,13 @@ public class Plugin : BaseUnityPlugin
         if (!H.IsHeadless) SteamAudioInitializer.Initialize();
 
         // AUDIO
+        // RegisterPatch(new Patch_ReverbSimpleSource_MuteClientReverb());
+        RegisterPatch(new Patch_ReverbSimpleSource_Play_Bypass());
+        RegisterPatch(new Patch_MetaXR_EnableSpatialization());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
         RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
+        RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
         RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
 

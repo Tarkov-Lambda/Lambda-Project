@@ -121,6 +121,7 @@ namespace ifp.arena.shared
         // AudioSource_set_spatialBlend
         // AudioSource_get_spatialBlend
         public float spatialBlend = 1f;
+        public bool spatialize = false;
 
         [Header("Debug")]
         public bool verboseLogging = false;
@@ -461,7 +462,7 @@ namespace ifp.arena.shared
                     _rightOut = new float[n];
                 }
 
-                float blend = Mathf.Clamp01(spatialBlend);
+                float blend = spatialize ? Mathf.Clamp01(spatialBlend) : 0;
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
 
                 // downmix stereo -> mono with distance attenuation
