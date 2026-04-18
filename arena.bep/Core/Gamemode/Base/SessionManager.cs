@@ -23,7 +23,7 @@ public class SessionManager
             {MatchState.None, 0},
             {MatchState.Warmup, 120},
             {MatchState.WarmupEnd, 5},
-            {MatchState.Cleanup, 2},
+            {MatchState.Cleanup, 3},
             {MatchState.Pause, 45},
             {MatchState.RoundPrepare, 5},
             {MatchState.RoundAction, 115},

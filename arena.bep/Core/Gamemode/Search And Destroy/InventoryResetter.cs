@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
@@ -35,19 +36,10 @@ public static class InventoryResetter
         return null;
     }
 
-
-    private static string GetDefaultPistolMagTemplateId(string defaultPistolBsgId)
-    {
-        if (defaultPistolBsgId == null)
-            return null;
-
-        var pistol = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId) as Weapon;
-        return pistol?.GetCurrentMagazine()?.TemplateId;
-    }
-
     public static void AddItem(ref List<Item> itemList, Item item)
     {
         if (itemList.Contains(item)) return;
+        if (item == null) return;
         D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
         itemList.Add(item);
     }
@@ -63,115 +55,42 @@ public static class InventoryResetter
 
     public static async UniTask HardReset()
     {
-        var player = H.MainPlayer;
-
         IsResetting = true;
         try
         {
+            D.Log("Resetting Inventory");
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-            Faction faction = H.MainPlayerScore?.Faction ?? Faction.None;
-            string defaultPistolBsgId = GetDefaultPistolBsgId(faction);
-            string defaultPistolMagTemplateId = GetDefaultPistolMagTemplateId(defaultPistolBsgId);
+            string defaultPistolBsgId = GetDefaultPistolBsgId(H.MainPlayerScore.Faction);
 
-            List<Item> itemsToRemove = new List<Item>();
+            List<Item> itemsToRemove = [];
 
-            // Primary / secondary weapons
-            Item primaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon);
-            if (primaryWeapon != null) AddItem(ref itemsToRemove, primaryWeapon);
-
-            Item secondaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
-            if (secondaryWeapon != null) AddItem(ref itemsToRemove, secondaryWeapon);
-
-            // Keep holster only if it already holds the default pistol
-            var pistol = player.GetSlotItem(EquipmentSlot.Holster);
-            bool needsDefaultPistol;
-            if (pistol != null)
+            foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
             {
-                bool isDefault = defaultPistolBsgId != null && pistol.TemplateId == defaultPistolBsgId;
-                if (!isDefault) AddItem(ref itemsToRemove, pistol);
-                needsDefaultPistol = !isDefault;
-            }
-            else
-            {
-                needsDefaultPistol = true;
+                var currentItem = H.MainPlayer.GetSlotItem(slot);
+                AddItem(ref itemsToRemove, currentItem);
             }
 
-            // Helmet
-            Item helmetSlot = player.GetSlotItem(EquipmentSlot.Headwear);
-            if (helmetSlot != null) AddItem(ref itemsToRemove, helmetSlot);
+            await H.MainPlayer.TryPopItems(itemsToRemove);
 
-            VestItemClass tacRig = player.GetSlotItem(EquipmentSlot.TacticalVest) as VestItemClass;
-            if (tacRig != null && tacRig.TemplateId != DefaultEquipmentManager.Instance.RecordedItems[EquipmentSlot.TacticalVest].TemplateId)
-            {
-                AddItem(ref itemsToRemove, tacRig);
-            }
-            else
-            {
-                // Remove everything from vest + pockets that isn't the default pistol mag
-                foreach (var item in player.GetVestAndPocketGridItems<Item>(tacRig))
-                {
-                    bool isDefaultPistolMag = item is MagazineItemClass mag && defaultPistolMagTemplateId != null && mag.TemplateId == defaultPistolMagTemplateId;
-                    if (!isDefaultPistolMag) AddItem(ref itemsToRemove, item);
-                }
-            }
 
-            ArmorItemClass armorVest = player.GetSlotItem(EquipmentSlot.ArmorVest) as ArmorItemClass;
-            if (armorVest != null && armorVest != DefaultEquipmentManager.Instance.RecordedItems[EquipmentSlot.ArmorVest])
-            {
-                AddItem(ref itemsToRemove, armorVest);
-            }
+            List<Item> pocketItemsToRemove = H.MainPlayer.GetVestAndPocketGridItems<Item>().ToList();
 
-            AddRange(ref itemsToRemove, player.GetNonMatchingMags());
-
-            // If the currently equipped item doesn't match the recorded preset, remove it.
-            foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
-            {
-                var currentItem = player.GetSlotItem(kvp.Key);
-                if (currentItem != null && kvp.Value != null && currentItem.TemplateId != kvp.Value.TemplateId) AddItem(ref itemsToRemove, currentItem);
-            }
-
-            await player.TryPopItems(itemsToRemove);
-
+            await H.MainPlayer.TryPopItems(pocketItemsToRemove);
 
             // GIVING
-            if (needsDefaultPistol && defaultPistolBsgId != null)
+            foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
             {
-                var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId);
-                if (defaultPistolItem != null) await IU.ClientRequestGiveItem(defaultPistolItem);
-            }
-
-            var presetItems = DefaultEquipmentManager.Instance?.RecordedItems;
-            if (presetItems != null)
-            {
-                foreach (var kvp in presetItems)
+                var currentItem = H.MainPlayer.GetSlotItem(kvp.Key);
+                if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
                 {
-                    var currentItem = player.GetSlotItem(kvp.Key);
-                    if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
-                    {
-                        await UniTask.Delay(25);
-                        await IU.ClientRequestGiveItem(kvp.Value);
-                    }
+                    await UniTask.Delay(25);
+                    await IU.ClientRequestGiveItem(kvp.Value);
                 }
             }
 
-            // UniTask.RunOnThreadPool(async () =>
-            // {
-            //     await UniTask.Delay(1000);
-            //     // plate removal in case the player just got a fresh plate carrier
-            //     List<Item> platesToRemove = new List<Item>();
-            //     AddRange(ref platesToRemove, player.GetArmorPlates());
-
-            //     foreach (Item plateToRemove in platesToRemove)
-            //     {
-            //         // because we are bruteforce popping plates out of an equipped plate carrier
-            //         // we bypass the normal transaction system
-            //         // in order to both pop the equipped plate and recalculate equipped armored components
-            //         IU.ClientRequestPopItem(plateToRemove);
-            //         await UniTask.Delay(25);
-            //     }
-            // }).Forget();
-
+            var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId);
+            await IU.ClientRequestGiveItem(defaultPistolItem);
         }
         finally
         {

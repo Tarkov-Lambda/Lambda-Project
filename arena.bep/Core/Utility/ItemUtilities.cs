@@ -144,28 +144,18 @@ public static class ItemUtilities
             D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
 #endif
 
-            D.Log(clonedItem.GetType().ToString());
             if (clonedItem is ArmorItemClass armorItem)
             {
-                D.Log("ASIodn");
-                var plates = armorItem.GetArmorPlates();
-                foreach (var plate in plates)
+                foreach (var plate in armorItem.GetArmorPlates())
                 {
-                    D.Log(plate.LocalizedShortName());
-
-                    var cachedAddress = plate.CurrentAddress;
                     plate.CurrentAddress.RemoveWithoutRestrictions(plate);
-                    D.Dump(cachedAddress);
-
                 }
-
             }
             else if (clonedItem is VestItemClass vestItem)
             {
                 if (vestItem.IsTacRigArmored())
                 {
-                    var plates = vestItem.GetArmorPlates();
-                    foreach (var plate in plates)
+                    foreach (var plate in vestItem.GetArmorPlates())
                     {
                         plate.CurrentAddress.RemoveWithoutRestrictions(plate);
                     }

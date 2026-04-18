@@ -59,19 +59,20 @@ public class SharedWarmupEnd : IGameState
     public MatchState StateType => MatchState.WarmupEnd;
     public virtual void OnEnter()
     {
-
+        UniTask.RunOnThreadPool(async () =>
+        {
+            await UniTask.Delay((int)H.Arena.session.StateTimerConfig[StateType] * 1000 - 1500);
+            PU.CloseEyes(false, false).Forget();
+        }).Forget();
     }
-    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
         H.Session.InitializeScoreBoard();
 
-        if (!H.IsHeadless)
-        {
-            InventoryResetter.HardReset().Forget();
-        }
-
-        H.Session.ResetSessionScopeFields(); // full reset
+        // players start the match alive and so we have to invoke this here instead of relying on cleanup
+        // kinda dumb?
+        InventoryResetter.HardReset().Forget();
     }
 }
 
@@ -84,7 +85,20 @@ public class SharedCleanup : IGameState
 
         if (!H.IsHeadless)
         {
-            H.MainPlayer.Cleanup().Forget();
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+
+            UniTask.RunOnThreadPool(async () =>
+            {
+                await UniTask.Delay(750);
+
+                HU.HealMe().Forget();
+                HU.ResetObservedPlayersHealth();
+
+                if (!H.MainPlayerScore.IsAlive)
+                {
+                    await InventoryResetter.HardReset();
+                }
+            });
         }
     }
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
@@ -116,6 +130,7 @@ public class SharedPrepare : IGameState
     public MatchState StateType => MatchState.RoundPrepare;
     public virtual void OnEnter()
     {
+        H.Session.ResetSessionScopeFields();
 
         if (!H.IsHeadless)
         {
@@ -150,7 +165,7 @@ public class SharedEnd : IGameState
 
         UniTask.RunOnThreadPool(async () =>
         {
-            await UniTask.Delay((int)H.Arena.session.StateTimerConfig[MatchState.RoundEnd] * 1000 - 1500);
+            await UniTask.Delay((int)H.Arena.session.StateTimerConfig[StateType] * 1000 - 1500);
             PU.CloseEyes(false, false).Forget();
         }).Forget();
     }

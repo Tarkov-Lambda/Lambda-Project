@@ -121,36 +121,17 @@ public static class InventoryGetterExtensions
     {
         CompoundItem plateCarrier = player.GetPlateCarrier();
 
-        if (plateCarrier == null) yield break;
-
-        foreach (var component in plateCarrier.Components)
-        {
-            if (component is not ArmorHolderComponent armorHolder) continue;
-
-            foreach (var slot in armorHolder.ArmorSlots)
-            {
-                if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return slot.ContainedItem as ArmorPlateItemClass;
-                }
-            }
-        }
+        return plateCarrier.GetArmorPlates();
     }
 
     public static IEnumerable<ArmorPlateItemClass> GetArmorPlates(this CompoundItem plateCarrier)
     {
-        foreach (var component in plateCarrier.Components)
+        if (plateCarrier.TryGetItemComponent<ArmorHolderComponent>(out var armorHolder))
         {
-            if (component is not ArmorHolderComponent armorHolder) continue;
-
-            foreach (var slot in armorHolder.ArmorSlots)
-            {
-                if (slot.ContainedItem != null && slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return slot.ContainedItem as ArmorPlateItemClass;
-                }
-            }
+            return armorHolder.MoveAbleArmorPlates;
         }
+
+        return [];
     }
 
     public static IEnumerable<MagazineItemClass> GetNonMatchingMags(this Player player)

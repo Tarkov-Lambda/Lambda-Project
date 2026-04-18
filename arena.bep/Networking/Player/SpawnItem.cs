@@ -12,6 +12,7 @@ using ifp.arena.bep.Core.Economy;
 using PacketHandler;
 using PacketHandler.RateLimiting;
 using ifp.arena.shared.Models;
+using System.Linq;
 
 namespace ifp.arena.bep.networking;
 
@@ -85,6 +86,35 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
         {
             rejectionReason = "Buy time is over.";
             return false;
+        }
+
+        if (packet.item is VestItemClass or ArmorItemClass)
+        {
+            bool hasPlates = false;
+            if (packet.item is ArmorItemClass armorItem)
+            {
+                if (armorItem.GetArmorPlates().Count() > 0)
+                {
+                    hasPlates = true;
+                }
+            }
+            else if (packet.item is VestItemClass vestItem)
+            {
+                if (vestItem.IsTacRigArmored())
+                {
+                    if (vestItem.GetArmorPlates().Count() > 0)
+                    {
+                        hasPlates = true;
+
+                    }
+                }
+            }
+
+            if (hasPlates)
+            {
+                rejectionReason = "You can't buy a plate carrier with plates inside";
+                return false;
+            }
         }
 
         var placement = AU.GetItemPlacement(packet.item, packet.Player);

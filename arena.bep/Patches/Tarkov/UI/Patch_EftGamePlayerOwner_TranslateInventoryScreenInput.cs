@@ -25,7 +25,8 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
             if (H.Session.matchState
             is MatchState.SideSwap
             or MatchState.MatchEnd
-            or MatchState.None)
+            or MatchState.None
+            or MatchState.Cleanup)
             {
                 AllowOpenInventory = false;
                 return false;
