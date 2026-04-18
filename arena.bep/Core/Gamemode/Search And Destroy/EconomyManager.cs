@@ -44,7 +44,7 @@ public class EconomyManager : IDisposable
         EventBus.OnBombStateChange += HandleObjectiveReward;
         EventBus.OnRoundActionEnd += HandleRoundEndEconomy;
 
-        EventBus.OnEnter += HandleStateChange;
+        EventBus.OnEnter += OnEnter;
     }
 
     public void Dispose()
@@ -52,11 +52,11 @@ public class EconomyManager : IDisposable
         PlayerKilledPacketHandler.AfterPacketApplied -= HandleKillReward;
         EventBus.OnBombStateChange -= HandleObjectiveReward;
         EventBus.OnRoundActionEnd -= HandleRoundEndEconomy;
-        EventBus.OnEnter -= HandleStateChange;
+        EventBus.OnEnter -= OnEnter;
     }
 
     // this is bad and needs to be managed by ArenaController or SND
-    private void HandleStateChange(MatchState state)
+    private void OnEnter(MatchState state)
     {
         if (state == MatchState.WarmupEnd || state == MatchState.SideSwap)
         {

@@ -25,14 +25,14 @@ public static class ReplenishmentUtilities
 
                 if (item is Weapon weapon)
                 {
-                    if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+                    if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo)) 
                     {
                         if (shouldReloadGun)
                         {
                             ReplenishGun(weapon, ammo);
                         }
 
-                        if (player.IsYourPlayer) ReplenishVestMagazines(weapon, ammo, player).Forget();
+                        if (player.IsYourPlayer) ReplenishMagazines(weapon, ammo, player).Forget();
                     }
                 }
             }
@@ -46,7 +46,7 @@ public static class ReplenishmentUtilities
             ReplenishGun(weapon, ammo);
 
             // Only the local player's machine should create and broadcast vest magazines.
-            if (player.IsYourPlayer) ReplenishVestMagazines(weapon, ammo, player).Forget();
+            if (player.IsYourPlayer) ReplenishMagazines(weapon, ammo, player).Forget();
         }
 
         var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
@@ -57,15 +57,14 @@ public static class ReplenishmentUtilities
     }
 
     // Local only, sends spawn item packets
-    public static async UniTask ReplenishVestMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
+    public static async UniTask ReplenishMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
     {
         await UniTask.Delay(25);
-        Slot vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest);
+        CompoundItem vest = player.GetSlotItem(EquipmentSlot.TacticalVest) as CompoundItem;
 
-        if (vest?.ContainedItem is not CompoundItem vestCompound)
-            return;
+        if (vest is null) return;
 
-        string weaponMagTemplate = weapon.GetCurrentMagazine()?.TemplateId;
+        string weaponMagTemplate = weapon.GetMagTemplateForWeapon()?.TemplateId;
         if (weaponMagTemplate == null)
         {
             D.LogError($"Can't find {weapon.LocalizedName()}'s mag");
@@ -73,12 +72,14 @@ public static class ReplenishmentUtilities
         }
 
         // Collect all matching mags from vest grids and pockets in one pass.
-        var mags = player.GetMatchingMags(weaponMagTemplate, vestCompound);
+        var mags = player.GetMatchingMags(weaponMagTemplate, vest);
 
         foreach (var mag in mags)
         {
             ReplenishMagazine(mag, ammo);
         }
+
+        if (!player.IsYourPlayer) return; // below we spawn request missing mags on client
 
         int missing = 3 - mags.Count();
         if (missing <= 0)

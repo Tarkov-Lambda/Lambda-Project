@@ -66,7 +66,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         {
             mapName = H.Session.mapName,
             gameMode = H.Session.currentGameMode
-
         };
         DispatchPacketToPeer(packet, peer);
     }

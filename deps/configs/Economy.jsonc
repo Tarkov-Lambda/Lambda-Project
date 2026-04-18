@@ -94,11 +94,11 @@
         "price": 500,
         "faction": "CT"
       },
-      {
-        "bsgId": "633ec7c2a6918cb895019c6c",
-        "ammoId": "5cadf6eeae921500134b2799",
-        "price": 500
-      },
+      // {
+      //   "bsgId": "633ec7c2a6918cb895019c6c",
+      //   "ammoId": "5cadf6eeae921500134b2799",
+      //   "price": 500
+      // },
       {
         "bsgId": "669fa39b48fc9f8db6035a0c",
         "ammoId": "668fe62ac62660a5d8071446",

@@ -155,8 +155,7 @@ public static class InventoryGetterExtensions
         }
     }
 
-    // tries to find a valid mag template for this weapon
-    public static MagazineItemClass GetMagTemplateForWeapon(Weapon weapon)
+    public static MagazineItemClass GetMagTemplateForWeapon(this Weapon weapon)
     {
         MagazineItemClass currentWeaponMag = weapon.GetCurrentMagazine();
         if (currentWeaponMag != null)
@@ -164,11 +163,15 @@ public static class InventoryGetterExtensions
             return currentWeaponMag;
         }
 
-        Weapon presetWeapon = PresetItemsCache.Instance.GetPresetItem(weapon.TemplateId) as Weapon;
-        MagazineItemClass presetWeaponMag = presetWeapon.GetCurrentMagazine();
-        if (presetWeaponMag != null)
+
+        if (PresetItemsCache.Instantiated)
         {
-            return presetWeaponMag;
+            Weapon presetWeapon = PresetItemsCache.Instance.GetPresetItem(weapon.TemplateId) as Weapon;
+            MagazineItemClass presetWeaponMag = presetWeapon.GetCurrentMagazine();
+            if (presetWeaponMag != null)
+            {
+                return presetWeaponMag;
+            }
         }
 
         // thanks bsg for putting two different g36 mag holder variations

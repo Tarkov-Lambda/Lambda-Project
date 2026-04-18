@@ -60,20 +60,29 @@ public class SharedWarmupEnd : IGameState
     public MatchState StateType => MatchState.WarmupEnd;
     public virtual void OnEnter()
     {
-        UniTask.RunOnThreadPool(async () =>
+
+        if (!H.IsHeadless)
         {
-            await UniTask.Delay((int)H.Arena.session.StateTimerConfig[StateType] * 1000 - 1500);
-            PU.CloseEyes(false, false).Forget();
-        }).Forget();
+            UniTask.RunOnThreadPool(async () =>
+            {
+                await UniTask.Delay((int)H.Arena.session.StateTimerConfig[StateType] * 1000 - 1500);
+                PU.CloseEyes(false, false).Forget();
+            }).Forget();
+        }
+
     }
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
         H.Session.InitializeScoreBoard();
 
-        // players start the match alive and so we have to invoke this here instead of relying on cleanup
-        // kinda dumb?
-        InventoryResetter.HardReset().Forget();
+
+        if (!H.IsHeadless)
+        {
+            // players start the match alive and so we have to invoke this here instead of relying on cleanup
+            // kinda dumb?
+            InventoryResetter.HardReset().Forget();
+        }
     }
 }
 
@@ -95,16 +104,16 @@ public class SharedCleanup : IGameState
                 HU.HealMe().Forget();
                 HU.ResetObservedPlayersHealth();
 
-                // await InventoryResetter.HardReset();
+                await InventoryResetter.HardReset();
 
-                if (H.MainPlayerScore.IsAlive)
-                {
-                    await InventoryResetter.SoftReset();
-                }
-                else
-                {
-                    await InventoryResetter.HardReset();
-                }
+                // if (H.MainPlayerScore.IsAlive)
+                // {
+                //     await InventoryResetter.SoftReset();
+                // }
+                // else
+                // {
+                //     await InventoryResetter.HardReset();
+                // }
             });
         }
     }
@@ -175,11 +184,14 @@ public class SharedEnd : IGameState
             H.Arena.OnRoundEnd();
         }
 
-        UniTask.RunOnThreadPool(async () =>
+        if (!H.IsHeadless)
         {
-            await UniTask.Delay((int)H.Arena.session.StateTimerConfig[StateType] * 1000 - 1500);
-            PU.CloseEyes(false, false).Forget();
-        }).Forget();
+            UniTask.RunOnThreadPool(async () =>
+            {
+                await UniTask.Delay((int)H.Arena.session.StateTimerConfig[StateType] * 1000 - 1500);
+                PU.CloseEyes(false, false).Forget();
+            }).Forget();
+        }
     }
 
     public virtual MatchState? OnUpdate()
@@ -232,7 +244,11 @@ public class SharedSideSwap : IGameState
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
         }
 
-        InventoryResetter.HardReset().Forget();
+
+        if (!H.IsHeadless)
+        {
+            InventoryResetter.HardReset().Forget();
+        }
     }
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()

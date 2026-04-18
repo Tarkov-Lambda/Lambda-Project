@@ -85,7 +85,7 @@ public class BuyItemPacketHandler : PacketHandler<SpawnItemPacket>
 
         if (H.Session.matchState != MatchState.Cleanup)
         {
-            if (!H.MainPlayerScore.CanBuy())
+            if (!H.GetPlayerScore(packet.Player).CanBuy())
             {
                 rejectionReason = "Buy time is over.";
                 return false;
@@ -168,8 +168,8 @@ public class BuyItemPacketHandler : PacketHandler<SpawnItemPacket>
 
     private async void SpawnItem(SpawnItemPacket packet, Player player)
     {
-        if (!H.IsHeadless)
-            await IU.LoadBundlesForItem(packet.item);
+        // if (!H.IsHeadless)
+        await IU.LoadBundlesForItem(packet.item);
         await IU.WhenApprovedGiveItem(packet.item, player, packet.placement);
     }
 }

@@ -153,7 +153,8 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
         // wait for the death cam sequence to finish in RagdollCreator
         await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
-
+        H.MainPlayer.MovementContext.ResetFlying();
+        
         // if we are already alive after 4 seconds, do not teleport ourselves into the lobby
         if (!H.MainPlayerScore.IsAlive)
         {
