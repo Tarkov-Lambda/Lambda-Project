@@ -37,7 +37,7 @@ public struct SpawnItemPacket : INetSerializable, IAuthoredPacket
     }
 }
 
-public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
+public class BuyItemPacketHandler : PacketHandler<SpawnItemPacket>
 {
     public override void Dispose()
     {
@@ -105,7 +105,6 @@ public class SpawnItemPacketHandler : PacketHandler<SpawnItemPacket>
                     if (vestItem.GetArmorPlates().Count() > 0)
                     {
                         hasPlates = true;
-
                     }
                 }
             }

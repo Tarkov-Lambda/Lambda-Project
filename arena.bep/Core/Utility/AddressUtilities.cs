@@ -60,6 +60,7 @@ public static class AddressUtilities
     private static ItemPlacement ResolveArmorPlatePlacement(Player player)
     {
         var plateHolder = player.GetPlateCarrier();
+
         foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
         {
             foreach (var slot in armorHolder.ArmorSlots)

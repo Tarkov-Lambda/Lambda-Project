@@ -91,21 +91,16 @@ public static class InventoryGetterExtensions
 
     public static CompoundItem GetPlateCarrier(this Player player)
     {
-        CompoundItem plateCarrier = null;
-
-        if (player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem is VestItemClass tacRig)
+        if (player.GetSlotItem(EquipmentSlot.TacticalVest) is VestItemClass tacRig)
         {
             if (tacRig.IsTacRigArmored())
             {
-                plateCarrier = tacRig;
+                return tacRig;
             }
         }
 
-        if (player.Inventory.Equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem is ArmorItemClass armorVest)
-            plateCarrier = armorVest;
-
-        if (plateCarrier != null && plateCarrier.CanFitPlates())
-            return plateCarrier;
+        if (player.GetSlotItem(EquipmentSlot.ArmorVest) is ArmorItemClass armorVest)
+            return armorVest;
 
         return null;
     }

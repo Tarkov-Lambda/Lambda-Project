@@ -91,10 +91,14 @@ public class SharedCleanup : IGameState
             {
                 await UniTask.Delay(750);
 
-                HU.HealMe().Forget();
-                HU.ResetObservedPlayersHealth();
+                    HU.HealMe().Forget();
+                    HU.ResetObservedPlayersHealth();
 
-                if (!H.MainPlayerScore.IsAlive)
+                if (H.MainPlayerScore.IsAlive)
+                {
+                    await InventoryResetter.SoftReset();
+                }
+                else
                 {
                     await InventoryResetter.HardReset();
                 }
@@ -104,10 +108,6 @@ public class SharedCleanup : IGameState
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public virtual void OnExit()
     {
-        if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SND_ModeRules)
-        {
-            Singleton<BombAssignmentPacketHandler>.Instance.Send();
-        }
     }
 }
 
@@ -149,7 +149,10 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-
+        if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SND_ModeRules)
+        {
+            Singleton<BombAssignmentPacketHandler>.Instance.Send();
+        }
     }
 }
 

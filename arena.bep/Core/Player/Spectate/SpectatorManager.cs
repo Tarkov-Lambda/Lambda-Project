@@ -77,14 +77,34 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     public void SwitchSpectatePlayer(bool next = true)
     {
         if (H.IsHeadless) return;
-        List<PlayerScore> validPlayersToSpectate;
 
+        List<PlayerScore> validPlayersToSpectate = new List<PlayerScore>();
+
+        // Case 1: You are a dedicated Spectator
         if (H.MainPlayerScore.Faction == Faction.Spectator)
         {
-            validPlayersToSpectate = H.Scoreboard.Values.Where(s => s.Faction != Faction.Spectator).ToList();
+            validPlayersToSpectate = H.Scoreboard.Values
+                .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
+                .ToList();
         }
-        else validPlayersToSpectate = H.AllTeammateScores;
+        else
+        {
+            // Case 2: You are a player who died. 
+            // First, try to find living teammates.
+            validPlayersToSpectate = H.AllTeammateScores
+                .Where(s => s.player != null && s.player.HealthController.IsAlive)
+                .ToList();
 
+            // FALLBACK: If everyone in your faction is dead, get everyone else who isn't a spectator
+            if (validPlayersToSpectate.Count == 0)
+            {
+                validPlayersToSpectate = H.Scoreboard.Values
+                    .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
+                    .ToList();
+            }
+        }
+
+        // If there is literally no one alive to watch, stop spectating
         if (validPlayersToSpectate.Count == 0)
         {
             StopSpectating();
@@ -94,15 +114,20 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         int currentIndex;
         if (observedPlayer != null)
         {
-            currentIndex = validPlayersToSpectate.IndexOf(H.GetPlayerScore(observedPlayer.Id));
+            // Find current player index in the list. IndexOf returns -1 if not found 
+            // (which happens when you transition from Teammate list to Global list)
+            currentIndex = validPlayersToSpectate.FindIndex(s => s.player.Id == observedPlayer.Id);
         }
-        else currentIndex = 0;
+        else
+        {
+            currentIndex = -1;
+        }
 
-
+        // Calculate next index
         if (next)
         {
             currentIndex++;
-            if (currentIndex >= validPlayersToSpectate.Count)
+            if (currentIndex >= validPlayersToSpectate.Count || currentIndex < 0)
                 currentIndex = 0;
         }
         else

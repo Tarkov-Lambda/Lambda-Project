@@ -162,7 +162,7 @@ public static class ItemUtilities
                 }
             }
 
-            Singleton<SpawnItemPacketHandler>.Instance.Send(clonedItem, placement);
+            Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement);
             return true;
         }
         finally

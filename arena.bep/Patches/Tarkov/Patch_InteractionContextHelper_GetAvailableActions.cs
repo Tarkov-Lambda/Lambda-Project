@@ -125,13 +125,15 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
             return false;
         }
 
-        D.Log(interactive.GetType().ToString());
-
         if (H.Arena.ActiveRules is SND_ModeRules && interactive is ObservedLootItem observedLootItem)
         {
             if (observedLootItem.TemplateId == SND_ModeRules.bombTemplateId)
             {
-                if (H.MainPlayerScore.Faction != Faction.T) return false;
+                if (H.MainPlayerScore.Faction != Faction.T)
+                {
+                    __result = actionsReturnClass;
+                    return true;
+                }
             }
         }
 

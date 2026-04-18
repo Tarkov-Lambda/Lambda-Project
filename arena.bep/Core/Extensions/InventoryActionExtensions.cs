@@ -215,7 +215,7 @@ public static class InventoryActionExtensions
 
         switch (placement.Kind)
         {
-            case PlacementKind.VestAddress:
+            case PlacementKind.VestAddress:        
             case PlacementKind.EquipmentSlot:
             case PlacementKind.ArmorPlate:
                 placement.Address.AddWithoutRestrictions(item);

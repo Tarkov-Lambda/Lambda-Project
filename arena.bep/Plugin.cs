@@ -206,7 +206,7 @@ public class Plugin : BaseUnityPlugin
         // Player Related Packets
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
         RegisterSingleton<FactionChangePacketHandler>();                            // Player swaps factions
-        RegisterSingleton<SpawnItemPacketHandler>();                                // Player asks to spawn an item
+        RegisterSingleton<BuyItemPacketHandler>();                                // Player asks to spawn an item
         RegisterSingleton<HandsInspectPacketHandler>();                             // Hands Examination Packet
         RegisterSingleton<BlindFirePacketHandler>();                                // Procedural blindfire state synchronization
         RegisterSingleton<ReplenishPacketHandler>();                                // Player announcens a replenishment

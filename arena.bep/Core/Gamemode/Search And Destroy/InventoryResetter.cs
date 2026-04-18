@@ -53,6 +53,32 @@ public static class InventoryResetter
         itemList.AddRange(itemCollection);
     }
 
+
+    public static async UniTask SoftReset()
+    {
+        IsResetting = true;
+        try
+        {
+            List<Item> itemsToRemove = [];
+
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+            // List<MagazineItemClass> allMags = H.MainPlayer.GetVestAndPocketGridItems<MagazineItemClass>().ToList();
+
+            var secondPrimaryWeapon = H.MainPlayer.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
+            AddItem(ref itemsToRemove, secondPrimaryWeapon);
+
+            await H.MainPlayer.TryPopItem(secondPrimaryWeapon);
+
+            AddRange(ref itemsToRemove, H.MainPlayer.GetNonMatchingMags());
+
+            await H.MainPlayer.TryPopItems(itemsToRemove);
+        }
+        finally
+        {
+            IsResetting = false;
+        }
+    }
+
     public static async UniTask HardReset()
     {
         IsResetting = true;
