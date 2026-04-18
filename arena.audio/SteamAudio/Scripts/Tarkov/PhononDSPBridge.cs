@@ -463,6 +463,8 @@ namespace ifp.arena.shared
                 }
 
                 float blend = spatialize ? Mathf.Clamp01(spatialBlend) : 0;
+                // float blend = Mathf.Clamp01(spatialBlend);
+
                 float effectiveAtten = Mathf.Lerp(1f, _distAtten, blend);
 
                 // downmix stereo -> mono with distance attenuation

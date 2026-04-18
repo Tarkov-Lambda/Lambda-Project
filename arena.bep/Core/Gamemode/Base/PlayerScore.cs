@@ -4,6 +4,7 @@ using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
+using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
 using ifp.arena.shared.Models;
 
@@ -40,6 +41,10 @@ public class PlayerScore
     public int RoundKills => score.RoundKills;
     public int RoundHeadshots => score.RoundHeadshots;
 
+    // Serverside
+    private double _deathTimestamp;
+
+    public double DeathTimestamp => _deathTimestamp;
 
     public PlayerScore(int id)
     {
@@ -117,11 +122,14 @@ public class PlayerScore
     {
         score.Deaths++;
         score.IsAlive = false;
+        _deathTimestamp = NetworkTime.LocalNowSeconds;
     }
 
     public void Spawn()
     {
         score.IsAlive = true;
+        _deathTimestamp = -1;
+
         if (!H.IsHeadless && player == H.MainPlayer)
             EventBus.OnSelfRespawn?.Invoke();
     }

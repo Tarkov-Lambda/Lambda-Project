@@ -12,9 +12,12 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Packets.Player.Common;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using HarmonyLib;
+using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
+using ifp.arena.bep.networking.TimeSync;
 using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -33,13 +36,13 @@ namespace ifp.arena.bep.Patches
             // D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
             // if (packet.Type is ECommonSubPacketType.HealthSync)
             // {
-                // HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
-                // if (subPacket.Packet.SyncType is NetworkHealthSyncPacketStruct.ESyncType.BodyHealth)
-                // {
-                //     D.Log(packet.NetId.ToString());
-                //     D.Log(packet.Type.GetType().ToString());
-                //     D.Dump(packet.SubPacket);
-                // }
+            // HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
+            // if (subPacket.Packet.SyncType is NetworkHealthSyncPacketStruct.ESyncType.BodyHealth)
+            // {
+            //     D.Log(packet.NetId.ToString());
+            //     D.Log(packet.Type.GetType().ToString());
+            //     D.Dump(packet.SubPacket);
+            // }
             // }
 
             if (packet.Type != ECommonSubPacketType.Damage) return;
@@ -52,7 +55,13 @@ namespace ifp.arena.bep.Patches
             // D.Log(peer.Id.ToString());
             // D.Log(damage.ProfileId);
             Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
+            PlayerScore shooterScore = shooter.GetScore();
 
+            if (!shooterScore.IsAlive)
+            {
+                if (NetworkTime.LocalNowSeconds - shooterScore.DeathTimestamp > 0.05)
+                    return;
+            }
             // D.Log(shooter.Profile.Nickname);
             // D.Log(damagePlayer.Id.ToString());
 

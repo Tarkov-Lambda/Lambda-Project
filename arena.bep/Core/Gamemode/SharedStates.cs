@@ -33,7 +33,11 @@ public class SharedWarmup : IGameState
     {
         foreach (var p in H.Arena.session.scoreboard.Values)
         {
+#if DEBUG
             p.SetMoney(EconomyConstants.MAX_MONEY);
+#else
+            p.SetMoney(800);
+#endif
         }
 
         IU.GarbageCollectWorldLoot();
@@ -232,6 +236,15 @@ public class SharedSideSwap : IGameState
     public MatchState StateType => MatchState.SideSwap;
     public virtual void OnEnter()
     {
+        foreach (var p in H.Arena.session.scoreboard.Values)
+        {
+#if DEBUG
+            p.SetMoney(EconomyConstants.MAX_MONEY);
+#else
+            p.SetMoney(800);
+#endif
+        }
+        
         if (H.IsServer)
         {
             foreach (var player in H.AllPlayers)
