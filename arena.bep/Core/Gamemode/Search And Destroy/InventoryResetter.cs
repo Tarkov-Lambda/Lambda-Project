@@ -15,7 +15,7 @@ public static class InventoryResetter
 {
     public static bool IsResetting { get; private set; }
 
-    public static string GetDefaultPistolBsgId(Faction faction)
+    public static PistolItemClass GetDefaultPistol()
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -25,11 +25,32 @@ public static class InventoryResetter
                     continue;
 
                 var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
-                if (immutable is not PistolItemClass)
+                if (immutable is not PistolItemClass pistolItem)
                     continue;
 
-                if (shopItem.faction == faction || shopItem.faction == Faction.None)
-                    return shopItem.bsgId;
+                if (shopItem.faction == H.MainPlayerScore.Faction || shopItem.faction == Faction.None)
+                    return pistolItem;
+            }
+        }
+
+        return null;
+    }
+
+    public static AssaultCarbineItemClass GetFirstAssaultCarbineItem()
+    {
+        foreach (var category in BuyMenuSelection.buyCategories)
+        {
+            foreach (var shopItem in category.items)
+            {
+                if (string.IsNullOrEmpty(shopItem.ammoId))
+                    continue;
+
+                var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
+                if (immutable is not AssaultCarbineItemClass assaultCarbine)
+                    continue;
+
+                if (shopItem.faction == H.MainPlayerScore.Faction || shopItem.faction == Faction.None)
+                    return assaultCarbine;
             }
         }
 
@@ -84,15 +105,19 @@ public static class InventoryResetter
         IsResetting = true;
         try
         {
-            D.Log("Resetting Inventory");
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-            string defaultPistolBsgId = GetDefaultPistolBsgId(H.MainPlayerScore.Faction);
 
             List<Item> itemsToRemove = [];
 
             foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
             {
+                if (slot
+                is EquipmentSlot.ArmBand
+                or EquipmentSlot.Dogtag
+                or EquipmentSlot.Scabbard
+                or EquipmentSlot.SecuredContainer) continue;
+
                 var currentItem = H.MainPlayer.GetSlotItem(slot);
                 AddItem(ref itemsToRemove, currentItem);
             }
@@ -115,8 +140,7 @@ public static class InventoryResetter
                 }
             }
 
-            var defaultPistolItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(defaultPistolBsgId);
-            await IU.ClientRequestGiveItem(defaultPistolItem);
+            await IU.ClientRequestGiveItem(GetDefaultPistol());
         }
         finally
         {

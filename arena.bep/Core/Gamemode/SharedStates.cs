@@ -5,6 +5,7 @@ using Fika.Core;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.networking;
+using ifp.arena.shared.Models;
 using System.Linq;
 
 namespace ifp.arena.bep.Core.Gamemode;
@@ -91,8 +92,10 @@ public class SharedCleanup : IGameState
             {
                 await UniTask.Delay(750);
 
-                    HU.HealMe().Forget();
-                    HU.ResetObservedPlayersHealth();
+                HU.HealMe().Forget();
+                HU.ResetObservedPlayersHealth();
+
+                // await InventoryResetter.HardReset();
 
                 if (H.MainPlayerScore.IsAlive)
                 {
@@ -137,7 +140,13 @@ public class SharedPrepare : IGameState
             Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
+
+            // AssaultCarbineItemClass assaultCarbine = InventoryResetter.GetFirstAssaultCarbineItem();
+
+            // BuyMenuSelection.TryGetItemData(assaultCarbine.TemplateId, out ShopItem carbineShopInfo);
+            // Purchasing.BuyItem(carbineShopInfo);
         }
+
 
         foreach (var p in H.Arena.session.scoreboard.Values)
         {

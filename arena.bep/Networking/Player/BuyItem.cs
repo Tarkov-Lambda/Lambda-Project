@@ -82,11 +82,16 @@ public class BuyItemPacketHandler : PacketHandler<SpawnItemPacket>
     {
         rejectionReason = null;
 
-        if (!H.MainPlayerScore.CanBuy())
+
+        if (H.Session.matchState != MatchState.Cleanup)
         {
-            rejectionReason = "Buy time is over.";
-            return false;
+            if (!H.MainPlayerScore.CanBuy())
+            {
+                rejectionReason = "Buy time is over.";
+                return false;
+            }
         }
+
 
         if (packet.item is VestItemClass or ArmorItemClass)
         {
@@ -142,10 +147,15 @@ public class BuyItemPacketHandler : PacketHandler<SpawnItemPacket>
         // if (packet.Player.IsYourPlayer) return;
         SpawnItem(packet, packet.Player);
 
-        if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+
+        if (H.Session.matchState != MatchState.Cleanup)
         {
-            H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+            if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+            {
+                H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+            }
         }
+
     }
 
     protected override void WhenRejected(SpawnItemPacket packet, NetPeer peer)

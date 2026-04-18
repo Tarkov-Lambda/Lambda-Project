@@ -104,7 +104,7 @@ public static class ItemUtilities
                     if (templateItem is BackpackItemClass)
                     {
                         removed = true;
-                        Singleton<ForceRemoveItemPacketHandler>.Instance.Send(H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack));
+                        Singleton<ForceRemoveItemPacketHandler>.Instance.Send(slot.ContainedItem);
                     }
                     else if (templateItem is VestItemClass or ArmorItemClass)
                     {
@@ -127,7 +127,7 @@ public static class ItemUtilities
                 }
             }
 
-            if (placement.Kind is not PlacementKind.ArmorPlate)
+            if (placement.Kind is not PlacementKind.ArmorPlate && templateItem is not BackpackItemClass)
             {
                 var addResult = placement.Address.Add(templateItem, true);
                 if (addResult.Failed)
