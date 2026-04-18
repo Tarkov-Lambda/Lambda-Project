@@ -30,6 +30,29 @@ namespace ifp.arena.bep.Patches
     {
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
 
+        [PatchPrefix]
+        private static bool Prefix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
+        {
+            if (packet.Type != ECommonSubPacketType.Damage) return true;
+            if (packet.SubPacket is not DamagePacket damage) return true;
+
+            int victimNetId = packet.NetId;
+
+            if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
+
+            Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
+            PlayerScore shooterScore = shooter.GetScore();
+
+            if (!shooterScore.IsAlive)
+            {
+                if (NetworkTime.LocalNowSeconds - shooterScore.DeathTimestamp > 0.05)
+                    return false;
+            }
+
+            return true;
+        }
+
+
         [PatchPostfix]
         private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
         {
@@ -55,13 +78,7 @@ namespace ifp.arena.bep.Patches
             // D.Log(peer.Id.ToString());
             // D.Log(damage.ProfileId);
             Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
-            PlayerScore shooterScore = shooter.GetScore();
 
-            if (!shooterScore.IsAlive)
-            {
-                if (NetworkTime.LocalNowSeconds - shooterScore.DeathTimestamp > 0.05)
-                    return;
-            }
             // D.Log(shooter.Profile.Nickname);
             // D.Log(damagePlayer.Id.ToString());
 
