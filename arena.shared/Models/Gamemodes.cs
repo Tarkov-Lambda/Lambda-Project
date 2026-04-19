@@ -3,6 +3,7 @@
     TDM,
     SND,
     FFA,
+    AWP,
     PRACTICE
 }
 

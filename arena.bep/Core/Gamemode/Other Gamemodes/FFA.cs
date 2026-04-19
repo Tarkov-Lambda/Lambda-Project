@@ -23,6 +23,7 @@ public class FFAAction : IGameState
 
 public class FFAModeRules : GameModeRules
 {
+
     public override IGameState CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),

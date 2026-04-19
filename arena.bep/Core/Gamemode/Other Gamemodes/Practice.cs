@@ -11,6 +11,7 @@ namespace ifp.arena.bep.Core.Gamemode;
 
 public class PracticeModeRules : GameModeRules
 {
+    
     public override IGameState CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),

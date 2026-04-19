@@ -20,12 +20,12 @@ public static class InventoryActionExtensions
 {
     // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
     // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
-    public static async UniTask<bool> TryPopContainedItem(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
+    public static async UniTask<bool> TryPopContainedItem(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = false)
     {
         return await player.TryOperateOnSlot(equipmentSlot, TryPopItem, waitUntilStationary, extraBackpackWait: true);
     }
 
-    public static async UniTask<bool> TryThrowContainedItem(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
+    public static async UniTask<bool> TryThrowContainedItem(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = false)
     {
         return await player.TryOperateOnSlot(equipmentSlot, TryThrowItem, waitUntilStationary);
     }

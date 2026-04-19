@@ -36,7 +36,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         {
             playerScore.SessionReset();
         }
-        
+
         H.Session.factionWins.Clear();
         H.Session.matchState = MatchState.None;
         H.Session.mapName = packet.mapName;
@@ -76,18 +76,21 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         D.LogTransaction("Starting a match");
 
+        switch (H.Session.currentGameMode)
+        {
+            case GameModes.FFA:
+                H.Arena.ActiveRules = new FFAModeRules();
+                break;
+            case GameModes.SND:
+                H.Arena.ActiveRules = new SND_ModeRules();
+                break;
+            case GameModes.AWP:
+                H.Arena.ActiveRules = new AWP_ModeRules();
+                break;
+        }
+
         if (!H.IsClient)
         {
-            switch (H.Session.currentGameMode)
-            {
-                case GameModes.FFA:
-                    H.Arena.ActiveRules = new FFAModeRules();
-                    break;
-                case GameModes.SND:
-                    H.Arena.ActiveRules = new SND_ModeRules();
-                    break;
-            }
-
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
             H.Arena.ChangeState(MatchState.Warmup);
         }

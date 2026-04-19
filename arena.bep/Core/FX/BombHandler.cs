@@ -36,14 +36,14 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         InitBombVisualsAsync().Forget();
 
         EventBus.OnEnter += OnEnter;
-        EventBus.OnEnd += OnEnd;
+        EventBus.OnExit += OnEnd;
         UnityTicker.OnUpdate += Update;
     }
 
     public void Dispose()
     {
         EventBus.OnEnter -= OnEnter;
-        EventBus.OnEnd -= OnEnd;
+        EventBus.OnExit -= OnEnd;
         UnityTicker.OnUpdate -= Update;
 
         if (BombVisuals != null)

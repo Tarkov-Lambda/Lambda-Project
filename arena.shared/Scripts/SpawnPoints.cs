@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ifp.arena.shared
 {
@@ -8,6 +6,8 @@ namespace ifp.arena.shared
     {
         [SerializeField]
         public Faction faction;
+
+        public int pairId;
 
         private void OnDrawGizmos()
         {

@@ -1,5 +1,6 @@
 ﻿using arena.ui;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
@@ -37,6 +38,7 @@ namespace ifp.arena.bep.Core.UI
             Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
             EventBus.OnEnter += OnMatchStateEnter;
+            EventBus.OnExit += OnMatchStateExit;
             PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
 
             shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
@@ -51,6 +53,22 @@ namespace ifp.arena.bep.Core.UI
         {
             shop.SetFaction(H.MainPlayerScore.Faction);
             SetInteractable();
+        }
+
+        private void OnMatchStateExit(MatchState state)
+        {
+            if (H.Arena.ActiveRules is IBuyable buyableGamemode)
+            {
+                if (state is MatchState.RoundPrepare)
+                {
+                    UniTask.RunOnThreadPool(async () =>
+                    {
+                        await UniTask.WaitForSeconds(buyableGamemode.TimeInActivePhaseToBuy + 1);
+
+                        SetInteractable();
+                    });
+                }
+            }
         }
 
         void SetInteractable()

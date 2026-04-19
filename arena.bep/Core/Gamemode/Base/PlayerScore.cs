@@ -170,12 +170,14 @@ public class PlayerScore
 
     public void SpendMoney(int amount)
     {
-        score.Money -= amount;
-        if (Money < 0)
-            score.Money = 0;
+        if (H.Arena?.ActiveRules is IBuyable)
+        {
+            score.Money -= amount;
+            if (Money < 0) score.Money = 0;
 
-        if (H.IsHeadless) return;
-        EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
+            if (H.IsHeadless) return;
+            EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
+        }
     }
 
     public void SetMoney(int newMoney)
@@ -185,9 +187,17 @@ public class PlayerScore
 
     public bool CanBuy()
     {
-        if (H.Session.matchState is MatchState.RoundPrepare) return true;
-        if (H.Session.matchState is MatchState.RoundAction)
-            return H.Arena.StateTimer >= H.Arena.PhaseDurationSeconds - 30; // only allow buying within first 30 seconds of round action
+        if (H.Arena?.ActiveRules is IBuyable buyable)
+        {
+            if (H.Session.matchState is MatchState.RoundPrepare) return true;
+            if (buyable.CanBuyInActivePhase)
+            {
+                if (H.Session.matchState is MatchState.RoundAction)
+                {
+                    return H.Arena.StateTimer >= H.Arena.PhaseDurationSeconds - buyable.TimeInActivePhaseToBuy;
+                }
+            }
+        }
 
         return false;
     }

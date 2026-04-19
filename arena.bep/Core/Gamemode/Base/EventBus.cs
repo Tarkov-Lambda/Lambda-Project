@@ -11,7 +11,7 @@ public static class EventBus
 {
     public static Action<MatchState> OnEnter;
     // We do not have OnUpdate action because clients don't run the update loop 
-    public static Action<MatchState> OnEnd;
+    public static Action<MatchState> OnExit;
     public static Action<BombState> OnBombStateChange;
     public static Action<PlayerKilledPacket> OnPlayerKill;
     public static Action<RoundActionPhaseEnd> OnRoundActionEnd;

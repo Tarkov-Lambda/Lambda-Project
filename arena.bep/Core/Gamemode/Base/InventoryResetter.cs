@@ -36,7 +36,7 @@ public static class InventoryResetter
         return null;
     }
 
-    public static AssaultCarbineItemClass GetFirstAssaultCarbineItem()
+    public static SniperRifleItemClass GetFirstSniperRifleItem()
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -46,7 +46,7 @@ public static class InventoryResetter
                     continue;
 
                 var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
-                if (immutable is not AssaultCarbineItemClass assaultCarbine)
+                if (immutable is not SniperRifleItemClass assaultCarbine)
                     continue;
 
                 if (shopItem.faction == H.MainPlayerScore.Faction || shopItem.faction == Faction.None)
@@ -140,11 +140,16 @@ public static class InventoryResetter
                 }
             }
 
-            await IU.ClientRequestGiveItem(GetDefaultPistol());
+            await GiveDefaultPistol();
         }
         finally
         {
             IsResetting = false;
         }
+    }
+
+    public static async UniTask GiveDefaultPistol()
+    {
+        await IU.ClientRequestGiveItem(GetDefaultPistol());
     }
 }

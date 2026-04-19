@@ -56,6 +56,8 @@ internal class NameplateRenderer : MonoBehaviour
             return;
         }
 
+        if (H.MainPlayerScore == null) return;
+
         Faction ownFaction = H.MainPlayerScore.Faction;
         int activeCount = 0;
 
@@ -63,7 +65,7 @@ internal class NameplateRenderer : MonoBehaviour
 
         foreach (var playerScore in H.Scoreboard.Values)
         {
-            if (playerScore == H.MainPlayerScore)
+            if (playerScore.player.IsYourPlayer)
                 continue;
 
             if (playerScore.Faction != ownFaction)

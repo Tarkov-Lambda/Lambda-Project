@@ -33,6 +33,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager session;
     public GameModeRules ActiveRules { get; set; } = new SND_ModeRules();
+    public EconomyManager EconomyManager = new();
 
     public float StateTimer;
     public double ServerPhaseStartSeconds, PhaseDurationSeconds;
@@ -101,7 +102,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         if (!H.IsHeadless)
         {
-            SteamAudioSourceAttacher.Initialize();
+            // SteamAudioSourceAttacher.Initialize();
 
             HU.ApplyPainkiller();
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
@@ -109,7 +110,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
             Physics.simulationMode = SimulationMode.FixedUpdate;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
-            SteamAudioInitializer.AttachListenerIfNeeded();
+            // SteamAudioInitializer.AttachListenerIfNeeded();
 
             PU.OpenEyes();
         }
@@ -165,7 +166,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
-        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Session.StateTimerConfig[newStateType], roundEndData);
+        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Arena.ActiveRules.StateTimerConfig[newStateType], roundEndData);
     }
 
     // Everyone runs this when the match state packet is approved
@@ -184,7 +185,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             NetworkTime.BootstrapFromServerStamp(packet.serverNowSeconds);
         }
 
-        PhaseDurationSeconds = H.Session.StateTimerConfig[packet.matchState];
+        PhaseDurationSeconds = H.Arena.ActiveRules.StateTimerConfig[packet.matchState];
         ServerPhaseStartSeconds = packet.Timestamp;
 
         if (packet.roundActionEnd.HasValue)
@@ -202,7 +203,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         if (previousState != null)
         {
             previousState.OnExit();
-            EventBus.OnEnd?.Invoke(previousState.StateType);
+            EventBus.OnExit?.Invoke(previousState.StateType);
         }
 
 #if DEBUG

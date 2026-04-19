@@ -71,7 +71,7 @@ public class EconomyManager : IDisposable
 
         foreach (var p in H.Scoreboard.Values)
         {
-            p.SetMoney(EconomyConstants.START_MONEY);
+            p.SetMoney(800);
         }
     }
 

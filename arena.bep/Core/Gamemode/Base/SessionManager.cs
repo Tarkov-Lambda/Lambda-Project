@@ -18,21 +18,6 @@ public class SessionManager
 
     public int mvpId;
 
-    public Dictionary<MatchState, float> StateTimerConfig = new Dictionary<MatchState, float>
-        {
-            {MatchState.None, 0},
-            {MatchState.Warmup, 120},
-            {MatchState.WarmupEnd, 5},
-            {MatchState.Cleanup, 3},
-            {MatchState.Pause, 45},
-            {MatchState.RoundPrepare, 5},
-            {MatchState.RoundAction, 115},
-            {MatchState.RoundEnd, 8},
-            {MatchState.RoundPlanted, 45},
-            {MatchState.SideSwap, 10},
-            {MatchState.MatchEnd, 15}
-        };
-
     public SessionManager()
     {
         InitializeScoreBoard();

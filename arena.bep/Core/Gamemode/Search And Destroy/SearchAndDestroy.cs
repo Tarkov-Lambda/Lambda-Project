@@ -82,7 +82,7 @@ public class SND_Action : IGameState
     {
         var alive = H.Scoreboard.Values.Where(p => p.IsAlive).GroupBy(p => p.Faction).ToDictionary(g => g.Key, g => g.Count());
         var factions = H.Scoreboard.Values.Select(p => p.Faction).Where(f => f != Faction.None && f != Faction.Spectator).Distinct();
-        
+
         foreach (var f in factions)
         {
             if (!alive.ContainsKey(f) || alive[f] == 0)
@@ -132,42 +132,35 @@ public class SND_Planted : IGameState
     public void OnExit() { }
 }
 
-public class SND_End : SharedEnd
+public class SND_RoundEnd : SharedRoundEnd
 {
     public override void OnExit()
     {
         int currentRound = H.Session.factionWins.Values.Sum();
-        int maxRounds = SND_ModeRules.maxRoundsToWin * 2 - 1;
+        int maxRounds = (H.Arena.ActiveRules as SND_ModeRules).MaxRoundsToWin * 2 - 1;
         double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
         Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
+
+        H.BombHandler.BombVisuals?.SetActive(false);
+
         base.OnExit();
     }
 }
 
-public class SND_SideSwap : SharedSideSwap
+public class SND_ModeRules : GameModeRules, IRoundBased, ISideSwappable, IBuyable
 {
-    public override void OnExit()
-    {
-        (H.Arena.ActiveRules as SND_ModeRules).hasSideSwapped = true;
-        base.OnExit();
-    }
-}
+    public int MaxRoundsToWin { get; set; } = 13;
 
-public class SND_ModeRules : GameModeRules
-{
-    public static int maxRoundsToWin = 13;
+    public bool HasSideSwapped { get; set; } = false;
+
+    public bool CanBuyInActivePhase { get; set; } = true;
+    public int TimeInActivePhaseToBuy { get; set; } = 30;
+
     public static float platingTime = 4.5f;
     public static float defusingTime = 10f;
     public static float defuseRadius = 2.5f;
     public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
     public static string defuseKitTemplateId = "544fb5454bdc2df8738b456a";
-
-    public bool hasSideSwapped;
-
-    public SND_ModeRules()
-    {
-        hasSideSwapped = false;
-    }
 
     public override IGameState CreateState(MatchState state) => state switch
     {
@@ -181,9 +174,9 @@ public class SND_ModeRules : GameModeRules
         MatchState.RoundPrepare => new SND_Prepare(),
         MatchState.RoundAction => new SND_Action(),
         MatchState.RoundPlanted => new SND_Planted(),
-        MatchState.RoundEnd => new SharedEnd(),
+        MatchState.RoundEnd => new SharedRoundEnd(),
 
-        MatchState.SideSwap => new SND_SideSwap(),
+        MatchState.SideSwap => new SharedSideSwap(),
         MatchState.MatchEnd => new SharedFinish(),
         _ => null
     };
