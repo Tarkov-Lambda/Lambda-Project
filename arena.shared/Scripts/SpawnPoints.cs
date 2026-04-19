@@ -11,7 +11,9 @@ namespace ifp.arena.shared
 
         public Vector3 GetRandomSpawn()
         {
-            return transform.GetChildren().RandomElement().position;
+            int count = transform.childCount;
+            int index = Random.Range(0, count);
+            return transform.GetChild(index).position;
         }
 
         private void OnDrawGizmos()

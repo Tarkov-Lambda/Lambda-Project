@@ -146,7 +146,7 @@ public static class RespawnUtilities
             return false;
         }
 
-        var allSpawnPointClusters = allSpawnPoints.FindAll(spawnPointCluster => spawnPointCluster.faction == faction && spawnPointCluster.pairId == pair);
+        var allSpawnPointClusters = allSpawnPoints.FindAll(spawnPointCluster => spawnPointCluster.faction == faction && spawnPointCluster?.pairId == pair);
 
         newPos = allSpawnPointClusters;
         return true;
