@@ -23,7 +23,7 @@ public class Patch_CanWalk : ModulePatch
     {
         if (!H.IsInRaid()) return;
 
-        if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
+        if (H.MainPlayerScore.IsControllerPartiallyLocked())
         {
             __result = false;
         }
@@ -53,7 +53,7 @@ public class Patch_CanJump : ModulePatch
     static void Postfix(MovementContext __instance, ref bool __result)
     {
         if (!H.IsInRaid()) return;
-        if (Singleton<ArenaController>.Instance.session.IsControllerPartiallyLocked())
+        if (H.MainPlayerScore.IsControllerPartiallyLocked())
         {
             __result = false;
         }

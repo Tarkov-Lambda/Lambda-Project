@@ -12,7 +12,7 @@ public class Patch_CanPressTrigger : ModulePatch
     [PatchPrefix]
     static bool Prefix(ref bool __result)
     {
-        if (H.Session.IsControllerPartiallyLocked())
+        if (H.MainPlayerScore.IsControllerPartiallyLocked())
         {
             __result = false;
             return false;

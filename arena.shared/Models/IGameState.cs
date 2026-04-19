@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public interface IGameState
 {
@@ -51,7 +52,34 @@ public interface IRoundBased
 /// </summary>
 public interface ITeamBased
 {
-    
+
+}
+
+/// <summary>
+/// Whether this gamemode allows respawning during action phase
+/// </summary>
+public interface IObjectiveBased
+{
+    List<ILambdaObjective> ObjectivePositions { get; set; }
+}
+
+/// <summary>
+/// Whether this gamemode allows respawning during action phase
+/// </summary>
+public interface ISingularObjectiveBased : IObjectiveBased
+{
+    ILambdaObjective CurrentObjective { get; set; }
+}
+
+/// <summary>
+/// Whether this gamemode allows respawning during action phase
+/// </summary>
+public interface IRespawnable
+{
+    // For shit like conquest, default is 0
+    public int RespawnCost { get; set; }
+    // Configuration
+    public IRespawnWeights RespawnWeights { get; }
 }
 
 /// <summary>
@@ -61,3 +89,13 @@ public interface ISideSwappable : IRoundBased, ITeamBased
 {
     public bool HasSideSwapped { get; set; }
 }
+
+// Search And Destroy   multiple active
+// Hardpoint            singular active
+// Domination           multiple active
+// Conquest             multiple active
+// FFA
+// TDM
+// Gun Game
+// Duel
+// TRG Only

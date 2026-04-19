@@ -1,5 +1,5 @@
 ## Credits
-- **ifp**: Gamemodes • Networking • SFX • Steam Audio • Economy • Patching
+- **ifp**: Gamemodes • Networking • SFX • Steam Audio • Patching
 - **tarkin**: UI • VFX • Map SDK • Patching  
 ---
 
@@ -9,7 +9,7 @@
 - Custom Preset Buy Menu
 - First Person Spectator Mode  
 - Gamemode Framework  
-- Search and Destroy  
+- Search and Destroy, AWP Only, Duel, King Of The Hill
 - Headless Support
 - Respawning Mechanic  
 - Preemptive Server-Side Deaths  

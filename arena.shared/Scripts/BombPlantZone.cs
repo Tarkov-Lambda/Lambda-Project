@@ -12,11 +12,36 @@ namespace ifp.arena.shared
     [RequireComponent(typeof(BoxCollider))]
     public class BombPlantZone :
 #if EFT_RUNTIME
-        InteractableObject
+        InteractableObject, ILambdaObjective
 #else
-        MonoBehaviour
+        MonoBehaviour, ILambdaObjective
 #endif
     {
+        BoxCollider _boxCollider;
+
+        public string Name { get; }
+
+        public Vector3 Center
+        {
+            get
+            {
+                return _boxCollider.center;
+            }
+        }
+
+        public Bounds Bounds
+        {
+            get
+            {
+                return _boxCollider.bounds;
+            }
+        }
+
+        void Awake()
+        {
+            _boxCollider = GetComponent<BoxCollider>();
+        }
+
         private void OnValidate()
         {
             gameObject.layer = 22;

@@ -1,0 +1,38 @@
+﻿using Fika.Core.Main.Utils;
+using ifp.arena.bep.GameTypes;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+
+namespace ifp.arena.bep.Core.Gamemode;
+
+public class KOTHAction : IGameState
+{
+    public MatchState StateType => MatchState.RoundAction;
+    public void OnEnter() { }
+    public MatchState? OnUpdate()
+    {
+        if (H.IsClient) return null;
+        if (H.Arena.StateTimer <= 0 || H.Scoreboard.Values.Any(p => p.Kills >= 20)) return MatchState.MatchEnd;
+        return null;
+    }
+    public void OnExit() { }
+}
+
+public class KOTHGameRules : GameModeRules, ITeamBased, IObjectiveBased
+{
+    public List<ILambdaObjective> ObjectivePositions { get; set; } = [];
+
+    public override IGameState CreateState(MatchState state) => state switch
+    {
+        MatchState.None => new SharedNone(),
+        MatchState.Warmup => new SharedWarmup(),
+        MatchState.WarmupEnd => new SharedWarmupEnd(),
+        MatchState.RoundPrepare => new SharedPrepare(),
+        MatchState.RoundAction => new KOTHAction(),
+        MatchState.MatchEnd => new SharedFinish(),
+        _ => null
+    };
+}

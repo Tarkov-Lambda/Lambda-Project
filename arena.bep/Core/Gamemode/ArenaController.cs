@@ -32,8 +32,9 @@ public partial struct RoundActionPhaseEnd
 public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager session;
-    public GameModeRules ActiveRules { get; set; } = new SND_ModeRules();
+    public GameModeRules activeRules = new SND_ModeRules();
     public EconomyManager EconomyManager = new();
+    public RespawnManager respawnManager = new();
 
     public float StateTimer;
     public double ServerPhaseStartSeconds, PhaseDurationSeconds;
@@ -166,7 +167,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
-        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Arena.ActiveRules.StateTimerConfig[newStateType], roundEndData);
+        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.ActiveRules.StateTimerConfig[newStateType], roundEndData);
     }
 
     // Everyone runs this when the match state packet is approved
@@ -185,7 +186,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             NetworkTime.BootstrapFromServerStamp(packet.serverNowSeconds);
         }
 
-        PhaseDurationSeconds = H.Arena.ActiveRules.StateTimerConfig[packet.matchState];
+        PhaseDurationSeconds = H.ActiveRules.StateTimerConfig[packet.matchState];
         ServerPhaseStartSeconds = packet.Timestamp;
 
         if (packet.roundActionEnd.HasValue)
@@ -195,7 +196,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
         session.matchState = packet.matchState;
-        _currentState = ActiveRules.CreateState(packet.matchState);
+        _currentState = activeRules.CreateState(packet.matchState);
 
         StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 

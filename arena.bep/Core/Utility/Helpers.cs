@@ -68,6 +68,7 @@ public static class Helpers
     // Internal Pointers
     public static ArenaController Arena                                 => Singleton<ArenaController>.Instance;
     public static SessionManager Session                                => Arena.session;
+    public static GameModeRules ActiveRules                             => Arena.activeRules;
 
     public static Dictionary<int, PlayerScore> Scoreboard               => Singleton<ArenaController>.Instance.session.scoreboard;
     public static PlayerScore MainPlayerScore                           => GetMainPlayerScore();

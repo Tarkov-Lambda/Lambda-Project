@@ -73,39 +73,38 @@ public class SessionManager
         }
     }
 
-    // Locking out the player from shooting/jumping/moving
-    public bool IsControllerPartiallyLocked()
-    {
-        if (H.IsHeadless) return false;
-        if (H.GameWorld is HideoutGameWorld) return false;
-
-        if (matchState is MatchState.WarmupEnd ||
-            matchState is MatchState.RoundPrepare ||
-            matchState is MatchState.Pause ||
-            matchState is MatchState.SideSwap ||
-            matchState is MatchState.Cleanup) return true;
-
-        if (!H.MainPlayerScore.IsAlive && H.Session.mapName != "") return true;
-
-        return false;
-    }
-
     public List<Player> GetPlayersFromFaction(Faction faction)
     {
-        if (!H.IsInRaid())
-            return new();
+        if (!H.IsInRaid()) return [];
 
-        return scoreboard.Values
-            .Where(s => s.Faction == faction)
-            .Select(s => s.player)
-            .ToList();
+        var result = new List<Player>();
+
+        foreach (var s in scoreboard.Values)
+        {
+            if (s.Faction == faction)
+            {
+                result.Add(s.player);
+            }
+        }
+
+        return result;
     }
 
     public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
     {
-        if (!H.IsInRaid()) return new();
+        if (!H.IsInRaid()) return [];
 
-        return scoreboard.Values.Where(s => s.Faction == faction).ToList();
+        var result = new List<PlayerScore>();
+
+        foreach (var s in scoreboard.Values)
+        {
+            if (s.Faction == faction)
+            {
+                result.Add(s);
+            }
+        }
+
+        return result;
     }
 }
 

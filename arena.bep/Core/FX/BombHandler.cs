@@ -18,6 +18,8 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.FX;
 
+// TODO: REFACTOR
+// WHY THE FUCK AM I RUNNING THIS EVERY FRAME
 public class BombHandler : Singleton<BombHandler>, IDisposable
 {
     public BetterSource LastBombSource { get; private set; }
@@ -64,9 +66,9 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     public void Update()
     {
         if (H.Arena == null) return;
-        if (H.Arena.ActiveRules is not SND_ModeRules) return;
-        if (H.Session == null) return;   // ← add this
-        if (H.Sounds == null) return;    // ← add this
+        if (H.ActiveRules is not SND_ModeRules) return;
+        if (H.Session == null) return;
+        if (H.Sounds == null) return;
 
 
         if (_beforeExplodingPlayed) return;

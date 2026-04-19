@@ -57,7 +57,7 @@ namespace ifp.arena.bep.Core.UI
 
         private void OnMatchStateExit(MatchState state)
         {
-            if (H.Arena.ActiveRules is IBuyable buyableGamemode)
+            if (H.ActiveRules is IBuyable buyableGamemode)
             {
                 if (state is MatchState.RoundPrepare)
                 {
@@ -74,6 +74,7 @@ namespace ifp.arena.bep.Core.UI
         void SetInteractable()
         {
             shop?.SetInteractable(H.MainPlayerScore.CanBuy());
+            shop?.SetCurrentMoneyBalance(H.MainPlayerScore.Money);
         }
 
         void OnSelfMoneyChanged(int money)

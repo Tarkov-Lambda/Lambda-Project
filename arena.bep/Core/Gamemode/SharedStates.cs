@@ -60,7 +60,7 @@ public class SharedWarmupEnd : IGameState
         {
             UniTask.RunOnThreadPool(async () =>
             {
-                await UniTask.Delay((int)H.Arena.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
+                await UniTask.Delay((int)H.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
                 PU.CloseEyes(false, false).Forget();
             }).Forget();
         }
@@ -161,7 +161,7 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-        if (H.Arena.ActiveRules != null && H.Arena.ActiveRules is SND_ModeRules)
+        if (H.ActiveRules != null && H.ActiveRules is SND_ModeRules)
         {
             Singleton<BombAssignmentPacketHandler>.Instance.Send();
         }
@@ -182,7 +182,7 @@ public class SharedRoundEnd : IGameState
         {
             UniTask.RunOnThreadPool(async () =>
             {
-                await UniTask.Delay((int)H.Arena.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
+                await UniTask.Delay((int)H.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
                 PU.CloseEyes(false, false).Forget();
             }).Forget();
         }
@@ -194,7 +194,7 @@ public class SharedRoundEnd : IGameState
 
         if (H.Arena.StateTimer <= 0)
         {
-            if (H.Arena.ActiveRules is IRoundBased roundBasedGamemode)
+            if (H.ActiveRules is IRoundBased roundBasedGamemode)
             {
                 var wins = H.Session.factionWins;
 
@@ -255,7 +255,7 @@ public class SharedSideSwap : IGameState
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
-        (H.Arena.ActiveRules as ISideSwappable).HasSideSwapped = true;
+        (H.ActiveRules as ISideSwappable).HasSideSwapped = true;
     }
 }
 

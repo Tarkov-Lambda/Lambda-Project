@@ -157,6 +157,24 @@ public class PlayerScore
         score.RoundKills = 0;
     }
 
+    // Locking out the player from shooting/jumping/moving
+    public bool IsControllerPartiallyLocked()
+    {
+        if (H.IsHeadless) return false;
+        if (H.GameWorld is HideoutGameWorld) return false;
+
+        var matchState = H.Session.matchState;
+        if (matchState is MatchState.WarmupEnd ||
+            matchState is MatchState.RoundPrepare ||
+            matchState is MatchState.Pause ||
+            matchState is MatchState.SideSwap ||
+            matchState is MatchState.Cleanup) return true;
+
+        if (!IsAlive && H.Session.mapName != "") return true;
+
+        return false;
+    }
+
     public void AddMoney(int amount)
     {
         score.Money += amount;
@@ -170,7 +188,7 @@ public class PlayerScore
 
     public void SpendMoney(int amount)
     {
-        if (H.Arena?.ActiveRules is IBuyable)
+        if (H.ActiveRules is IBuyable)
         {
             score.Money -= amount;
             if (Money < 0) score.Money = 0;
@@ -187,7 +205,7 @@ public class PlayerScore
 
     public bool CanBuy()
     {
-        if (H.Arena?.ActiveRules is IBuyable buyable)
+        if (H.ActiveRules is IBuyable buyable)
         {
             if (H.Session.matchState is MatchState.RoundPrepare) return true;
             if (buyable.CanBuyInActivePhase)

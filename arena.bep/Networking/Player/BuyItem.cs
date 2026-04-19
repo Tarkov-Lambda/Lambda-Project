@@ -83,7 +83,7 @@ public class BuyItemPacketHandler : PacketHandler<SpawnItemPacket>
         rejectionReason = null;
 
         // if the gamemode is not IBuyable, allow anyone to buy anything
-        if (H.Session.matchState != MatchState.Cleanup && H.Arena?.ActiveRules is IBuyable)
+        if (H.Session.matchState != MatchState.Cleanup && H.ActiveRules is IBuyable)
         {
             if (!H.GetPlayerScore(packet.Player).CanBuy())
             {

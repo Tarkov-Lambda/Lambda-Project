@@ -79,13 +79,13 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         switch (H.Session.currentGameMode)
         {
             case GameModes.FFA:
-                H.Arena.ActiveRules = new FFAModeRules();
+                H.Arena.activeRules = new FFAModeRules();
                 break;
             case GameModes.SND:
-                H.Arena.ActiveRules = new SND_ModeRules();
+                H.Arena.activeRules = new SND_ModeRules();
                 break;
             case GameModes.AWP:
-                H.Arena.ActiveRules = new AWP_ModeRules();
+                H.Arena.activeRules = new AWP_ModeRules();
                 break;
         }
 

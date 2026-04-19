@@ -106,11 +106,11 @@ public class SND_Planted : IGameState
         if (!H.IsServer) return null;
 
         // If all CT are dead before timer runs out
-        // if (!H.Scoreboard.Values.Any(p => p.isAlive && p.faction == Faction.CT))
-        // {
-        //     H.Arena.Award(Faction.T, RoundWinReason.Elimination);
-        //     return MatchState.RoundEnd;
-        // }
+        if (!H.Scoreboard.Values.Any(p => p.IsAlive && p.Faction == Faction.CT))
+        {
+            H.Arena.Award(Faction.T, RoundWinReason.Elimination);
+            return MatchState.RoundEnd;
+        }
 
         if (H.Session.bombState == BombState.Defused)
         {
@@ -137,7 +137,7 @@ public class SND_RoundEnd : SharedRoundEnd
     public override void OnExit()
     {
         int currentRound = H.Session.factionWins.Values.Sum();
-        int maxRounds = (H.Arena.ActiveRules as SND_ModeRules).MaxRoundsToWin * 2 - 1;
+        int maxRounds = (H.ActiveRules as SND_ModeRules).MaxRoundsToWin * 2 - 1;
         double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
         Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
 
@@ -147,20 +147,37 @@ public class SND_RoundEnd : SharedRoundEnd
     }
 }
 
-public class SND_ModeRules : GameModeRules, IRoundBased, ISideSwappable, IBuyable
+public class SND_ModeRules : GameModeRules, IObjectiveBased, IRoundBased, ISideSwappable, IBuyable
 {
-    public int MaxRoundsToWin { get; set; } = 13;
+    public List<ILambdaObjective> ObjectivePositions { get; set; } = [];
 
-    public bool HasSideSwapped { get; set; } = false;
+    public int MaxRoundsToWin { get; set; }                        = 13;
 
-    public bool CanBuyInActivePhase { get; set; } = true;
-    public int TimeInActivePhaseToBuy { get; set; } = 30;
+    public bool HasSideSwapped { get; set; }                       = false;
 
-    public static float platingTime = 4.5f;
-    public static float defusingTime = 10f;
-    public static float defuseRadius = 2.5f;
-    public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
-    public static string defuseKitTemplateId = "544fb5454bdc2df8738b456a";
+    public bool CanBuyInActivePhase { get; set; }                  = true;
+    public int TimeInActivePhaseToBuy { get; set; }                = 30;
+
+    public static float platingTime                                = 4.5f;
+    public static float defusingTime                               = 10f;
+    public static float defuseRadius                               = 2.5f;
+    public static string bombTemplateId                            = "628bc7fb408e2b2e9c0801b1";
+    public static string defuseKitTemplateId                       = "544fb5454bdc2df8738b456a";
+
+    public new Dictionary<MatchState, float> StateTimerConfig = new()
+    {
+        {MatchState.None, 0},
+        {MatchState.Warmup, 120},
+        {MatchState.WarmupEnd, 5},
+        {MatchState.Cleanup, 3},
+        {MatchState.Pause, 45},
+        {MatchState.RoundPrepare, 15},
+        {MatchState.RoundAction, 115},
+        {MatchState.RoundEnd, 8},
+        {MatchState.RoundPlanted, 45},
+        {MatchState.SideSwap, 10},
+        {MatchState.MatchEnd, 15}
+    };
 
     public override IGameState CreateState(MatchState state) => state switch
     {
