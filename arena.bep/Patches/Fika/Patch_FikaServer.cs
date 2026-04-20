@@ -52,7 +52,6 @@ namespace ifp.arena.bep.Patches
             return true;
         }
 
-
         [PatchPostfix]
         private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
         {

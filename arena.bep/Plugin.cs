@@ -123,6 +123,8 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         // RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // Bypass MetaXR Occlusion
+        RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
+        RegisterPatch(new Patch_BetterSource_ResetOcclusion());
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
-public class KOTHAction : IGameState
+public class HardpointAction : IGameState
 {
     public MatchState StateType => MatchState.RoundAction;
     public void OnEnter() { }
@@ -31,7 +31,7 @@ public class KOTHGameRules : GameModeRules, ITeamBased, IObjectiveBased
         MatchState.Warmup => new SharedWarmup(),
         MatchState.WarmupEnd => new SharedWarmupEnd(),
         MatchState.RoundPrepare => new SharedPrepare(),
-        MatchState.RoundAction => new KOTHAction(),
+        MatchState.RoundAction => new HardpointAction(),
         MatchState.MatchEnd => new SharedFinish(),
         _ => null
     };

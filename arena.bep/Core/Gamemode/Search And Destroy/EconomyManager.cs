@@ -11,8 +11,8 @@ namespace ifp.arena.bep.Core.Economy;
 
 public static class EconomyConstants
 {
-    public const int MAX_MONEY = 16000;
-    public const int START_MONEY = 80000;
+    public const int MAX_MONEY = 160000;
+    public const int START_MONEY = 160000;
 
     public const int WIN_ELIMINATION = 3250;
     public const int WIN_TIME = 3250;
@@ -71,7 +71,7 @@ public class EconomyManager : IDisposable
 
         foreach (var p in H.Scoreboard.Values)
         {
-            p.SetMoney(800);
+            p.SetMoney(EconomyConstants.START_MONEY);
         }
     }
 

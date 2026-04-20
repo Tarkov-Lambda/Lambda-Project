@@ -42,12 +42,6 @@ public class SND_Prepare : SharedPrepare
 
         base.OnEnter();
     }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-    }
-
 }
 
 public class SND_Action : IGameState
@@ -181,20 +175,17 @@ public class SND_ModeRules : GameModeRules, IObjectiveBased, IRoundBased, ISideS
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None => new SharedNone(),
-
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
-
-        MatchState.Cleanup => new SharedCleanup(),
-        MatchState.Pause => new SharedPause(),
+        MatchState.None         => new SharedNone(),
+        MatchState.Warmup       => new SharedWarmup(),
+        MatchState.WarmupEnd    => new SharedWarmupEnd(),
+        MatchState.Cleanup      => new SharedCleanup(),
+        MatchState.Pause        => new SharedPause(),
         MatchState.RoundPrepare => new SND_Prepare(),
-        MatchState.RoundAction => new SND_Action(),
+        MatchState.RoundAction  => new SND_Action(),
         MatchState.RoundPlanted => new SND_Planted(),
-        MatchState.RoundEnd => new SharedRoundEnd(),
-
-        MatchState.SideSwap => new SharedSideSwap(),
-        MatchState.MatchEnd => new SharedFinish(),
+        MatchState.RoundEnd     => new SharedRoundEnd(),
+        MatchState.SideSwap     => new SharedSideSwap(),
+        MatchState.MatchEnd     => new SharedFinish(),
         _ => null
     };
 }

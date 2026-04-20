@@ -81,24 +81,21 @@ public class AWP_Action : IGameState
     }
 }
 
-public class AWP_ModeRules : GameModeRules, IRoundBased
+public class AWP_ModeRules : GameModeRules, IRoundBased, ITeamBased
 {
     public int MaxRoundsToWin { get; set; } = 13;
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None => new SharedNone(),
-
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
-
-        MatchState.Cleanup => new SharedCleanup(),
-        MatchState.Pause => new SharedPause(),
+        MatchState.None         => new SharedNone(),
+        MatchState.Warmup       => new SharedWarmup(),
+        MatchState.WarmupEnd    => new SharedWarmupEnd(),
+        MatchState.Cleanup      => new SharedCleanup(),
+        MatchState.Pause        => new SharedPause(),
         MatchState.RoundPrepare => new AWP_Prepare(),
-        MatchState.RoundAction => new AWP_Action(),
-        MatchState.RoundEnd => new SharedRoundEnd(),
-
-        MatchState.MatchEnd => new SharedFinish(),
+        MatchState.RoundAction  => new AWP_Action(),
+        MatchState.RoundEnd     => new SharedRoundEnd(),
+        MatchState.MatchEnd     => new SharedFinish(),
         _ => null
     };
 }

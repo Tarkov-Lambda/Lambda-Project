@@ -126,6 +126,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         _currentState?.OnExit();
         _currentState = null;
 
+        // TODO: add session = null here
+
         UnityTicker.OnUpdate -= Update;
 
         if (timeSyncTicker != null)

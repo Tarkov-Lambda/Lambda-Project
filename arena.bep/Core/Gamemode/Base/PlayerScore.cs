@@ -51,6 +51,7 @@ public class PlayerScore
         player = H.GetPlayer(id);
 
         score.Name = player.Profile.Nickname;
+        score.Money = EconomyConstants.MAX_MONEY;
 
         if (H.IsHeadless) return;
         if (H.IsServer && H.MainPlayer.Id == id)

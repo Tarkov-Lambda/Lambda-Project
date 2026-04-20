@@ -1,12 +1,14 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.UI;
 using Fika.Core;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.networking;
 using ifp.arena.shared.Models;
 using System.Linq;
+using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
@@ -87,6 +89,15 @@ public class SharedCleanup : IGameState
     {
         IU.GarbageCollectWorldLoot();
 
+        // if (H.IsServer)
+        // {
+        //     foreach (var playerScore in H.Scoreboard)
+        //     {
+        //         Vector3 newPos = playerScore.Value.GetBestSpawnPoint();
+        //         Singleton<DictateTeleportHandler>.Instance.SendToPlayer(playerScore.Value.player, newPos);
+        //     }
+        // }
+
         if (!H.IsHeadless)
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
@@ -143,6 +154,12 @@ public class SharedPrepare : IGameState
             Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
+
+            // UniTask.RunOnThreadPool(async () =>
+            // {
+            //     await UniTask.Delay(2000);
+            //     Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(true);
+            // }).Forget();
 
             // AssaultCarbineItemClass assaultCarbine = InventoryResetter.GetFirstAssaultCarbineItem();
 
@@ -234,7 +251,7 @@ public class SharedSideSwap : IGameState
         // #endif
         // }
 
-        if (H.IsServer)
+        if (H.ActiveRules is ISideSwappable sideSwappable)
         {
             foreach (var player in H.AllPlayers)
             {

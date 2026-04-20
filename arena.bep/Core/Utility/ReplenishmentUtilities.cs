@@ -21,7 +21,7 @@ public static class ReplenishmentUtilities
         {
             foreach (var item in slot.Items)
             {
-                RepairItem(item);
+                item.Repair();
 
                 if (item is Weapon weapon)
                 {
@@ -60,9 +60,8 @@ public static class ReplenishmentUtilities
     public static async UniTask ReplenishMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
     {
         await UniTask.Delay(25);
-        CompoundItem vest = player.GetSlotItem(EquipmentSlot.TacticalVest) as CompoundItem;
 
-        if (vest is null) return;
+        if (player.GetSlotItem(EquipmentSlot.TacticalVest) is not CompoundItem vest) return;
 
         string weaponMagTemplate = weapon.GetMagTemplateForWeapon()?.TemplateId;
         if (weaponMagTemplate == null)
@@ -154,7 +153,7 @@ public static class ReplenishmentUtilities
         }
     }
 
-    private static void RepairItem(Item item)
+    private static void Repair(this Item item)
     {
         if (item is Weapon weapon)
         {

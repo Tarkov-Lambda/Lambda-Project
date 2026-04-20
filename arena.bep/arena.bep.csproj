@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <Product>Lambda</Product>
-    <Version>0.4.12</Version>
+    <Version>0.4.46</Version>
     <Description>Developed by ifp and tarkin</Description>
   </PropertyGroup>
 

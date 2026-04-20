@@ -1,5 +1,5 @@
 ## Credits
-- **ifp**: Gamemodes • Networking • SFX • Steam Audio • Patching
+- **ifp**: Core • Gamemodes • Networking • SFX • Steam Audio • Patching
 - **tarkin**: UI • VFX • Map SDK • Patching  
 ---
 

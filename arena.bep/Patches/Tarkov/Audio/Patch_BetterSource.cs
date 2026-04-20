@@ -17,3 +17,17 @@ internal class Patch_BetterSource_IncludeInOcclusionProcess : ModulePatch
         return false;
     }
 }
+
+internal class Patch_BetterSource_ResetOcclusion : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.ResetOcclusion));
+
+    [PatchPrefix]
+    static bool Prefix(BetterSource __instance)
+    {
+        __instance.SetOcclusionVolumeFactor(1f);
+        __instance.SetOcclusionRolloffScale(1f);
+        __instance.ResetFilters();
+        return false;
+    }
+}

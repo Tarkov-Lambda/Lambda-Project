@@ -92,7 +92,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             // Case 2: You are a player who died. 
             // First, try to find living teammates.
             validPlayersToSpectate = H.AllTeammateScores
-                .Where(s => s.player != null && s.player.HealthController.IsAlive)
+                .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
                 .ToList();
 
             // FALLBACK: If everyone in your faction is dead, get everyone else who isn't a spectator
