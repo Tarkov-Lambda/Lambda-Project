@@ -81,7 +81,7 @@ public static class InventoryGetterExtensions
     public static bool CanFitPlates(this CompoundItem compoundItem)
     {
         var armorHolder = compoundItem.GetItemComponent<ArmorHolderComponent>();
-        D.DumpFile(armorHolder, 2);
+
         if (armorHolder == null)
             return false;
 

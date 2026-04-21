@@ -55,18 +55,15 @@ namespace ifp.arena.bep.Core.UI
             SetInteractable();
         }
 
-        private void OnMatchStateExit(MatchState state)
+        private async void OnMatchStateExit(MatchState state)
         {
-            if (H.ActiveRules is IBuyable buyableGamemode)
+            if (H.ActiveRules is IGMBuyable buyableGamemode)
             {
                 if (state is MatchState.RoundPrepare)
                 {
-                    UniTask.RunOnThreadPool(async () =>
-                    {
-                        await UniTask.WaitForSeconds(buyableGamemode.TimeInActivePhaseToBuy + 1);
+                    await UniTask.WaitForSeconds(buyableGamemode.TimeInActivePhaseToBuy + 1);
 
-                        SetInteractable();
-                    });
+                    SetInteractable();
                 }
             }
         }

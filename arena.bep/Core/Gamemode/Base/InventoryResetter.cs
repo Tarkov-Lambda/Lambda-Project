@@ -85,10 +85,13 @@ public static class InventoryResetter
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
             // List<MagazineItemClass> allMags = H.MainPlayer.GetVestAndPocketGridItems<MagazineItemClass>().ToList();
 
+            H.MainPlayer.ForceUnlockInventory();
+
             var secondPrimaryWeapon = H.MainPlayer.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
             AddItem(ref itemsToRemove, secondPrimaryWeapon);
 
-            await H.MainPlayer.TryPopItem(secondPrimaryWeapon);
+            var backpack = H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack);
+            AddItem(ref itemsToRemove, backpack);
 
             AddRange(ref itemsToRemove, H.MainPlayer.GetNonMatchingMags());
 
@@ -107,6 +110,7 @@ public static class InventoryResetter
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
+            H.MainPlayer.ForceUnlockInventory();
 
             List<Item> itemsToRemove = [];
 

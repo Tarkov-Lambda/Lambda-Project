@@ -32,7 +32,7 @@ public abstract class GameModeRules
 /// <summary>
 /// Whether or not there is an economy system
 /// </summary>
-public interface IBuyable
+public interface IGMBuyable
 {
     // TODO: Refactor EconomyManager to be more moldable (granted idk if that's needed for anything besides SND)
     public bool CanBuyInActivePhase { get; set; }
@@ -42,7 +42,7 @@ public interface IBuyable
 /// <summary>
 /// Whether this gamemode has a multi-round gameplay loop
 /// </summary>
-public interface IRoundBased
+public interface IGMRound
 {
     public int MaxRoundsToWin { get; set; }
 }
@@ -50,7 +50,7 @@ public interface IRoundBased
 /// <summary>
 /// Whether it's a CT/T gamemode
 /// </summary>
-public interface ITeamBased
+public interface IGMTeam
 {
 
 }
@@ -58,15 +58,15 @@ public interface ITeamBased
 /// <summary>
 /// Whether this gamemode allows respawning during action phase
 /// </summary>
-public interface IObjectiveBased
+public interface IGMObjective
 {
-    List<ILambdaObjective> ObjectivePositions { get; set; }
+    List<ILambdaObjective> Objectives { get; set; }
 }
 
 /// <summary>
 /// Whether this gamemode allows respawning during action phase
 /// </summary>
-public interface ISingularObjectiveBased : IObjectiveBased
+public interface IGMSingularActiveObjective : IGMObjective
 {
     ILambdaObjective CurrentObjective { get; set; }
 }
@@ -74,7 +74,7 @@ public interface ISingularObjectiveBased : IObjectiveBased
 /// <summary>
 /// Whether this gamemode allows respawning during action phase
 /// </summary>
-public interface IRespawnable
+public interface IGMRespawnable
 {
     // For shit like conquest, default is 0
     public int RespawnCost { get; set; }
@@ -85,7 +85,7 @@ public interface IRespawnable
 /// <summary>
 /// Whether this gamemode has team side swapping
 /// </summary>
-public interface ISideSwappable : IRoundBased, ITeamBased
+public interface IGMSideSwappable : IGMRound, IGMTeam
 {
     public bool HasSideSwapped { get; set; }
 }

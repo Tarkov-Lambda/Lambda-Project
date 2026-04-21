@@ -87,6 +87,7 @@ public class GiftMoneyPacketHandler : PacketHandler<GiveMoneyPacket>
 
             AskForMoneyPacketHandler askForMoneyPacketHandler = Singleton<AskForMoneyPacketHandler>.Instance;
             askForMoneyPacketHandler.playerToItem.Remove(packet.TargetPlayer);
+            EventBus.OnBuyAskCancelled?.Invoke(packet.Player);
         }
     }
 

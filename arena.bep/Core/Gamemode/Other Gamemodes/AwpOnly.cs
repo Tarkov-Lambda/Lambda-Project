@@ -81,7 +81,7 @@ public class AWP_Action : IGameState
     }
 }
 
-public class AWP_ModeRules : GameModeRules, IRoundBased, ITeamBased
+public class AWP_ModeRules : GameModeRules, IGMRound, IGMTeam
 {
     public int MaxRoundsToWin { get; set; } = 13;
 

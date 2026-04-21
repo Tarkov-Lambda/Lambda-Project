@@ -47,7 +47,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
     //     rejectCooldownSeconds: 2
     // );
 
-    protected override bool ShouldBroadcastPacket(AdminAuthPacket packet) => false;
+    protected override bool ShouldBroadcastApprovalsToAll(AdminAuthPacket packet) => false;
 
     public void Send()
     {

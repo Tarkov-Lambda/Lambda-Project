@@ -1,5 +1,6 @@
 
 using System;
+using EFT;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.shared;
@@ -22,4 +23,7 @@ public static class EventBus
     public static Action OnSelfRespawn;
     public static Action<PlayerReadinessState> OnSelfReadinessChanged;
     public static Action<Faction> OnSelfFactionChanged;
+
+    public static Action<Player> OnBuyAskStarted;
+    public static Action<Player> OnBuyAskCancelled;
 }

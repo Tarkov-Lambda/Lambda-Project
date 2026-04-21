@@ -46,7 +46,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     private void OnEnter(MatchState matchState)
     {
-        if (matchState == MatchState.RoundPrepare)
+        if (matchState is MatchState.Cleanup or MatchState.RoundPrepare)
         {
             StopSpectating();
         }

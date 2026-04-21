@@ -1,16 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.Economy;
 using PacketHandler;
-using PacketHandler.RateLimiting;
 using ifp.arena.shared.Models;
 using ifp.arena.bep.Core.Gamemode;
 using MemoryPack;
@@ -22,6 +16,9 @@ public struct AskForMoneyPacket : INetSerializable, IAuthoredPacket
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
     public string ItemBsgId;
+    // if true, the player asking for this item
+    // if false, the player is saying "I don't want anything at all anymore"
+    public bool IsRequesting;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AskForMoneyPacket>(reader);
@@ -40,7 +37,7 @@ public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
 
     public void OnEnter(MatchState matchState)
     {
-        if (matchState == MatchState.RoundPrepare)
+        if (matchState == MatchState.Cleanup)
             playerToItem = [];
     }
 
@@ -58,12 +55,13 @@ public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
 
     public void Send(string itemBsgId)
     {
-        // if game mode is not team based - return type shit
+        if (H.ActiveRules is not IGMTeam) return;
 
         var packet = new AskForMoneyPacket
         {
             Player = H.MainPlayer,
-            ItemBsgId = itemBsgId
+            ItemBsgId = itemBsgId,
+            IsRequesting = playerToItem[H.MainPlayer] != itemBsgId ? true : false
         };
 
         DispatchPacket(packet);
@@ -78,6 +76,16 @@ public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
     {
         if (packet.Player.IsYourPlayer) return;
 
-        playerToItem[packet.Player] = packet.ItemBsgId;
+        if (packet.IsRequesting)
+        {
+            playerToItem[packet.Player] = packet.ItemBsgId;
+            EventBus.OnBuyAskStarted?.Invoke(packet.Player);
+        }
+        else
+        {
+            playerToItem.Remove(packet.Player);
+            EventBus.OnBuyAskCancelled?.Invoke(packet.Player);
+        }
+
     }
 }

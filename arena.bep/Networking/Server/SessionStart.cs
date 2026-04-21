@@ -98,7 +98,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         if (!H.IsHeadless)
         {
             NetworkTime.Reset();
-            Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+            // Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
 
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
 

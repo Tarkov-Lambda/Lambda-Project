@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
-public class Patch_CanPressTrigger : ModulePatch
+public class Patch_ClientFirearmController_CanPressTrigger : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ClientFirearmController), nameof(ClientFirearmController.IsTriggerPressed));
 

@@ -40,7 +40,16 @@ public class SharedWarmup : IGameState
     {
         if (!H.IsServer) return null;
 
-        if (H.Arena.StateTimer <= 0 || H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected)) // Either Disconnected or ready
+        var remaining = H.Arena.StateTimer;
+        var total = H.ActiveRules.StateTimerConfig[MatchState.Warmup];
+        var elapsed = total - remaining;
+
+        bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
+
+        if (remaining <= 0)
+            return MatchState.WarmupEnd;
+
+        if (elapsed >= 15f && allReady)
             return MatchState.WarmupEnd;
 
         return null;
@@ -60,18 +69,20 @@ public class SharedWarmupEnd : IGameState
 
         if (!H.IsHeadless)
         {
-            UniTask.RunOnThreadPool(async () =>
+            UniTask.Void(async () =>
             {
                 await UniTask.Delay((int)H.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
                 PU.CloseEyes(false, false).Forget();
-            }).Forget();
+            });
         }
 
     }
+
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
         H.Session.InitializeScoreBoard();
+        H.Arena.economyManager.ResetEconomy();
 
         if (!H.IsHeadless)
         {
@@ -102,7 +113,7 @@ public class SharedCleanup : IGameState
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-            UniTask.RunOnThreadPool(async () =>
+            UniTask.Void(async () =>
             {
                 await UniTask.Delay(750);
 
@@ -147,26 +158,14 @@ public class SharedPrepare : IGameState
     public MatchState StateType => MatchState.RoundPrepare;
     public virtual void OnEnter()
     {
-        H.Session.ResetSessionScopeFields();
+        H.Session.ResetRoundScopeFields();
 
         if (!H.IsHeadless)
         {
             Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
-
-            // UniTask.RunOnThreadPool(async () =>
-            // {
-            //     await UniTask.Delay(2000);
-            //     Singleton<CommonUI>.Instance.EftBattleUIScreen.UpdatePanelsVisibility(true);
-            // }).Forget();
-
-            // AssaultCarbineItemClass assaultCarbine = InventoryResetter.GetFirstAssaultCarbineItem();
-
-            // BuyMenuSelection.TryGetItemData(assaultCarbine.TemplateId, out ShopItem carbineShopInfo);
-            // Purchasing.BuyItem(carbineShopInfo);
         }
-
 
         foreach (var p in H.Arena.session.scoreboard.Values)
         {
@@ -197,11 +196,11 @@ public class SharedRoundEnd : IGameState
 
         if (!H.IsHeadless)
         {
-            UniTask.RunOnThreadPool(async () =>
+            UniTask.Void(async () =>
             {
                 await UniTask.Delay((int)H.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
                 PU.CloseEyes(false, false).Forget();
-            }).Forget();
+            });
         }
     }
 
@@ -211,7 +210,7 @@ public class SharedRoundEnd : IGameState
 
         if (H.Arena.StateTimer <= 0)
         {
-            if (H.ActiveRules is IRoundBased roundBasedGamemode)
+            if (H.ActiveRules is IGMRound roundBasedGamemode)
             {
                 var wins = H.Session.factionWins;
 
@@ -242,16 +241,9 @@ public class SharedSideSwap : IGameState
     public MatchState StateType => MatchState.SideSwap;
     public virtual void OnEnter()
     {
-        // foreach (var p in H.Arena.session.scoreboard.Values)
-        // {
-        // #if DEBUG
-        //             p.SetMoney(EconomyConstants.MAX_MONEY);
-        // #else
-        // p.SetMoney(800);
-        // #endif
-        // }
+        H.Arena.economyManager.ResetEconomy();
 
-        if (H.ActiveRules is ISideSwappable sideSwappable)
+        if (H.ActiveRules is IGMSideSwappable sideSwappable)
         {
             foreach (var player in H.AllPlayers)
             {
@@ -272,7 +264,7 @@ public class SharedSideSwap : IGameState
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
-        (H.ActiveRules as ISideSwappable).HasSideSwapped = true;
+        (H.ActiveRules as IGMSideSwappable).HasSideSwapped = true;
     }
 }
 

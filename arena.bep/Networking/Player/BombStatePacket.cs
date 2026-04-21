@@ -46,7 +46,6 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;
-        if (packet.state == BombState.Exploded) return false;
         return true;
     }
 

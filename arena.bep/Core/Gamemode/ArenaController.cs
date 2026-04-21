@@ -33,7 +33,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager session;
     public GameModeRules activeRules = new SND_ModeRules();
-    public EconomyManager EconomyManager = new();
+    public EconomyManager economyManager = new();
     public RespawnManager respawnManager = new();
 
     public float StateTimer;

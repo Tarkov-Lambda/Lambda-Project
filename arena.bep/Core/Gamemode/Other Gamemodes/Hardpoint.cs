@@ -21,9 +21,9 @@ public class HardpointAction : IGameState
     public void OnExit() { }
 }
 
-public class KOTHGameRules : GameModeRules, ITeamBased, IObjectiveBased
+public class KOTHGameRules : GameModeRules, IGMTeam, IGMObjective
 {
-    public List<ILambdaObjective> ObjectivePositions { get; set; } = [];
+    public List<ILambdaObjective> Objectives { get; set; } = [];
 
     public override IGameState CreateState(MatchState state) => state switch
     {

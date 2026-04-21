@@ -16,6 +16,7 @@ namespace ifp.arena.bep.Core.UI
         {
             UnityTicker.OnUpdate += OnUpdate;
             EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
+            EventBus.OnEnter += OnMatchStateEnter;
 
             GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/FactionSelection/FactionSelection.prefab");
             factionSelectionScreen = GameObject.Instantiate(prefabFactionSelection, commonUI.transform.GetChild(0)).AddComponent<FactionSelectionEftScreen>();
@@ -23,6 +24,14 @@ namespace ifp.arena.bep.Core.UI
 
             EftScreenManager.Instance.RegisterScreen(FactionSelectionEftScreen.FAKETYPE, factionSelectionScreen);
             factionSelectionScreen.Close();
+        }
+
+        void OnMatchStateEnter(MatchState matchState)
+        {
+            if (matchState == MatchState.Warmup && H.ActiveRules is IGMTeam)
+            {
+                ShowFactionSelectionEftScreen();
+            }
         }
 
         void OnSelfFactionChanged(Faction faction)
@@ -51,6 +60,7 @@ namespace ifp.arena.bep.Core.UI
         {
             UnityTicker.OnUpdate -= OnUpdate;
             EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
+            EventBus.OnEnter -= OnMatchStateEnter;
 
             if (factionSelectionScreen != null)
             {

@@ -8,13 +8,14 @@ using PacketHandler;
 using PacketHandler.RateLimiting;
 using ifp.arena.bep.Core;
 using System;
+using Comfort.Common;
+using Fika.Core.Main.Players;
 
 namespace ifp.arena.bep.networking;
 
 public struct PopPacket : INetSerializable, IAuthoredPacket
 {
     public Player Player { get; set; }
-
     public Item item;
     public ItemAddress itemAddress;
 
@@ -35,7 +36,6 @@ public struct PopPacket : INetSerializable, IAuthoredPacket
 
 public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
 {
-
     protected override RateLimitConfig ServerRateLimit => new(
         enabled: true,
         refillPerSecond: 5,
@@ -51,7 +51,7 @@ public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
         {
             Player = H.MainPlayer,
             item = item,
-            itemAddress = item.CurrentAddress
+            itemAddress = item.CurrentAddress,
         };
 
         DispatchPacket(packet);
@@ -66,7 +66,12 @@ public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
     {
         try
         {
-            packet.Player.TryPopItemWithoutRestriction(packet.item, packet.itemAddress).Forget();
+            if (!packet.Player.IsYourPlayer && packet.Player is ObservedPlayer obsPlayer)
+            {
+                obsPlayer.OperationCallbacks.Clear();
+            }
+
+            packet.Player.TryPopItemWithoutRestriction(packet.item, packet.itemAddress);
         }
         catch (Exception e)
         {

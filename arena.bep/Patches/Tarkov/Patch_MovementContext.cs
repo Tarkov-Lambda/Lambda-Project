@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
-public class Patch_CanWalk : ModulePatch
+public class Patch_MovementContext_CanWalk : ModulePatch
 {
     private static bool wasOnLadder = false;
     
@@ -45,7 +45,7 @@ public class Patch_CanWalk : ModulePatch
     }
 }
 
-public class Patch_CanJump : ModulePatch
+public class Patch_MovementContext_CanJump : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
 

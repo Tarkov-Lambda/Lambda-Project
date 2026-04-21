@@ -100,8 +100,7 @@ public static class ReplenishmentUtilities
                 continue;
             }
 
-            await IU.ClientRequestGiveItem(newMag);
-            await UniTask.Delay(50);
+            IU.ClientRequestGiveItem(newMag).Forget();
         }
     }
 

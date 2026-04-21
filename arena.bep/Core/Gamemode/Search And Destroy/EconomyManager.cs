@@ -11,8 +11,17 @@ namespace ifp.arena.bep.Core.Economy;
 
 public static class EconomyConstants
 {
-    public const int MAX_MONEY = 160000;
-    public const int START_MONEY = 160000;
+#if DEBUG
+    public const int MAX_MONEY = 16000000;
+#else
+    public const int MAX_MONEY = 16000;
+#endif
+
+#if DEBUG
+    public const int START_MONEY = MAX_MONEY/2;
+#else 
+    public const int START_MONEY = 800;
+#endif
 
     public const int WIN_ELIMINATION = 3250;
     public const int WIN_TIME = 3250;
@@ -60,7 +69,7 @@ public class EconomyManager : IDisposable
     {
         if (state == MatchState.WarmupEnd || state == MatchState.SideSwap)
         {
-            ResetEconomy();
+            // ResetEconomy();
         }
     }
 

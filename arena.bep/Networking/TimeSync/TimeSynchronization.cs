@@ -29,7 +29,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
         stateTtlSeconds: 30,
         rejectCooldownSeconds: 0.5);
 
-    protected override bool ShouldBroadcastPacket(TimeSynchronizationPacket packet) => false;
+    protected override bool ShouldBroadcastApprovalsToAll(TimeSynchronizationPacket packet) => false;
 
     public void Send()
     {

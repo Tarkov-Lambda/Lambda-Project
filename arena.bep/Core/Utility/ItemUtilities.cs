@@ -80,10 +80,10 @@ public static class ItemUtilities
     {
         if (H.IsHeadless) return false;
 
-        await _lock.WaitAsync();
+        // await _lock.WaitAsync();
 
-        try
-        {
+        // try
+        // {
             if (templateItem == null)
                 return false;
 
@@ -137,21 +137,20 @@ public static class ItemUtilities
                 }
             }
 
-            Item clonedItem = templateItem.CloneItem(H.MainPlayer.InventoryController);
-            clonedItem.StackObjectsCount = 1;
+            templateItem.StackObjectsCount = 1;
 
 #if DEBUG
-            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {templateItem.LocalizedShortName()} ({templateItem.Id}) at ({placement.Address})");
 #endif
 
-            if (clonedItem is ArmorItemClass armorItem)
+            if (templateItem is ArmorItemClass armorItem)
             {
                 foreach (var plate in armorItem.GetArmorPlates())
                 {
                     plate.CurrentAddress.RemoveWithoutRestrictions(plate);
                 }
             }
-            else if (clonedItem is VestItemClass vestItem)
+            else if (templateItem is VestItemClass vestItem)
             {
                 if (vestItem.IsTacRigArmored())
                 {
@@ -162,14 +161,14 @@ public static class ItemUtilities
                 }
             }
 
-            Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement);
+            Singleton<BuyItemPacketHandler>.Instance.Send(templateItem, placement);
             return true;
-        }
-        finally
-        {
-            await UniTask.Delay(100);
-            _lock.Release();
-        }
+        // }
+        // finally
+        // {
+        //     // await UniTask.Delay(100);
+        //     _lock.Release();
+        // }
     }
 
     public static void ClientRequestPopItem(Item item)
@@ -179,10 +178,9 @@ public static class ItemUtilities
     }
 
 
-    public static async UniTask WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
+    public static void WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
     {
-        await UniTask.Delay(25);
-        await player.PlaceItem(item, placement);
+        player.PlaceItem(item, placement);
 
         if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
         if (player.IsYourPlayer) AudioHandler.PlayEquipSound(item);

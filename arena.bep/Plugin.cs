@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.UI;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -53,6 +54,8 @@ public class Plugin : BaseUnityPlugin
     private readonly List<IMemoryPackFormatter> _memoryPackFormatters = new();
 
     private CancellationTokenSource _cts;
+
+    private Action unregisterCommands;
 
     private UnityTicker _unityTickListner;
 
@@ -106,6 +109,8 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
+        // unregisterCommands = ConsoleScreen.Processor.RegisterCommandGroup<LambdaConsoleCommands>();
+
         _unityTickListner = new GameObject("UnityTickListener").AddComponent<UnityTicker>();
         DontDestroyOnLoad(_unityTickListner.gameObject);
 
@@ -153,9 +158,9 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());            // Do not slow down during aiming
         // RegisterPatch(new Patch_MovementContext_method_15());                    // Old Leaning
 
-        RegisterPatch(new Patch_CanWalk());                                         // For controller locking
-        RegisterPatch(new Patch_CanJump());                                         // For controller locking
-        RegisterPatch(new Patch_CanPressTrigger());                                 // For controller locking
+        RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking
+        RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
+        RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());         // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
 
 
@@ -207,17 +212,17 @@ public class Plugin : BaseUnityPlugin
         // Player Related Packets
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
         RegisterSingleton<FactionChangePacketHandler>();                            // Player swaps factions
-        RegisterSingleton<BuyItemPacketHandler>();                                // Player asks to spawn an item
+        RegisterSingleton<BuyItemPacketHandler>();                                  // Player asks to spawn an item
         RegisterSingleton<HandsInspectPacketHandler>();                             // Hands Examination Packet
         RegisterSingleton<BlindFirePacketHandler>();                                // Procedural blindfire state synchronization
         RegisterSingleton<ReplenishPacketHandler>();                                // Player announcens a replenishment
         RegisterSingleton<BombAssignmentPacketHandler>();                           // Server tells a specific player to equip a bomb
         RegisterSingleton<CustomGrenadeExplosionPacketHandler>();                   // Explosion of a custom grenade
         RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
-        RegisterSingleton<ForceRemoveItemPacketHandler>();                               // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
+        RegisterSingleton<ForceRemoveItemPacketHandler>();                          // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
-        RegisterSingleton<InventoryResyncPacketHandler>();                          // Resynchronize Player's inventory on a client in case of an error
+        // RegisterSingleton<InventoryCounterResyncPacketHandler>();                   // Manual current mongo id on observed players after manipulation
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -296,6 +301,8 @@ public class Plugin : BaseUnityPlugin
     void OnDestroy()
     {
         Logger.LogInfo("Unload");
+
+        // unregisterCommands.Invoke();
 
         // H.MainPlayer.MovementContext.ExitOverridenState();
         // RunStateClass idleState                                    = new RunStateClass(H.MainPlayer.MovementContext);

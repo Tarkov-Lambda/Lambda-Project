@@ -80,7 +80,7 @@ public class DUEL_Action : IGameState
     }
 }
 
-public class DUEL_ModeRules : GameModeRules, IRoundBased
+public class DUEL_ModeRules : GameModeRules, IGMRound
 {
     public int MaxRoundsToWin { get; set; } = 13;
 

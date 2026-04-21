@@ -141,9 +141,9 @@ public class SND_RoundEnd : SharedRoundEnd
     }
 }
 
-public class SND_ModeRules : GameModeRules, IObjectiveBased, IRoundBased, ISideSwappable, IBuyable
+public class SND_ModeRules : GameModeRules, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable
 {
-    public List<ILambdaObjective> ObjectivePositions { get; set; } = [];
+    public List<ILambdaObjective> Objectives { get; set; } = [];
 
     public int MaxRoundsToWin { get; set; }                        = 13;
 

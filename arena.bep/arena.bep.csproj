@@ -44,6 +44,7 @@
     <!-- EFT Managed DLLs -->
     <Reference Include="$(ManagedPath)\ItemComponent.Types.dll" />
     <Reference Include="$(ManagedPath)\Assembly-CSharp.dll" />
+    <!-- <Reference Include="$(ManagedPath)\bsg.console.core.dll" /> -->
     <Reference Include="$(ManagedPath)\Comfort.Unity.dll" />
     <Reference Include="$(ManagedPath)\Comfort.dll" />
     <Reference Include="$(ManagedPath)\Newtonsoft.Json.dll" />

@@ -12,6 +12,7 @@ using Fika.Core;
 using Fika.Core.Main.Players;
 using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.networking;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core;
@@ -40,14 +41,14 @@ public static class InventoryActionExtensions
         Item item = player.GetSlotItem(equipmentSlot);
         if (item == null) return true;
 
-        if (waitUntilStationary)
-        {
-            await UniTask.WaitUntil(() => player.MovementContext.CurrentState is IdleStateClass);
-            if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
-            {
-                await PU.WaitUntilStationary(player);
-            }
-        }
+        // if (waitUntilStationary)
+        // {
+        //     await UniTask.WaitUntil(() => player.MovementContext.CurrentState is IdleStateClass);
+        //     if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
+        //     {
+        //         await PU.WaitUntilStationary(player);
+        //     }
+        // }
 
         return await operation(player, item);
     }
@@ -71,7 +72,7 @@ public static class InventoryActionExtensions
         foreach (var item in items)
         {
             await player.TryThrowItem(item);
-            if (delayMs != 0) await UniTask.Delay(delayMs);
+            // if (delayMs != 0) await UniTask.Delay(delayMs);
         }
     }
 
@@ -109,16 +110,30 @@ public static class InventoryActionExtensions
         return !result.Failed;
     }
 
-    public static async UniTask<bool> TryPopItemWithoutRestriction(this Player player, Item item, ItemAddress itemAddress)
+    public static bool TryPopItemWithoutRestriction(this Player player, Item item, ItemAddress itemAddress)
     {
-        itemAddress.RemoveWithoutRestrictions(item);
+        var removeResult = itemAddress.RemoveWithoutRestrictions(item);
+        if (removeResult.Failed)
+        {
+            D.LogError($"Failed to pop item without restriction: {removeResult.Error}");
+            return false;
+        }
 
         itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
         itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
 
         if (item is ArmorPlateItemClass)
+            player.TryRecalculateEquippedArmorComponents();
+
+        return true;
+    }
+
+    public static bool TryRecalculateEquippedArmorComponents(this Player player, CompoundItem plateCarrier = null)
+    {
+        try
         {
-            var plateCarrier = player.GetPlateCarrier();
+            plateCarrier ??= player.GetPlateCarrier();
+
             if (plateCarrier == null)
             {
                 D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
@@ -128,9 +143,15 @@ public static class InventoryActionExtensions
             FikaPlayer fikaPlayer = player as FikaPlayer;
             MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
             method.Invoke(fikaPlayer, [plateCarrier]);
+            return true;
         }
-
-        return true;
+        catch (Exception e)
+        {
+            D.LogError($"An error has occured trying to Recalculate Equipped Armor Components for {player.Profile.Nickname}");
+            D.Log(e.Message);
+            D.Log(e.StackTrace);
+            return false;
+        }
     }
 
     public static async UniTask<bool> TryDoItemActionWithoutRestriction<T>(
@@ -163,7 +184,7 @@ public static class InventoryActionExtensions
         return !result.Failed;
     }
 
-    public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = true)
+    public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
     {
         var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
         if (slot.ContainedItem == null) return true;
@@ -189,7 +210,7 @@ public static class InventoryActionExtensions
         return removed;
     }
 
-    public static async UniTask<bool> PlaceItem(this Player player, Item item, ItemPlacement placement)
+    public static bool PlaceItem(this Player player, Item item, ItemPlacement placement)
     {
 #if DEBUG
         D.LogTransaction($"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
@@ -197,10 +218,15 @@ public static class InventoryActionExtensions
 
         switch (placement.Kind)
         {
-            case PlacementKind.VestAddress:        
+            case PlacementKind.VestAddress:
             case PlacementKind.EquipmentSlot:
             case PlacementKind.ArmorPlate:
-                placement.Address.AddWithoutRestrictions(item);
+                var addResult = placement.Address.AddWithoutRestrictions(item);
+                if (addResult.Failed)
+                {
+                    D.LogError($"Failed to add item {item.Id} to {placement.Address}. Reason: {addResult.Error}");
+                    return false;
+                }
                 break;
         }
 
@@ -209,20 +235,33 @@ public static class InventoryActionExtensions
         placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
         placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
 
-        if (placement.Kind == PlacementKind.ArmorPlate)
-        {
-            var plateCarrier = player.GetPlateCarrier();
-            if (plateCarrier == null)
-            {
-                D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
-                return false;
-            }
-
-            MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-            method.Invoke(player as FikaPlayer, [plateCarrier]);
-        }
+        if (placement.Kind == PlacementKind.ArmorPlate) player.TryRecalculateEquippedArmorComponents();
 
         return true;
+    }
+
+    public static void ForceUnlockInventory(this Player player)
+    {
+        try
+        {
+            player.InventoryController.List_0?.Clear();
+
+            if (player is FikaPlayer fikaPlayer && fikaPlayer.OperationCallbacks.Count > 0)
+            {
+                D.LogInventory($"Clearing {fikaPlayer.OperationCallbacks.Count} stalled OperationCallbacks on {player.Profile.Nickname}");
+                fikaPlayer.OperationCallbacks.Clear();
+            }
+
+            var allItems = player.InventoryController.Inventory.GetPlayerItems(EPlayerItems.All);
+            foreach (var item in allItems)
+            {
+                if (item.PinLockState != EItemPinLockState.Free)
+                    item.PinLockState = EItemPinLockState.Free;
+                if (item.TryGetItemComponent(out LockableComponent lockable))
+                    lockable.Locked = false;
+            }
+        }
+        catch (Exception ex) { D.LogError($"Error unlocking inventory: {ex}"); }
     }
 
     private static void AutoExamineAndSearch(this Player player, Item rootItem)

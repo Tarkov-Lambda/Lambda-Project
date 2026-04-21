@@ -206,9 +206,14 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-        if (ShouldBroadcastPacket(packet))
+        if (ShouldBroadcastApprovalsToAll(packet))
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
+        }
+        else
+        {
+            // removing for now
+            // H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
         }
 
         TryInvokeAction(BeforePacketApplied, packet);
@@ -314,7 +319,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     }
 
     // In cases where data needs to be a secret like admin login
-    protected virtual bool ShouldBroadcastPacket(T packet) => true;
+    // note that if this is false, we do not broadcast packet approval to the original sender
+    protected virtual bool ShouldBroadcastApprovalsToAll(T packet) => true;
 
     // OPTIONAL
     // core generic sanitization/validation
