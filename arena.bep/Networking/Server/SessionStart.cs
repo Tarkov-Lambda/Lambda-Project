@@ -11,6 +11,8 @@ using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using ifp.arena.bep.networking.TimeSync;
+using EFT.InventoryLogic;
+using Cysharp.Threading.Tasks;
 
 namespace ifp.arena.bep.networking;
 
@@ -19,7 +21,7 @@ public partial struct SessionStartPacket : INetSerializable
 {
     public string mapName;
     public GameModes gameMode;
-
+    public Item[] presetItems;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStartPacket>(reader);
@@ -51,8 +53,13 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         var packet = new SessionStartPacket
         {
             mapName = Plugin.MapName.Value,
-            gameMode = Plugin.GameMode.Value
+            gameMode = Plugin.GameMode.Value,
         };
+
+        if (H.IsServer)
+        {
+            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+        }
 
         DispatchPacket(packet);
     }
@@ -65,9 +72,21 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         var packet = new SessionStartPacket
         {
             mapName = H.Session.mapName,
-            gameMode = H.Session.currentGameMode
+            gameMode = H.Session.currentGameMode,
         };
+
+        if (H.IsServer)
+        {
+            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+        }
+
         DispatchPacketToPeer(packet, peer);
+    }
+
+    protected override bool EvaluatePacket(ref SessionStartPacket packet, NetPeer peer, out string rejectionReason)
+    {
+        packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+        return base.EvaluatePacket(ref packet, peer, out rejectionReason);
     }
 
     protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
@@ -95,17 +114,20 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             H.Arena.ChangeState(MatchState.Warmup);
         }
 
+        NetworkTime.Reset();
+        // Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
+
+        PresetBundleHandler.Instance.AddToCache(packet.presetItems);
+
+        await UniTask.WhenAll(
+            MapAssetBundleHandler.Instance.LoadMap(packet.mapName),
+            PresetBundleHandler.Instance.LoadEverythingInCache()
+        );
+
         if (!H.IsHeadless)
         {
-            NetworkTime.Reset();
-            // Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
-
-            await Singleton<MapAssetBundleHandler>.Instance.LoadMap(packet.mapName);
-
-            // Report back to the server that the map is loaded
+            // Main player is ready
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
-
-            PU.OpenEyes();
         }
     }
 }

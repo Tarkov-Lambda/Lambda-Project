@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
 using ifp.arena.shared.Models;
+using EFT.InventoryLogic;
 
 namespace ifp.arena.bep.Core.Economy;
 
@@ -15,7 +16,7 @@ public static class BuyMenuSelection
     {
         LoadItems(File.ReadAllText(EconomyDataPath));
     }
-    
+
     private static void LoadItems(string json)
     {
         buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
@@ -41,5 +42,20 @@ public static class BuyMenuSelection
         }
         itemData = new ShopItem();
         return false;
+    }
+
+    public static List<string> GetAllItemBsgId()
+    {
+        List<string> AllItemBsgIds = [];
+
+        foreach (var category in buyCategories)
+        {
+            foreach (var item in category.items)
+            {
+                AllItemBsgIds.Add(item.bsgId);
+            }
+        }
+
+        return AllItemBsgIds;
     }
 }

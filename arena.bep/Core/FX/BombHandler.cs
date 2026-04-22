@@ -70,9 +70,8 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         if (H.Session == null) return;
         if (H.Sounds == null) return;
 
-
         if (_beforeExplodingPlayed) return;
-        if (H.Arena.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.matchState is MatchState.RoundPlanted)
+        if (H.Arena?.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.matchState is MatchState.RoundPlanted)
         {
             H.AudioHandler.PlayAtPoint(BombPlantedPosition, H.Sounds.BeforeExploding);
             _beforeExplodingPlayed = true;
@@ -203,7 +202,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
             Component.Destroy(component);
         }
 
-        BombVisuals.GetOrAddComponent<bombasik>();
+        BombVisuals.GetOrAddComponent<Bombasik>();
 
         UnityEngine.Object.DontDestroyOnLoad(BombVisuals);
     }
@@ -245,7 +244,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
 }
 
-public class bombasik : InteractableObject
+public class Bombasik : InteractableObject
 {
     void Awake()
     {

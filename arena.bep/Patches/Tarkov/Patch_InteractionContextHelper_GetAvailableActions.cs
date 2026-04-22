@@ -37,7 +37,7 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
         Player player = owner.Player;
         AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
 
-        if (interactive is bombasik)
+        if (interactive is Bombasik)
         {
             if (H.Session.matchState is not MatchState.RoundPlanted) return true;
             if (H.MainPlayer.IsInPronePose) return true;

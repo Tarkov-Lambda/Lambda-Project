@@ -34,7 +34,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
     { 
         if (H.Arena == null || H.Session == null) return;
 
-        if (H.Session.matchState == MatchState.RoundPrepare)
+        if (H.Session.matchState is MatchState.RoundPrepare or MatchState.WarmupEnd)
         {
             int currentSecond = Mathf.CeilToInt(H.Arena.StateTimer);
 
@@ -51,7 +51,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         }
         else
         {
-            // Reset the tracker if we aren't in RoundPrepare
+            // Reset the tracker
             _lastTickSecond = -1;
         }
     }

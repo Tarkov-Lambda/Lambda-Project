@@ -208,6 +208,7 @@ public class Plugin : BaseUnityPlugin
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
+        RegisterMemoryPackFormatter(new ItemFormatter());                           // Item -> Binary via EFT internals
 
         // Player Related Packets
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
@@ -238,6 +239,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
 
         // Internal Classses (order matters)
+        RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)
         RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
         RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
         RegisterSingleton<PresetItemsCache>();                                      // Caching gun presets

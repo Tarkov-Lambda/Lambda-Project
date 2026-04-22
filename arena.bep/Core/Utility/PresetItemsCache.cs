@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using ifp.arena.bep.Core.Economy;
 
 namespace ifp.arena.bep.Core.UI;
 
@@ -30,6 +31,19 @@ internal class PresetItemsCache : Singleton<PresetItemsCache>, IDisposable
             cacheImmutableItems.Add(bsgId, newImmutableItem);
 
         return newImmutableItem;
+    }
+
+    public List<Item> GetAllPresetItems()
+    {
+        List<Item> items = [];
+        List<string> ItemBsgIds = BuyMenuSelection.GetAllItemBsgId();
+
+        foreach (var bsgId in ItemBsgIds)
+        {
+            items.Add(GetPresetItem(bsgId));
+        }
+
+        return items;
     }
 
     private void ClearCache()

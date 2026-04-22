@@ -7,6 +7,11 @@ using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
+using EFT.InventoryLogic;
+using ifp.arena.bep.Core.UI;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using ifp.arena.bep.Core.AssetBundleHandling;
 
 namespace ifp.arena.bep.networking;
 
@@ -18,27 +23,32 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
     public PlayerReadinessState readyState;
 
+    public Item[] presetItems; // only sent by the player on the initial connection
+
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
 }
 
 public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 {
-    public void Send(PlayerReadinessState readyState)
+    public void Send(PlayerReadinessState readyState, float progress = 0f)
     {
         if (H.IsHeadless) return;
 
         var packet = new PlayerReadinessPacket
         {
             Player = H.MainPlayer,
-            readyState = readyState,
+            readyState = readyState
         };
+
+        if (readyState is PlayerReadinessState.Connected)
+        {
+            packet.presetItems = PresetItemsCache.Instance.GetAllPresetItems().ToArray();
+        }
 
         DispatchPacket(packet);
     }
 
-    // Server-authoritative broadcast: announce a state change FOR another player (e.g. disconnect).
-    // Does NOT check IsHeadless — the server is allowed to speak on behalf of a peer.
     public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState)
     {
         var packet = new PlayerReadinessPacket
@@ -49,6 +59,21 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         DispatchPacket(packet);
     }
 
+    protected override bool EvaluatePacket(ref PlayerReadinessPacket packet, NetPeer peer, out string rejectionReason)
+    {
+        if (packet.presetItems != null)
+        {
+            // This information is redundant and other players don't need it here
+            // we will broadcast the non-redundant item manifest in SessionStart
+            PresetBundleHandler.Instance.AddToCache(packet.presetItems);
+            packet.presetItems = null;
+        }
+
+
+        rejectionReason = null;
+        return true;
+    }
+
     protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
     {
         PlayerScore playerScore = H.GetPlayerScore(packet.Player);
@@ -56,10 +81,15 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         {
             H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
             playerScore = H.Scoreboard[packet.Player.Id];
+
+            if (packet.readyState == PlayerReadinessState.Ready)
+            {
+                playerScore.ChangeProgress(100f);
+            }
         }
 
         playerScore.ChangeReadiness(packet.readyState);
-        
+
         if (!H.IsClient)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)
