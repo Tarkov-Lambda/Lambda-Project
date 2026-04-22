@@ -80,10 +80,10 @@ public static class ItemUtilities
     {
         if (H.IsHeadless) return false;
 
-        // await _lock.WaitAsync();
+        await _lock.WaitAsync();
 
-        // try
-        // {
+        try
+        {
             if (templateItem == null)
                 return false;
 
@@ -163,12 +163,12 @@ public static class ItemUtilities
 
             Singleton<BuyItemPacketHandler>.Instance.Send(templateItem, placement);
             return true;
-        // }
-        // finally
-        // {
-        //     // await UniTask.Delay(100);
-        //     _lock.Release();
-        // }
+        }
+        finally
+        {
+            // await UniTask.Delay(100);
+            _lock.Release();
+        }
     }
 
     public static void ClientRequestPopItem(Item item)

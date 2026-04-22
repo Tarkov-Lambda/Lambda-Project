@@ -62,6 +62,8 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
     protected override bool ShouldNotifyAboutRejection => true;
 
+    protected override bool ShouldBroadcastApprovalsToAll(BuyItemPacket packet) => false;
+
     public void Send(Item item, ItemPlacement placement)
     {
         var packet = new BuyItemPacket
@@ -80,14 +82,14 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         rejectionReason = null;
 
         // if the gamemode is not IBuyable, allow anyone to buy anything
-        if (H.Session.matchState != MatchState.Cleanup && H.ActiveRules is IGMBuyable)
-        {
-            if (!H.GetPlayerScore(packet.Player).CanBuy())
-            {
-                rejectionReason = "Buy time is over.";
-                return false;
-            }
-        }
+        // if (H.Session.matchState != MatchState.Cleanup && H.ActiveRules is IGMBuyable)
+        // {
+        //     if (!H.GetPlayerScore(packet.Player).CanBuy())
+        //     {
+        //         rejectionReason = "Buy time is over.";
+        //         return false;
+        //     }
+        // }
 
         if (packet.item is VestItemClass or ArmorItemClass)
         {
@@ -125,20 +127,15 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             return false;
         }
 
-        if (packet.placement.Address != placement.Address)
-        {
-            D.Log("Mismatching item placement, overriding");
-            packet.placement = placement;
-        }
+        // if (packet.placement.Address != placement.Address)
+        // {
+        //     D.Log("Mismatching item placement, overriding");
+        //     packet.placement = placement;
+        // }
 
         // forcing the item to 1 count (sometimes unstackable items get an insane value that makes no sense and breaks shit)
         if (packet.item.StackObjectsCount != 1)
             packet.item.StackObjectsCount = 1;
-
-        // now that we have evaluated and are approving the item, clone it using the player's InventoryController's Mongo ID's ID Generator
-        packet.item = packet.item.CloneItem(packet.Player.InventoryController);
-        // log the observed player's mongo id
-        packet.inventoryMongoID = packet.Player.InventoryController.CurrentId;
 
         return true;
     }
@@ -181,6 +178,16 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
     private async UniTask ProcessPurchaseSequentially(BuyItemPacket packet)
     {
+        if (H.IsServer)
+        {
+            packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
+            // now that we have evaluated and are approving the item, clone it using the player's InventoryController's Mongo ID's ID Generator
+            packet.item = packet.item.CloneItem(packet.Player.InventoryController);
+            // log the observed player's mongo id
+            packet.inventoryMongoID = packet.Player.InventoryController.CurrentId;
+        }
+
+
         if (packet.Player.IsYourPlayer)
         {
             var currentId = packet.Player.InventoryController.CurrentId;
@@ -196,6 +203,12 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
         await IU.LoadBundlesForItem(packet.item);
         IU.WhenApprovedGiveItem(packet.item, packet.Player, packet.placement);
+
+        // after incrementing mongo id and placing the item, broadcast the approval manually here (this is fucking horrendous but I'm forced)
+        if (H.IsServer)
+        {
+            H.FikaNet.SendData(ref packet, this.deliveryMethod, true);
+        }
 
         if (H.Session.matchState != MatchState.Cleanup)
         {

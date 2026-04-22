@@ -154,8 +154,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (!H.IsInRaid()) return;
 
+        // early nopout from sending packets that we aren't allowed to send anyways
         if (!H.IsHeadless)
+        {
             if (IsUnauthorized(H.MainPlayer.Id)) return;
+        }
 
 #if DEBUG
         if (ShouldLog) D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
