@@ -15,24 +15,39 @@ public class HardpointAction : IGameState
     public MatchState? OnUpdate()
     {
         if (H.IsClient) return null;
-        if (H.Arena.StateTimer <= 0 || H.Scoreboard.Values.Any(p => p.Kills >= 20)) return MatchState.MatchEnd;
+        if (H.Arena.StateTimer <= 0 || H.Session.factionWins.Values.Any(faction => faction == 150)) return MatchState.MatchEnd;
         return null;
     }
     public void OnExit() { }
 }
 
-public class KOTHGameRules : GameModeRules, IGMTeam, IGMObjective
+public class HardpointGamemode : LambdaGamemode, IGMTeam, IGMObjective
 {
     public List<ILambdaObjective> Objectives { get; set; } = [];
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None => new SharedNone(),
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
+        MatchState.None         => new SharedNone(),
+        MatchState.Warmup       => new SharedWarmup(),
+        MatchState.WarmupEnd    => new SharedWarmupEnd(),
         MatchState.RoundPrepare => new SharedPrepare(),
-        MatchState.RoundAction => new HardpointAction(),
-        MatchState.MatchEnd => new SharedFinish(),
-        _ => null
+        MatchState.RoundAction  => new HardpointAction(),
+        MatchState.MatchEnd     => new SharedFinish(),
+        _                       => null
+    };
+
+    public new Dictionary<MatchState, float> StateTimerConfig = new()
+    {
+        {MatchState.None, 0},
+        {MatchState.Warmup, 120},
+        {MatchState.WarmupEnd, 5},
+        {MatchState.Cleanup, 3},
+        {MatchState.Pause, 45},
+        {MatchState.RoundPrepare, 15},
+        {MatchState.RoundAction, 600},
+        {MatchState.RoundEnd, 8},
+        {MatchState.RoundPlanted, 45},
+        {MatchState.SideSwap, 10},
+        {MatchState.MatchEnd, 15}
     };
 }

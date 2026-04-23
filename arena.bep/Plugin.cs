@@ -38,7 +38,7 @@ public class Plugin : BaseUnityPlugin
     public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json");
     public static readonly string pathToLogs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "logs");
 
-    internal static ConfigEntry<GameModes> GameMode;
+    internal static ConfigEntry<string> GameMode;
     internal static ConfigEntry<Faction> PrefferedFaction;
     internal static ConfigEntry<string> MapName;
     internal static ConfigEntry<string> Password;
@@ -278,7 +278,7 @@ public class Plugin : BaseUnityPlugin
         PrefferedFaction = Config.Bind("", "Preffered Faction", Faction.None, "Faction swaps only happen after the round end");
 
         MapName = Config.Bind("Admin", "Map Name", "", "");
-        GameMode = Config.Bind("Admin", "Gamemode", GameModes.SND, "");
+        GameMode = Config.Bind("Admin", "Gamemode", "SNDGamemode", "");
         Password = Config.Bind("Admin", "Password", "", "");
 
         DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", false);

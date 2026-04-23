@@ -42,8 +42,8 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
             if (H.Session.matchState is not MatchState.RoundPlanted) return true;
             if (H.MainPlayer.IsInPronePose) return true;
 
-            bool hasDefuseKit = TryFindItem(SND_ModeRules.defuseKitTemplateId, out Item defuseKit);
-            float defusingTime = hasDefuseKit ? SND_ModeRules.defusingTime / 2 : SND_ModeRules.defusingTime;
+            bool hasDefuseKit = TryFindItem(SNDGamemode.defuseKitTemplateId, out Item defuseKit);
+            float defusingTime = hasDefuseKit ? SNDGamemode.defusingTime / 2 : SNDGamemode.defusingTime;
 
             actionsReturnClass.Actions.Add(new ActionsTypesClass
             {
@@ -86,9 +86,9 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
         {
             if (roundState != MatchState.RoundAction) return true;
 
-            if (!TryFindItem(SND_ModeRules.bombTemplateId, out Item bomb)) return true;
+            if (!TryFindItem(SNDGamemode.bombTemplateId, out Item bomb)) return true;
 
-            float plantingTime = SND_ModeRules.platingTime;
+            float plantingTime = SNDGamemode.platingTime;
 
             actionsReturnClass.Actions.Add(new ActionsTypesClass
             {
@@ -125,9 +125,9 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
             return false;
         }
 
-        if (H.ActiveRules is SND_ModeRules && interactive is ObservedLootItem observedLootItem)
+        if (H.ActiveRules is SNDGamemode && interactive is ObservedLootItem observedLootItem)
         {
-            if (observedLootItem.TemplateId == SND_ModeRules.bombTemplateId)
+            if (observedLootItem.TemplateId == SNDGamemode.bombTemplateId)
             {
                 if (H.MainPlayerScore.Faction != Faction.T)
                 {

@@ -21,9 +21,8 @@ public class FFAAction : IGameState
     public void OnExit() { }
 }
 
-public class FFAModeRules : GameModeRules
+public class FFAGamemode : LambdaGamemode
 {
-
     public override IGameState CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),

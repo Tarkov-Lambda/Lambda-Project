@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
-public class DUEL_Prepare : SharedPrepare
+public class DuelPrepare : SharedPrepare
 {
     public override void OnEnter()
     {
@@ -32,14 +32,9 @@ public class DUEL_Prepare : SharedPrepare
 
         base.OnEnter();
     }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-    }
 }
 
-public class DUEL_Action : IGameState
+public class DuelAction : IGameState
 {
     public MatchState StateType => MatchState.RoundAction;
     public void OnEnter() { }
@@ -80,24 +75,21 @@ public class DUEL_Action : IGameState
     }
 }
 
-public class DUEL_ModeRules : GameModeRules, IGMRound
+public class DuelGamemode : LambdaGamemode, IGMRound, IGMTeam
 {
     public int MaxRoundsToWin { get; set; } = 13;
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None => new SharedNone(),
-
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
-
-        MatchState.Cleanup => new SharedCleanup(),
-        MatchState.Pause => new SharedPause(),
-        MatchState.RoundPrepare => new DUEL_Prepare(),
-        MatchState.RoundAction => new DUEL_Action(),
-        MatchState.RoundEnd => new SharedRoundEnd(),
-
-        MatchState.MatchEnd => new SharedFinish(),
-        _ => null
+        MatchState.None         => new SharedNone(),
+        MatchState.Warmup       => new SharedWarmup(),
+        MatchState.WarmupEnd    => new SharedWarmupEnd(),
+        MatchState.Cleanup      => new SharedCleanup(),
+        MatchState.Pause        => new SharedPause(),
+        MatchState.RoundPrepare => new DuelPrepare(),
+        MatchState.RoundAction  => new DuelAction(),
+        MatchState.RoundEnd     => new SharedRoundEnd(),
+        MatchState.MatchEnd     => new SharedFinish(),
+        _                       => null
     };
 }

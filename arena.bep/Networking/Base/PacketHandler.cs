@@ -197,9 +197,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-        if (!SanitizeMetadata(ref packet, peer))
+        if (!SanitizeMetadata(ref packet, peer, out string sanitizationRejectionReason))
         {
-            SendRejection(ref packet, peer);
+            SendRejection(ref packet, peer, sanitizationRejectionReason);
             return;
         }
 
@@ -327,15 +327,26 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // OPTIONAL
     // core generic sanitization/validation
-    protected virtual bool SanitizeMetadata(ref T packet, NetPeer peer)
+    protected virtual bool SanitizeMetadata(ref T packet, NetPeer peer, out string rejectionReason)
     {
         // Anti-Spoofing
         if (packet is IAuthoredPacket authoredPacket)
         {
-            // if (authoredPacket.Player != peer.Player)
-            // return false;
+            if (authoredPacket.Player == null)
+            {
+                rejectionReason = "Unknown or null player";
+                return false;
+            }
+
+            // Anti Spoofing (admins are allowed to spoof I guess tho?)
+            // if (authoredPacket.Player != peer.Player && peer.Player.GetScore().IsAdmin == false)
+            // {
+            //     rejectionReason = "You can't send packets for other players";
+            //     return false;
+            // }
         }
 
+        rejectionReason = null;
         return true;
     }
 

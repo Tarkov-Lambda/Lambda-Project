@@ -24,12 +24,11 @@ public class SND_Prepare : SharedPrepare
         }
 
         H.Session.bombState = BombState.None;
-
         H.Arena.LastObjectivePlayerId = -1;
         H.Arena.LastObjectiveBombState = BombState.None;
 
         // Hide any leftover bomb visual from the previous round
-        H.BombHandler?.SetBombVisuals(new BombStatePacket { state = BombState.None });
+        H.BombHandler?.Reset();
 
         if (!H.IsHeadless)
         {
@@ -131,7 +130,7 @@ public class SND_RoundEnd : SharedRoundEnd
     public override void OnExit()
     {
         int currentRound = H.Session.factionWins.Values.Sum();
-        int maxRounds = (H.ActiveRules as SND_ModeRules).MaxRoundsToWin * 2 - 1;
+        int maxRounds = (H.ActiveRules as SNDGamemode).MaxRoundsToWin * 2 - 1;
         double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
         Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
 
@@ -141,22 +140,22 @@ public class SND_RoundEnd : SharedRoundEnd
     }
 }
 
-public class SND_ModeRules : GameModeRules, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable
+public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable
 {
     public List<ILambdaObjective> Objectives { get; set; } = [];
 
-    public int MaxRoundsToWin { get; set; }                        = 13;
+    public int MaxRoundsToWin { get; set; } = 13;
 
-    public bool HasSideSwapped { get; set; }                       = false;
+    public bool HasSideSwapped { get; set; } = false;
 
-    public bool CanBuyInActivePhase { get; set; }                  = true;
-    public int TimeInActivePhaseToBuy { get; set; }                = 30;
+    public bool CanBuyInActivePhase { get; set; } = true;
+    public int TimeInActivePhaseToBuy { get; set; } = 30;
 
-    public static float platingTime                                = 4.5f;
-    public static float defusingTime                               = 10f;
-    public static float defuseRadius                               = 2.5f;
-    public static string bombTemplateId                            = "628bc7fb408e2b2e9c0801b1";
-    public static string defuseKitTemplateId                       = "544fb5454bdc2df8738b456a";
+    public static float platingTime = 4.5f;
+    public static float defusingTime = 10f;
+    public static float defuseRadius = 2.5f;
+    public static string bombTemplateId = "628bc7fb408e2b2e9c0801b1";
+    public static string defuseKitTemplateId = "544fb5454bdc2df8738b456a";
 
     public new Dictionary<MatchState, float> StateTimerConfig = new()
     {
@@ -186,6 +185,6 @@ public class SND_ModeRules : GameModeRules, IGMObjective, IGMRound, IGMSideSwapp
         MatchState.RoundEnd     => new SharedRoundEnd(),
         MatchState.SideSwap     => new SharedSideSwap(),
         MatchState.MatchEnd     => new SharedFinish(),
-        _ => null
+        _                       => null
     };
 }

@@ -28,7 +28,7 @@ public static class RespawnUtilities
             {
                 float rating = RateSpawnPoint(spawnPoint.position, respawningPlayer, enemyPositions, weights);
 
-                rating += Random.Range(-0.05f, 0.05f);
+                // rating += Random.Range(-0.05f, 0.05f);
 
                 if (rating > bestSpawnPointRating)
                 {

@@ -9,7 +9,7 @@ using UnityEngine;
 namespace ifp.arena.bep.Core.Gamemode;
 
 
-public class PracticeModeRules : GameModeRules
+public class PracticeModeRules : LambdaGamemode
 {
     
     public override IGameState CreateState(MatchState state) => state switch

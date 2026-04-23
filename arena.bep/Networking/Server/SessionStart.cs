@@ -1,18 +1,15 @@
 ﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Main.Utils;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.Core.UI;
-using ifp.arena.bep.GameTypes;
 using PacketHandler;
-using ifp.arena.shared;
 using MemoryPack;
 using ifp.arena.bep.networking.TimeSync;
 using EFT.InventoryLogic;
 using Cysharp.Threading.Tasks;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace ifp.arena.bep.networking;
 
@@ -20,7 +17,7 @@ namespace ifp.arena.bep.networking;
 public partial struct SessionStartPacket : INetSerializable
 {
     public string mapName;
-    public GameModes gameMode;
+    public string gamemode;
     public Item[] presetItems;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
@@ -32,6 +29,8 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 {
     public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Admin) { }
 
+    protected override bool ShouldNotifyAboutRejection => true;
+
     private void PrepareForStart(SessionStartPacket packet)
     {
         foreach (var playerScore in H.Session.scoreboard.Values)
@@ -42,7 +41,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         H.Session.factionWins.Clear();
         H.Session.matchState = MatchState.None;
         H.Session.mapName = packet.mapName;
-        H.Session.currentGameMode = packet.gameMode;
         H.Session.InitializeScoreBoard();
     }
 
@@ -53,9 +51,10 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         var packet = new SessionStartPacket
         {
             mapName = Plugin.MapName.Value,
-            gameMode = Plugin.GameMode.Value,
+            gamemode = Plugin.GameMode.Value,
         };
 
+        // send manifest of all item assets that need to be loaded before starting
         if (H.IsServer)
         {
             packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
@@ -72,7 +71,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         var packet = new SessionStartPacket
         {
             mapName = H.Session.mapName,
-            gameMode = H.Session.currentGameMode,
         };
 
         if (H.IsServer)
@@ -85,6 +83,17 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
     protected override bool EvaluatePacket(ref SessionStartPacket packet, NetPeer peer, out string rejectionReason)
     {
+        Type type = GetLambdaGamemode(packet.gamemode);
+        if (type != null)
+        {
+            H.Arena.activeRules = (LambdaGamemode)Activator.CreateInstance(type);
+        }
+        else
+        {
+            rejectionReason = "Can't find specified gamemode";
+            return false;
+        }
+
         packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
         return base.EvaluatePacket(ref packet, peer, out rejectionReason);
     }
@@ -95,17 +104,15 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         D.LogTransaction("Starting a match");
 
-        switch (H.Session.currentGameMode)
+
+        Type type = GetLambdaGamemode(packet.gamemode);
+        if (type != null)
         {
-            case GameModes.FFA:
-                H.Arena.activeRules = new FFAModeRules();
-                break;
-            case GameModes.SND:
-                H.Arena.activeRules = new SND_ModeRules();
-                break;
-            case GameModes.AWP:
-                H.Arena.activeRules = new AWP_ModeRules();
-                break;
+            H.Arena.activeRules = (LambdaGamemode)Activator.CreateInstance(type);
+        }
+        else
+        {
+            Singleton<RaiseErrorPacketHandler>.Instance.Send("Can't find specified Gamemode");
         }
 
         if (!H.IsClient)
@@ -115,7 +122,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         }
 
         NetworkTime.Reset();
-        // Singleton<FactionChangePacketHandler>.Instance.Send(Plugin.PrefferedFaction.Value);
 
         PresetBundleHandler.Instance.AddToCache(packet.presetItems);
 
@@ -129,5 +135,15 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             // Main player is ready
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
         }
+    }
+
+    private Type GetLambdaGamemode(string gamemode)
+    {
+        IEnumerable<Type> gamemodeTypes = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .Where(t => typeof(LambdaGamemode).IsAssignableFrom(t)
+                        && !t.IsAbstract);
+
+        return gamemodeTypes.FirstOrDefault(t => t.Name == gamemode);
     }
 }

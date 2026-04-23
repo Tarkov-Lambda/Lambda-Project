@@ -69,7 +69,6 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             packet.presetItems = null;
         }
 
-
         rejectionReason = null;
         return true;
     }
@@ -95,8 +94,8 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             // In case a player is reporting they are connected mid session (reconnects, new joins)
             if (H.Session?.matchState > MatchState.WarmupEnd && packet.readyState == PlayerReadinessState.Connected)
             {
-                if (packet.Player == null) return;
 
+                // 
                 if (!H.Scoreboard.ContainsKey(packet.Player.Id))
                 {
                     H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);

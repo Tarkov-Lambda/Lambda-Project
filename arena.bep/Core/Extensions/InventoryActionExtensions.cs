@@ -105,6 +105,17 @@ public static class InventoryActionExtensions
         {
             D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
             D.LogTransaction($"Reason: {result.Error}");
+
+            // full retard mode right here
+            if (result.Error.StartsWith("Could not find"))
+            {
+                var cachedAddress = item.CurrentAddress;
+                cachedAddress.RemoveWithoutRestrictions(item);
+
+                cachedAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
+                cachedAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
+                return true;
+            }
         }
 
         return !result.Failed;
@@ -216,18 +227,11 @@ public static class InventoryActionExtensions
         D.LogTransaction($"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
 #endif
 
-        switch (placement.Kind)
+        var addResult = placement.Address.AddWithoutRestrictions(item);
+        if (addResult.Failed)
         {
-            case PlacementKind.VestAddress:
-            case PlacementKind.EquipmentSlot:
-            case PlacementKind.ArmorPlate:
-                var addResult = placement.Address.AddWithoutRestrictions(item);
-                if (addResult.Failed)
-                {
-                    D.LogError($"Failed to add item {item.Id} to {placement.Address}. Reason: {addResult.Error}");
-                    return false;
-                }
-                break;
+            D.LogError($"Failed to add item {item.Id} to {placement.Address}. Reason: {addResult.Error}");
+            return false;
         }
 
         player.AutoExamineAndSearch(item);

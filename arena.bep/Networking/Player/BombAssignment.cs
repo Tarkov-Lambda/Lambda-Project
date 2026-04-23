@@ -37,19 +37,12 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
         }
     }
 
-    public async UniTaskVoid SendDelayed(int delayMs = 50)
-    {
-        if (!H.IsServer) return;
-        await UniTask.Delay(delayMs);
-        Send();
-    }
-
     // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful
     protected override void WhenApproved(BombAssignmentPacket packet, NetPeer peer)
     {
         if (!packet.Player.IsYourPlayer) return;
         
-        Item BombBackpack = IU.CreateItemFromTemplateId(SND_ModeRules.bombTemplateId);
+        Item BombBackpack = IU.CreateItemFromTemplateId(SNDGamemode.bombTemplateId);
         IU.ClientRequestGiveItem(BombBackpack).Forget();
     }
 }

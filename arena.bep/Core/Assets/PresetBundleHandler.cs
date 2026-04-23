@@ -68,6 +68,7 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
 
         foreach (var item in itemsToLoad)
         {
+            D.Log(item.LocalizedName());
             foreach (var i in item.GetAllItems())
             {
                 if (i.Template == null)

@@ -26,6 +26,17 @@ namespace ifp.arena.ui.Nameplate
             }
         }
 
+        public void SetTextAlpha(float alpha)
+        {
+            textName.alpha = alpha;
+        }
 
+        public void SetGraphicsAlpha(float alpha)
+        {
+            foreach (var graphic in coloredGraphic)
+            {
+                graphic.SetAlpha(alpha);
+            }
+        }
     }
 }

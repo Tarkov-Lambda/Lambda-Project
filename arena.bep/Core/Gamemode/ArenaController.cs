@@ -1,6 +1,4 @@
 ﻿using Comfort.Common;
-using Cysharp.Threading.Tasks;
-using EFT;
 using Fika.Core.Modding.Events;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -8,16 +6,12 @@ using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.bep.Patches.Tarkov;
-using ifp.arena.shared;
 using MemoryPack;
 using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
 namespace ifp.arena.bep.Core.Gamemode;
-
-using MemoryPack;
 
 [MemoryPackable]
 public partial struct RoundActionPhaseEnd
@@ -32,7 +26,7 @@ public partial struct RoundActionPhaseEnd
 public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager session;
-    public GameModeRules activeRules = new SND_ModeRules();
+    public LambdaGamemode activeRules = new SNDGamemode();
     public EconomyManager economyManager = new();
     public RespawnManager respawnManager = new();
 

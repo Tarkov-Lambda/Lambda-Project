@@ -9,7 +9,7 @@ public interface IGameState
     void OnExit();
 }
 
-public abstract class GameModeRules
+public abstract class LambdaGamemode
 {
     public abstract IGameState CreateState(MatchState state);
 

@@ -58,7 +58,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
-        // return;
+        return;
         if (state is MatchState.RoundPrepare)
         {
             PlayMusicEvent(H.MusicKit.RoundPrepare.RandomElement());

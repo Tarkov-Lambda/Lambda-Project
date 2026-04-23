@@ -46,7 +46,7 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         {
             playerCameraController.enabled = true;
 
-            if (H.ActiveRules is SND_ModeRules)
+            if (H.ActiveRules is SNDGamemode)
             {
                 H.SpectatorManager.SwitchSpectatePlayer();
             }

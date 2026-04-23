@@ -60,13 +60,16 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     public void Reset()
     {
         StopBombTick();
+        CancelBombAudio();
         _beforeExplodingPlayed = false;
+        _isAlreadyPlanted = false;
+        BombVisuals?.SetActive(false);
     }
 
     public void Update()
     {
         if (H.Arena == null) return;
-        if (H.ActiveRules is not SND_ModeRules) return;
+        if (H.ActiveRules is not SNDGamemode) return;
         if (H.Session == null) return;
         if (H.Sounds == null) return;
 
@@ -146,7 +149,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void CancelBombAudio()
     {
-        LastBombSource.Stop();
+        LastBombSource?.Stop();
     }
 
     public void StartBombTick(Vector3 pos)
@@ -191,7 +194,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     private async UniTaskVoid InitBombVisualsAsync()
     {
-        Item bombItem = IU.CreateItemFromTemplateId(SND_ModeRules.bombTemplateId);
+        Item bombItem = IU.CreateItemFromTemplateId(SNDGamemode.bombTemplateId);
         await IU.LoadBundlesForItem(bombItem);
         BombVisuals = H.PoolManagerClass.CreateLootPrefab(bombItem, ECameraType.Default);
         BombVisuals?.SetActive(false);

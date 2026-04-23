@@ -6,6 +6,7 @@ using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
+using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using Newtonsoft.Json;
@@ -101,6 +102,7 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
                 }
             }
 
+            PresetBundleHandler.Instance.AddToCache(equippedItem);
             RecordedItems[presetInfo.Key] = equippedItem;
         }
     }

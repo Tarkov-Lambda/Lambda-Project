@@ -181,7 +181,7 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-        if (H.ActiveRules != null && H.ActiveRules is SND_ModeRules)
+        if (H.IsServer && H.ActiveRules != null && H.ActiveRules is SNDGamemode)
         {
             Singleton<BombAssignmentPacketHandler>.Instance.Send();
         }

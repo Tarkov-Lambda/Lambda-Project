@@ -119,7 +119,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
                 {
                     if (SceneManager.GetSceneByPath(scenePath).isLoaded)
                     {
-                        SceneManager.UnloadSceneAsync(scenePath);
+                        SceneManager.UnloadScene(scenePath);
                     }
                 }
 

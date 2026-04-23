@@ -51,7 +51,6 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
         var packet = new SessionManagerSyncPacket
         {
             roundState = H.Session.matchState,
-            gameMode = H.Session.currentGameMode,
             bombState = H.Session.bombState,
             mvpId = H.Session.mvpId,
             mapName = H.Session.mapName,
@@ -80,7 +79,6 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
         if (H.IsServer) return;
 
         H.Session.matchState = packet.roundState;
-        H.Session.currentGameMode = packet.gameMode;
         H.Session.bombState = packet.bombState;
         H.Session.mvpId = packet.mvpId;
         H.Session.mapName = packet.mapName;
