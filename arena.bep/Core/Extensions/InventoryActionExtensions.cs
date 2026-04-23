@@ -107,9 +107,17 @@ public static class InventoryActionExtensions
             D.LogTransaction($"Reason: {result.Error}");
 
             // full retard mode right here
-            if (result.Error.StartsWith("Could not find"))
+            if (result.Error.StartsWith("Could not find") || result.Error.StartsWith("Can not execute"))
             {
                 var cachedAddress = item.CurrentAddress;
+
+                // if the item is currently in the player's hands we MUST destroy the controller to prevent a ghost-item permanent freeze
+                if (player.HandsController != null && player.HandsController.Item == item)
+                {
+                    player.HandsController.Destroy();
+                    player.HandsController = null;
+                }
+
                 cachedAddress.RemoveWithoutRestrictions(item);
 
                 cachedAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
@@ -123,6 +131,13 @@ public static class InventoryActionExtensions
 
     public static bool TryPopItemWithoutRestriction(this Player player, Item item, ItemAddress itemAddress)
     {
+        // ensure HandsController drops the item reference before we yank it out of the inventory
+        if (player.HandsController != null && player.HandsController.Item == item)
+        {
+            player.HandsController.Destroy();
+            player.HandsController = null;
+        }
+
         var removeResult = itemAddress.RemoveWithoutRestrictions(item);
         if (removeResult.Failed)
         {
@@ -286,6 +301,12 @@ public static class InventoryActionExtensions
                 fikaPlayer.OperationCallbacks.Clear();
             }
 
+            // make sure the hands controller isn't stalled in ProcessStatus.Internal
+            if (player.HandsController != null && player.ProcessStatus != Player.EProcessStatus.None)
+            {
+                player.HandsController.FastForwardCurrentState();
+            }
+
             var allItems = player.InventoryController.Inventory.GetPlayerItems(EPlayerItems.All);
             foreach (var item in allItems)
             {
@@ -303,9 +324,9 @@ public static class InventoryActionExtensions
         var searchController = player.InventoryController.SearchController;
         Type searchType = searchController?.GetType();
 
-        // 6. BRUTEFORCE REFLECTION: 
-        // The SearchController tracks "SearchedItems", "KnownItems", and "SearchedContainers" in private HashSets/Dictionaries.
-        // iterate over its fields and forcefully inject our item IDs into any collection we find.
+        // bruteforcing here
+        // The SearchController tracks SearchedItems KnownItems and SearchedContainers in private fields
+        // iterate over its fields and forcefully inject item IDs into all collections
         if (searchController != null && searchType != null)
         {
             var fields = AccessTools.GetDeclaredFields(searchType);

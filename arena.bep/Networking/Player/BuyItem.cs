@@ -45,8 +45,6 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
 
-
-
     public void Send(Item item, ItemPlacement placement)
     {
         var packet = new BuyItemPacket
@@ -55,6 +53,11 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             Item = item,
             placement = placement,
         };
+
+        if (H.IsServer)
+        {
+            packet.Item = packet.Item.CloneItem();
+        }
 
         DispatchPacket(packet);
     }
@@ -80,13 +83,11 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             packet.placement = placement;
         }
 
-        D.Log(placement.Address.Container.CanAccept(packet.Item).ToString());
-
-        if (!placement.Address.Container.CanAccept(packet.Item))
-        {
-            rejectionReason = "Container can not accept this item";
-            return false;
-        }
+        // if (placement.Address.Container.ParentItem != null)
+        // {
+        //     rejectionReason = "Container can not accept this item";
+        //     return false;
+        // }
 
         // Server deals with cloning
         packet.Item = packet.Item.CloneItem();

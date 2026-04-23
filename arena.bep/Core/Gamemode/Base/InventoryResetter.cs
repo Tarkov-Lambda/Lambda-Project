@@ -140,11 +140,9 @@ public static class InventoryResetter
                 if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
                 {
                     await UniTask.Delay(25);
-                    await IU.ClientRequestGiveItem(kvp.Value);
+                    await IU.ClientRequestBuyItem(kvp.Value);
                 }
             }
-
-            await GiveDefaultPistol();
         }
         finally
         {
@@ -154,6 +152,6 @@ public static class InventoryResetter
 
     public static async UniTask GiveDefaultPistol()
     {
-        await IU.ClientRequestGiveItem(GetDefaultPistol());
+        await IU.ClientRequestBuyItem(GetDefaultPistol());
     }
 }

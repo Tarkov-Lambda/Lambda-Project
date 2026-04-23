@@ -8,6 +8,9 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
 using System.Linq;
+using ifp.arena.bep.networking;
+using ifp.arena.bep.Core.Dying;
+using Cysharp.Threading.Tasks;
 
 namespace ifp.arena.bep.Core;
 
@@ -15,6 +18,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 {
     private Player observedPlayer = null;
     Transform observedPlayerCameraTransform = null;
+    private FakeCorpse observedCorpse = null;
 
     public static event Action<Player> OnSelfStartSpectating;
     public static event Action OnSelfStopSpectating;
@@ -25,6 +29,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         UnityTicker.OnLateUpdate += onUpdate;
         EventBus.OnEnter += OnEnter;
         EventBus.OnSelfFactionChanged += OnFactionChanged;
+        PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKilled;
     }
 
     public void Dispose()
@@ -34,6 +39,31 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
         StopSpectating();
         Release(this);
+    }
+
+    private void OnPlayerKilled(PlayerKilledPacket packet)
+    {
+        if (observedPlayer == null || packet.victim != observedPlayer) return;
+
+        // Fetch the ragdoll from the creator to follow the death
+        observedCorpse = H.RagdollCreator.GetCorpse(packet.victim);
+        if (observedCorpse != null)
+        {
+            observedCorpse.SetAttachedCamera(CameraClass.Instance.Camera);
+            WaitAndSwitchPlayer(observedPlayer.Id).Forget();
+        }
+    }
+
+    private async UniTaskVoid WaitAndSwitchPlayer(int victimId)
+    {
+        _ = PU.CloseEyes(false, false);
+        await UniTask.Delay(4000);
+
+        // Make sure we haven't manually swapped players while waiting
+        if (observedPlayer != null && observedPlayer.Id == victimId && observedCorpse != null)
+        {
+            SwitchSpectatePlayer();
+        }
     }
 
     private void OnFactionChanged(Faction faction)
@@ -65,6 +95,10 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         {
             SwitchSpectatePlayer(false);
         }
+
+        // Suspend modifying the camera if we are currently watching a corpse fall
+        // Let FakeCorpse.Update() drive the camera directly.
+        if (observedCorpse != null) return; 
 
         Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
         Vector3 offset = observedPlayerCameraTransform.position;
@@ -151,6 +185,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         }
 
         observedPlayer = player;
+        PU.OpenEyes();
 
         if (H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID handsId))
         {
@@ -170,8 +205,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         OnSelfStartSpectating?.Invoke(observedPlayer);
     }
 
-
-
     public void StopSpectating()
     {
         if (!H.IsInRaid()) return;
@@ -182,12 +215,17 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             UpdatePointOfView(observedPlayer, EPointOfView.ThirdPerson);
         }
 
+        if (observedCorpse != null)
+        {
+            observedCorpse.SetAttachedCamera(null);
+            observedCorpse = null;
+        }
+
         observedPlayer = null;
 
         ChangeCameraPOV(H.MainPlayer);
         OnSelfStopSpectating?.Invoke();
     }
-
 
     private void ChangeCameraPOV(Player player)
     {
@@ -249,78 +287,26 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             {
                 player.ProceduralWeaponAnimation.OnScopesModeUpdated();
             }
-
-            // // Force the weapon prefab to swap its LODs to First-Person mode
-            // if (player.HandsController is EFT.Player.FirearmController firearmController)
-            // {
-            //     if (firearmController.WeaponPrefab != null)
-            //     {
-            //         // This swaps the weapon from 3rd person LODs to 1st person LODs
-            //         firearmController.WeaponPrefab.OnChangePointOfView(player);
-            //     }
-            // }
         }
     }
-
-
-    // Token: 0x0600EF88 RID: 61320 RVA: 0x0064F7E0 File Offset: 0x0064D9E0
-    // public void ResetOptics(Player player)
-    // {
-    //     foreach (ProceduralWeaponAnimation.SightNBone sightNBone in player.ProceduralWeaponAnimation._optics)
-    //     {
-    //         global::UnityEngine.Object @object;
-    //         if (sightNBone == null)
-    //         {
-    //             @object = null;
-    //         }
-    //         else
-    //         {
-    //             ScopePrefabCache scopePrefabCache = sightNBone.ScopePrefabCache;
-    //             @object = ((scopePrefabCache != null) ? scopePrefabCache.CurrentModOpticSight : null);
-    //         }
-    //         if (@object != null)
-    //         {
-    //             sightNBone.ScopePrefabCache.CurrentModOpticSight.enabled = false;
-    //             sightNBone.ScopePrefabCache.CurrentModOpticSight.LensFade(true);
-    //         }
-    //     }
-    // }
-
 
     // Token: 0x06018A7C RID: 100988 RVA: 0x00837D70 File Offset: 0x00835F70
     private void method_23(Player player, float fov)
     {
         // float num = Mathf.InverseLerp((float)GClass1155.MinFieldOfView, (float)GClass1155.MaxFieldOfView, fov);
-        // float num2 = 1f;
-        // float num3 = 0.65f;
-        // ArenaSessionStaticData arenaSessionStaticData;
-        // if (GClass3310.TryGetData<ArenaSessionStaticData>(out arenaSessionStaticData) && arenaSessionStaticData.GraphicSettings != null)
-        // {
-        //     num2 = arenaSessionStaticData.GraphicSettings.RibcageScaleCompensatedByMinFov;
-        //     num3 = arenaSessionStaticData.GraphicSettings.RibcageScaleCompensatedByMaxFov;
-        // }
-        // player.float_6 = Mathf.Lerp(num2, num3, num);
-        // player.float_7 = num;
+        // ...
     }
 
     // Token: 0x06018A7D RID: 100989 RVA: 0x00837DDC File Offset: 0x00835FDC
     private void method_24(Player player, EPointOfView pointOfView)
     {
         // bool isThirdPerson = pointOfView == EPointOfView.ThirdPerson;
-        // player.BundleAnimationBones.BodyAnimator.SetBool(PlayerAnimator.THIRDPERSON_HASH, flag);
-        // player.BundleAnimationBones.BodyAnimator.SetFloat(PlayerAnimator.THIRDPERSON_FLOAT_HASH, flag ? 1f : 0f);
-        // player.BundleAnimationBones.BodyAnimator.SetLayerWeight(1, (float)(flag ? 1 : 0));
+        // ...
     }
 
     // Token: 0x06018A7E RID: 100990 RVA: 0x002BACDD File Offset: 0x002B8EDD
     private void method_25(Player player, bool force = false)
     {
-        // player.RibcageScaleCurrentTarget = player.float_6;
-        // if (force)
-        // {
-        //     player.RibcageScaleCurrent = player.RibcageScaleCurrentTarget;
-        //     player.ProceduralWeaponAnimation.ResetFovAdjustments(player);
-        // }
-        // player.ProceduralWeaponAnimation.SetFovParams(player.float_6, player.float_7);
+        // ...
     }
 }

@@ -10,6 +10,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using ifp.arena.bep.Core.Gamemode;
 
 namespace ifp.arena.bep.networking;
 
@@ -104,15 +105,20 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         D.LogTransaction("Starting a match");
 
-        Type type = GetLambdaGamemode(packet.gamemode);
-        if (type != null)
+        if (packet.gamemode == "SNDGamemode")
         {
-            H.Arena.activeRules = (LambdaGamemode)Activator.CreateInstance(type);
+            H.Arena.activeRules = new SNDGamemode();
         }
-        else
-        {
-            Singleton<RaiseErrorPacketHandler>.Instance.Send("Can't find specified Gamemode");
-        }
+
+        // Type type = GetLambdaGamemode(packet.gamemode);
+        // if (type != null)
+        // {
+        //     H.Arena.activeRules = (LambdaGamemode)Activator.CreateInstance(type);
+        // }
+        // else
+        // {
+        //     Singleton<RaiseErrorPacketHandler>.Instance.Send("Can't find specified Gamemode");
+        // }
 
         if (!H.IsClient)
         {

@@ -26,7 +26,7 @@ public partial struct RoundActionPhaseEnd
 public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager session;
-    public LambdaGamemode activeRules = new SNDGamemode();
+    public LambdaGamemode activeRules = null;
     public EconomyManager economyManager = new();
     public RespawnManager respawnManager = new();
 

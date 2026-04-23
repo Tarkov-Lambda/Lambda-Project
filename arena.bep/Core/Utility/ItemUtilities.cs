@@ -77,7 +77,7 @@ public static class ItemUtilities
         }
     }
 
-    public static async UniTask<bool> ClientRequestGiveItem(Item templateItem)
+    public static async UniTask<bool> ClientRequestBuyItem(Item templateItem)
     {
         if (H.IsHeadless) return false;
 
@@ -125,7 +125,9 @@ public static class ItemUtilities
                         else
                         {
                             if (templateItem is Weapon)
+                            {
                                 removed = await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot);
+                            }
                             else
                                 removed = await H.MainPlayer.TryThrowContainedItem(placement.Slot);
                         }

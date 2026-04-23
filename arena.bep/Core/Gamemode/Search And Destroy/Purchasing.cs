@@ -64,7 +64,7 @@ public static class Purchasing
         // delai
         Item item = PresetItemsCache.Instance.GetPresetItem(request.bsgId);
         H.MainPlayerScore.SpendMoney(request.price);
-        bool isSuccessful = await IU.ClientRequestGiveItem(item);
+        bool isSuccessful = await IU.ClientRequestBuyItem(item);
         if (isSuccessful)
         {
             H.EFTGUISounds.PlayUISound(EFT.UI.EUISoundType.TradeOperationComplete);

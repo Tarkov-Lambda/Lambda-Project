@@ -18,6 +18,11 @@ public class SND_Prepare : SharedPrepare
 {
     public override void OnEnter()
     {
+        if (!H.IsHeadless && !H.MainPlayerScore.IsAlive)
+        {
+            InventoryResetter.GiveDefaultPistol().Forget();
+        }
+
         foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
         {
             bombPlantZone.GetComponent<BoxCollider>().enabled = true;
@@ -129,12 +134,10 @@ public class SND_RoundEnd : SharedRoundEnd
 {
     public override void OnExit()
     {
-        int currentRound = H.Session.factionWins.Values.Sum();
-        int maxRounds = (H.ActiveRules as SNDGamemode).MaxRoundsToWin * 2 - 1;
-        double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
-        Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
-
-        H.BombHandler.BombVisuals?.SetActive(false);
+        // int currentRound = H.Session.factionWins.Values.Sum();
+        // int maxRounds = (H.ActiveRules as SNDGamemode).MaxRoundsToWin * 2 - 1;
+        // double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
+        // Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
 
         base.OnExit();
     }
@@ -149,7 +152,12 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
     public bool HasSideSwapped { get; set; } = false;
 
     public bool CanBuyInActivePhase { get; set; } = true;
+
+#if DEBUG
+    public int TimeInActivePhaseToBuy { get; set; } = 110;
+#else
     public int TimeInActivePhaseToBuy { get; set; } = 30;
+#endif
 
     public static float platingTime = 4.5f;
     public static float defusingTime = 10f;
@@ -174,17 +182,17 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None         => new SharedNone(),
-        MatchState.Warmup       => new SharedWarmup(),
-        MatchState.WarmupEnd    => new SharedWarmupEnd(),
-        MatchState.Cleanup      => new SharedCleanup(),
-        MatchState.Pause        => new SharedPause(),
+        MatchState.None => new SharedNone(),
+        MatchState.Warmup => new SharedWarmup(),
+        MatchState.WarmupEnd => new SharedWarmupEnd(),
+        MatchState.Cleanup => new SharedCleanup(),
+        MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new SND_Prepare(),
-        MatchState.RoundAction  => new SND_Action(),
+        MatchState.RoundAction => new SND_Action(),
         MatchState.RoundPlanted => new SND_Planted(),
-        MatchState.RoundEnd     => new SharedRoundEnd(),
-        MatchState.SideSwap     => new SharedSideSwap(),
-        MatchState.MatchEnd     => new SharedFinish(),
-        _                       => null
+        MatchState.RoundEnd => new SND_RoundEnd(),
+        MatchState.SideSwap => new SharedSideSwap(),
+        MatchState.MatchEnd => new SharedFinish(),
+        _ => null
     };
 }

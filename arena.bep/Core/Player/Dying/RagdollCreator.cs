@@ -35,10 +35,21 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         regsitry.Clear();
     }
 
+    public FakeCorpse GetCorpse(Player player)
+    {
+        if (player != null && regsitry.TryGetValue(player, out var corpse))
+        {
+            return corpse;
+        }
+        return null;
+    }
+
     public void CreateLocalPlayerRagdoll()
     {
         FakeCorpse fakeCorpse = CreateRagdollFromPlayer(H.MainPlayer);
 
+        // TODO: REFACTOR
+        // this and spectator manager are just doing whatever the fuck they want here
         PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
         fakeCorpse.SetAttachedCamera(playerCameraController.Camera);
         playerCameraController.enabled = false;

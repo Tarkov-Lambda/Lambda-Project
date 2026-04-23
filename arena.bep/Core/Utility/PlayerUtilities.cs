@@ -57,6 +57,16 @@ public static class PlayerUtilities
 
     public static void OpenEyes()
     {
+
+        if (H.ActiveRules != null && H.Session.matchState
+        is MatchState.RoundEnd
+        or MatchState.Cleanup
+        or MatchState.SideSwap
+        or MatchState.MatchEnd)
+        {
+            return;
+        }
+        
         DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
         deathFade.enabled = true;
         deathFade.DisableEffect();

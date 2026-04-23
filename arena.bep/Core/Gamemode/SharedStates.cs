@@ -75,10 +75,10 @@ public class SharedWarmupEnd : IGameState
             });
         }
 
-        // foreach (var player in H.AllPlayers)
-        // {
-        //     player.ForceUnlockInventory();
-        // }
+        foreach (var player in H.AllPlayers)
+        {
+            player.ForceUnlockInventory();
+        }
     }
 
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;

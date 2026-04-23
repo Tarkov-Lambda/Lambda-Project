@@ -100,7 +100,7 @@ public static class ReplenishmentUtilities
                 continue;
             }
 
-            IU.ClientRequestGiveItem(newMag).Forget();
+            IU.ClientRequestBuyItem(newMag).Forget();
         }
     }
 
