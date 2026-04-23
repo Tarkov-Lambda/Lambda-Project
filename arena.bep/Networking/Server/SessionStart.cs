@@ -16,7 +16,7 @@ namespace ifp.arena.bep.networking;
 [MemoryPackable]
 public partial struct SessionStartPacket : INetSerializable
 {
-    public string mapName;
+    public string level;
     public string gamemode;
     public Item[] presetItems;
 
@@ -40,7 +40,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         H.Session.factionWins.Clear();
         H.Session.matchState = MatchState.None;
-        H.Session.mapName = packet.mapName;
+        H.Session.level = packet.level;
         H.Session.InitializeScoreBoard();
     }
 
@@ -50,8 +50,8 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         var packet = new SessionStartPacket
         {
-            mapName = Plugin.MapName.Value,
-            gamemode = Plugin.GameMode.Value,
+            level = Plugin.level.Value,
+            gamemode = Plugin.gamemode.Value,
         };
 
         // send manifest of all item assets that need to be loaded before starting
@@ -70,7 +70,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         var packet = new SessionStartPacket
         {
-            mapName = H.Session.mapName,
+            level = H.Session.level,
         };
 
         if (H.IsServer)
@@ -104,7 +104,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         D.LogTransaction("Starting a match");
 
-
         Type type = GetLambdaGamemode(packet.gamemode);
         if (type != null)
         {
@@ -126,7 +125,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         PresetBundleHandler.Instance.AddToCache(packet.presetItems);
 
         await UniTask.WhenAll(
-            MapAssetBundleHandler.Instance.LoadMap(packet.mapName),
+            MapAssetBundleHandler.Instance.LoadMap(packet.level),
             PresetBundleHandler.Instance.LoadEverythingInCache()
         );
 

@@ -14,6 +14,7 @@ using Fika.Core.Main.Players;
 using HarmonyLib;
 using System.Reflection;
 using ifp.arena.bep.Core.FX;
+using Fika.Core.Main.GameMode;
 
 namespace ifp.arena.bep.Core;
 
@@ -96,11 +97,11 @@ public static class ItemUtilities
 
             if (placement.Kind == PlacementKind.EquipmentSlot)
             {
-
                 var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
                 if (slot.ContainedItem != null)
                 {
                     bool removed;
+
                     if (templateItem is BackpackItemClass)
                     {
                         removed = true;
@@ -113,10 +114,22 @@ public static class ItemUtilities
                     else
                     {
                         D.LogInventory("Trying to remove an item");
-                        if (templateItem is Weapon)
-                            removed = await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot);
+
+                        if (H.ActiveRules is IGMRespawnable)
+                        {
+                            if (templateItem is Weapon)
+                                removed = await H.MainPlayer.TryPopWeaponAndMags(placement.Slot);
+                            else
+                                removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
+                        }
                         else
-                            removed = await H.MainPlayer.TryThrowContainedItem(placement.Slot);
+                        {
+                            if (templateItem is Weapon)
+                                removed = await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot);
+                            else
+                                removed = await H.MainPlayer.TryThrowContainedItem(placement.Slot);
+                        }
+
                     }
 
                     if (!removed)

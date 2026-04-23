@@ -1,16 +1,15 @@
-﻿public enum GameModes
-{
-    TDM,
-    SND,
-    FFA,
-    AWP,
-    PRACTICE
-}
-
-public enum Faction
+﻿public enum Faction
 {
     None, // FFA
     CT,
     T,
     Spectator
+}
+
+public enum ZoneOwnership
+{
+    None,
+    CT,
+    T,
+    Draw
 }

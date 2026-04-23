@@ -13,7 +13,7 @@ public class SessionManager
     public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
     public BombState bombState = BombState.None;
 
-    public string mapName = "";
+    public string level = "";
 
     public int mvpId;
 

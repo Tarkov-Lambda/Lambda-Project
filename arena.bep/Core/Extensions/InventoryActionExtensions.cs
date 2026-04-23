@@ -195,30 +195,60 @@ public static class InventoryActionExtensions
         return !result.Failed;
     }
 
-    public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
+    private static async UniTask<bool> TryOperateWeaponAndMags(
+        this Player player,
+        EquipmentSlot equipmentSlot,
+        Func<Player, Item, UniTask<bool>> itemOperation,
+        Func<Player, IEnumerable<Item>, UniTask> multiItemOperation)
     {
         var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
         if (slot.ContainedItem == null) return true;
 
-        IEnumerable<MagazineItemClass> magsToThrow = null;
-        if (slot.ContainedItem is Weapon oldWeapon)
+        IEnumerable<Item> mags = null;
+
+        if (slot.ContainedItem is Weapon weapon)
         {
-            string oldMagTemplateId = oldWeapon.GetCurrentMagazine()?.TemplateId;
-            if (oldMagTemplateId != null)
+            string magTemplateId = weapon.GetCurrentMagazine()?.TemplateId;
+            if (magTemplateId != null)
             {
                 var vest = player.GetSlotItem(EquipmentSlot.TacticalVest) as CompoundItem;
-                magsToThrow = player.GetMatchingMags(oldMagTemplateId, vest)?.ToList();
+                mags = player.GetMatchingMags(magTemplateId, vest)?.Cast<Item>().ToList();
             }
         }
 
-        if (magsToThrow != null)
+        // operate on mags first
+        if (mags != null)
         {
-            await player.TryThrowItems(magsToThrow, 25);
+            await multiItemOperation(player, mags);
         }
 
-        bool removed = await player.TryThrowContainedItem(equipmentSlot, false);
+        // then operate on weapon itself
+        return await itemOperation(player, slot.ContainedItem);
+    }
 
-        return removed;
+    public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
+    {
+        return await player.TryOperateWeaponAndMags(
+            equipmentSlot,
+            (p, item) => p.TryThrowItem(item),
+            (p, items) => p.TryThrowItems(items, 25)
+        );
+    }
+
+    public static async UniTask<bool> TryPopWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
+    {
+        return await player.TryOperateWeaponAndMags(
+            equipmentSlot,
+            (p, item) => p.TryPopItem(item),
+            async (p, items) =>
+            {
+                foreach (var item in items)
+                {
+                    await p.TryPopItem(item);
+                    await UniTask.Delay(25);
+                }
+            }
+        );
     }
 
     public static bool PlaceItem(this Player player, Item item, ItemPlacement placement)

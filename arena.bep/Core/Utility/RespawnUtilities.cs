@@ -12,7 +12,7 @@ public static class RespawnUtilities
 
     public static Vector3 GetBestSpawnPoint(this PlayerScore respawningPlayer)
     {
-        TryGetAllSpawnPointClusters(H.Session.mapName, respawningPlayer.Faction, 0, out List<SpawnPointCluster> availableSpawnClusters);
+        TryGetAllSpawnPointClusters(H.Session.level, respawningPlayer.Faction, 0, out List<SpawnPointCluster> availableSpawnClusters);
 
         var enemyPositions = GetAllEnemyPositions(respawningPlayer.Faction).ToList();
 

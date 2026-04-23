@@ -38,14 +38,13 @@ public class SharedWarmup : IGameState
 
     public virtual MatchState? OnUpdate()
     {
-        if (!H.IsServer) return null;
-
         var remaining = H.Arena.StateTimer;
         var total = H.ActiveRules.StateTimerConfig[MatchState.Warmup];
         var elapsed = total - remaining;
 
         bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
 
+        if(allReady) return MatchState.WarmupEnd;
         if (remaining <= 0)
             return MatchState.WarmupEnd;
 
@@ -166,7 +165,7 @@ public class SharedPrepare : IGameState
 
         if (!H.IsHeadless)
         {
-            Teleporter.Teleport(H.MainPlayer, H.Session.mapName, H.MainPlayerScore.Faction);
+            Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
         }

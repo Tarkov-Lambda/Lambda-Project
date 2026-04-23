@@ -9,17 +9,30 @@ using UnityEngine;
 
 namespace ifp.arena.shared
 {
-    [RequireComponent(typeof(BoxCollider))]
-    public class BombPlantZone :
-#if EFT_RUNTIME
-        InteractableObject, ILambdaObjective
-#else
-        MonoBehaviour, ILambdaObjective
-#endif
+    public struct HardpointEventPayload
     {
+        public Collider other;
+        public HardpointZone hardpoint;
+    }
+
+    [RequireComponent(typeof(BoxCollider))]
+    public class HardpointZone : MonoBehaviour, ILambdaObjective
+    {
+        public static Action<HardpointEventPayload> onPlayerEnterLadder;
+        public static Action<HardpointEventPayload> onPlayerExitLadder;
+
         BoxCollider _boxCollider;
 
         public int NetId { get; }
+
+        public List<int> playerIdsInZone = new List<int>();
+
+        public ZoneOwnership ZoneOwnership { get; private set; } = ZoneOwnership.None;
+
+        public void ChangeOwnership(ZoneOwnership ownership)
+        {
+            ZoneOwnership = ownership;
+        }
 
         public Vector3 Center
         {
@@ -44,7 +57,8 @@ namespace ifp.arena.shared
 
         private void OnValidate()
         {
-            gameObject.layer = 22;
+            gameObject.layer = 18;
+            _boxCollider.isTrigger = true;
         }
     }
 }

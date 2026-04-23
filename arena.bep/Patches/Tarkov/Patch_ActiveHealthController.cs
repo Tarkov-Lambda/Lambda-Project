@@ -69,7 +69,7 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 
                 if (playerScore != null)
                 {
-                    Teleporter.Teleport(H.MainPlayer, H.Session.mapName, playerScore.Faction);
+                    Teleporter.Teleport(H.MainPlayer, H.Session.level, playerScore.Faction);
                 }
 
                 __instance.Player.MovementContext.ResetFlying();

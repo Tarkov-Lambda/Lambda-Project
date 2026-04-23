@@ -19,7 +19,6 @@ namespace ifp.arena.bep.networking;
 public partial struct SessionManagerSyncPacket : INetSerializable
 {
     public MatchState roundState;
-    public GameModes gameMode;
     public BombState bombState;
     public int mvpId;
     public string mapName;
@@ -53,7 +52,7 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
             roundState = H.Session.matchState,
             bombState = H.Session.bombState,
             mvpId = H.Session.mvpId,
-            mapName = H.Session.mapName,
+            mapName = H.Session.level,
             factionWins = H.Session.factionWins,
             scores = H.Scoreboard.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Score)
         };
@@ -81,7 +80,7 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
         H.Session.matchState = packet.roundState;
         H.Session.bombState = packet.bombState;
         H.Session.mvpId = packet.mvpId;
-        H.Session.mapName = packet.mapName;
+        H.Session.level = packet.mapName;
         H.Session.factionWins = packet.factionWins;
 
         foreach (var syncScore in packet.scores)

@@ -9,11 +9,11 @@ internal class NameplateRenderer : MonoBehaviour
 {
     private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.2f, 0f);
 
-    float _textFadeStart = 10f;
-    float _textFadeEnd = 50f;
+    float _textFadeStart = 4f;
+    float _textFadeEnd = 10f;
 
-    float _triangleFadeStart = 40f;
-    float _triangleFadeEnd = 80f;
+    float _triangleFadeStart = 10f;
+    float _triangleFadeEnd = 30f;
 
     RectTransform rectTransform => transform as RectTransform;
 
@@ -114,7 +114,7 @@ internal class NameplateRenderer : MonoBehaviour
             float textAlpha = 1f - textT;
 
             float triT = Mathf.InverseLerp(_triangleFadeStart, _triangleFadeEnd, distance);
-            float triangleAlpha = Mathf.Lerp(1f, 0.3f, triT);
+            float triangleAlpha = Mathf.Lerp(1f, 0.23f, triT);
 
             nameplate.SetTextAlpha(textAlpha);
             nameplate.SetGraphicsAlpha(triangleAlpha);
