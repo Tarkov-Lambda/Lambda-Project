@@ -44,7 +44,7 @@ public class SharedWarmup : IGameState
 
         bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
 
-        if(allReady) return MatchState.WarmupEnd;
+        if (allReady) return MatchState.WarmupEnd;
         if (remaining <= 0)
             return MatchState.WarmupEnd;
 
@@ -86,31 +86,15 @@ public class SharedWarmupEnd : IGameState
     {
         H.Session.InitializeScoreBoard();
         H.Arena.economyManager.ResetEconomy();
-
-        if (!H.IsHeadless)
-        {
-            // players start the match alive and so we have to invoke this here instead of relying on cleanup
-            // kinda dumb?
-            InventoryResetter.HardReset().Forget();
-        }
     }
 }
 
 public class SharedCleanup : IGameState
 {
-    public MatchState StateType => MatchState.WarmupEnd;
+    public MatchState StateType => MatchState.Cleanup;
     public virtual void OnEnter()
     {
         IU.GarbageCollectWorldLoot();
-
-        // if (H.IsServer)
-        // {
-        //     foreach (var playerScore in H.Scoreboard)
-        //     {
-        //         Vector3 newPos = playerScore.Value.GetBestSpawnPoint();
-        //         Singleton<DictateTeleportHandler>.Instance.SendToPlayer(playerScore.Value.player, newPos);
-        //     }
-        // }
 
         if (!H.IsHeadless)
         {
@@ -123,15 +107,21 @@ public class SharedCleanup : IGameState
                 HU.HealMe().Forget();
                 HU.ResetObservedPlayersHealth();
 
-                // await InventoryResetter.HardReset();
+                int totalRounds = H.Session.factionWins.Values.Sum();
+                bool isHalfTime = false;
+                if (H.ActiveRules is IGMRound roundBased and IGMSideSwappable)
+                {
+                    isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
+                }
 
-                if (H.MainPlayerScore.IsAlive)
+                if (H.MainPlayerScore.IsAlive && totalRounds > 0 && !isHalfTime)
                 {
                     await InventoryResetter.SoftReset();
                 }
                 else
                 {
                     await InventoryResetter.HardReset();
+                    await InventoryResetter.GiveDefaultPistol();
                 }
             });
         }
@@ -256,12 +246,6 @@ public class SharedSideSwap : IGameState
             }
             (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
-        }
-
-
-        if (!H.IsHeadless)
-        {
-            InventoryResetter.HardReset().Forget();
         }
     }
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;

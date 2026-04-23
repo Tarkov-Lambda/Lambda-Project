@@ -77,13 +77,13 @@ public static class InventoryResetter
 
     public static async UniTask SoftReset()
     {
+        if (IsResetting) return;
         IsResetting = true;
         try
         {
             List<Item> itemsToRemove = [];
 
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-            // List<MagazineItemClass> allMags = H.MainPlayer.GetVestAndPocketGridItems<MagazineItemClass>().ToList();
 
             H.MainPlayer.ForceUnlockInventory();
 
@@ -105,6 +105,7 @@ public static class InventoryResetter
 
     public static async UniTask HardReset()
     {
+        if (IsResetting) return;
         IsResetting = true;
         try
         {
@@ -127,7 +128,6 @@ public static class InventoryResetter
             }
 
             await H.MainPlayer.TryPopItems(itemsToRemove);
-
 
             List<Item> pocketItemsToRemove = H.MainPlayer.GetVestAndPocketGridItems<Item>().ToList();
 

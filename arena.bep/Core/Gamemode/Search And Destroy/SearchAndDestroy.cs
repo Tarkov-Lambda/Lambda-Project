@@ -18,11 +18,6 @@ public class SND_Prepare : SharedPrepare
 {
     public override void OnEnter()
     {
-        if (!H.IsHeadless && !H.MainPlayerScore.IsAlive)
-        {
-            InventoryResetter.GiveDefaultPistol().Forget();
-        }
-
         foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
         {
             bombPlantZone.GetComponent<BoxCollider>().enabled = true;

@@ -14,6 +14,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using UnityEngine;
+using static Fika.Core.Main.ClientClasses.ClientInventoryController;
 
 namespace ifp.arena.bep.Core;
 
@@ -40,15 +41,6 @@ public static class InventoryActionExtensions
     {
         Item item = player.GetSlotItem(equipmentSlot);
         if (item == null) return true;
-
-        // if (waitUntilStationary)
-        // {
-        //     await UniTask.WaitUntil(() => player.MovementContext.CurrentState is IdleStateClass);
-        //     if (extraBackpackWait && equipmentSlot == EquipmentSlot.Backpack)
-        //     {
-        //         await PU.WaitUntilStationary(player);
-        //     }
-        // }
 
         return await operation(player, item);
     }
@@ -106,12 +98,10 @@ public static class InventoryActionExtensions
             D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
             D.LogTransaction($"Reason: {result.Error}");
 
-            // full retard mode right here
-            if (result.Error.StartsWith("Could not find") || result.Error.StartsWith("Can not execute"))
+            if (result.Error.StartsWith("Could not find") || result.Error.StartsWith("Can not execute") || result.Error.StartsWith("Forcefully unlocked inventory"))
             {
                 var cachedAddress = item.CurrentAddress;
 
-                // if the item is currently in the player's hands we MUST destroy the controller to prevent a ghost-item permanent freeze
                 if (player.HandsController != null && player.HandsController.Item == item)
                 {
                     player.HandsController.Destroy();
@@ -131,7 +121,6 @@ public static class InventoryActionExtensions
 
     public static bool TryPopItemWithoutRestriction(this Player player, Item item, ItemAddress itemAddress)
     {
-        // ensure HandsController drops the item reference before we yank it out of the inventory
         if (player.HandsController != null && player.HandsController.Item == item)
         {
             player.HandsController.Destroy();
@@ -298,10 +287,14 @@ public static class InventoryActionExtensions
             if (player is FikaPlayer fikaPlayer && fikaPlayer.OperationCallbacks.Count > 0)
             {
                 D.LogInventory($"Clearing {fikaPlayer.OperationCallbacks.Count} stalled OperationCallbacks on {player.Profile.Nickname}");
+                var callbacks = fikaPlayer.OperationCallbacks.Values.ToList();
                 fikaPlayer.OperationCallbacks.Clear();
+                foreach (var cb in callbacks)
+                {
+                    cb?.Invoke(new ServerOperationStatus(EOperationStatus.Failed, "Forcefully unlocked inventory"));
+                }
             }
 
-            // make sure the hands controller isn't stalled in ProcessStatus.Internal
             if (player.HandsController != null && player.ProcessStatus != Player.EProcessStatus.None)
             {
                 player.HandsController.FastForwardCurrentState();
@@ -324,9 +317,6 @@ public static class InventoryActionExtensions
         var searchController = player.InventoryController.SearchController;
         Type searchType = searchController?.GetType();
 
-        // bruteforcing here
-        // The SearchController tracks SearchedItems KnownItems and SearchedContainers in private fields
-        // iterate over its fields and forcefully inject item IDs into all collections
         if (searchController != null && searchType != null)
         {
             var fields = AccessTools.GetDeclaredFields(searchType);
