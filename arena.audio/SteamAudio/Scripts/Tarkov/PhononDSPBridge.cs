@@ -14,13 +14,13 @@ namespace ifp.arena.shared
         private IntPtr _ambiDecodeEffect = IntPtr.Zero;
 
         // ── Native-allocated buffers ──────────────────────────────────────────
-        private PAudioBuffer _reflAmbiNative;   
-        private PAudioBuffer _reflStereoNative; 
+        private PAudioBuffer _reflAmbiNative;
+        private PAudioBuffer _reflStereoNative;
         private volatile bool _reflBufsAllocated = false;
 
-        private int _maxAmbiChannels = 4;  
+        private int _maxAmbiChannels = 4;
         private int _irSize = 0;
-        private int _nativeFrameSize = 0;  
+        private int _nativeFrameSize = 0;
         private int _cachedMaxOrder = 1;
 
         // ── Components & Utils ────────────────────────────────────────────────
@@ -121,7 +121,7 @@ namespace ifp.arena.shared
             {
                 var binS = new PBinauralEffectSettings { hrtf = hrtf };
                 int r = PhononNative.iplBinauralEffectCreate(ctx, ref audio, ref binS, out _binaural);
-                if (r != 0 || _binaural == IntPtr.Zero) return; 
+                if (r != 0 || _binaural == IntPtr.Zero) return;
             }
 
             if (_direct == IntPtr.Zero)
@@ -285,10 +285,12 @@ namespace ifp.arena.shared
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
-            if (IsBypass || channels != 2 || _binaural == IntPtr.Zero) return;
+            if (IsBypass || channels != 2) return;
 
             lock (_lock)
             {
+                if (_binaural == IntPtr.Zero) return;
+
                 int n = data.Length / channels;
 
                 if (n > _monoIn.Length)
@@ -321,10 +323,17 @@ namespace ifp.arena.shared
 
                         var dp = new PDirectEffectParams
                         {
-                            flags = dflags, transmissionType = 1, distanceAttenuation = 1f,
-                            airAbsorptionLow = 1f, airAbsorptionMid = 1f, airAbsorptionHigh = 1f,
-                            directivity = 1f, occlusion = _occlusion,
-                            transmissionLow = _transLow, transmissionMid = _transMid, transmissionHigh = _transHigh,
+                            flags = dflags,
+                            transmissionType = 1,
+                            distanceAttenuation = 1f,
+                            airAbsorptionLow = 1f,
+                            airAbsorptionMid = 1f,
+                            airAbsorptionHigh = 1f,
+                            directivity = 1f,
+                            occlusion = _occlusion,
+                            transmissionLow = _transLow,
+                            transmissionMid = _transMid,
+                            transmissionHigh = _transHigh,
                         };
                         PhononNative.iplDirectEffectApply(_direct, ref dp, ref inBuf, ref outBuf);
                     }
@@ -338,8 +347,11 @@ namespace ifp.arena.shared
                     {
                         var bp = new PBinauralEffectParams
                         {
-                            direction = _dir, interpolation = 1, spatialBlend = blend,
-                            hrtf = _hrtf, peakDelays = IntPtr.Zero,
+                            direction = _dir,
+                            interpolation = 1,
+                            spatialBlend = blend,
+                            hrtf = _hrtf,
+                            peakDelays = IntPtr.Zero,
                         };
                         PhononNative.iplBinauralEffectApply(_binaural, ref bp, ref outBuf, ref binBuf);
                     }
@@ -356,11 +368,14 @@ namespace ifp.arena.shared
                     if (doReflections)
                     {
                         var reflP = _cachedReflParams;
-                        PhononNative.iplReflectionEffectApply(_reflectionEffect, ref reflP, ref inBuf, ref _reflAmbiNative, IntPtr.Zero); 
+                        PhononNative.iplReflectionEffectApply(_reflectionEffect, ref reflP, ref inBuf, ref _reflAmbiNative, IntPtr.Zero);
 
                         var ambiP = new PAmbisonicsDecodeEffectParams
                         {
-                            order = _cachedMaxOrder, hrtf = _hrtf, orientation = _listenerCS, binaural = 1, 
+                            order = _cachedMaxOrder,
+                            hrtf = _hrtf,
+                            orientation = _listenerCS,
+                            binaural = 1,
                         };
                         PhononNative.iplAmbisonicsDecodeEffectApply(_ambiDecodeEffect, ref ambiP, ref _reflAmbiNative, ref _reflStereoNative);
 

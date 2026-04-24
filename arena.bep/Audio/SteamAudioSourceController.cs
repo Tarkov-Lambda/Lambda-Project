@@ -181,4 +181,32 @@ public static class SteamAudioSourceController
             }
         }
     }
+
+    public static void Dispose()
+    {
+        foreach (var kvp in cache)
+        {
+            AudioSource src = kvp.Key;
+            SteamSourceData data = kvp.Value;
+
+            if (src != null)
+            {
+                if (data.bridge != null)
+                {
+                    data.bridge.IsBypass = true; // bypass audiosource patches
+                    src.spatialize = data.bridge.spatialize;
+                    src.spatialBlend = data.bridge.spatialBlend;
+                    Object.Destroy(data.bridge);
+                }
+
+                if (data.steam != null)
+                {
+                    Object.Destroy(data.steam);
+                }
+            }
+        }
+
+        cache.Clear();
+        MixerBypassCache.Clear();
+    }
 }

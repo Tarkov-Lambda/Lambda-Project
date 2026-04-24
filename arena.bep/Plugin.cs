@@ -326,7 +326,7 @@ public class Plugin : BaseUnityPlugin
 
         if (UnfuckKey.Value.IsDown())
         {
-            H.MainPlayer.SetEmptyHands(delegate {});
+            H.MainPlayer.SetEmptyHands(delegate { });
             PU.OpenEyes();
             // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
@@ -336,21 +336,11 @@ public class Plugin : BaseUnityPlugin
     {
         Logger.LogInfo("Unload");
 
-        // unregisterCommands.Invoke();
-
-        // H.MainPlayer.MovementContext.ExitOverridenState();
-        // RunStateClass idleState                                    = new RunStateClass(H.MainPlayer.MovementContext);
-        // H.MainPlayer.MovementContext.ProcessStateEnter(idleState);
-
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
 
-        // if (H.GameWorld != null && H.GameWorld is not HideoutGameWorld)
-        // {
-        //     H.Session.matchState                                   = MatchState.None;
-        //     Teleporter.Teleport(H.MainPlayer, "lobby");
-        // }
+        SteamAudioSourceController.Dispose();
 
         foreach (var patch in _patches)
         {
@@ -378,6 +368,7 @@ public class Plugin : BaseUnityPlugin
             release();
 
         _releases.Clear();
+
 
         BepInEx.Logging.Logger.Sources.Add(Logger);
         Logger = null;
