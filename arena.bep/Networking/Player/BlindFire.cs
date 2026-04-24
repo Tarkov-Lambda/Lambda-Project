@@ -20,6 +20,8 @@ public partial struct BlindFirePacket : INetSerializable, IAuthoredPacket
 
 public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
 {
+    protected override bool ShouldLog => false;
+
     public void Send(int value)
     {
         var packet = new BlindFirePacket

@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches;
 
+
+// currently unused
 internal class Patch_AudioSource_set_volume : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.volume));
@@ -12,16 +14,17 @@ internal class Patch_AudioSource_set_volume : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref float value)
     {
-        if (SteamSourceDict.cache.ContainsKey(__instance))
+        if (SteamSourceDict.cache.TryGetValue(__instance, out var cache))
         {
-            value = 1f;
+            if (!cache.bridge.IsBypass)
+            {
+                value = 1f; // Force Unity volume to 1 if Steam Audio is handling attenuation
+            }
         }
-
         return true;
     }
 }
 
-// Proxying all spatial setter/getters to Steam Audio DSP Bridge
 internal class Patch_AudioSource_set_spatialBlend : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.spatialBlend));
@@ -29,15 +32,11 @@ internal class Patch_AudioSource_set_spatialBlend : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref float value)
     {
-        if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
-        var spatCache = SteamSourceDict.cache[__instance];
-
-        spatCache.bridge.spatialBlend = Mathf.Clamp01(value);
-
-        // __instance.spatialize = false;
-        value = 0f;
-
+        cache.bridge.spatialBlend = Mathf.Clamp01(value);
+        value = 0f; // Force Unity native to 2D
         return true;
     }
 }
@@ -49,14 +48,11 @@ internal class Patch_AudioSource_set_spatialize : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref bool value)
     {
-        if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
-        var spatCache = SteamSourceDict.cache[__instance];
-
-        spatCache.bridge.spatialize = value;
-
-        value = false;
-
+        cache.bridge.spatialize = value;
+        value = false; // Force Unity native to 2D
         return true;
     }
 }
@@ -68,13 +64,10 @@ internal class Patch_AudioSource_get_spatialBlend : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref float __result)
     {
-        if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
-        var spatCache = SteamSourceDict.cache[__instance];
-
-        __result = spatCache.bridge.spatialBlend;
-        // D.Log("Getting spatialBlend");
-
+        __result = cache.bridge.spatialBlend;
         return false;
     }
 }
@@ -86,13 +79,10 @@ internal class Patch_AudioSource_get_spatialize : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref bool __result)
     {
-        if (!SteamSourceDict.cache.ContainsKey(__instance)) return true;
+        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
-        var spatCache = SteamSourceDict.cache[__instance];
-
-        __result = spatCache.bridge.spatialize;
-        // D.Log("Getting spatialize");
-
+        __result = cache.bridge.spatialize;
         return false;
     }
 }

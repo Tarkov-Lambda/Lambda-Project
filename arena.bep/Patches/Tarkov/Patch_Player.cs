@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using static EFT.Player;
+using static EFT.Player.FirearmController;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
@@ -31,40 +33,45 @@ public class Patch_Player_VisualPass : ModulePatch
     }
 }
 
-public class Patch_Player_Teleport : ModulePatch
+public class Patch_GClass2037_Start : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.Teleport));
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2037), nameof(GClass2037.Start));
+    private static MethodInfo _baseMethod = AccessTools.Method(typeof(BaseAnimationOperationClass), nameof(BaseAnimationOperationClass.Start));
+
 
     [PatchPrefix]
-    static void Prefix(Player __instance)
+    static bool Prefix(GClass2037 __instance, Action callback = null)
     {
-        // Safely disable the controller before the original teleport logic runs
-        if (__instance._characterController != null)
+        try
         {
-            __instance._characterController.isEnabled = false;
+            _baseMethod.Invoke(__instance, null);
+            __instance.Player_0.ProceduralWeaponAnimation.TacticalReload = false;
+            __instance.Action_0 = callback;
+            __instance.Float_0 = 0f;
+            __instance.Bool_0 = false;
+            __instance.Float_1 = 0f;
+            __instance.FirearmController_0.SetAnimatorAndProceduralValues();
+            if (__instance.Weapon_0.IsUnderBarrelDeviceActive)
+            {
+                __instance.FirearmController_0.ToggleLauncher(callback);
+            }
+            __instance.method_5();
+            __instance.FirearmController_0.method_64();
+
         }
-    }
-
-    [PatchPostfix]
-    static void Postfix(Player __instance, Vector3 position)
-    {
-        // Ensure the movement context and transforms are perfectly snapped
-        __instance.Position = position;
-        __instance.Transform.position = position;
-
-        if (__instance.MovementContext != null)
+        catch (Exception ex)
         {
-            __instance.MovementContext.TransformPosition = position;
-            __instance.MovementContext.ResetFlying();
+            D.Log("Error in GClass2037.Start: This usually occurs when a player is trying to equip an item they are about to drop");
+            if (__instance.Player_0.IsYourPlayer)
+            {
+                __instance.Player_0.NukeResetHands();
+            }
         }
 
-        // Re-enable controller
-        if (__instance._characterController != null)
-        {
-            __instance._characterController.isEnabled = true;
-        }
+        return false;
     }
 }
+
 
 public class Patch_Player_ShotReactions : ModulePatch, IDisposable
 {

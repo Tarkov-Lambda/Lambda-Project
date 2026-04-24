@@ -9,13 +9,14 @@ using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
 using UnityEngine;
+using static EFT.MovementContext;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
 public class Patch_MovementContext_CanWalk : ModulePatch
 {
     private static bool wasOnLadder = false;
-    
+
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
     [PatchPostfix]
@@ -96,6 +97,35 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
                 lastSentState = b;
             }
 
+        }
+        return false;
+    }
+}
+
+public class Patch_Class1396_method_3 : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Class1396), nameof(Class1396.method_3));
+
+    [PatchPrefix]
+    private static bool Prefix(Class1396 __instance, Player player)
+    {
+        try
+        {
+            if (player.UsedSimplifiedSkeleton)
+            {
+                return false;
+            }
+            Quaternion handsRotation = player.HandsRotation;
+            player.HandsController.ControllerGameObject.transform.SetPositionAndRotation(player.PlayerBones.Ribcage.Original.position, handsRotation);
+            player.CameraContainer.transform.rotation = handsRotation;
+        }
+        catch (Exception ex)
+        {
+            D.Log("Error in MovementContext.method_3: This usually occurs when a player is trying to equip an item they are about to drop");
+            if (player != null && player.IsYourPlayer)
+            {
+                player.NukeResetHands();
+            }
         }
         return false;
     }

@@ -14,7 +14,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 {
     private MusicObject _musicObject;
     private CancellationTokenSource _cts = new CancellationTokenSource();
-    
+
     // Tracks the last second we played a tick for, so we don't spam the sound every frame.
     private int _lastTickSecond = -1;
 
@@ -30,8 +30,8 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         UnityTicker.OnUpdate += Update;
     }
 
-    public void Update() 
-    { 
+    public void Update()
+    {
         if (H.Arena == null || H.Session == null) return;
 
         if (H.Session.matchState is MatchState.RoundPrepare or MatchState.WarmupEnd)
@@ -58,7 +58,12 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
-        return;
+#if DEBUG        
+        if (!H.IsHeadless && H.MainPlayer?.Profile.Nickname == "notifp")
+        {
+            return;
+        }
+#endif
         if (state is MatchState.RoundPrepare)
         {
             PlayMusicEvent(H.MusicKit.RoundPrepare.RandomElement());
@@ -99,7 +104,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         CancelAndRefreshCts();
         _musicObject.CrossfadeTo(clip, crossfadeDuration, _cts.Token).Forget();
     }
-    
+
     // Dedicated method for One-Shot sounds so the music isn't interrupted
     public void PlaySFX(AudioClip clip, float volume = 1f)
     {
@@ -142,7 +147,7 @@ internal class MusicObject : MonoBehaviour
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;
-    
+
     // Dedicated source for Sound Effects so music doesn't cut out
     private AudioSource _sfxSource;
 
@@ -164,7 +169,7 @@ internal class MusicObject : MonoBehaviour
 
         _sfxSource.loop = false;
         _sfxSource.playOnAwake = false;
-        _sfxSource.spatialBlend = 0f; 
+        _sfxSource.spatialBlend = 0f;
     }
 
     public void PlaySFX(AudioClip clip, float volume = 1f)

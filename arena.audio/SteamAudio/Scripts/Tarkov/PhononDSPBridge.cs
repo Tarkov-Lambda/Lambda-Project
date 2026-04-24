@@ -445,7 +445,7 @@ namespace ifp.arena.shared
         {
             if (IsBypass || channels != 2 || _binaural == IntPtr.Zero)
             {
-                if (IsBypass) Array.Clear(data, 0, data.Length);
+                // if (IsBypass) Array.Clear(data, 0, data.Length);
                 return;
             }
 

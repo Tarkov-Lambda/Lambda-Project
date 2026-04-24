@@ -6,6 +6,7 @@ using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
+using ifp.arena.shared;
 using MemoryPack;
 using System;
 using UnityEngine;
@@ -105,7 +106,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
             Physics.simulationMode = SimulationMode.FixedUpdate;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
-            // SteamAudioInitializer.AttachListenerIfNeeded();
+            SteamAudioInitializer.AttachListenerIfNeeded();
 
             PU.OpenEyes();
         }

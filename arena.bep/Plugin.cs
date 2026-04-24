@@ -1,9 +1,11 @@
+using Audio.ReverbSubsystem;
 using BepInEx;
 using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.UI;
+using ifp.arena.audio;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -47,6 +49,7 @@ public class Plugin : BaseUnityPlugin
 
     private ConfigEntry<KeyboardShortcut> DeathKey;
     private ConfigEntry<KeyboardShortcut> RestartKey;
+    private ConfigEntry<KeyboardShortcut> DumpKey;
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
@@ -115,21 +118,35 @@ public class Plugin : BaseUnityPlugin
         DontDestroyOnLoad(_unityTickListner.gameObject);
 
         // Steam Audio
-        // if (!H.IsHeadless) SteamAudioInitializer.Initialize();
+        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
 
         // AUDIO
         // RegisterPatch(new Patch_ReverbSimpleSource_MuteClientReverb());
         // RegisterPatch(new Patch_ReverbSimpleSource_Play_Bypass());
         // RegisterPatch(new Patch_MetaXR_EnableSpatialization());                  // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        // RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
+        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
         // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
-        // RegisterPatch(new Patch_AudioSource_set_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
-        // RegisterPatch(new Patch_AudioSource_get_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
-        // RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_AudioSource_set_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
+        RegisterPatch(new Patch_AudioSource_get_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
+        RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+        RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
         // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // Bypass MetaXR Occlusion
         RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
         RegisterPatch(new Patch_BetterSource_ResetOcclusion());
+        // RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());
+
+        RegisterPatch(new Patch_SimpleSource_Play());
+        RegisterPatch(new Patch_SuperSource_Play());
+        RegisterPatch(new Patch_ReverbSimpleSource_Play());
+        RegisterPatch(new Patch_ReverbSuperSource_Play());
+        RegisterPatch(new Patch_BetterSource_Play());
+
+
+        RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
+        RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
+        RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
+
+        // RegisterPatch(new AudioDiscovery_Play_Patch());
 
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
@@ -140,7 +157,6 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
-        // RegisterPatch(new Patch_Player_Teleport());                                 // Bypass position interpolation during teleportation (I don't think it works tbh)
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
@@ -148,7 +164,12 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments());       // Procedural Blindfire Position
         RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());      // Override Blindfire Animation
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
+
+        RegisterPatch(new Patch_Class1396_method_3());                              // In edge cases where the hands controller gets bugged out - we hard reset it
+        // RegisterPatch(new Patch_GClass2037_Start());                              // In edge cases where the hands controller gets bugged out - we hard reset it
+
         RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
+
 
         RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
         RegisterPatch(new Patch_MovementContext_ManualUpdate());                    // Something something old movement
@@ -261,6 +282,8 @@ public class Plugin : BaseUnityPlugin
             await RegisterSingletonInRaid<LadderManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
             await RegisterSingletonInRaid<BombHandler>();                      // Handler for the entirety of Bomb's lifecycle
             await RegisterSingletonInRaid<HardpointZoneManager>();             // Manages Hardpoint zones and synchronization
+
+            H.MainPlayer.NukeResetHands();
         }
         catch (Exception ex)
         {
@@ -286,6 +309,7 @@ public class Plugin : BaseUnityPlugin
 
         DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
         RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
+        DumpKey = Config.Bind("Debug", "DumpKey", new KeyboardShortcut(KeyCode.F4));
     }
 
     private void Update()
@@ -299,6 +323,11 @@ public class Plugin : BaseUnityPlugin
         {
             Singleton<SessionStartPacketHandler>.Instance.Send();
         }
+
+        // if (DumpKey.Value.IsDown())
+        // {
+        //     .DumpNearbyAudioSources();
+        // }
     }
 
     void OnDestroy()
