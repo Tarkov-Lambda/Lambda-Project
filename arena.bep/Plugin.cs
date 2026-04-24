@@ -89,8 +89,8 @@ public class Plugin : BaseUnityPlugin
     {
         try
         {
-            await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
-            // await UniTask.WaitUntil(() => H.IsInRaid());
+            // await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
+            await UniTask.WaitUntil(() => H.IsInRaid());
         }
         catch (OperationCanceledException)
         {

@@ -169,43 +169,10 @@ public class Patch_MovementContext_GetNewState : ModulePatch
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, ref BaseMovementState __result, EPlayerState name, bool isAI = false)
     {
-        var IsForModern = true;
-
-        switch (name)
+        if (name == EPlayerState.Run && !isAI)
         {
-            case EPlayerState.Idle:
-                __result = new OldIdleState(__instance);
-                return false;
-            case EPlayerState.ProneIdle:
-                if (isAI)
-                {
-                    return true;
-                }
-                __result = new OldProneIdleState(__instance);
-                return false;
-            case EPlayerState.Run:
-                __result = new OldRunState(__instance);
-                return false;
-            case EPlayerState.Sprint:
-                if (IsForModern)
-                {
-                    return true;
-                }
-
-                __result = new OldSprintState(__instance);
-
-                return false;
-            case EPlayerState.Jump:
-                if (IsForModern)
-                {
-                    return true;
-                }
-
-                __result = new OldJumpState(__instance);
-                return false;
-            case EPlayerState.Sidestep:
-                __result = new OldSidestepState(__instance);
-                return false;
+            __result = new UnstaggeredRunState(__instance);
+            return false;
         }
 
         return true;

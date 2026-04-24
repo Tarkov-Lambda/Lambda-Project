@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.MovementStates
 {
-    public class OldRunState : RunStateClass
+    public class UnstaggeredRunState : RunStateClass
     {
-        public OldRunState(MovementContext movementContext) : base(movementContext)
+        public UnstaggeredRunState(MovementContext movementContext) : base(movementContext)
         {
             this.animationCurve_0 = EFTHardSettings.Instance.DIRECTION_CURVE;
         }
@@ -114,20 +114,34 @@ namespace ifp.arena.bep.Core.MovementStates
             this.int_1++;
             this.int_2++;
             this.int_0 = 0;
+            
             if (this.vector2_0 != this.vector2_1)
             {
                 this.float_0 = 0f;
                 this.float_1 = this.animationCurve_0.Evaluate(this.MovementContext.SmoothedCharacterMovementSpeed);
+                
+                // Enforce a minimum transition time so the swap is never instantaneous.
+                this.float_1 = Mathf.Max(this.float_1, DirectionSwapMinTime);
+
                 this.vector2_2 = this.MovementContext.MovementDirection;
                 this.vector2_1 = this.vector2_0;
             }
+            
             this.float_0 += deltaTime;
             float t = 1f;
             if (this.float_1 > 0f)
             {
-                t = this.float_0 / this.float_1;
+                // Clamp time ratio to [0, 1] to safely evaluate the curve
+                t = Mathf.Clamp01(this.float_0 / this.float_1);
             }
-            this.MovementContext.MovementDirection = Vector2.Lerp(this.vector2_2, this.vector2_0, t);
+
+            // Apply the easing curve to the interpolation phase to get smooth acceleration/deceleration
+            float curvedT = DirectionSwapCurve.Evaluate(t);
+
+            // Vector2.Lerp will naturally dip toward/through Vector2.zero for opposing inputs, 
+            // simulating planting feet/losing momentum before accelerating in the new direction.
+            this.MovementContext.MovementDirection = Vector2.Lerp(this.vector2_2, this.vector2_0, curvedT);
+            
             this.method_2(this.vector2_0, this.MovementContext.MovementDirection);
         }
 
@@ -136,11 +150,6 @@ namespace ifp.arena.bep.Core.MovementStates
             EMovementDirection discreteDirection = GClass2076.ConvertToMovementDirection(inputDirection);
             this.MovementContext.PlayerAnimatorSetDiscreteDirection(discreteDirection);
         }
-
-        //public override void BlindFire(int b)
-        //{
-        //    this.MovementContext.SetBlindFire(b);
-        //}
 
         public override void Move(Vector2 direction)
         {
@@ -190,6 +199,13 @@ namespace ifp.arena.bep.Core.MovementStates
         protected Vector2 vector2_0;
 
         protected AnimationCurve animationCurve_0;
+
+        // --- NEW CONFIGURABLE PROPERTIES ---
+        // EaseInOut smooths out the start and end of the directional transition.
+        public AnimationCurve DirectionSwapCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); 
+        // Ensures the transition never happens instantly, even if animationCurve_0 evaluates to 0.
+        public float DirectionSwapMinTime = 0.25f; 
+        // -----------------------------------
 
         protected bool bool_0;
 

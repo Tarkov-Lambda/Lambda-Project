@@ -247,7 +247,7 @@ namespace ifp.arena.shared
                         hasRefl = reflParams.ir != IntPtr.Zero;
                         reflMix = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
 
-                        Vector3 lR = listener.right, lU = listener.up, lF = listener.forward, lP = listener.position;
+                        UnityEngine.Vector3 lR = listener.right, lU = listener.up, lF = listener.forward, lP = listener.position;
                         listenerCS = new PCoordinateSpace3
                         {
                             right = new PVec3 { x = lR.x, y = lR.y, z = -lR.z },
