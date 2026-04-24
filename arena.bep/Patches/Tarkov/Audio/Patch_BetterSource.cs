@@ -43,7 +43,7 @@ public class Patch_SimpleSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, AudioClip clip1, AudioClip clip2, float balance, float volume = 1f, bool forceStereo = false, bool oneShot = true)
     {
-        SteamAudioSourceAttacher.RouteAudioSource(__instance, clip1, forceStereo);
+        SteamAudioSourceController.RouteAudioSource(__instance, clip1, forceStereo);
     }
 }
 
@@ -54,7 +54,7 @@ public class Patch_ReverbSimpleSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, AudioClip clip1, AudioClip clip2, float balance, float volume = 1f, bool forceStereo = false, bool oneShot = true)
     {
-        SteamAudioSourceAttacher.RouteAudioSource(__instance, clip1, forceStereo);
+        SteamAudioSourceController.RouteAudioSource(__instance, clip1, forceStereo);
     }
 }
 
@@ -65,7 +65,7 @@ public class Patch_SuperSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, AudioClip clip1, AudioClip clip2, float balance, float volume = 1f, bool forceStereo = false, bool oneShot = true)
     {
-        SteamAudioSourceAttacher.RouteAudioSource(__instance, clip1, forceStereo);
+        SteamAudioSourceController.RouteAudioSource(__instance, clip1, forceStereo);
     }
 }
 
@@ -78,7 +78,7 @@ public class Patch_ReverbSuperSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, AudioClip clip1, AudioClip clip2, float balance, float volume = 1f, bool forceStereo = false, bool oneShot = true)
     {
-        SteamAudioSourceAttacher.RouteAudioSource(__instance, clip1, forceStereo);
+        SteamAudioSourceController.RouteAudioSource(__instance, clip1, forceStereo);
     }
 }
 
@@ -89,7 +89,7 @@ public class Patch_BetterSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, AudioClip clip1, AudioClip clip2, float balance, float volume = 1f, bool forceStereo = false, bool oneShot = true)
     {
-        SteamAudioSourceAttacher.RouteAudioSource(__instance, clip1, forceStereo);
+        SteamAudioSourceController.RouteAudioSource(__instance, clip1, forceStereo);
     }
 
 }

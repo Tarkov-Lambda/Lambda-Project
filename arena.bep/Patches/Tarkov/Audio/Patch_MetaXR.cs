@@ -16,17 +16,17 @@ internal class Patch_MetaXR_EnableSpatialization : ModulePatch
     // [PatchPostfix]
     // static void Postfix(AudioSource ___source_, ref bool value)
     // {
-    //     if (!SteamSourceDict.cache.ContainsKey(___source_)) return;
+    //     if (!SteamAudioSourceController.cache.ContainsKey(___source_)) return;
 
-    //     SteamSourceDict.cache[___source_].bridge.spatialize = value;
+    //     SteamAudioSourceController.cache[___source_].bridge.spatialize = value;
     // }
 
     [PatchPrefix]
     public static bool Prefix(MetaXRAudioSource __instance, AudioSource ___source_, ref bool value)
     {
-        // if (!SteamSourceDict.cache.ContainsKey(___source_)) return true;
+        // if (!SteamAudioSourceController.cache.ContainsKey(___source_)) return true;
 
-        // var spatCache = SteamSourceDict.cache[___source_];
+        // var spatCache = SteamAudioSourceController.cache[___source_];
 
         // spatCache.bridge.spatialize = value;
         // D.Log(value.ToString());

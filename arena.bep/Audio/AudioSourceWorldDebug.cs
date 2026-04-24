@@ -59,7 +59,7 @@ public class AudioSourceWorldDebug : MonoBehaviourSingleton<AudioSourceWorldDebu
                 string dspStat = "";
 
                 // Use TryGetValue (slightly more performant than ContainsKey + Indexer)
-                if (SteamSourceDict.cache.TryGetValue(audio, out var cacheData))
+                if (SteamAudioSourceController.cache.TryGetValue(audio, out var cacheData))
                 {
                     var bridge = cacheData.bridge;
 

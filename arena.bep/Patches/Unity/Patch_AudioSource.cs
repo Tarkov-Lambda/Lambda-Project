@@ -14,7 +14,7 @@ internal class Patch_AudioSource_set_volume : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref float value)
     {
-        if (SteamSourceDict.cache.TryGetValue(__instance, out var cache))
+        if (SteamAudioSourceController.cache.TryGetValue(__instance, out var cache))
         {
             if (!cache.bridge.IsBypass)
             {
@@ -32,7 +32,7 @@ internal class Patch_AudioSource_set_spatialBlend : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref float value)
     {
-        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (!SteamAudioSourceController.cache.TryGetValue(__instance, out var cache)) return true;
         if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
         cache.bridge.spatialBlend = Mathf.Clamp01(value);
@@ -48,7 +48,7 @@ internal class Patch_AudioSource_set_spatialize : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref bool value)
     {
-        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (!SteamAudioSourceController.cache.TryGetValue(__instance, out var cache)) return true;
         if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
         cache.bridge.spatialize = value;
@@ -64,7 +64,7 @@ internal class Patch_AudioSource_get_spatialBlend : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref float __result)
     {
-        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (!SteamAudioSourceController.cache.TryGetValue(__instance, out var cache)) return true;
         if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
         __result = cache.bridge.spatialBlend;
@@ -79,7 +79,7 @@ internal class Patch_AudioSource_get_spatialize : ModulePatch
     [PatchPrefix]
     public static bool Prefix(AudioSource __instance, ref bool __result)
     {
-        if (!SteamSourceDict.cache.TryGetValue(__instance, out var cache)) return true;
+        if (!SteamAudioSourceController.cache.TryGetValue(__instance, out var cache)) return true;
         if (cache.bridge.IsBypass) return true; // Let Unity handle it natively
 
         __result = cache.bridge.spatialize;

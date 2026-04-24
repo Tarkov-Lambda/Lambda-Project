@@ -20,8 +20,8 @@ namespace ifp.arena.bep.Patches
         {
             AudioSource internalReverb = _reverbSourceField.GetValue(__instance) as AudioSource;
 
-            if (internalReverb == null || !SteamSourceDict.cache.ContainsKey(internalReverb)) return;
-            var spatCache = SteamSourceDict.cache[internalReverb];
+            if (internalReverb == null || !SteamAudioSourceController.cache.ContainsKey(internalReverb)) return;
+            var spatCache = SteamAudioSourceController.cache[internalReverb];
 
             if (IsLocalPlayerSource(__instance))
             {
@@ -34,7 +34,7 @@ namespace ifp.arena.bep.Patches
                 // CRITICAL FIX FOR 2D / UNSPATIALIZED AUDIO:
                 // Tarkov never sets spatialBlend=1 on _reverbSource because MetaXR ignored it.
                 // We must copy the spatialization parameters from the main source so Phonon pans it in 3D!
-                if (SteamSourceDict.cache.TryGetValue(__instance.source1, out var source1Cache))
+                if (SteamAudioSourceController.cache.TryGetValue(__instance.source1, out var source1Cache))
                 {
                     spatCache.bridge.spatialBlend = source1Cache.bridge.spatialBlend;
                     spatCache.bridge.spatialize = source1Cache.bridge.spatialize;

@@ -598,6 +598,38 @@ namespace ifp.arena.shared
         }
 
         // distance attentuation
+        private static Transform _cachedListener;
+        private static int _lastListenerSearchFrame = -1;
+
+        private Transform GetListenerTransform()
+        {
+            if (_cachedListener != null && _cachedListener.gameObject.activeInHierarchy)
+                return _cachedListener;
+
+            // Restricts the heavy Unity Scene Hierarchy dive to a maximum of ONCE per frame
+            if (Time.frameCount == _lastListenerSearchFrame)
+                return _cachedListener;
+
+            _lastListenerSearchFrame = Time.frameCount;
+
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                _cachedListener = cam.transform;
+                return _cachedListener;
+            }
+
+            var al = FindObjectOfType<AudioListener>();
+            if (al != null)
+            {
+                _cachedListener = al.transform;
+                return _cachedListener;
+            }
+
+            _cachedListener = null;
+            return null;
+        }
+
         private float CalculateDistanceAttenuation(float dist)
         {
             if (_src == null) return 0f;
@@ -605,7 +637,7 @@ namespace ifp.arena.shared
             float minDist = _src.minDistance;
             float maxDist = Mathf.Max(_src.maxDistance, minDist + 0.001f);
 
-            LogV($"  Dist atten for {dist:F2}m (Min={minDist:F1}, Max={maxDist:F1}, mode={_src.rolloffMode})");
+            if (verboseLogging) LogV($"  Dist atten for {dist:F2}m (Min={minDist:F1}, Max={maxDist:F1}, mode={_src.rolloffMode})");
 
             if (dist <= minDist) return 1f;
             if (dist >= maxDist) return 0f;
@@ -614,48 +646,42 @@ namespace ifp.arena.shared
             {
                 if (_cachedRolloffCurve == null || _lastMaxDist != maxDist)
                 {
-                    LogV("  Recaching custom rolloff curve.");
+                    if (verboseLogging) LogV("  Recaching custom rolloff curve.");
                     _cachedRolloffCurve = _src.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
                     _lastMaxDist = maxDist;
 
                     if (_cachedRolloffCurve == null || _cachedRolloffCurve.length == 0)
                     {
-                        LogW("  Custom curve NULL or empty – falling back to linear.");
+                        if (verboseLogging) LogW("  Custom curve NULL or empty – falling back to linear.");
                         return 1f - (dist - minDist) / (maxDist - minDist);
                     }
                 }
 
                 float norm = dist / maxDist;
                 float result = Mathf.Clamp01(_cachedRolloffCurve.Evaluate(norm));
-                LogV($"  Custom curve: Evaluate({norm:F3}) = {result:F3}");
+
+                if (verboseLogging) LogV($"  Custom curve: Evaluate({norm:F3}) = {result:F3}");
                 return result;
             }
 
             if (_src.rolloffMode == AudioRolloffMode.Linear)
             {
                 float result = 1f - (dist - minDist) / (maxDist - minDist);
-                LogV($"  Linear: {result:F3}");
+
+                if (verboseLogging) LogV($"  Linear: {result:F3}");
                 return result;
             }
 
             if (_src.rolloffMode == AudioRolloffMode.Logarithmic)
             {
                 float result = minDist / dist;
-                LogV($"  Logarithmic: {result:F3}");
+
+                if (verboseLogging) LogV($"  Logarithmic: {result:F3}");
                 return result;
             }
 
             return 1f;
         }
-
-        private Transform GetListenerTransform()
-        {
-            var cam = Camera.main;
-            if (cam != null) return cam.transform;
-            var al = FindObjectOfType<AudioListener>();
-            return al != null ? al.transform : null;
-        }
-
 #if UNITY_EDITOR
         private void OnValidate()
         {
