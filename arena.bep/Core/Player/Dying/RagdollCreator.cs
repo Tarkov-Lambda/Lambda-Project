@@ -100,6 +100,8 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();
         foreach (var rbs in rigidbodySpawners)
         {
+            Rigidbody rb = rbs.GetComponent<Rigidbody>();
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
             AccessTools.Field(typeof(RigidbodySpawner), "rigidbody_0").SetValue(rbs, rbs.GetComponent<Rigidbody>());
         }
 

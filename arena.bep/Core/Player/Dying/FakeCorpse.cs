@@ -110,13 +110,14 @@ namespace ifp.arena.bep.Core.Dying
             attachedCamera = cam;
         }
 
-        void Update()
+        void LateUpdate()
         {
             if (attachedCamera != null)
             {
                 Matrix4x4 parentMatrix = bones.HeadCameraCollider.transform.localToWorldMatrix;
                 Matrix4x4 localMatrix = Matrix4x4.TRS(attacthedCameraLocalPos, attacthedCameraLocalRot, Vector3.one);
                 Matrix4x4 worldMatrix = parentMatrix * localMatrix;
+
                 attachedCamera.transform.position = worldMatrix.GetColumn(3);
                 attachedCamera.transform.rotation = worldMatrix.rotation;
             }

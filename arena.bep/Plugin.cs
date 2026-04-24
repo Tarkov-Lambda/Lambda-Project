@@ -47,7 +47,7 @@ public class Plugin : BaseUnityPlugin
 
     private ConfigEntry<KeyboardShortcut> DeathKey;
     private ConfigEntry<KeyboardShortcut> RestartKey;
-    private ConfigEntry<KeyboardShortcut> DumpKey;
+    private ConfigEntry<KeyboardShortcut> UnfuckKey;
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
@@ -89,8 +89,8 @@ public class Plugin : BaseUnityPlugin
     {
         try
         {
-            // await UniTask.WaitUntil(()                             => H.isInRaid(), cancellationToken: _cts.Token);
-            await UniTask.WaitUntil(() => H.IsInRaid());
+            await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
+            // await UniTask.WaitUntil(() => H.IsInRaid());
         }
         catch (OperationCanceledException)
         {
@@ -308,7 +308,7 @@ public class Plugin : BaseUnityPlugin
 
         DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
         RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
-        DumpKey = Config.Bind("Debug", "Unfuck Key", new KeyboardShortcut(KeyCode.F4), "Use this key to unfuck yourself");
+        UnfuckKey = Config.Bind("Debug", "Unfuck Key", new KeyboardShortcut(KeyCode.F4), "Use this key to unfuck yourself");
     }
 
     private void Update()
@@ -323,10 +323,11 @@ public class Plugin : BaseUnityPlugin
             Singleton<SessionStartPacketHandler>.Instance.Send();
         }
 
-        if (DumpKey.Value.IsDown())
+        if (UnfuckKey.Value.IsDown())
         {
-            H.MainPlayer.NukeResetHands();
-            H.MainPlayer.ForceUnlockInventory();
+            H.MainPlayer.UnfuckHands();
+            PU.OpenEyes();
+            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
     }
 

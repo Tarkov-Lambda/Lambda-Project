@@ -64,7 +64,7 @@ public class Patch_GClass2037_Start : ModulePatch
             D.Log("Error in GClass2037.Start: This usually occurs when a player is trying to equip an item they are about to drop");
             if (__instance.Player_0.IsYourPlayer)
             {
-                __instance.Player_0.NukeResetHands();
+                __instance.Player_0.UnfuckHands();
             }
         }
 

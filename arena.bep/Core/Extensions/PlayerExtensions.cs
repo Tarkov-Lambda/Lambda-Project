@@ -10,9 +10,11 @@ public static class PlayerExtensions
         return H.GetPlayerScore(player);
     }
 
-    public static void NukeResetHands(this Player player)
+    // full retard nuclear hand resetting
+    // this needs to go ASAP
+    public static void UnfuckHands(this Player player)
     {
-        D.Log("Nuke-resetting hands controller");
+        D.Log("unfucking hands controller");
         try
         {
             player.ProcessStatus = Player.EProcessStatus.None;

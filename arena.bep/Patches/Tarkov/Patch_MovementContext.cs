@@ -124,7 +124,7 @@ public class Patch_Class1396_method_3 : ModulePatch
             D.Log("Error in MovementContext.method_3: This usually occurs when a player is trying to equip an item they are about to drop");
             if (player != null && player.IsYourPlayer)
             {
-                player.NukeResetHands();
+                player.UnfuckHands();
             }
         }
         return false;

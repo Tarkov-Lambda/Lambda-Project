@@ -10,8 +10,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <Product>Lambda</Product>
-    <Version>0.4.46</Version>
-    <Description>Developed by ifp and tarkin</Description>
+    <Version>0.5.132</Version>
+    <Description>Made by ifp and tarkin</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,7 +41,7 @@
     <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
     <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
 
-    <!-- EFT Managed DLLs -->
+    <!-- EFT -->
     <Reference Include="$(ManagedPath)\ItemComponent.Types.dll" />
     <Reference Include="$(ManagedPath)\Assembly-CSharp.dll" />
     <!-- <Reference Include="$(ManagedPath)\bsg.console.core.dll" /> -->

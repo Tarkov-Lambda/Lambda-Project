@@ -21,8 +21,18 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
     public PresetBundleHandler()
     {
         itemsToLoad = [];
+
+        H.OnGameStarted += Initialize;
         H.OnGameDispose += ResetCache;
         // SessionStartPacketHandler.BeforePacketApplied += ResetCache;
+    }
+
+    public void Dispose()
+    {
+        H.OnGameStarted -= Initialize;
+        H.OnGameDispose -= ResetCache;
+        // SessionStartPacketHandler.BeforePacketApplied -= ResetCache;
+        Release(this);
     }
 
     private void ResetCache(SessionStartPacket packet) => ResetCache();
@@ -30,6 +40,11 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
     private void ResetCache()
     {
         itemsToLoad.Clear();
+    }
+
+    public void Initialize()
+    {
+
     }
 
     public void AddToCache(Item[] items)
@@ -94,12 +109,5 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
                 default(CancellationToken)
             );
         }
-    }
-
-    public void Dispose()
-    {
-        H.OnGameDispose -= ResetCache;
-        // SessionStartPacketHandler.BeforePacketApplied -= ResetCache;
-        Release(this);
     }
 }

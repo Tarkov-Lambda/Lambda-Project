@@ -152,10 +152,13 @@ public static class SteamAudioSourceController
         var cache = GetOrAdd(src);
         bool wasBypassed = cache.bridge.IsBypass;
 
+        // we toggle occlusion back and forth to save on constant unnecessary raycasts
         if (shouldBypassSteamAudio)
         {
             if (!wasBypassed)
             {
+                cache.steam.occlusion = false;
+
                 cache.bridge.IsBypass = true;
                 src.spatialize = cache.bridge.spatialize;
                 src.spatialBlend = cache.bridge.spatialBlend;
@@ -165,6 +168,8 @@ public static class SteamAudioSourceController
         {
             if (wasBypassed)
             {
+                cache.steam.occlusion = true;
+
                 bool currentNativeSpatialize = src.spatialize;
                 float currentNativeBlend = src.spatialBlend;
 
@@ -172,6 +177,7 @@ public static class SteamAudioSourceController
 
                 src.spatialize = currentNativeSpatialize;
                 src.spatialBlend = currentNativeBlend;
+
             }
         }
     }
