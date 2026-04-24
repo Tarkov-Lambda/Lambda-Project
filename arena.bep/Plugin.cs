@@ -190,7 +190,7 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
 
-        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions_IInteractive()); // Looting Fake Corpses, Planting, Defusing
+        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Looting Fake Corpses, Planting, Defusing
 
 
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing

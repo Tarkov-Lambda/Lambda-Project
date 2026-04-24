@@ -39,7 +39,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
         Release(this);
     }
 
-    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 75, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Environment)
+    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 75, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Weaponry)
     {
         return H.BetterAudio.PlayAtPoint(
             pos,

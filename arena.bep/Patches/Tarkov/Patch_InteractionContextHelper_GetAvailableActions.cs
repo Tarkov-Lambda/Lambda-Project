@@ -16,7 +16,19 @@ using ifp.arena.bep.Core;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
-internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive : ModulePatch
+internal class Patch_InteractionContextHelper_GetAvailableHideoutActions : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() =>
+    AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.GetAvailableHideoutActions), [typeof(HideoutPlayerOwner), typeof(IInteractive)]);
+
+    [PatchPrefix]
+    private static bool PatchPrefix(InteractionContextHelper __instance, ref ActionsReturnClass __result, HideoutPlayerOwner owner, IInteractive interactive)
+    {
+        return ArenaInteractionHandler.TryHandleInteraction(owner, interactive, ref __result);
+    }
+}
+
+internal class Patch_InteractionContextHelper_GetAvailableActions : ModulePatch
 {
     protected override MethodBase GetTargetMethod() =>
     AccessTools.Method(typeof(InteractionContextHelper), nameof(InteractionContextHelper.GetAvailableActions), [typeof(GamePlayerOwner), typeof(IInteractive)]);
@@ -24,134 +36,161 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
     [PatchPrefix]
     private static bool PatchPrefix(InteractionContextHelper __instance, ref ActionsReturnClass __result, GamePlayerOwner owner, IInteractive interactive)
     {
+        return ArenaInteractionHandler.TryHandleInteraction(owner, interactive, ref __result);
+    }
+}
+
+
+internal static class ArenaInteractionHandler
+{
+    public static bool TryHandleInteraction(
+        GamePlayerOwner owner,
+        IInteractive interactive,
+        ref ActionsReturnClass result)
+    {
         if (interactive == null) return true;
+
+        Player player = owner.Player;
+        if (player == null) return true;
 
         if (interactive is Corpse corpse)
         {
-            if (corpse.PlayerProfileID == H.MainPlayer.ProfileId) return false;
+            if (corpse.PlayerProfileID == H.MainPlayer.ProfileId)
+                return false;
         }
 
         var roundState = H.Session.matchState;
-        if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted) return true;
+        if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted)
+            return true;
 
-        Player player = owner.Player;
-        AvailableInteractionState actionsReturnClass = new AvailableInteractionState();
+        var actions = new AvailableInteractionState();
 
         if (interactive is Bombasik)
         {
-            if (H.Session.matchState is not MatchState.RoundPlanted) return true;
+            if (roundState != MatchState.RoundPlanted) return true;
             if (H.MainPlayer.IsInPronePose) return true;
 
-            bool hasDefuseKit = TryFindItem(SNDGamemode.defuseKitTemplateId, out Item defuseKit);
-            float defusingTime = hasDefuseKit ? SNDGamemode.defusingTime / 2 : SNDGamemode.defusingTime;
+            bool hasKit = TryFindItem(SNDGamemode.defuseKitTemplateId, out Item defuseKit);
+            float time = hasKit ? SNDGamemode.defusingTime / 2 : SNDGamemode.defusingTime;
 
-            actionsReturnClass.Actions.Add(new ActionsTypesClass
+            actions.Actions.Add(new ActionsTypesClass
             {
                 Name = "DEFUSE",
-                Action = delegate
-                {
-                    if (H.Session.matchState is not MatchState.RoundPlanted) return;
-                    if (owner.Player.CurrentState is IdleStateClass)
-                    {
-                        Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defusing, H.BombHandler.BombPlantedPosition);
-
-                        owner.ShowObjectivesPanel("Defusing {0:F1}", defusingTime);
-                        owner.Player.CurrentManagedState.Plant(enabled: true, false, defusingTime, async (successful) =>
-                        {
-                            owner.CloseObjectivesPanel();
-                            // Re-read in case another defuser already changed state
-                            Vector3 pos = H.BombHandler.BombPlantedPosition;
-                            if (!successful)
-                            {
-                                // Revert state for all clients so another CT can try
-                                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Planted, pos);
-                                return;
-                            }
-                            Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defused, pos);
-                            owner.ClearInteractionState();
-                        });
-                    }
-                    else
-                    {
-                        owner.DisplayPreloaderUiNotification("You can't defuse while moving");
-                    }
-                }
+                Action = () => HandleDefuse(owner, player, time)
             });
 
-            __result = actionsReturnClass;
+            result = actions;
             return false;
         }
 
         if (interactive is BombPlantZone)
         {
             if (roundState != MatchState.RoundAction) return true;
-
             if (!TryFindItem(SNDGamemode.bombTemplateId, out Item bomb)) return true;
 
-            float plantingTime = SNDGamemode.platingTime;
+            float time = SNDGamemode.platingTime;
 
-            actionsReturnClass.Actions.Add(new ActionsTypesClass
+            actions.Actions.Add(new ActionsTypesClass
             {
                 Name = "PLANT",
-                Action = delegate
-                {
-                    if (owner.Player.CurrentState is IdleStateClass)
-                    {
-                        Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planting, GetBombPlantPosition(player));
-
-                        owner.ShowObjectivesPanel("Planting {0:F1}", plantingTime);
-                        owner.Player.CurrentManagedState.Plant(enabled: true, false, plantingTime, async (successful) =>
-                        {
-                            owner.CloseObjectivesPanel();
-                            if (!successful)
-                            {
-                                Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.None, GetBombPlantPosition(player));
-                                return;
-                            }
-
-                            await H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, false);
-                            Singleton<BombStatePacketHandler>.Instance.Send(owner.Player, BombState.Planted, GetBombPlantPosition(player));
-                            owner.ClearInteractionState();
-                        });
-                    }
-                    else
-                    {
-                        owner.DisplayPreloaderUiNotification("You can't plant while moving");
-                    }
-                }
+                Action = () => HandlePlant(owner, player, time)
             });
 
-            __result = actionsReturnClass;
+            result = actions;
             return false;
         }
 
-        if (H.Gamemode is SNDGamemode && interactive is ObservedLootItem observedLootItem)
+        if (H.Gamemode is SNDGamemode && interactive is ObservedLootItem loot)
         {
-            if (observedLootItem.TemplateId == SNDGamemode.bombTemplateId)
+            if (loot.TemplateId == SNDGamemode.bombTemplateId &&
+                H.MainPlayerScore.Faction != Faction.T)
             {
-                if (H.MainPlayerScore.Faction != Faction.T)
-                {
-                    __result = actionsReturnClass;
-                    return true;
-                }
+                result = actions;
+                return true;
             }
         }
 
         return true;
     }
 
-
-    static bool TryFindItem(string templateId, out Item item)
+    private static void HandleDefuse(GamePlayerOwner owner, Player player, float time)
     {
-        Item[] playerInventory = H.MainPlayer.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems).ToArray();
-        item = playerInventory.FirstOrDefault(nextItem => nextItem.TemplateId == templateId);
+        if (H.Session.matchState is not MatchState.RoundPlanted)
+            return;
+
+        if (player.CurrentState is IdleStateClass)
+        {
+            Vector3 pos = H.BombHandler.BombPlantedPosition;
+
+            Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defusing, pos);
+
+            owner.ShowObjectivesPanel("Defusing {0:F1}", time);
+
+            player.CurrentManagedState.Plant(true, false, time, async (success) =>
+            {
+                owner.CloseObjectivesPanel();
+
+                if (!success)
+                {
+                    Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Planted, pos);
+                    return;
+                }
+
+                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defused, pos);
+                owner.ClearInteractionState();
+            });
+        }
+        else
+        {
+            owner.DisplayPreloaderUiNotification("You can't defuse while moving");
+        }
+    }
+
+    private static void HandlePlant(GamePlayerOwner owner, Player player, float time)
+    {
+        if (player.CurrentState is IdleStateClass)
+        {
+            Vector3 pos = GetBombPlantPosition(player);
+
+            Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planting, pos);
+
+            owner.ShowObjectivesPanel("Planting {0:F1}", time);
+
+            player.CurrentManagedState.Plant(true, false, time, async (success) =>
+            {
+                owner.CloseObjectivesPanel();
+
+                if (!success)
+                {
+                    Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.None, pos);
+                    return;
+                }
+
+                await H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, false);
+                Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planted, pos);
+
+                owner.ClearInteractionState();
+            });
+        }
+        else
+        {
+            owner.DisplayPreloaderUiNotification("You can't plant while moving");
+        }
+    }
+
+    private static bool TryFindItem(string templateId, out Item item)
+    {
+        item = H.MainPlayer.Profile.Inventory
+            .GetPlayerItems(EPlayerItems.InRaidItems)
+            .FirstOrDefault(i => i.TemplateId == templateId);
+
         return item != null;
     }
 
-    static Vector3 GetBombPlantPosition(Player player)
+    private static Vector3 GetBombPlantPosition(Player player)
     {
-        if (Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f, 0))
-            return hit.point;
-        return player.Position;
+        return Physics.Raycast(player.Position, Vector3.down, out RaycastHit hit, 1f)
+            ? hit.point
+            : player.Position;
     }
 }

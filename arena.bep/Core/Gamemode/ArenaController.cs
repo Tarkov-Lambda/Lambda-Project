@@ -12,6 +12,7 @@ using ifp.arena.shared;
 using MemoryPack;
 using System;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
 namespace ifp.arena.bep.Core.Gamemode;
@@ -32,6 +33,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public LambdaGamemode gamemode = null;
     public EconomyManager economyManager = new();
     public RespawnManager respawnManager = new();
+
+    private GameObject _hideoutLight;
 
     public float StateTimer;
     public double ServerPhaseStartSeconds, PhaseDurationSeconds;
@@ -112,6 +115,10 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             {
                 HU.ApplyPainkiller();
             }
+            else
+            {
+                CreateFullBrightHack();
+            }
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
@@ -121,6 +128,29 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
         NetworkTime.Reset();
+    }
+
+    void CreateFullBrightHack()
+    {
+        _hideoutLight = new GameObject("hideoutlight");
+
+        CreateDirLight(_hideoutLight.transform, new Vector3(90, 0, 0));
+        CreateDirLight(_hideoutLight.transform, new Vector3(-90, 0, 0));
+        CreateDirLight(_hideoutLight.transform, new Vector3(0, 90, 0));
+        CreateDirLight(_hideoutLight.transform, new Vector3(0, -90, 0));
+    }
+
+    void CreateDirLight(Transform parent, Vector3 rotation)
+    {
+        var go = new GameObject("DirLight");
+        go.transform.parent = parent;
+        go.transform.rotation = Quaternion.Euler(rotation);
+
+        var light = go.AddComponent<Light>();
+        light.type = UnityEngine.LightType.Directional;
+
+        light.intensity = 1.5f;
+        light.shadows = LightShadows.None;
     }
 
     public void EndSession()
@@ -138,6 +168,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         {
             UnityTicker.OnUpdate -= timeSyncTicker.Update;
             timeSyncTicker.Dispose();
+        }
+
+        if (_hideoutLight != null)
+        {
+            GameObject.Destroy(_hideoutLight);
         }
 
         if (_musicObject != null)

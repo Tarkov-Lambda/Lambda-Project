@@ -162,7 +162,7 @@ public class PlayerScore
     public bool IsControllerPartiallyLocked()
     {
         if (H.IsHeadless) return false;
-        if (H.GameWorld is HideoutGameWorld) return false;
+        if (!H.IsInRaid()) return false;
 
         var matchState = H.Session.matchState;
         if (matchState is MatchState.WarmupEnd ||

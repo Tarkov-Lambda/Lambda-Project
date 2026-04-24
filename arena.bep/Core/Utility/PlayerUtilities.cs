@@ -59,7 +59,6 @@ public static class PlayerUtilities
 
     public static void OpenEyes()
     {
-
         if (H.IsInRaid() && H.Session.matchState
         is MatchState.RoundEnd
         or MatchState.Cleanup
