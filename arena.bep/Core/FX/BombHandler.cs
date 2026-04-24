@@ -69,7 +69,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
     public void Update()
     {
         if (H.Arena == null) return;
-        if (H.ActiveRules is not SNDGamemode) return;
+        if (H.Gamemode is not SNDGamemode) return;
         if (H.Session == null) return;
         if (H.Sounds == null) return;
 

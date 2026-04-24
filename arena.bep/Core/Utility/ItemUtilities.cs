@@ -115,7 +115,7 @@ public static class ItemUtilities
                     {
                         D.LogInventory("Trying to remove an item");
 
-                        if (H.ActiveRules is IGMRespawnable)
+                        if (H.Gamemode is IGMRespawnable)
                         {
                             if (templateItem is Weapon)
                                 removed = await H.MainPlayer.TryPopWeaponAndMags(placement.Slot);

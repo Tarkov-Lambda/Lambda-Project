@@ -57,7 +57,7 @@ namespace ifp.arena.bep.Core.UI
 
         private async void OnMatchStateExit(MatchState state)
         {
-            if (H.ActiveRules is IGMBuyable buyableGamemode)
+            if (H.Gamemode is IGMBuyable buyableGamemode)
             {
                 if (state is MatchState.RoundPrepare)
                 {

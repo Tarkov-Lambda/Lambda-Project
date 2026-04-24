@@ -125,7 +125,7 @@ internal class Patch_InteractionContextHelper_GetAvailableActions_IInteractive :
             return false;
         }
 
-        if (H.ActiveRules is SNDGamemode && interactive is ObservedLootItem observedLootItem)
+        if (H.Gamemode is SNDGamemode && interactive is ObservedLootItem observedLootItem)
         {
             if (observedLootItem.TemplateId == SNDGamemode.bombTemplateId)
             {

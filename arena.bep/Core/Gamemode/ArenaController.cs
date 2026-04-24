@@ -3,6 +3,7 @@ using Fika.Core.Modding.Events;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
+using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.networking.TimeSync;
@@ -27,7 +28,7 @@ public partial struct RoundActionPhaseEnd
 public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager session;
-    public LambdaGamemode activeRules = null;
+    public LambdaGamemode gamemode = null;
     public EconomyManager economyManager = new();
     public RespawnManager respawnManager = new();
 
@@ -61,7 +62,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.OnGameDispose -= EndSession;
         OnFikaEvent -= ManageFikaEvents;
         EndSession();
-        session = null;
         Release(this);
     }
 
@@ -98,15 +98,18 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         if (!H.IsHeadless)
         {
-            // SteamAudioSourceAttacher.Initialize();
+            Physics.simulationMode = SimulationMode.FixedUpdate;
 
-            HU.ApplyPainkiller();
+            SteamAudioInitializer.AttachListenerIfNeeded();
+
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
+
+            PresetBundleHandler.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems().ToArray());
+            HU.ApplyPainkiller();
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
-            Physics.simulationMode = SimulationMode.FixedUpdate;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
-            SteamAudioInitializer.AttachListenerIfNeeded();
+
 
             PU.OpenEyes();
         }
@@ -121,7 +124,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         _currentState?.OnExit();
         _currentState = null;
 
-        // TODO: add session = null here
+        session = null;
 
         UnityTicker.OnUpdate -= Update;
 
@@ -164,7 +167,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
-        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.ActiveRules.StateTimerConfig[newStateType], roundEndData);
+        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Gamemode.StateTimerConfig[newStateType], roundEndData);
     }
 
     // Everyone runs this when the match state packet is approved
@@ -183,7 +186,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             NetworkTime.BootstrapFromServerStamp(packet.serverNowSeconds);
         }
 
-        PhaseDurationSeconds = H.ActiveRules.StateTimerConfig[packet.matchState];
+        PhaseDurationSeconds = H.Gamemode.StateTimerConfig[packet.matchState];
         ServerPhaseStartSeconds = packet.Timestamp;
 
         if (packet.roundActionEnd.HasValue)
@@ -193,7 +196,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
         session.matchState = packet.matchState;
-        _currentState = activeRules.CreateState(packet.matchState);
+        _currentState = gamemode.CreateState(packet.matchState);
 
         StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 

@@ -3,14 +3,20 @@ using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.shared.FX;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.FX;
 
 public class FXHandler : Singleton<FXHandler>, IDisposable
 {
-    public AssetBundle fxbundle { get; private set; }
-    private MolotovFXController prefabFire;
+    private const string FX_BUNDLE_NAME = "fx";
+    public readonly string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab";
+
+    public string FXBundlePath => Path.Combine(Plugin.pathToBundles, FX_BUNDLE_NAME);
+
+    public readonly AssetBundle FXBundle;
+    private readonly MolotovFXController MolotovFirePrefab;
 
     private Stack<MolotovFXController> molotovPool = new Stack<MolotovFXController>();
 
@@ -18,6 +24,9 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public FXHandler()
     {
+        FXBundle = AssetBundle.LoadFromFile(FXBundlePath);
+        MolotovFirePrefab = FXBundle.LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH).GetComponent<MolotovFXController>();
+
         H.OnGameStarted += Initialize;
         H.OnGameDispose += Dispose;
 
@@ -26,10 +35,18 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public void Initialize()
     {
-        fxbundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "fx"));
-        prefabFire = fxbundle.LoadAsset<GameObject>("Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab").GetComponent<MolotovFXController>();
         parentEffects = new GameObject("FX").transform;
         GameObject.DontDestroyOnLoad(parentEffects.gameObject);
+    }
+
+    public void Dispose()
+    {
+        if (parentEffects != null)
+            GameObject.Destroy(parentEffects.gameObject);
+
+        FXBundle.Unload(false);
+        molotovPool.Clear();
+        Release(this);
     }
 
     public MolotovFXController SpawnMolotov(Vector3 pos, float startRadius, float endRadius, float bloomDuration)
@@ -43,7 +60,7 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
         }
         else
         {
-            instance = GameObject.Instantiate(prefabFire, parentEffects);
+            instance = GameObject.Instantiate(MolotovFirePrefab, parentEffects);
         }
 
         instance.transform.position = pos;
@@ -57,14 +74,5 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
     {
         controller.gameObject.SetActive(false);
         molotovPool.Push(controller);
-    }
-
-    public void Dispose()
-    {
-        GameObject.Destroy(parentEffects.gameObject);
-
-        fxbundle.Unload(false);
-        molotovPool.Clear();
-        Release(this);
     }
 }

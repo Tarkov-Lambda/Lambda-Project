@@ -57,7 +57,7 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         {
             playerCameraController.enabled = true;
 
-            if (H.ActiveRules is IGMTeam and not IGMRespawnable)
+            if (H.Gamemode is IGMTeam and not IGMRespawnable)
             {
                 H.SpectatorManager.SwitchSpectatePlayer();
             }
@@ -131,7 +131,7 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
 
         playerClone.SetActive(true);
 
-        if (!player.IsYourPlayer && H.ActiveRules is not IGMRespawnable)
+        if (!player.IsYourPlayer && H.Gamemode is not IGMRespawnable)
         {
             PlayerBones cloneBones = playerClone.GetComponentInChildren<PlayerBones>();
             try

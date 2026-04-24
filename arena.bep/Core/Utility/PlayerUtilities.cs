@@ -58,7 +58,7 @@ public static class PlayerUtilities
     public static void OpenEyes()
     {
 
-        if (H.ActiveRules != null && H.Session.matchState
+        if (H.Gamemode != null && H.Session.matchState
         is MatchState.RoundEnd
         or MatchState.Cleanup
         or MatchState.SideSwap

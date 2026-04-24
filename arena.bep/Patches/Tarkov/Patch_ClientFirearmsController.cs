@@ -12,6 +12,7 @@ public class Patch_ClientFirearmController_CanPressTrigger : ModulePatch
     [PatchPrefix]
     static bool Prefix(ref bool __result)
     {
+        if (!H.IsInRaid()) return true;
         if (H.MainPlayerScore.IsControllerPartiallyLocked())
         {
             __result = false;

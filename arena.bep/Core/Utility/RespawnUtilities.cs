@@ -16,7 +16,7 @@ public static class RespawnUtilities
 
         var enemyPositions = GetAllEnemyPositions(respawningPlayer.Faction).ToList();
 
-        IRespawnWeights weights = (H.ActiveRules as IGMRespawnable)?.RespawnWeights;
+        IRespawnWeights weights = (H.Gamemode as IGMRespawnable)?.RespawnWeights;
         if (weights == null) return availableSpawnClusters.FirstOrDefault()?.transform.GetChild(0).position ?? Vector3.zero;
 
         Vector3 bestSpawnPoint = Vector3.zero;
@@ -52,13 +52,13 @@ public static class RespawnUtilities
 
         totalScore += safetyScore * weights.SafetyWeight;
 
-        if (weights.ObjectiveWeight > 0 && H.ActiveRules is IGMSingularActiveObjective singularObjectiveGamemode)
+        if (weights.ObjectiveWeight > 0 && H.Gamemode is IGMSingularActiveObjective singularObjectiveGamemode)
         {
             float objScore = RateObjectiveCloseness(spawnPoint, singularObjectiveGamemode.CurrentObjective, weights.IdealObjectiveDistance);
             totalScore += objScore * weights.ObjectiveWeight;
         }
 
-        if (weights.TeamCohesionWeight > 0 && H.ActiveRules is IGMTeam)
+        if (weights.TeamCohesionWeight > 0 && H.Gamemode is IGMTeam)
         {
             float teamScore = RateTeamCohesion(spawnPoint, respawningPlayer);
             totalScore += teamScore * weights.TeamCohesionWeight;
@@ -150,7 +150,7 @@ public static class RespawnUtilities
     {
         Faction enemyFaction;
 
-        if (H.ActiveRules is IGMTeam)
+        if (H.Gamemode is IGMTeam)
         {
             enemyFaction = ownFaction == Faction.CT ? Faction.T : Faction.CT;
         }

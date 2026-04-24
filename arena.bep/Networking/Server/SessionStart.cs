@@ -87,7 +87,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         Type type = GetLambdaGamemode(packet.gamemode);
         if (type != null)
         {
-            H.Arena.activeRules = (LambdaGamemode)Activator.CreateInstance(type);
+            H.Arena.gamemode = (LambdaGamemode)Activator.CreateInstance(type);
         }
         else
         {
@@ -107,7 +107,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         if (packet.gamemode == "SNDGamemode")
         {
-            H.Arena.activeRules = new SNDGamemode();
+            H.Arena.gamemode = new SNDGamemode();
         }
 
         // Type type = GetLambdaGamemode(packet.gamemode);

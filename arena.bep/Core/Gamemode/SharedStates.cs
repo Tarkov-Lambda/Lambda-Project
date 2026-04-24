@@ -39,7 +39,7 @@ public class SharedWarmup : IGameState
     public virtual MatchState? OnUpdate()
     {
         var remaining = H.Arena.StateTimer;
-        var total = H.ActiveRules.StateTimerConfig[MatchState.Warmup];
+        var total = H.Gamemode.StateTimerConfig[MatchState.Warmup];
         var elapsed = total - remaining;
 
         bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
@@ -70,7 +70,7 @@ public class SharedWarmupEnd : IGameState
         {
             UniTask.Void(async () =>
             {
-                await UniTask.Delay((int)H.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
+                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 1500);
                 PU.CloseEyes(false, false).Forget();
             });
         }
@@ -109,7 +109,7 @@ public class SharedCleanup : IGameState
 
                 int totalRounds = H.Session.factionWins.Values.Sum();
                 bool isHalfTime = false;
-                if (H.ActiveRules is IGMRound roundBased and IGMSideSwappable)
+                if (H.Gamemode is IGMRound roundBased and IGMSideSwappable)
                 {
                     isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
                 }
@@ -170,7 +170,7 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-        if (H.IsServer && H.ActiveRules != null && H.ActiveRules is SNDGamemode)
+        if (H.IsServer && H.Gamemode != null && H.Gamemode is SNDGamemode)
         {
             Singleton<BombAssignmentPacketHandler>.Instance.Send();
         }
@@ -191,7 +191,7 @@ public class SharedRoundEnd : IGameState
         {
             UniTask.Void(async () =>
             {
-                await UniTask.Delay((int)H.ActiveRules.StateTimerConfig[StateType] * 1000 - 1500);
+                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 1500);
                 PU.CloseEyes(false, false).Forget();
             });
         }
@@ -203,7 +203,7 @@ public class SharedRoundEnd : IGameState
 
         if (H.Arena.StateTimer <= 0)
         {
-            if (H.ActiveRules is IGMRound roundBasedGamemode)
+            if (H.Gamemode is IGMRound roundBasedGamemode)
             {
                 var wins = H.Session.factionWins;
 
@@ -236,7 +236,7 @@ public class SharedSideSwap : IGameState
     {
         H.Arena.economyManager.ResetEconomy();
 
-        if (H.ActiveRules is IGMSideSwappable sideSwappable)
+        if (H.Gamemode is IGMSideSwappable sideSwappable)
         {
             foreach (var player in H.AllPlayers)
             {
@@ -251,7 +251,7 @@ public class SharedSideSwap : IGameState
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
     public virtual void OnExit()
     {
-        (H.ActiveRules as IGMSideSwappable).HasSideSwapped = true;
+        (H.Gamemode as IGMSideSwappable).HasSideSwapped = true;
     }
 }
 

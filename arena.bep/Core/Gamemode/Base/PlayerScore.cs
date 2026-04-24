@@ -189,7 +189,7 @@ public class PlayerScore
 
     public void SpendMoney(int amount)
     {
-        if (H.ActiveRules is IGMBuyable)
+        if (H.Gamemode is IGMBuyable)
         {
             score.Money -= amount;
             if (Money < 0) score.Money = 0;
@@ -206,7 +206,7 @@ public class PlayerScore
 
     public bool CanBuy()
     {
-        if (H.ActiveRules is IGMBuyable buyable)
+        if (H.Gamemode is IGMBuyable buyable)
         {
             if (H.Session.matchState is MatchState.RoundPrepare) return true;
             if (buyable.CanBuyInActivePhase)

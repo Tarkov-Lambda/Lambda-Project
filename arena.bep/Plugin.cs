@@ -76,6 +76,7 @@ public class Plugin : BaseUnityPlugin
 
     private void RegisterSingleton<T>() where T : class, IDisposable, new()
     {
+        D.Log($"Registering {typeof(T).Name}");
         var instance = new T();
         Singleton<T>.Create(instance);
         _disposables.Add(instance);
@@ -89,8 +90,8 @@ public class Plugin : BaseUnityPlugin
     {
         try
         {
-            // await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
-            await UniTask.WaitUntil(() => H.IsInRaid());
+            await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
+            // await UniTask.WaitUntil(() => H.IsInRaid());
         }
         catch (OperationCanceledException)
         {
@@ -109,6 +110,8 @@ public class Plugin : BaseUnityPlugin
         BepInEx.Logging.Logger.Sources.Add(Logger);
         Logger.LogInfo("Load");
         InitConfiguration();
+
+        _cts = new CancellationTokenSource();
 
         // unregisterCommands = ConsoleScreen.Processor.RegisterCommandGroup<LambdaConsoleCommands>();
 
@@ -271,16 +274,14 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
             RegisterSingleton<MusicHandler>();                                      // Listens to ArenaController and plays music when necessary
-            // RegisterSingleton<RaymarchHandler>();
             RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
             _disposables.Add(new UIManager());  // not a singleton (fuck you) - тебе ебало разбить сука? не зли меня
 
-            var warmup = typeof(Ladder);
-            await RegisterSingletonInRaid<LadderManager>();                    // Overwrites Player Controller on Ladder Collision and moves them.
-            await RegisterSingletonInRaid<BombHandler>();                      // Handler for the entirety of Bomb's lifecycle
-            await RegisterSingletonInRaid<HardpointZoneManager>();             // Manages Hardpoint zones and synchronization
+            RegisterSingletonInRaid<LadderManager>().Forget();                    // Overwrites Player Controller on Ladder Collision and moves them.
+            RegisterSingletonInRaid<BombHandler>().Forget();                      // Handler for the entirety of Bomb's lifecycle
+            RegisterSingletonInRaid<HardpointZoneManager>().Forget();             // Manages Hardpoint zones and synchronization
 
             // H.MainPlayer.NukeResetHands();
         }
@@ -325,9 +326,9 @@ public class Plugin : BaseUnityPlugin
 
         if (UnfuckKey.Value.IsDown())
         {
-            H.MainPlayer.UnfuckHands();
+            H.MainPlayer.SetEmptyHands(delegate {});
             PU.OpenEyes();
-            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
+            // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
     }
 

@@ -43,7 +43,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
         if (readyState is PlayerReadinessState.Connected)
         {
-            packet.presetItems = PresetItemsCache.Instance.GetAllPresetItems().ToArray();
+            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
         }
 
         DispatchPacket(packet);

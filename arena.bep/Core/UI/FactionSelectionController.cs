@@ -28,7 +28,7 @@ namespace ifp.arena.bep.Core.UI
 
         void OnMatchStateEnter(MatchState matchState)
         {
-            if (matchState == MatchState.Warmup && H.ActiveRules is IGMTeam)
+            if (matchState == MatchState.Warmup && H.Gamemode is IGMTeam)
             {
                 ShowFactionSelectionEftScreen();
             }

@@ -6,13 +6,20 @@ using ifp.arena.bep.Patches.Tarkov.UI;
 using ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.UI;
 
 public class UIManager : IDisposable
 {
-    AssetBundle uibundle;
+    private const string UI_BUNDLE_NAME       =  "arenaui";
+    private const string MATCH_UI_PREFAB_PATH =  "Packages/com.ifp.arena.ui/ArenaMatchUI.prefab";
+    private const string UI_MATTE_PATH        =  "Packages/com.ifp.arena.ui/UIMatte.mat";
+
+    private static string UIAssetBundlePath   => Path.Combine(Plugin.pathToBundles, UI_BUNDLE_NAME);
+
+    private AssetBundle UIBundle;
 
     List<IDisposable> disposables = new();
 
@@ -53,7 +60,7 @@ public class UIManager : IDisposable
 
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = null;
 
-        uibundle.Unload(unloadAllLoadedObjects: false);
+        UIBundle.Unload(false);
     }
 
     void LoadUI(CommonUI commonUI)
@@ -62,15 +69,15 @@ public class UIManager : IDisposable
 
         BSGItemInfoProvider itemInfoProvider = new BSGItemInfoProvider();
 
-        uibundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(MapAssetBundleHandler.pathToBundlesDir, "arenaui"));
+        UIBundle = AssetBundle.LoadFromFile(UIAssetBundlePath);
 
-        GameObject prefabMatchUI = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/ArenaMatchUI.prefab");
+        GameObject prefabMatchUI = UIBundle.LoadAsset<GameObject>(MATCH_UI_PREFAB_PATH);
         matchUI = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
         matchUI.transform.SetAsFirstSibling();
 
         try
         {
-            disposables.Add(new LoadingScreenController(commonUI, uibundle));
+            disposables.Add(new LoadingScreenController(commonUI, UIBundle));
 
             disposables.Add(new ScoreboardController(matchUI.Scoreboard));
             disposables.Add(new TopBarController(matchUI.TopBar));
@@ -79,18 +86,18 @@ public class UIManager : IDisposable
             disposables.Add(new SelfDeathController(matchUI.DeathInfo));
             disposables.Add(new SpectatorController(matchUI.Spectator));
 
-            disposables.Add(new ShopUIController(commonUI, uibundle, itemInfoProvider));
-            disposables.Add(new NameplateController(commonUI, uibundle));
-            disposables.Add(new EditBuildController(commonUI, uibundle));
+            disposables.Add(new ShopUIController(commonUI, UIBundle, itemInfoProvider));
+            disposables.Add(new NameplateController(commonUI, UIBundle));
+            disposables.Add(new EditBuildController(commonUI, UIBundle));
 
-            disposables.Add(new FactionSelectionController(commonUI, uibundle));
+            disposables.Add(new FactionSelectionController(commonUI, UIBundle));
         }
         catch (Exception e)
         {
             Plugin.Logger.LogError(e);
         }
 
-        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = uibundle.LoadAsset<Material>("Packages/com.ifp.arena.ui/UIMatte.mat");
+        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = UIBundle.LoadAsset<Material>(UI_MATTE_PATH);
     }
 
 

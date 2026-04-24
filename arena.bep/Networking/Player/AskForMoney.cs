@@ -55,7 +55,7 @@ public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
 
     public void Send(string itemBsgId)
     {
-        if (H.ActiveRules is not IGMTeam) return;
+        if (H.Gamemode is not IGMTeam) return;
 
         var packet = new AskForMoneyPacket
         {
