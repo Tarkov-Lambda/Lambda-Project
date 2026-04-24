@@ -171,7 +171,7 @@ public class PlayerScore
             matchState is MatchState.SideSwap ||
             matchState is MatchState.Cleanup) return true;
 
-        if (!IsAlive && H.Session.level != "") return true;
+        if (!IsAlive) return true;
 
         return false;
     }

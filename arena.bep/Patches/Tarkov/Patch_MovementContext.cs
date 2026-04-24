@@ -10,6 +10,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using static EFT.MovementContext;
+using EFT.InventoryLogic;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
@@ -184,9 +185,10 @@ public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
 
     [PatchPrefix]
-    private static bool Prefix(MovementContext __instance)
+    private static bool Prefix(MovementContext __instance, bool isAiming, ref float slow)
     {
-        return false;
+        slow *= 1.15f;
+        return true;
     }
 }
 
@@ -195,9 +197,10 @@ public class Patch_MovementContext_method_15 : ModulePatch
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_15));
 
     [PatchPrefix]
-    private static bool Prefix(MovementContext __instance, float smoothDiff, float deltaTime)
+    private static bool Prefix(MovementContext __instance, ref float smoothDiff, ref float deltaTime)
     {
-        __instance.method_14(smoothDiff, deltaTime);
-        return false;
+        deltaTime *= 1.3f;
+        // __instance.method_14(smoothDiff, deltaTime);
+        return true;
     }
 }

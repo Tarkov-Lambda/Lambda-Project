@@ -175,8 +175,8 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new NostalgiaPatrolFixExitPatch());
         // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
         RegisterPatch(new Patch_MovementContext_GetNewState());                     // Change Movement State Classes
-        // RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());            // Do not slow down during aiming
-        // RegisterPatch(new Patch_MovementContext_method_15());                    // Old Leaning
+        RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());               // move in ads slightly faster
+        RegisterPatch(new Patch_MovementContext_method_15());                       // Faster Leaning
 
         RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking
         RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
