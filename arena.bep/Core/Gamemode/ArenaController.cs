@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using EFT;
 using Fika.Core.Modding.Events;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -50,7 +51,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public ArenaController()
     {
-        if (H.GameWorld != null) StartSession();
+        if (H.IsInRaid()) StartSession();
         H.OnGameStarted += StartSession;
         H.OnGameDispose += EndSession;
         OnFikaEvent += ManageFikaEvents;
@@ -106,7 +107,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
 
             PresetBundleHandler.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems().ToArray());
-            HU.ApplyPainkiller();
+
+            if (H.GameWorld is not HideoutGameWorld)
+            {
+                HU.ApplyPainkiller();
+            }
+
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
 

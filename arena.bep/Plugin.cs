@@ -326,8 +326,8 @@ public class Plugin : BaseUnityPlugin
 
         if (UnfuckKey.Value.IsDown())
         {
-            H.MainPlayer.SetEmptyHands(delegate { });
             PU.OpenEyes();
+            H.MainPlayer.SetEmptyHands(delegate { });
             // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
     }

@@ -64,8 +64,29 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
 
         await UniTask.WhenAll(loadTasks);
 
+        if (H.GameWorld is HideoutGameWorld && mapName != "lobby")
+        {
+            foreach (var scenePath in scenePaths)
+            {
+                Scene scene = SceneManager.GetSceneByPath(scenePath);
+                if (!scene.isLoaded) continue;
+
+                Vector3 offset = GetOffsetForScene(scenePath);
+
+                foreach (GameObject root in scene.GetRootGameObjects())
+                {
+                    root.transform.position += offset;
+                }
+            }
+        }
+
         if (mapName != "lobby")
             MapLoadEvent.OnSuccessfulLoad?.Invoke();
+    }
+
+    private Vector3 GetOffsetForScene(string scenePath)
+    {
+        return new Vector3(0, -330, 0);
     }
 
     public async UniTask<AssetBundle> LoadAssetBundle(string name)

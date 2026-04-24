@@ -4,6 +4,7 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 using PacketHandler.RateLimiting;
 using MemoryPack;
+using EFT;
 
 namespace ifp.arena.bep.networking.TimeSync;
 
@@ -46,6 +47,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer peer)
     {
+        if (H.GameWorld is HideoutGameWorld) return;
         if (H.IsClient)
             return;
 

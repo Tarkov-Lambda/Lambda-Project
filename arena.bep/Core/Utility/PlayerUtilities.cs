@@ -30,6 +30,8 @@ public static class PlayerUtilities
 
     public static async Task CloseEyes(bool playDeathAudio = true, bool openAfter = true, int closeDelay = 750, int openDelay = 4500)
     {
+        if (H.GameWorld is HideoutGameWorld) return;
+
         DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
         deathFade.enabled = true;
 
@@ -58,7 +60,7 @@ public static class PlayerUtilities
     public static void OpenEyes()
     {
 
-        if (H.Gamemode != null && H.Session.matchState
+        if (H.IsInRaid() && H.Session.matchState
         is MatchState.RoundEnd
         or MatchState.Cleanup
         or MatchState.SideSwap
@@ -66,7 +68,7 @@ public static class PlayerUtilities
         {
             return;
         }
-        
+
         DeathFade deathFade = CameraClass.Instance.Camera.GetComponent<DeathFade>();
         deathFade.enabled = true;
         deathFade.DisableEffect();

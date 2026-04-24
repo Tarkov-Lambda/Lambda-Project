@@ -33,58 +33,58 @@ public static class Helpers
 {
     // вертел я ваши анти паттерны
     // EFT Singleton pointers
-    public static GameWorld GameWorld                                   => Singleton<GameWorld>.Instance;
-    public static Class308 TarkovClientISession                         => Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
-    public static TarkovApplication TarkovApp                           => Singleton<ClientApplication<ISession>>.Instance as TarkovApplication;
+    public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
+    public static Class308 TarkovClientISession => Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
+    public static TarkovApplication TarkovApp => Singleton<ClientApplication<ISession>>.Instance as TarkovApplication;
 
-    public static PoolManagerClass PoolManagerClass                     => Singleton<PoolManagerClass>.Instance;
-    public static Effects Effects                                       => Singleton<Effects>.Instance;
-    public static RagdollCreator RagdollCreator                         => Singleton<RagdollCreator>.Instance;
-    public static BetterAudio BetterAudio                               => Singleton<BetterAudio>.Instance;
-    public static CommonUI CommonUI                                     => Singleton<CommonUI>.Instance;
-    public static PreloaderUI PreloaderUI                               => Singleton<PreloaderUI>.Instance;
+    public static PoolManagerClass PoolManagerClass => Singleton<PoolManagerClass>.Instance;
+    public static Effects Effects => Singleton<Effects>.Instance;
+    public static RagdollCreator RagdollCreator => Singleton<RagdollCreator>.Instance;
+    public static BetterAudio BetterAudio => Singleton<BetterAudio>.Instance;
+    public static CommonUI CommonUI => Singleton<CommonUI>.Instance;
+    public static PreloaderUI PreloaderUI => Singleton<PreloaderUI>.Instance;
     public static BackendConfigSettingsClass BackendConfigSettingsClass => Singleton<BackendConfigSettingsClass>.Instance;
-    public static IFikaGame IFikaGame                                   => Singleton<IFikaGame>.Instance;
-    public static SharedGameSettingsClass SharedGameSettingsClass       => Singleton<SharedGameSettingsClass>.Instance;
-    public static CustomizationSolverClass CustomizationSolverClass     => Singleton<CustomizationSolverClass>.Instance;
-    public static IEasyAssets IEasyAssets                               => Singleton<IEasyAssets>.Instance;
-    public static GUISounds EFTGUISounds                                => Singleton<GUISounds>.Instance;
+    public static IFikaGame IFikaGame => Singleton<IFikaGame>.Instance;
+    public static SharedGameSettingsClass SharedGameSettingsClass => Singleton<SharedGameSettingsClass>.Instance;
+    public static CustomizationSolverClass CustomizationSolverClass => Singleton<CustomizationSolverClass>.Instance;
+    public static IEasyAssets IEasyAssets => Singleton<IEasyAssets>.Instance;
+    public static GUISounds EFTGUISounds => Singleton<GUISounds>.Instance;
 
     // EFT Main Player
-    public static Player MainPlayer                                     => GetMainPlayer();
-    public static Inventory MainInventory                               => IsInRaid() ? MainPlayer.Inventory : null;
-    public static InventoryController MainInventoryController           => IsInRaid() ? MainPlayer.InventoryController : null;
+    public static Player MainPlayer => GetMainPlayer();
+    public static Inventory MainInventory => IsInRaid() ? MainPlayer.Inventory : null;
+    public static InventoryController MainInventoryController => IsInRaid() ? MainPlayer.InventoryController : null;
 
     // Fika
-    public static NetPeer NetPeer                                       => Singleton<NetPeer>.Instance;
-    public static IFikaNetworkManager FikaNet                           => Singleton<IFikaNetworkManager>.Instance;
-    public static NetPacketProcessor NetPacketProcessor                 => GetPacketProcessor();
-    public static NetManager NetManager                                 => GetNetManager();
+    public static NetPeer NetPeer => Singleton<NetPeer>.Instance;
+    public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
+    public static NetPacketProcessor NetPacketProcessor => GetPacketProcessor();
+    public static NetManager NetManager => GetNetManager();
 
-    public static bool IsHeadless                                       => FikaBackendUtils.IsHeadless;
-    public static bool IsClient                                         => FikaBackendUtils.IsClient;
-    public static bool IsServer                                         => FikaBackendUtils.IsServer;
+    public static bool IsHeadless => GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
+    public static bool IsClient => FikaBackendUtils.IsClient;
+    public static bool IsServer => GameWorld is HideoutGameWorld || FikaBackendUtils.IsServer;
 
     // Internal Pointers
-    public static ArenaController Arena                                 => Singleton<ArenaController>.Instance;
-    public static SessionManager Session                                => Arena.session;
-    public static LambdaGamemode Gamemode                               => Arena.gamemode;
+    public static ArenaController Arena => Singleton<ArenaController>.Instance;
+    public static SessionManager Session => Arena.session;
+    public static LambdaGamemode Gamemode => Arena.gamemode;
 
-    public static Dictionary<int, PlayerScore> Scoreboard               => Singleton<ArenaController>.Instance.session.scoreboard;
-    public static PlayerScore MainPlayerScore                           => GetMainPlayerScore();
-    public static List<Player> AllTeammates                             => Session.GetPlayersFromFaction(H.MainPlayerScore.Faction);
-    public static List<PlayerScore> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
-    public static List<Player> AllPlayers                               => IsInRaid() ? GetAllPlayers() : new();
+    public static Dictionary<int, PlayerScore> Scoreboard => Singleton<ArenaController>.Instance.session.scoreboard;
+    public static PlayerScore MainPlayerScore => GetMainPlayerScore();
+    public static List<Player> AllTeammates => Session.GetPlayersFromFaction(H.MainPlayerScore.Faction);
+    public static List<PlayerScore> AllTeammateScores => Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
+    public static List<Player> AllPlayers => IsInRaid() ? GetAllPlayers() : new();
 
-    public static AudioHandler AudioHandler                             => IsInRaid() ? Singleton<AudioHandler>.Instance : null;
-    public static LambdaSounds Sounds                                   => IsInRaid() ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
-    public static MusicKit MusicKit                                     => IsInRaid() ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
+    public static AudioHandler AudioHandler => IsInRaid() ? Singleton<AudioHandler>.Instance : null;
+    public static LambdaSounds Sounds => IsInRaid() ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
+    public static MusicKit MusicKit => IsInRaid() ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
 
-    public static BombHandler BombHandler                               => IsInRaid() ? Singleton<BombHandler>.Instance : null;
-    public static FXHandler FXHandler                                   => IsInRaid() ? Singleton<FXHandler>.Instance : null;
-    public static SpectatorManager SpectatorManager                     => IsInRaid() ? Singleton<SpectatorManager>.Instance : null;
-    public static MapAssetBundleHandler MapAssetBundleHandler           => Singleton<MapAssetBundleHandler>.Instance;
-    public static WeaponPresetManager WeaponPresetManager               => Singleton<WeaponPresetManager>.Instance;
+    public static BombHandler BombHandler => IsInRaid() ? Singleton<BombHandler>.Instance : null;
+    public static FXHandler FXHandler => IsInRaid() ? Singleton<FXHandler>.Instance : null;
+    public static SpectatorManager SpectatorManager => IsInRaid() ? Singleton<SpectatorManager>.Instance : null;
+    public static MapAssetBundleHandler MapAssetBundleHandler => Singleton<MapAssetBundleHandler>.Instance;
+    public static WeaponPresetManager WeaponPresetManager => Singleton<WeaponPresetManager>.Instance;
 
     // When the player fully spawns into the raid; after raid spawn countdown timer is 0 (Geneburn - Countdown reference)
     public static event Action OnGameStarted
@@ -174,8 +174,11 @@ public static class Helpers
 
     public static bool IsInRaid()
     {
-        // D.Log((GameWorld != null && GameWorld is not HideoutGameWorld).ToString());
+#if DEBUG
+        return GameWorld != null;
+#else
         return GameWorld != null && GameWorld is not HideoutGameWorld;
+#endif
     }
 
 

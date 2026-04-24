@@ -24,6 +24,8 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
 
         H.OnGameStarted += Initialize;
         H.OnGameDispose += ResetCache;
+
+        if(H.IsInRaid()) Initialize();
         // SessionStartPacketHandler.BeforePacketApplied += ResetCache;
     }
 

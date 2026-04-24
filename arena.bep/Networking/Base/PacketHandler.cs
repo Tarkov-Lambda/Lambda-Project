@@ -154,6 +154,13 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (!H.IsInRaid()) return;
 
+        if (H.GameWorld is HideoutGameWorld)
+        {
+            LocalPredictApproved(packet);
+            WhenApproved(packet, null);
+            return;
+        }
+
         // early nopout from sending packets that we aren't allowed to send anyways
         if (!H.IsHeadless)
         {

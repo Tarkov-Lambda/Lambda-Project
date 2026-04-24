@@ -128,6 +128,8 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         NetworkTime.Reset();
 
+        D.Dump(packet.presetItems);
+
         PresetBundleHandler.Instance.AddToCache(packet.presetItems);
 
         await UniTask.WhenAll(
