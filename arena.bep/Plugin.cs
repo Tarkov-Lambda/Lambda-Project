@@ -5,6 +5,7 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.UI;
+using HarmonyLib;
 using ifp.arena.audio;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -117,34 +118,35 @@ public class Plugin : BaseUnityPlugin
         _unityTickListner = new GameObject("UnityTickListener").AddComponent<UnityTicker>();
         DontDestroyOnLoad(_unityTickListner.gameObject);
 
-        // Steam Audio
-        if (!H.IsHeadless) SteamAudioInitializer.Initialize();
-
         // AUDIO
-        // RegisterPatch(new Patch_ReverbSimpleSource_MuteClientReverb());
-        // RegisterPatch(new Patch_ReverbSimpleSource_Play_Bypass());
-        // RegisterPatch(new Patch_MetaXR_EnableSpatialization());                  // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn / respawn).
-        // RegisterPatch(new Patch_SpatialAudioSystem_method_29());                 
-        RegisterPatch(new Patch_AudioSource_set_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
-        RegisterPatch(new Patch_AudioSource_get_spatialize());                   // Force internal spatialization off and redirect the real value to the DSP bridge
-        RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-        RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-        // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // Bypass MetaXR Occlusion
-        RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
-        RegisterPatch(new Patch_BetterSource_ResetOcclusion());
-        // RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());
+        if (!H.IsHeadless)
+        {
+            SteamAudioInitializer.Initialize();
+            RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
+            RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
+            RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
+            RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+            RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
+            // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());       // Bypass MetaXR Occlusion
+            // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
+            // RegisterPatch(new Patch_BetterSource_ResetOcclusion());
+            // RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());
 
-        RegisterPatch(new Patch_SimpleSource_Play());
-        RegisterPatch(new Patch_SuperSource_Play());
-        RegisterPatch(new Patch_ReverbSimpleSource_Play());
-        RegisterPatch(new Patch_ReverbSuperSource_Play());
-        RegisterPatch(new Patch_BetterSource_Play());
+            RegisterPatch(new Patch_SimpleSource_Play());                               // Audio Source Routing
+            RegisterPatch(new Patch_SuperSource_Play());                                // Audio Source Routing
+            RegisterPatch(new Patch_ReverbSimpleSource_Play());                         // Audio Source Routing
+            RegisterPatch(new Patch_ReverbSuperSource_Play());                          // Audio Source Routing
+            RegisterPatch(new Patch_BetterSource_Play());                               // Audio Source Routing
+            RegisterPatch(new Patch_BetterSource_PlayScheduled());                      // Audio Source Routing
+            RegisterPatch(new Patch_SimpleSource_PlayScheduled());                      // Audio Source Routing
+            RegisterPatch(new Patch_ReverbSuperSource_PlayScheduled());                 // Audio Source Routing
 
+            RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
 
-        RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
-        RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
-        RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
+            RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
+            RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
+            RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
+        }
 
         // RegisterPatch(new AudioDiscovery_Play_Patch());
 
@@ -165,7 +167,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());      // Override Blindfire Animation
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
 
-        RegisterPatch(new Patch_Class1396_method_3());                              // In edge cases where the hands controller gets bugged out - we hard reset it
+        // RegisterPatch(new Patch_Class1396_method_3());                              // In edge cases where the hands controller gets bugged out - we hard reset it
         // RegisterPatch(new Patch_GClass2037_Start());                              // In edge cases where the hands controller gets bugged out - we hard reset it
 
         RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
@@ -283,7 +285,7 @@ public class Plugin : BaseUnityPlugin
             await RegisterSingletonInRaid<BombHandler>();                      // Handler for the entirety of Bomb's lifecycle
             await RegisterSingletonInRaid<HardpointZoneManager>();             // Manages Hardpoint zones and synchronization
 
-            H.MainPlayer.NukeResetHands();
+            // H.MainPlayer.NukeResetHands();
         }
         catch (Exception ex)
         {
@@ -309,7 +311,7 @@ public class Plugin : BaseUnityPlugin
 
         DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
         RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
-        DumpKey = Config.Bind("Debug", "DumpKey", new KeyboardShortcut(KeyCode.F4));
+        DumpKey = Config.Bind("Debug", "Unfuck Key", new KeyboardShortcut(KeyCode.F4), "Use this key to unfuck yourself");
     }
 
     private void Update()
@@ -324,10 +326,11 @@ public class Plugin : BaseUnityPlugin
             Singleton<SessionStartPacketHandler>.Instance.Send();
         }
 
-        // if (DumpKey.Value.IsDown())
-        // {
-        //     .DumpNearbyAudioSources();
-        // }
+        if (DumpKey.Value.IsDown())
+        {
+            H.MainPlayer.NukeResetHands();
+            H.MainPlayer.ForceUnlockInventory();
+        }
     }
 
     void OnDestroy()

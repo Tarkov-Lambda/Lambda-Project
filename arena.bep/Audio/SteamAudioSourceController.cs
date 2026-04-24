@@ -1,13 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using Audio.ReverbSubsystem;
-using Comfort.Common;
-using Cysharp.Threading.Tasks;
 using EFT;
 using HarmonyLib;
-using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.shared;
 using SteamAudio;
 using UnityEngine;
@@ -21,11 +15,11 @@ public struct SteamSourceData
 
 public static class SteamAudioSourceController
 {
-    public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
-
-    // High-performance direct-memory access delegates eliminating Reflection overhead
     public static AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef =
         AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
+
+    public static AccessTools.FieldRef<BetterSource, bool> ForceStereoRef =
+        AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
 
     public static AccessTools.FieldRef<ReverbSimpleSource, AudioSource> ReverbSimpleSourceFieldRef =
         AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>("_reverbSource");
@@ -37,6 +31,8 @@ public static class SteamAudioSourceController
         AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
 
     private static readonly Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
+
+    public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
 
     public static SteamSourceData GetOrAdd(AudioSource audioSource)
     {
@@ -67,9 +63,12 @@ public static class SteamAudioSourceController
         steamAudio.occlusionSamples = 8;
         steamAudio.transmissionType = TransmissionType.FrequencyDependent;
         steamAudio.transmissionInput = TransmissionInput.UserDefined;
-        steamAudio.transmissionHigh = 0.2f;
-        steamAudio.transmissionMid = 0.4f;
-        steamAudio.transmissionLow = 0.5f;
+        // steamAudio.transmissionHigh = 0.2f;
+        // steamAudio.transmissionMid = 0.4f;
+        // steamAudio.transmissionLow = 0.5f;
+        steamAudio.transmissionHigh = 0.5f;
+        steamAudio.transmissionMid = 0.65f;
+        steamAudio.transmissionLow = 0.75f;
         steamAudio.reflections = false;
 
         audioSource.spatialize = initialSpatialize;
@@ -82,7 +81,6 @@ public static class SteamAudioSourceController
     {
         if (mixer == null) return false;
 
-        // Cache bypass results to eliminate expensive string processing
         if (MixerBypassCache.TryGetValue(mixer, out bool bypassed))
             return bypassed;
 
@@ -96,23 +94,23 @@ public static class SteamAudioSourceController
         return bypassed;
     }
 
-    public static void RouteAudioSource(BetterSource betterSource, AudioClip clip1, bool forceStereo)
+    public static void RouteBetterSource(BetterSource betterSource, bool? forceStereoOverride = null)
     {
-        bool shouldBypassSteamAudio = forceStereo;
+        if (betterSource == null || betterSource.source1 == null) return;
 
-        if (!shouldBypassSteamAudio)
+        bool forceStereo = forceStereoOverride ?? ForceStereoRef(betterSource);
+        bool shouldBypassSteamAudio = false;
+
+        var preset = PresetRef(betterSource);
+        if (preset != null)
         {
-            var preset = PresetRef(betterSource);
-            if (preset != null)
+            var type = preset.Type;
+            if (type == BetterAudio.AudioSourceGroupType.Nonspatial ||
+                type == BetterAudio.AudioSourceGroupType.NonspatialBypass ||
+                type == BetterAudio.AudioSourceGroupType.Environment ||
+                type == BetterAudio.AudioSourceGroupType.OutEnvironment)
             {
-                var type = preset.Type;
-                if (type == BetterAudio.AudioSourceGroupType.Nonspatial ||
-                    type == BetterAudio.AudioSourceGroupType.NonspatialBypass ||
-                    type == BetterAudio.AudioSourceGroupType.Environment ||
-                    type == BetterAudio.AudioSourceGroupType.OutEnvironment)
-                {
-                    shouldBypassSteamAudio = true;
-                }
+                shouldBypassSteamAudio = true;
             }
         }
 
@@ -121,7 +119,11 @@ public static class SteamAudioSourceController
             shouldBypassSteamAudio = IsMixerBypassed(betterSource.source1.outputAudioMixerGroup);
         }
 
-        // Send logic directly without allocating array/list caches to drastically lower heap activity
+        // D.Log(betterSource.source1.outputAudioMixerGroup.name);
+        // D.Log(betterSource.source1.spatialize.ToString());
+        // D.Log(betterSource.source1.spatialBlend.ToString());
+        // D.Log(shouldBypassSteamAudio.ToString());
+
         ProcessAudioSource(betterSource.source1, shouldBypassSteamAudio);
 
         if (betterSource is ReverbSimpleSource reverbSimpleSource)

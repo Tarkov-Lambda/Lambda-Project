@@ -143,7 +143,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
 internal class MusicObject : MonoBehaviour
 {
-    public float MaxVolume = 0.25f;
+    public float MaxVolume = 0.18f;
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;
