@@ -179,11 +179,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         // inside AfterServerApprovesPacket occurs. make sure nothing stupid is implemented here
         LocalPredictApproved(packet);
 
-        if (H.IsServer)
-        {
-            // nobody magically applies this packet on the server so we need to invoke this function manually
-            AfterServerApprovesPacket(ref packet, null);
-        }
 
         // this is slightly misleading inside this function
         // but sometimes we will send data to another client without even applying it serverside
@@ -194,6 +189,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         else
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
+            if (H.IsServer)
+            {
+                // nobody magically applies this packet on the server so we need to invoke this function manually
+                AfterServerApprovesPacket(ref packet, null);
+            }
         }
     }
 
