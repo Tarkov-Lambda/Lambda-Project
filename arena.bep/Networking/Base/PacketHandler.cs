@@ -132,6 +132,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         return false;
     }
 
+    // SERVER ONLY
     protected void DispatchPacketToPeer(T packet, NetPeer peer)
     {
         if (!H.IsInRaid()) return;
@@ -174,20 +175,25 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (ShouldLog) D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 #endif
 
+        // this function is invoked before any kind of packet mutation
+        // inside AfterServerApprovesPacket occurs. make sure nothing stupid is implemented here
+        LocalPredictApproved(packet);
+
+        if (H.IsServer)
+        {
+            // nobody magically applies this packet on the server so we need to invoke this function manually
+            AfterServerApprovesPacket(ref packet, null);
+        }
+
+        // this is slightly misleading inside this function
+        // but sometimes we will send data to another client without even applying it serverside
         if (targetPeer != null)
         {
             H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
         }
         else
         {
-            LocalPredictApproved(packet);
-
             H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
-            if (H.IsServer)
-            {
-                // WhenServerReceivesPacket(packet, H.NetPeer);
-                WhenApproved(packet, H.NetPeer);
-            }
         }
     }
 
@@ -213,7 +219,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-        if (!EvaluatePacket(ref packet, peer, out string rejectionReason))
+        if (!ValidatePacket(ref packet, peer, out string rejectionReason))
         {
             SendRejection(ref packet, peer, rejectionReason);
             return;
@@ -222,17 +228,20 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         AfterServerApprovesPacket(ref packet, peer);
     }
 
+    // this function is virtual in case we want to mutate the packet right before applying it
     protected virtual void AfterServerApprovesPacket(ref T packet, NetPeer peer)
     {
-
-        if (ShouldBroadcastApprovalsToAll(packet))
+        // peer is null in case we invoke this in DispatchPacket as the server
+        if (peer != null)
         {
-            H.FikaNet.SendData(ref packet, deliveryMethod, true);
-        }
-        else
-        {
-            // removing for now
-            // H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
+            if (ShouldBroadcastApprovalsToAll(packet))
+            {
+                H.FikaNet.SendData(ref packet, deliveryMethod, true);
+            }
+            else
+            {
+                H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
+            }
         }
 
         TryInvokeAction(BeforePacketApplied, packet);
@@ -367,7 +376,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // optional packet validation
     // though this adds a bit of boilerplate, it's a good practice to explain rejection.
-    protected virtual bool EvaluatePacket(ref T packet, NetPeer peer, out string rejectionReason)
+    protected virtual bool ValidatePacket(ref T packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
         return true;

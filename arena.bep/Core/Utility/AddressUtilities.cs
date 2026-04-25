@@ -23,9 +23,6 @@ public readonly struct ItemPlacement(PlacementKind kind, EquipmentSlot slot = de
     public static readonly ItemPlacement None                                    =  new(PlacementKind.None);
 }
 
-// 1. ClientRequestGiveItem client checks it can make room, then sends SpawnItemPacket
-// 2. SpawnItemPacketHandler server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
-// 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
 public static class AddressUtilities
 {
     public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch
@@ -102,7 +99,7 @@ public static class AddressUtilities
             return ItemPlacement.None;
         }
 
-        // Prefer 1x1 grids for 1x1 items
+        // prefer 1x1 grids for 1x1 items
         if (isOneByOne)
         {
             var placement = FindPlacement(allContainers, g => g.GridWidth == 1 && g.GridHeight == 1);
@@ -110,7 +107,7 @@ public static class AddressUtilities
                 return placement;
         }
 
-        // Fallback to any grid
+        // fallback to any grid
         return FindPlacement(allContainers, _ => true);
     }
 }

@@ -51,7 +51,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         DispatchPacketToPeer(packet, peer);
     }
 
-    protected override bool EvaluatePacket(ref MatchStateSyncPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(ref MatchStateSyncPacket packet, NetPeer peer, out string rejectionReason)
     {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;

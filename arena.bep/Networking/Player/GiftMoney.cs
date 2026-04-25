@@ -50,7 +50,7 @@ public class GiftMoneyPacketHandler : PacketHandler<GiveMoneyPacket>
         }
     }
 
-    protected override bool EvaluatePacket(ref GiveMoneyPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(ref GiveMoneyPacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
 

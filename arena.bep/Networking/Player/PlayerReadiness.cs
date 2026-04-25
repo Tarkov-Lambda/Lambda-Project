@@ -59,7 +59,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool EvaluatePacket(ref PlayerReadinessPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(ref PlayerReadinessPacket packet, NetPeer peer, out string rejectionReason)
     {
         if (packet.presetItems != null)
         {

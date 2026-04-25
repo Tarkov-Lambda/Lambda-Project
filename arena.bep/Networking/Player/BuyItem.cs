@@ -15,7 +15,6 @@ using System.Threading;
 
 namespace ifp.arena.bep.networking;
 
-// Struct remains unchanged...
 public struct BuyItemPacket : INetSerializable, IAuthoredPacket
 {
     public Player Player { get; set; }
@@ -58,7 +57,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool EvaluatePacket(ref BuyItemPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(ref BuyItemPacket packet, NetPeer peer, out string rejectionReason)
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {
@@ -136,14 +135,13 @@ public static class PlayerInventoryTimeGate
     private class PlayerQueue
     {
         private readonly ConcurrentQueue<Action> _queue = new();
-        private int _isProcessing = 0; // 0 = false, 1 = true
+        private int _isProcessing = 0; // 0/1 false/true
 
         public void Enqueue(Action action)
         {
             _queue.Enqueue(action);
 
-            // If the loop isn't running, start it. Interlocked ensures thread-safety 
-            // so multiple packets arriving at the exact same millisecond don't spawn two loops.
+            // if the loop isn't running - start it
             if (Interlocked.Exchange(ref _isProcessing, 1) == 0)
             {
                 ProcessQueueAsync().Forget();
@@ -170,10 +168,10 @@ public static class PlayerInventoryTimeGate
             }
             finally
             {
-                // Mark as stopped
+                // narkd as stopped
                 Interlocked.Exchange(ref _isProcessing, 0);
 
-                // Double-check: if a packet was enqueued exactly as we were stopping, restart the loop.
+                // if a packet was enqueued exactly as we were stopping, restart the loop.
                 if (!_queue.IsEmpty && Interlocked.Exchange(ref _isProcessing, 1) == 0)
                 {
                     ProcessQueueAsync().Forget();

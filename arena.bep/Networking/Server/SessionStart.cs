@@ -83,7 +83,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         DispatchPacketToPeer(packet, peer);
     }
 
-    protected override bool EvaluatePacket(ref SessionStartPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(ref SessionStartPacket packet, NetPeer peer, out string rejectionReason)
     {
         Type type = GetLambdaGamemode(packet.gamemode);
         if (type != null)
@@ -97,7 +97,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         }
 
         packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
-        return base.EvaluatePacket(ref packet, peer, out rejectionReason);
+        return base.ValidatePacket(ref packet, peer, out rejectionReason);
     }
 
     protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
