@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking;
@@ -10,13 +7,6 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
 using PacketHandler;
 using ifp.arena.shared.Models;
-using System.Linq;
-using Fika.Core.Main.Players;
-using Fika.Core.Main.ObservedClasses;
-using HarmonyLib;
-using System.Reflection;
-using System.Collections.Concurrent;
-using ifp.arena.bep.Core.UI;
 
 namespace ifp.arena.bep.networking;
 
@@ -95,7 +85,6 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         rejectionReason = null;
         return true;
     }
-
 
     protected override void WhenApproved(BuyItemPacket packet, NetPeer peer)
     {

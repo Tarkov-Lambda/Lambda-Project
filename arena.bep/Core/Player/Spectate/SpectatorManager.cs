@@ -37,6 +37,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         UnityTicker.OnLateUpdate -= onUpdate;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
+        PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKilled;
         StopSpectating();
         Release(this);
     }
@@ -98,7 +99,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
         // Suspend modifying the camera if we are currently watching a corpse fall
         // Let FakeCorpse.Update() drive the camera directly.
-        if (observedCorpse != null) return; 
+        if (observedCorpse != null) return;
 
         Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
         Vector3 offset = observedPlayerCameraTransform.position;
@@ -130,12 +131,12 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
                 .ToList();
 
             // FALLBACK: If everyone in your faction is dead, get everyone else who isn't a spectator
-            if (validPlayersToSpectate.Count == 0)
-            {
-                validPlayersToSpectate = H.Scoreboard.Values
-                    .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
-                    .ToList();
-            }
+            // if (validPlayersToSpectate.Count == 0)
+            // {
+            //     validPlayersToSpectate = H.Scoreboard.Values
+            //         .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
+            //         .ToList();
+            // }
         }
 
         // If there is literally no one alive to watch, stop spectating

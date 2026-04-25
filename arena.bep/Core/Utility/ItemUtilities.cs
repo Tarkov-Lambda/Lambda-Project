@@ -195,7 +195,17 @@ public static class ItemUtilities
 
     public static void WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
     {
+        if (placement.Kind == PlacementKind.EquipmentSlot && item is Weapon)
+        {
+            player.HandsController?.FastForwardCurrentState();
+        }
+
         player.PlaceItem(item, placement);
+
+        // if (placement.Kind == PlacementKind.EquipmentSlot && item is Weapon)
+        // {
+        //     player.HandsController?.FastForwardCurrentState();
+        // }
 
         if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
         if (player.IsYourPlayer) AudioHandler.PlayEquipSound(item);

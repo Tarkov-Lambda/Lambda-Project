@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using ifp.arena.bep.Core.Gamemode;
+using EFT;
 
 namespace ifp.arena.bep.networking;
 
@@ -142,6 +143,9 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             // Main player is ready
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
         }
+
+        // Player venom = H.GetPlayerByName("venom");
+        // H.Arena.handsAnimatorDebugger.Init(venom);
     }
 
     private Type GetLambdaGamemode(string gamemode)

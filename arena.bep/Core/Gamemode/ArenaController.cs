@@ -2,6 +2,7 @@
 using EFT;
 using Fika.Core.Modding.Events;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.bep.Core.Debug;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
@@ -50,6 +51,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     private TimeSyncTicker timeSyncTicker;
 
+    // public HandsAnimatorDebugger handsAnimatorDebugger;
+
     public GameObject _musicObject;
 
     public ArenaController()
@@ -95,6 +98,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         timeSyncTicker = new TimeSyncTicker();
         UnityTicker.OnUpdate += timeSyncTicker.Update;
+
+        // handsAnimatorDebugger = new HandsAnimatorDebugger();
 
         // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
 
@@ -180,6 +185,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             UnityEngine.Object.Destroy(_musicObject);
             _musicObject = null;
         }
+
+        // if (handsAnimatorDebugger != null)
+        // {
+        //     handsAnimatorDebugger.Dispose();
+        //     handsAnimatorDebugger = null;
+        // }
     }
 
     public void Update()
