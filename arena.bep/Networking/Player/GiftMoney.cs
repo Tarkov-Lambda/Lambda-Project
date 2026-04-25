@@ -71,7 +71,7 @@ public class GiftMoneyPacketHandler : PacketHandler<GiveMoneyPacket>
         return false;
     }
 
-    protected override async void WhenApproved(GiveMoneyPacket packet, NetPeer peer)
+    protected override async void Apply(GiveMoneyPacket packet, NetPeer peer)
     {
         if (BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData))
         {

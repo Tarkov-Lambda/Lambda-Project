@@ -73,7 +73,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         return true;
     }
 
-    protected override void WhenApproved(PlayerReadinessPacket packet, NetPeer peer)
+    protected override void Apply(PlayerReadinessPacket packet, NetPeer peer)
     {
         PlayerScore playerScore = H.GetPlayerScore(packet.Player);
         if (playerScore == null)

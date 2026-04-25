@@ -51,8 +51,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldLog => true; // Debugging
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
 
-    public static Action<T> BeforePacketApplied;
-    public static Action<T> AfterPacketApplied;
+    public static event Action<T> BeforePacketApplied;
+    public static event Action<T> AfterPacketApplied;
 
     protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Anyone)
     {
@@ -139,6 +139,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         DispatchPacket(packet, peer);
     }
 
+    // SERVER ONLY
+    // idk I need this
     protected void DispatchPacketToPlayer(T packet, Player player)
     {
         if (!H.IsInRaid()) return;
@@ -160,7 +162,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (H.GameWorld is HideoutGameWorld)
         {
             LocalPredictApproved(packet);
-            WhenApproved(packet, null);
+            Apply(packet, null);
             return;
         }
 #endif
@@ -181,19 +183,20 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
 
         // this is slightly misleading inside this function
-        // but sometimes we will send data to another client without even applying it serverside
+        // but sometimes we will send data to another client without ever applying it serverside
+        // decision must be made here
         if (targetPeer != null)
         {
             H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
         }
         else
         {
-            H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
             if (H.IsServer)
             {
                 // nobody magically applies this packet on the server so we need to invoke this function manually
-                AfterServerApprovesPacket(ref packet, null);
+                BroadcastAndApply(ref packet, null);
             }
+            H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
         }
     }
 
@@ -206,10 +209,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (!TryPassServerRateLimit(packet, peer))
             return;
 
-        // idk what the best action here is, but for now we just drop
         if (IsUnauthorized(peer.Id))
         {
-            D.Log("Unauthorized Packet, dropping");
+            SendRejection(ref packet, peer, $"You are not authorized to send {typeof(T).Name}");
             return;
         }
 
@@ -228,13 +230,13 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
 
         // we approved the packet
-        AfterServerApprovesPacket(ref packet, peer);
+        BroadcastAndApply(ref packet, peer);
     }
 
     // this function is the central place of "mutate right before applying anywhere by anyone"
-    // if server wants to make sure that a packet has very specific info made by the server
+    // if server wants to make sure that a packet has very specific info made by the server no matter if it was originally dispatched by the server or client
     // we override and mutate the packet, and then invoke the base method to broadcast/apply it normally.
-    protected virtual void AfterServerApprovesPacket(ref T packet, NetPeer peer)
+    protected virtual void BroadcastAndApply(ref T packet, NetPeer peer)
     {
         // peer is null in case we invoke this in DispatchPacket as the server
         if (peer != null)
@@ -250,7 +252,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
 
         TryInvokeAction(BeforePacketApplied, packet);
-        WhenApproved(packet, peer);
+        Apply(packet, peer);
         TryInvokeAction(AfterPacketApplied, packet);
     }
 
@@ -263,7 +265,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 #endif
 
         TryInvokeAction(BeforePacketApplied, packet);
-        WhenApproved(packet, peer);
+        Apply(packet, peer);
         TryInvokeAction(AfterPacketApplied, packet);
     }
 
@@ -281,7 +283,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
     }
 
-    // TODO: this must be throttled for non ReliableOrdered/high freq shit
+    // TODO: throttle this per player
     protected void SendRejection(ref T packet, NetPeer peer, string rejectionReason = null)
     {
         var rejected = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
@@ -373,8 +375,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
                 return false;
             }
 
-            // Anti Spoofing (admins are allowed to spoof I guess tho?)
-            // if (authoredPacket.Player != peer.Player && peer.Player.GetScore().IsAdmin == false)
+            // if (authoredPacket.Player != peer.Player)
             // {
             //     rejectionReason = "You can't send packets for other players";
             //     return false;
@@ -400,7 +401,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // ENTRY POINT
     // packet type specific way of applying the received packet
-    protected abstract void WhenApproved(T packet, NetPeer peer);
+    protected abstract void Apply(T packet, NetPeer peer);
 
     // OPTIONAL
     // kinda only using this to notify or negate anything done in ClientPrediction

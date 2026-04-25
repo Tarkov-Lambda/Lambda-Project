@@ -24,7 +24,7 @@ public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacke
 
     protected override bool ShouldLog => false;
 
-    protected override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
+    protected override void Apply(TimeSyncResponsePacket packet, NetPeer peer)
     {
         if (H.IsServer)
             return;

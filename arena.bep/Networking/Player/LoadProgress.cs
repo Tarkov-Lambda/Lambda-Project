@@ -37,7 +37,7 @@ public class LoadProgressPacketHandler : PacketHandler<LoadProgressPacket>
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(LoadProgressPacket packet, NetPeer peer)
+    protected override void Apply(LoadProgressPacket packet, NetPeer peer)
     {
         packet.Player.GetScore()?.ChangeProgress(packet.progress);
     }

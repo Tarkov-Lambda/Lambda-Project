@@ -63,7 +63,7 @@ public class InventoryCounterResyncPacketHandler : PacketHandler<InventoryCounte
         catch (OperationCanceledException) { }
     }
 
-    protected override void WhenApproved(InventoryCounterResyncPacket packet, NetPeer peer)
+    protected override void Apply(InventoryCounterResyncPacket packet, NetPeer peer)
     {
         if (packet.Player.IsYourPlayer) return;
 

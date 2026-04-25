@@ -73,7 +73,7 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
         DispatchPacketToPeer(FormatPacket(), peer);
     }
 
-    protected override void WhenApproved(SessionManagerSyncPacket packet, NetPeer peer)
+    protected override void Apply(SessionManagerSyncPacket packet, NetPeer peer)
     {
         if (H.IsServer) return;
 

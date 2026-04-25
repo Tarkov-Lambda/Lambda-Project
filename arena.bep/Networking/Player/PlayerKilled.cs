@@ -92,7 +92,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         HandleKill(packet);
     }
 
-    protected override void WhenApproved(PlayerKilledPacket packet, NetPeer peer)
+    protected override void Apply(PlayerKilledPacket packet, NetPeer peer)
     {
         HandleKill(packet);
     }

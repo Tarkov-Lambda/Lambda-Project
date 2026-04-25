@@ -38,7 +38,7 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
     }
 
     // P.S this is extremely bad practice and I need to refactor item spawning to be less trustful
-    protected override void WhenApproved(BombAssignmentPacket packet, NetPeer peer)
+    protected override void Apply(BombAssignmentPacket packet, NetPeer peer)
     {
         if (!packet.Player.IsYourPlayer) return;
         

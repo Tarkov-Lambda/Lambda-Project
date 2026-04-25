@@ -45,7 +45,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(TimeSynchronizationPacket packet, NetPeer peer)
+    protected override void Apply(TimeSynchronizationPacket packet, NetPeer peer)
     {
         if (H.GameWorld is HideoutGameWorld) return;
         if (H.IsClient)

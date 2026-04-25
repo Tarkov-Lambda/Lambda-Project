@@ -86,7 +86,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         }
     }
 
-    protected override void WhenApproved(AdminAuthPacket packet, NetPeer peer)
+    protected override void Apply(AdminAuthPacket packet, NetPeer peer)
     {
         if (packet.Step == AdminAuthStep.Challenge)
         {

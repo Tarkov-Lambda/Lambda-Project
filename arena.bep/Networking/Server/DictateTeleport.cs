@@ -35,7 +35,7 @@ public class DictateTeleportHandler : PacketHandler<DictateTeleport>
         DispatchPacketToPlayer(packet, player);
     }
 
-    protected override void WhenApproved(DictateTeleport packet, NetPeer peer)
+    protected override void Apply(DictateTeleport packet, NetPeer peer)
     {
         // for AI teleportation
         if (H.IsServer)

@@ -41,7 +41,7 @@ public class PlayersPingPacketHandler : PacketHandler<PlayersPingPacket>
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(PlayersPingPacket packet, NetPeer peer)
+    protected override void Apply(PlayersPingPacket packet, NetPeer peer)
     {
         foreach (var syncScore in packet.scores)
         {

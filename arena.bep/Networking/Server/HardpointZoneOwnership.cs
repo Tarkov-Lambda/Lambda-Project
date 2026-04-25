@@ -33,7 +33,7 @@ public class ZoneOwnershipPacketHandler : PacketHandler<ZoneOwnershipPacket>
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(ZoneOwnershipPacket packet, NetPeer peer)
+    protected override void Apply(ZoneOwnershipPacket packet, NetPeer peer)
     {
         if (H.IsServer) return;
 

@@ -21,7 +21,7 @@ public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
 {
     public void Send() => DispatchPacket(new ReplenishPacket { Player = H.MainPlayer, });
 
-    protected override void WhenApproved(ReplenishPacket packet, NetPeer peer)
+    protected override void Apply(ReplenishPacket packet, NetPeer peer)
     {
         RU.Replenish(packet.Player);
     }

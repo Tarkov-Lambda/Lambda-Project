@@ -45,14 +45,9 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         var packet = new BuyItemPacket
         {
             Player = H.MainPlayer,
-            Item = item,
+            Item = item, // this item is only a template, the server clones it before application
             placement = placement,
         };
-
-        if (H.IsServer)
-        {
-            packet.Item = packet.Item.CloneItem();
-        }
 
         DispatchPacket(packet);
     }
@@ -77,7 +72,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
     }
 
     // I don't like this but I'm genuinely tired and I need to create a queue
-    protected override void AfterServerApprovesPacket(ref BuyItemPacket packet, NetPeer peer)
+    protected override void BroadcastAndApply(ref BuyItemPacket packet, NetPeer peer)
     {
         packet.Item = packet.Item.CloneItem();
 
@@ -85,17 +80,19 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         NetPeer queuedPeer = peer;
         int playerId = packet.Player.Id;
 
+        // this queue exists to avoid spamming the eft inventory system and cause state bugs both locally and or through the lens of an observer.
         PlayerInventoryTimeGate.Enqueue(playerId, () =>
         {
+            // we must check placement right before we broadcast and apply it to avoid inventory bugs
             var placement = AU.GetItemPlacement(queuedPacket.Item, queuedPacket.Player);
             if (queuedPacket.placement.Address != placement.Address)
                 queuedPacket.placement = placement;
 
-            base.AfterServerApprovesPacket(ref queuedPacket, queuedPeer);
+            base.BroadcastAndApply(ref queuedPacket, queuedPeer);
         });
     }
 
-    protected override void WhenApproved(BuyItemPacket packet, NetPeer peer)
+    protected override void Apply(BuyItemPacket packet, NetPeer peer)
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {

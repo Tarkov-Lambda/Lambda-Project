@@ -42,7 +42,7 @@ public class CustomGrenadeExplosionPacketHandler : PacketHandler<CustomGrenadeEx
         DispatchPacket(packet);
     }
 
-    protected override async void WhenApproved(CustomGrenadeExplosionPacket packet, NetPeer peer)
+    protected override async void Apply(CustomGrenadeExplosionPacket packet, NetPeer peer)
     {
         // Singleton<RaymarchHandler>.Instance.Raymarcher.smokeVoxelData.HandleSmokeThrow(packet.explosionPos);
         Molotov.Spawn(packet).Forget();

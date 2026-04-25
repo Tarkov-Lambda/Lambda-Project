@@ -39,7 +39,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         return H.Session.matchState == MatchState.RoundPrepare;
     }
 
-    protected override void WhenApproved(PausePacket packet, NetPeer peer)
+    protected override void Apply(PausePacket packet, NetPeer peer)
     {
         MatchStateSyncPacket matchStateSyncPacket = new MatchStateSyncPacket
         {

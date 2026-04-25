@@ -32,7 +32,7 @@ public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(BlindFirePacket packet, NetPeer peer)
+    protected override void Apply(BlindFirePacket packet, NetPeer peer)
     {
         if (packet.Player == null || packet.Player.IsYourPlayer) return;
 

@@ -100,7 +100,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         return base.ValidatePacket(packet, peer, out rejectionReason);
     }
 
-    protected override async void WhenApproved(SessionStartPacket packet, NetPeer peer)
+    protected override async void Apply(SessionStartPacket packet, NetPeer peer)
     {
         PrepareForStart(packet);
 

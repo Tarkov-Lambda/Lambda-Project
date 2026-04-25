@@ -38,7 +38,7 @@ public class RaiseErrorPacketHandler : PacketHandler<RaiseErrorPacket>
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(RaiseErrorPacket packet, NetPeer peer)
+    protected override void Apply(RaiseErrorPacket packet, NetPeer peer)
     {
         if (packet.Player == null)
         {

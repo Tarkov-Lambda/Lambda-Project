@@ -72,7 +72,7 @@ public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
         playerToItem[packet.Player] = packet.ItemBsgId;
     }
 
-    protected override async void WhenApproved(AskForMoneyPacket packet, NetPeer peer)
+    protected override async void Apply(AskForMoneyPacket packet, NetPeer peer)
     {
         if (packet.Player.IsYourPlayer) return;
 

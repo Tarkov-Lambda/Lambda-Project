@@ -62,7 +62,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         H.BombHandler.PlayBombAudio(packet);
     }
 
-    protected override void WhenApproved(BombStatePacket packet, NetPeer peer)
+    protected override void Apply(BombStatePacket packet, NetPeer peer)
     {
         H.Session.bombState = packet.state;
 

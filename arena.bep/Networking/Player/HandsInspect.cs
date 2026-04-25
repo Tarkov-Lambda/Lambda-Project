@@ -21,7 +21,7 @@ public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
 {
     public void Send() => DispatchPacket(new HandsInspectPacket { Player = H.MainPlayer, });
 
-    protected override void WhenApproved(HandsInspectPacket packet, NetPeer peer)
+    protected override void Apply(HandsInspectPacket packet, NetPeer peer)
     {
         if (packet.Player.IsYourPlayer) return;
 

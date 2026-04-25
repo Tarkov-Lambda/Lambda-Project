@@ -58,7 +58,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         return true;
     }
 
-    protected override void WhenApproved(MatchStateSyncPacket packet, NetPeer peer)
+    protected override void Apply(MatchStateSyncPacket packet, NetPeer peer)
     {
         H.Arena.TransitionToState(packet);
     }

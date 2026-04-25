@@ -84,7 +84,7 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
         return true;
     }
 
-    protected override void WhenApproved(FactionChangePacket packet, NetPeer peer)
+    protected override void Apply(FactionChangePacket packet, NetPeer peer)
     {
         if (packet.Player.IsYourPlayer) _cts?.Cancel();
 

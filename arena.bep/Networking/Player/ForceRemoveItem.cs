@@ -62,7 +62,7 @@ public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
     //     IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
     // }
 
-    protected override async void WhenApproved(PopPacket packet, NetPeer peer)
+    protected override async void Apply(PopPacket packet, NetPeer peer)
     {
         try
         {

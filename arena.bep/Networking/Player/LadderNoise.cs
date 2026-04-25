@@ -38,7 +38,7 @@ public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
         MakeLadderNoise(H.MainPlayer, packet);
     }
 
-    protected override void WhenApproved(LadderNoisePacket packet, NetPeer peer)
+    protected override void Apply(LadderNoisePacket packet, NetPeer peer)
     {
         if (packet.Player.IsYourPlayer) return;
 

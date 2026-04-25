@@ -29,7 +29,7 @@ public class WeatherAndTimePacketHandler : PacketHandler<WeatherAndTimePacket>
         DispatchPacket(packet);
     }
 
-    protected override void WhenApproved(WeatherAndTimePacket packet, NetPeer peer)
+    protected override void Apply(WeatherAndTimePacket packet, NetPeer peer)
     {
         DateTime currentDateTime = H.GameWorld.GameDateTime.Calculate();
         DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);

@@ -50,7 +50,7 @@ public class TemplatePacketHandler : PacketHandler<TemplatePacket>
         return true;
     }
 
-    protected override void WhenApproved(TemplatePacket packet, NetPeer peer)
+    protected override void Apply(TemplatePacket packet, NetPeer peer)
     {
         // D.Notify($"{packet}");
     }
