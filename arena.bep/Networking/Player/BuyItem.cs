@@ -57,7 +57,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool ValidatePacket(ref BuyItemPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(BuyItemPacket packet, NetPeer peer, out string rejectionReason)
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {

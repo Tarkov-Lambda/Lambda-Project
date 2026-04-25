@@ -213,22 +213,27 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
+        // making sure interfaced packets are truthful
         if (!SanitizeMetadata(ref packet, peer, out string sanitizationRejectionReason))
         {
             SendRejection(ref packet, peer, sanitizationRejectionReason);
             return;
         }
 
-        if (!ValidatePacket(ref packet, peer, out string rejectionReason))
+        // packet specific serverside validation of incoming packets
+        if (!ValidatePacket(packet, peer, out string rejectionReason))
         {
             SendRejection(ref packet, peer, rejectionReason);
             return;
         }
 
+        // we approved the packet
         AfterServerApprovesPacket(ref packet, peer);
     }
 
-    // this function is virtual in case we want to mutate the packet right before applying it
+    // this function is the central place of "mutate right before applying anywhere by anyone"
+    // if server wants to make sure that a packet has very specific info made by the server
+    // we override and mutate the packet, and then invoke the base method to broadcast/apply it normally.
     protected virtual void AfterServerApprovesPacket(ref T packet, NetPeer peer)
     {
         // peer is null in case we invoke this in DispatchPacket as the server
@@ -276,6 +281,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
     }
 
+    // TODO: this must be throttled for non ReliableOrdered/high freq shit
     protected void SendRejection(ref T packet, NetPeer peer, string rejectionReason = null)
     {
         var rejected = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
@@ -284,9 +290,14 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer peer)
     {
-        D.Log($"Server Rejected {GetType().Name}");
-        if (!string.IsNullOrEmpty(rejectedPacket.rejectionReason))
-            D.Log(rejectedPacket.rejectionReason);
+        if (ShouldLog)
+        {
+            D.Log($"Server Rejected {GetType().Name}");
+            if (!string.IsNullOrEmpty(rejectedPacket.rejectionReason))
+            {
+                D.Log(rejectedPacket.rejectionReason);
+            }
+        }
 
         if (ShouldNotifyAboutRejection && !string.IsNullOrEmpty(rejectedPacket.rejectionReason))
         {
@@ -376,7 +387,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // optional packet validation
     // though this adds a bit of boilerplate, it's a good practice to explain rejection.
-    protected virtual bool ValidatePacket(ref T packet, NetPeer peer, out string rejectionReason)
+    protected virtual bool ValidatePacket(T packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
         return true;

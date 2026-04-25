@@ -67,7 +67,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool ValidatePacket(ref AdminAuthPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(AdminAuthPacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
         

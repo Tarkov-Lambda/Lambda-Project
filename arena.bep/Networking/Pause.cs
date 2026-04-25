@@ -32,7 +32,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
         DispatchPacket(packet);
     }
 
-    protected override bool ValidatePacket(ref PausePacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(PausePacket packet, NetPeer peer, out string rejectionReason)
     {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;
