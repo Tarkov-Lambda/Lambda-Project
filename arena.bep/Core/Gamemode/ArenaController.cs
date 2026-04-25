@@ -138,7 +138,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     void CreateFullBrightHack()
     {
         _hideoutLight = new GameObject("hideoutlight");
-
+        
         CreateDirLight(_hideoutLight.transform, new Vector3(90, 0, 0));
         CreateDirLight(_hideoutLight.transform, new Vector3(-90, 0, 0));
         CreateDirLight(_hideoutLight.transform, new Vector3(0, 90, 0));
@@ -154,7 +154,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         var light = go.AddComponent<Light>();
         light.type = UnityEngine.LightType.Directional;
 
-        light.intensity = 1.5f;
+        light.intensity = 0.5f;
         light.shadows = LightShadows.None;
     }
 

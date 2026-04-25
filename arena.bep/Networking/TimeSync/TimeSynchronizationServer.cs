@@ -22,6 +22,8 @@ public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacke
 {
     public TimeSyncResponsePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
+    protected override bool ShouldLog => false;
+
     protected override void WhenApproved(TimeSyncResponsePacket packet, NetPeer peer)
     {
         if (H.IsServer)

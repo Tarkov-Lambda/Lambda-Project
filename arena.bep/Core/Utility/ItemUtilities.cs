@@ -81,6 +81,12 @@ public static class ItemUtilities
     {
         if (H.IsHeadless) return false;
 
+        if (H.MainPlayer.MovementContext.CurrentState is not IdleStateClass)
+        {
+            D.Notify("You can't buy when moving");
+            return false;
+        }
+
         await _lock.WaitAsync();
 
         try

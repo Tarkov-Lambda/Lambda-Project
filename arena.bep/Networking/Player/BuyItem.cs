@@ -7,9 +7,15 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
 using PacketHandler;
 using ifp.arena.shared.Models;
+using Cysharp.Threading.Tasks.Triggers;
+using System.Collections.Concurrent;
+using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
 
 namespace ifp.arena.bep.networking;
 
+// Struct remains unchanged...
 public struct BuyItemPacket : INetSerializable, IAuthoredPacket
 {
     public Player Player { get; set; }
@@ -67,23 +73,27 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             }
         }
 
-        var placement = AU.GetItemPlacement(packet.Item, packet.Player);
-        if (packet.placement.Address != placement.Address)
-        {
-            packet.placement = placement;
-        }
-
-        // if (placement.Address.Container.ParentItem != null)
-        // {
-        //     rejectionReason = "Container can not accept this item";
-        //     return false;
-        // }
-
-        // Server deals with cloning
-        packet.Item = packet.Item.CloneItem();
-
         rejectionReason = null;
         return true;
+    }
+
+    // I don't like this but I'm genuinely tired and I need to create a queue
+    protected override void AfterServerApprovesPacket(ref BuyItemPacket packet, NetPeer peer)
+    {
+        packet.Item = packet.Item.CloneItem();
+
+        BuyItemPacket queuedPacket = packet;
+        NetPeer queuedPeer = peer;
+        int playerId = packet.Player.Id;
+
+        PlayerInventoryTimeGate.Enqueue(playerId, () =>
+        {
+            var placement = AU.GetItemPlacement(queuedPacket.Item, queuedPacket.Player);
+            if (queuedPacket.placement.Address != placement.Address)
+                queuedPacket.placement = placement;
+
+            base.AfterServerApprovesPacket(ref queuedPacket, queuedPeer);
+        });
     }
 
     protected override void WhenApproved(BuyItemPacket packet, NetPeer peer)
@@ -104,6 +114,71 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         if (BuyMenuSelection.TryGetItemData(packet.Item.TemplateId, out ShopItem itemData))
         {
             H.MainPlayerScore.AddMoney(itemData.price);
+        }
+    }
+}
+
+public static class PlayerInventoryTimeGate
+{
+    private static readonly ConcurrentDictionary<int, PlayerQueue> _playerQueues = new();
+
+    public static void Enqueue(int playerId, Action action)
+    {
+        var queue = _playerQueues.GetOrAdd(playerId, _ => new PlayerQueue());
+        queue.Enqueue(action);
+    }
+
+    public static void ClearAll()
+    {
+        _playerQueues.Clear();
+    }
+
+    private class PlayerQueue
+    {
+        private readonly ConcurrentQueue<Action> _queue = new();
+        private int _isProcessing = 0; // 0 = false, 1 = true
+
+        public void Enqueue(Action action)
+        {
+            _queue.Enqueue(action);
+
+            // If the loop isn't running, start it. Interlocked ensures thread-safety 
+            // so multiple packets arriving at the exact same millisecond don't spawn two loops.
+            if (Interlocked.Exchange(ref _isProcessing, 1) == 0)
+            {
+                ProcessQueueAsync().Forget();
+            }
+        }
+
+        private async UniTaskVoid ProcessQueueAsync()
+        {
+            try
+            {
+                while (_queue.TryDequeue(out var action))
+                {
+                    try
+                    {
+                        action?.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        D.LogError($"[PlayerInventoryTimeGate] Error processing packet: {ex}");
+                    }
+
+                    await UniTask.Delay(25);
+                }
+            }
+            finally
+            {
+                // Mark as stopped
+                Interlocked.Exchange(ref _isProcessing, 0);
+
+                // Double-check: if a packet was enqueued exactly as we were stopping, restart the loop.
+                if (!_queue.IsEmpty && Interlocked.Exchange(ref _isProcessing, 1) == 0)
+                {
+                    ProcessQueueAsync().Forget();
+                }
+            }
         }
     }
 }

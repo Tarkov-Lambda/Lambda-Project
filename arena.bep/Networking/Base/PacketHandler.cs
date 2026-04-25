@@ -10,6 +10,7 @@ using ifp.arena.bep.networking;
 using EFT;
 using Fika.Core.Main.Players;
 using System.Runtime.CompilerServices;
+using Cysharp.Threading.Tasks;
 
 namespace PacketHandler;
 
@@ -50,8 +51,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldLog => true; // Debugging
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
 
-    public static event Action<T> BeforePacketApplied;
-    public static event Action<T> AfterPacketApplied;
+    public static Action<T> BeforePacketApplied;
+    public static Action<T> AfterPacketApplied;
 
     protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Anyone)
     {
@@ -154,12 +155,14 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (!H.IsInRaid()) return;
 
+#if DEBUG
         if (H.GameWorld is HideoutGameWorld)
         {
             LocalPredictApproved(packet);
             WhenApproved(packet, null);
             return;
         }
+#endif
 
         // early nopout from sending packets that we aren't allowed to send anyways
         if (!H.IsHeadless)
@@ -216,6 +219,12 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
+        AfterServerApprovesPacket(ref packet, peer);
+    }
+
+    protected virtual void AfterServerApprovesPacket(ref T packet, NetPeer peer)
+    {
+
         if (ShouldBroadcastApprovalsToAll(packet))
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
@@ -236,8 +245,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (!H.IsInRaid() || H.FikaNet == null) return;
 
 #if DEBUG
-        if (this is not TimeSyncResponsePacketHandler)
-            D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
+        if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 #endif
 
         TryInvokeAction(BeforePacketApplied, packet);

@@ -127,9 +127,9 @@ public class Plugin : BaseUnityPlugin
             RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
             RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
             RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-            RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // Bypass MetaXR Occlusion
-            RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
-            RegisterPatch(new Patch_BetterSource_ResetOcclusion());
+            // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // Bypass MetaXR Occlusion
+            // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
+            // RegisterPatch(new Patch_BetterSource_ResetOcclusion());
 
             RegisterPatch(new Patch_SimpleSource_Play());                               // Audio Source Routing
             RegisterPatch(new Patch_SuperSource_Play());                                // Audio Source Routing
