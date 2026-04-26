@@ -69,8 +69,18 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             packet.presetItems = null;
         }
 
-        rejectionReason = null;
-        return true;
+        return base.ValidatePacket(packet, peer, out rejectionReason);
+    }
+
+    protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, NetPeer peer)
+    {
+        if (packet.presetItems != null)
+        {
+            // This information is often redundant and other players don't need it here
+            // we will broadcast the non-redundant item manifest in SessionStart
+            PresetBundleHandler.Instance.AddToCache(packet.presetItems);
+            packet.presetItems = null;
+        }
     }
 
     protected override void Apply(PlayerReadinessPacket packet, NetPeer peer)

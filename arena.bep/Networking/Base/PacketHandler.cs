@@ -9,8 +9,6 @@ using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
 using EFT;
 using Fika.Core.Main.Players;
-using System.Runtime.CompilerServices;
-using Cysharp.Threading.Tasks;
 
 namespace PacketHandler;
 
@@ -50,6 +48,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected virtual bool ShouldLog => true; // Debugging
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
+
+    protected virtual bool ShouldProcessInstantly => true;
 
     public static event Action<T> BeforePacketApplied;
     public static event Action<T> AfterPacketApplied;
@@ -181,6 +181,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         // inside AfterServerApprovesPacket occurs. make sure nothing stupid is implemented here
         LocalPredictApproved(packet);
 
+        MutateApprovedPacket(ref packet, null);
 
         // this is slightly misleading inside this function
         // but sometimes we will send data to another client without ever applying it serverside
@@ -193,8 +194,14 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         {
             if (H.IsServer)
             {
-                // nobody magically applies this packet on the server so we need to invoke this function manually
-                BroadcastAndApply(ref packet, null);
+                if (ShouldProcessInstantly)
+                {
+                    BroadcastAndApply(ref packet, null);
+                }
+                else
+                {
+                    ProcessApprovedPacket(packet, null);
+                }
             }
             H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
         }
@@ -229,16 +236,32 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-        // we approved the packet
+
+        if (ShouldProcessInstantly)
+        {
+            MutateApprovedPacket(ref packet, peer);
+            BroadcastAndApply(ref packet, peer);
+        }
+        else
+        {
+            ProcessApprovedPacket(packet, peer);
+        }
+    }
+
+    // this function is the central place of "mutate right before applying anywhere made by anyone"
+    protected virtual void MutateApprovedPacket(ref T packet, NetPeer peer) { }
+
+    // in case we need to control when the packet is broadcasted and applied on the server
+    // YOU MUST HANDLE MUTATIONS MANUALLY HERE
+    protected virtual void ProcessApprovedPacket(T packet, NetPeer peer)
+    {
+        MutateApprovedPacket(ref packet, peer);
         BroadcastAndApply(ref packet, peer);
     }
 
-    // this function is the central place of "mutate right before applying anywhere by anyone"
-    // if server wants to make sure that a packet has very specific info made by the server no matter if it was originally dispatched by the server or client
-    // we override and mutate the packet, and then invoke the base method to broadcast/apply it normally.
-    protected virtual void BroadcastAndApply(ref T packet, NetPeer peer)
+    protected void BroadcastAndApply(ref T packet, NetPeer peer)
     {
-        // peer is null in case we invoke this in DispatchPacket as the server
+        // peer is null only in case we invoke this in DispatchPacket as the server
         if (peer != null)
         {
             if (ShouldBroadcastApprovalsToAll(packet))
@@ -363,7 +386,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldBroadcastApprovalsToAll(T packet) => true;
 
     // OPTIONAL
-    // core generic sanitization/validation
+    // core sanitization
     protected virtual bool SanitizeMetadata(ref T packet, NetPeer peer, out string rejectionReason)
     {
         // Anti-Spoofing

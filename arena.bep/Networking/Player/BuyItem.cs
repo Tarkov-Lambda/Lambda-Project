@@ -7,7 +7,6 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
 using PacketHandler;
 using ifp.arena.shared.Models;
-using Cysharp.Threading.Tasks.Triggers;
 using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
 using System;
@@ -40,6 +39,8 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
 
+    protected override bool ShouldProcessInstantly => false;
+
     public void Send(Item item, ItemPlacement placement)
     {
         var packet = new BuyItemPacket
@@ -67,28 +68,27 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             }
         }
 
-        rejectionReason = null;
-        return true;
+        return base.ValidatePacket(packet, peer, out rejectionReason);
     }
 
-    // I don't like this but I'm genuinely tired and I need to create a queue
-    protected override void BroadcastAndApply(ref BuyItemPacket packet, NetPeer peer)
+    protected override void MutateApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
     {
         packet.Item = packet.Item.CloneItem();
+    }
 
-        BuyItemPacket queuedPacket = packet;
-        NetPeer queuedPeer = peer;
+    protected override void ProcessApprovedPacket(BuyItemPacket packet, NetPeer peer)
+    {
         int playerId = packet.Player.Id;
 
-        // this queue exists to avoid spamming the eft inventory system and cause state bugs both locally and or through the lens of an observer.
         PlayerInventoryTimeGate.Enqueue(playerId, () =>
         {
-            // we must check placement right before we broadcast and apply it to avoid inventory bugs
-            var placement = AU.GetItemPlacement(queuedPacket.Item, queuedPacket.Player);
-            if (queuedPacket.placement.Address != placement.Address)
-                queuedPacket.placement = placement;
+            var placement = AU.GetItemPlacement(packet.Item, packet.Player);
+            if (packet.placement.Address != placement.Address)
+            {
+                packet.placement = placement;
+            }
 
-            base.BroadcastAndApply(ref queuedPacket, queuedPeer);
+            BroadcastAndApply(ref packet, peer);
         });
     }
 

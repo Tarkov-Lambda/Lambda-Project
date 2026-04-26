@@ -46,8 +46,8 @@ public class TemplatePacketHandler : PacketHandler<TemplatePacket>
 
     protected override bool ValidatePacket(TemplatePacket packet, NetPeer peer, out string rejectionReason)
     {
-        rejectionReason = null;
-        return true;
+        return base.ValidatePacket(packet, peer, out rejectionReason);
+
     }
 
     protected override void Apply(TemplatePacket packet, NetPeer peer)

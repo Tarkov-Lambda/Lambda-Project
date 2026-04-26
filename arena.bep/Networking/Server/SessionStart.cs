@@ -96,20 +96,19 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             return false;
         }
 
-        packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
         return base.ValidatePacket(packet, peer, out rejectionReason);
+    }
+
+    protected override void MutateApprovedPacket(ref SessionStartPacket packet, NetPeer peer)
+    {
+        packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
     }
 
     protected override async void Apply(SessionStartPacket packet, NetPeer peer)
     {
         PrepareForStart(packet);
 
-        D.LogTransaction("Starting a match");
-
-        if (packet.gamemode == "SNDGamemode")
-        {
-            H.Arena.gamemode = new SNDGamemode();
-        }
+        H.Arena.gamemode = GetGamemodeByName(packet.gamemode);
 
         // Type type = GetLambdaGamemode(packet.gamemode);
         // if (type != null)
@@ -129,8 +128,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         NetworkTime.Reset();
 
-        D.Dump(packet.presetItems);
-
         PresetBundleHandler.Instance.AddToCache(packet.presetItems);
 
         await UniTask.WhenAll(
@@ -143,9 +140,34 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             // Main player is ready
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
         }
+    }
 
-        // Player venom = H.GetPlayerByName("venom");
-        // H.Arena.handsAnimatorDebugger.Init(venom);
+    private LambdaGamemode GetGamemodeByName(string gamemodeName)
+    {
+        LambdaGamemode gamemode;
+
+        if (gamemodeName == "SNDGamemode")
+        {
+            gamemode = new SNDGamemode();
+        }
+        else if (gamemodeName == "DuelGamemode")
+        {
+            gamemode = new SNDGamemode();
+        }
+        else if (gamemodeName == "FFAGamemode")
+        {
+            gamemode = new FFAGamemode();
+        }
+        else if (gamemodeName == "HardpointGamemode")
+        {
+            gamemode = new HardpointGamemode();
+        }
+        else
+        {
+            gamemode = null;
+        }
+
+        return gamemode;
     }
 
     private Type GetLambdaGamemode(string gamemode)

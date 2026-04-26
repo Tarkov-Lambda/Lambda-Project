@@ -31,6 +31,10 @@ public class HardpointZoneManager : Singleton<HardpointZoneManager>, IDisposable
 
     public void Dispose()
     {
+        MapLoadEvent.OnSuccessfulLoad -= CreateZoneCache;
+
+        MapLoadEvent.OnBeginUnload -= ClearZoneCache;
+
         if (!H.IsServer)
         {
             HardpointZone.onPlayerEnterLadder -= OnTriggerEnter;

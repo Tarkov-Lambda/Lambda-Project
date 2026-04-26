@@ -44,9 +44,13 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
 
     protected override bool ValidatePacket(BombStatePacket packet, NetPeer peer, out string rejectionReason)
     {
+        return base.ValidatePacket(packet, peer, out rejectionReason);
+
+    }
+
+    protected override void MutateApprovedPacket(ref BombStatePacket packet, NetPeer peer)
+    {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
-        rejectionReason = null;
-        return true;
     }
 
     protected override void LocalPredictApproved(BombStatePacket packet)

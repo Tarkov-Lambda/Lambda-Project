@@ -78,10 +78,13 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 
     protected override bool ValidatePacket(FactionChangePacket packet, NetPeer peer, out string rejectionReason)
     {
-        rejectionReason = null;
-        if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction)) return false;
+        if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction))
+        {
+            rejectionReason = "You can not swap factions in the current phase";
+            return false;
+        }
 
-        return true;
+        return base.ValidatePacket(packet, peer, out rejectionReason);
     }
 
     protected override void Apply(FactionChangePacket packet, NetPeer peer)

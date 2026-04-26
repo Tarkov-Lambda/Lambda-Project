@@ -34,9 +34,13 @@ public class PausePacketHandler : PacketHandler<PausePacket>
 
     protected override bool ValidatePacket(PausePacket packet, NetPeer peer, out string rejectionReason)
     {
-        packet.Timestamp = NetworkTime.ServerNowSeconds;
         rejectionReason = null;
         return H.Session.matchState == MatchState.RoundPrepare;
+    }
+
+    protected override void MutateApprovedPacket(ref PausePacket packet, NetPeer peer)
+    {
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
     }
 
     protected override void Apply(PausePacket packet, NetPeer peer)

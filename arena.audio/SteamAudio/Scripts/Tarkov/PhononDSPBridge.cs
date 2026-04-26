@@ -7,13 +7,13 @@ namespace ifp.arena.shared
     [RequireComponent(typeof(AudioSource))]
     public class PhononDSPBridge : MonoBehaviour
     {
-        // ── Effect handles ────────────────────────────────────────────────────
+        // effect handles
         private IntPtr _binaural = IntPtr.Zero;
         private IntPtr _direct = IntPtr.Zero;
         private IntPtr _reflectionEffect = IntPtr.Zero;
         private IntPtr _ambiDecodeEffect = IntPtr.Zero;
 
-        // ── Native-allocated buffers ──────────────────────────────────────────
+        // native allocated buffers
         private PAudioBuffer _reflAmbiNative;
         private PAudioBuffer _reflStereoNative;
         private volatile bool _reflBufsAllocated = false;
@@ -23,15 +23,14 @@ namespace ifp.arena.shared
         private int _nativeFrameSize = 0;
         private int _cachedMaxOrder = 1;
 
-        // ── Components & Utils ────────────────────────────────────────────────
+        // components and utils
         private AudioSource _src;
-#if STEAMAUDIO_ENABLED
         private SteamAudioSource _steamSrc;
-#endif
+
         private PhononDistanceAttenuator _attenuator;
         private IntPtr _cachedContext = IntPtr.Zero;
 
-        // ── Per-Frame Thread Data ─────────────────────────────────────────────
+        // per frame thread data
         private PVec3 _dir = new PVec3 { z = 1f };
         private float _distAtten = 1f;
         private float _occlusion = 1f;
@@ -46,13 +45,13 @@ namespace ifp.arena.shared
 
         private readonly object _lock = new object();
 
-        // ── Managed Scratch Buffers ───────────────────────────────────────────
+        // managed scratch buffers
         private float[] _monoIn;
         private float[] _monoOut;
         private float[] _leftOut;
         private float[] _rightOut;
 
-        // ── Public Settings ───────────────────────────────────────────────────
+        // unity proxy
         public float spatialBlend = 1f;
         public bool spatialize = true;
 
@@ -63,9 +62,7 @@ namespace ifp.arena.shared
             _src = GetComponent<AudioSource>();
             _attenuator = new PhononDistanceAttenuator(_src);
 
-#if STEAMAUDIO_ENABLED
             _steamSrc = GetComponent<SteamAudioSource>();
-#endif
 
             UnityEngine.AudioSettings.GetDSPBufferSize(out int bufSize, out _);
             int cap = bufSize * 2;
@@ -315,7 +312,6 @@ namespace ifp.arena.shared
                     var outBuf = new PAudioBuffer { numChannels = 1, numSamples = n, data = (IntPtr)outPtrs };
                     var binBuf = new PAudioBuffer { numChannels = 2, numSamples = n, data = (IntPtr)binPtrs };
 
-                    // STAGE 1
                     if (_direct != IntPtr.Zero)
                     {
                         int dflags = (int)DirectEffectFlags.ApplyOcclusion;
@@ -342,7 +338,6 @@ namespace ifp.arena.shared
                         for (int i = 0; i < n; i++) _monoOut[i] = _monoIn[i];
                     }
 
-                    // STAGE 2
                     if (_hrtf != IntPtr.Zero)
                     {
                         var bp = new PBinauralEffectParams
@@ -360,7 +355,6 @@ namespace ifp.arena.shared
                         for (int i = 0; i < n; i++) { _leftOut[i] = _monoOut[i]; _rightOut[i] = _monoOut[i]; }
                     }
 
-                    // STAGE 3
                     bool doReflections = _hasValidReflData && _reflBufsAllocated && _reflectionEffect != IntPtr.Zero &&
                                          _ambiDecodeEffect != IntPtr.Zero && _hrtf != IntPtr.Zero && n == _nativeFrameSize &&
                                          _reflAmbiNative.data != IntPtr.Zero && _reflStereoNative.data != IntPtr.Zero;
