@@ -13,38 +13,39 @@ public enum PlacementKind { None, EquipmentSlot, VestAddress, ArmorPlate }
 
 public readonly struct ItemPlacement(PlacementKind kind, EquipmentSlot slot = default, ItemAddress address = null)
 {
-    public readonly PlacementKind Kind  = kind;
-    public readonly EquipmentSlot Slot  = slot; // for EquipmentSlot
+    public readonly PlacementKind Kind = kind;
+    public readonly EquipmentSlot Slot = slot; // for EquipmentSlot
     public readonly ItemAddress Address = address;
 
     public static ItemPlacement ForSlot(EquipmentSlot slot, ItemAddress address) => new(PlacementKind.EquipmentSlot, slot: slot, address: address);
-    public static ItemPlacement ForAddress(ItemAddress address)                  => new(PlacementKind.VestAddress, address: address);
-    public static ItemPlacement ForArmorPlate(ItemAddress address)               => new(PlacementKind.ArmorPlate, address: address);
-    public static readonly ItemPlacement None                                    =  new(PlacementKind.None);
+    public static ItemPlacement ForAddress(ItemAddress address) => new(PlacementKind.VestAddress, address: address);
+    public static ItemPlacement ForArmorPlate(ItemAddress address) => new(PlacementKind.ArmorPlate, address: address);
+    public static readonly ItemPlacement None = new(PlacementKind.None);
 }
 
 public static class AddressUtilities
 {
     public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch
     {
-        Weapon w              => ResolveWeaponSlot(w, player),
+        Weapon w => ResolveWeaponSlot(w, player),
 
-        BackpackItemClass _   => ResolveSlotAddress(EquipmentSlot.Backpack, player),
-        VestItemClass _       => ResolveSlotAddress(EquipmentSlot.TacticalVest, player),
-        ArmorItemClass _      => ResolveSlotAddress(EquipmentSlot.ArmorVest, player),
-        HeadwearItemClass _   => ResolveSlotAddress(EquipmentSlot.Headwear, player),
-        FaceCoverItemClass _  => ResolveSlotAddress(EquipmentSlot.FaceCover, player),
+        BackpackItemClass _ => ResolveSlotAddress(EquipmentSlot.Backpack, player),
+        VestItemClass _ => ResolveSlotAddress(EquipmentSlot.TacticalVest, player),
+        ArmorItemClass _ => ResolveSlotAddress(EquipmentSlot.ArmorVest, player),
+        HeadwearItemClass _ => ResolveSlotAddress(EquipmentSlot.Headwear, player),
+        FaceCoverItemClass _ => ResolveSlotAddress(EquipmentSlot.FaceCover, player),
         HeadphonesItemClass _ => ResolveSlotAddress(EquipmentSlot.Earpiece, player),
-    
+        VisorsItemClass _ => ResolveSlotAddress(EquipmentSlot.Eyewear, player),
+
         ArmorPlateItemClass _ => ResolveArmorPlatePlacement(player),
 
-        MagazineItemClass _   => ResolveVestAddress(item, player),
-        MedicalItemClass _    => ResolveVestAddress(item, player),
-        ThrowWeapItemClass _  => ResolveVestAddress(item, player),
+        MagazineItemClass _ => ResolveVestAddress(item, player),
+        MedicalItemClass _ => ResolveVestAddress(item, player),
+        ThrowWeapItemClass _ => ResolveVestAddress(item, player),
         BarterItemItemClass _ => ResolveVestAddress(item, player),
-        KeycardItemClass _    => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
+        KeycardItemClass _ => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
 
-        _                     => ResolveVestAddress(item, player)
+        _ => ResolveVestAddress(item, player)
     };
 
     // revolver shotgun is fucked gg
@@ -57,6 +58,7 @@ public static class AddressUtilities
     private static ItemPlacement ResolveArmorPlatePlacement(Player player)
     {
         var plateHolder = player.GetPlateCarrier();
+        if (plateHolder == null) return ItemPlacement.None;
 
         foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
         {
@@ -64,9 +66,23 @@ public static class AddressUtilities
             {
                 if (slot.ContainedItem != null)
                     continue;
-                if (slot.CachedSlotName != null && !slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+
+                bool isPlateSlot = (!string.IsNullOrEmpty(slot.Name) && slot.Name.EndsWith("_plate", StringComparison.OrdinalIgnoreCase)) ||
+                                   (slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase));
+
+                if (!isPlateSlot)
                     continue;
 
+                return ItemPlacement.ForArmorPlate(slot.CreateItemAddress());
+            }
+        }
+
+        foreach (var slot in plateHolder.Slots)
+        {
+            if (slot.ContainedItem != null) continue;
+
+            if (!string.IsNullOrEmpty(slot.Name) && slot.Name.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+            {
                 return ItemPlacement.ForArmorPlate(slot.CreateItemAddress());
             }
         }

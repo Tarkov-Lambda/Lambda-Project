@@ -30,8 +30,6 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
         stateTtlSeconds: 30,
         rejectCooldownSeconds: 0.5);
 
-    protected override bool ShouldBroadcastApprovalsToAll(TimeSynchronizationPacket packet) => false;
-
     public void Send()
     {
         if (H.IsServer)
@@ -45,11 +43,15 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
         DispatchPacket(packet);
     }
 
+    protected override void ProcessApprovedPacket(ref TimeSynchronizationPacket packet, NetPeer peer)
+    {
+        MutateApprovedPacket(ref packet, peer);
+        ApplyInternal(packet, peer);
+    }
+
     protected override void Apply(TimeSynchronizationPacket packet, NetPeer peer)
     {
         if (H.GameWorld is HideoutGameWorld) return;
-        if (H.IsClient)
-            return;
 
         var response = new TimeSyncResponsePacket
         {

@@ -182,6 +182,8 @@ public static class ItemUtilities
                 }
             }
 
+            // D.Dump(templateItem);
+
             Singleton<BuyItemPacketHandler>.Instance.Send(templateItem, placement);
             return true;
         }

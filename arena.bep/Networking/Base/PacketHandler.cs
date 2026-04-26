@@ -9,6 +9,7 @@ using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
 using EFT;
 using Fika.Core.Main.Players;
+using Coffee.UIEffects;
 
 namespace PacketHandler;
 
@@ -159,10 +160,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (!H.IsInRaid()) return;
 
 #if DEBUG
+        // simulation of the real game inside hideout
         if (H.GameWorld is HideoutGameWorld)
         {
             LocalPredictApproved(packet);
-            Apply(packet, null);
+            ApplyInternal(packet, null);
             return;
         }
 #endif
@@ -185,19 +187,13 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         // this is slightly misleading inside this function
         // but sometimes we will send data to another client without ever applying it serverside
         // decision must be made here
-        if (targetPeer != null)
+        if (H.IsClient)
         {
-            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
+            H.FikaNet.SendData(ref packet, deliveryMethod, false);
         }
         else
         {
-            // TODO: what the fuck is even happening
-            // if someone overrides ProcessApprovedPacket and defers the mutation/broadcasting and application (meaning ref is lost) -> we are fucked down below
-            if (H.IsServer)
-            {
-                ProcessApprovedPacket(ref packet, null);
-            }
-            H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
+            ProcessApprovedPacket(ref packet, targetPeer);
         }
     }
 
@@ -233,32 +229,18 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         ProcessApprovedPacket(ref packet, peer);
     }
 
-    // this function is the central place of "mutate right before applying anywhere made by anyone"
-    protected virtual void MutateApprovedPacket(ref T packet, NetPeer peer) { }
-
-    // in case we need to control when the packet is broadcasted and applied on the server
-    // YOU MUST HANDLE MUTATIONS MANUALLY HERE
     protected virtual void ProcessApprovedPacket(ref T packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
-        BroadcastAndApply(ref packet, peer);
+        H.FikaNet.SendData(ref packet, deliveryMethod, true);
+        ApplyInternal(packet, peer);
     }
 
-    protected void BroadcastAndApply(ref T packet, NetPeer peer)
-    {
-        // peer is null only in case we invoke this in DispatchPacket as the server
-        if (peer != null)
-        {
-            if (ShouldBroadcastApprovalsToAll(packet) && peer == null)
-            {
-                H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
-            }
-            else
-            {
-                H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
-            }
-        }
+    // this function is the central place of "mutate right before applying anywhere made by anyone"
+    protected virtual void MutateApprovedPacket(ref T packet, NetPeer peer) { }
 
+    protected void ApplyInternal(T packet, NetPeer peer)
+    {
         TryInvokeAction(BeforePacketApplied, packet);
         Apply(packet, peer);
         TryInvokeAction(AfterPacketApplied, packet);
@@ -272,9 +254,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 #endif
 
-        TryInvokeAction(BeforePacketApplied, packet);
-        Apply(packet, peer);
-        TryInvokeAction(AfterPacketApplied, packet);
+        ApplyInternal(packet, peer);
     }
 
     private void TryInvokeAction(Action<T> action, T packet)
@@ -365,10 +345,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
                 return false;
         }
     }
-
-    // In cases where data needs to be a secret like admin login
-    // note that if this is false, we do not broadcast packet approval to the original sender
-    protected virtual bool ShouldBroadcastApprovalsToAll(T packet) => true;
 
     // OPTIONAL
     // core sanitization

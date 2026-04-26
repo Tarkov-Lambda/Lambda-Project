@@ -47,8 +47,6 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
     //     rejectCooldownSeconds: 2
     // );
 
-    protected override bool ShouldBroadcastApprovalsToAll(AdminAuthPacket packet) => false;
-
     public void Send()
     {
         if (H.IsServer)
@@ -70,7 +68,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
     protected override bool ValidatePacket(AdminAuthPacket packet, NetPeer peer, out string rejectionReason)
     {
         rejectionReason = null;
-        
+
         switch (packet.Step)
         {
             case AdminAuthStep.Request:
@@ -84,6 +82,22 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
                 D.Log($"AdminLoginPacketHandler [Server]: Unhandled Step {packet.Step} in ServerValidation. Rejecting.");
                 return false;
         }
+    }
+
+    protected override void ProcessApprovedPacket(ref AdminAuthPacket packet, NetPeer peer)
+    {
+        MutateApprovedPacket(ref packet, peer);
+        
+        if (packet.Step == AdminAuthStep.Success)
+        {
+            H.FikaNet.SendData(ref packet, deliveryMethod, true);
+        }
+        else
+        {
+            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
+        }
+
+        ApplyInternal(packet, peer);
     }
 
     protected override void Apply(AdminAuthPacket packet, NetPeer peer)
@@ -141,8 +155,6 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
             Step = AdminAuthStep.Challenge,
             Payload = nonce
         };
-
-        D.Log(packet.player.Profile.Nickname);
 
         H.FikaNet.SendDataToPeer(ref challengePacket, deliveryMethod, peer);
     }

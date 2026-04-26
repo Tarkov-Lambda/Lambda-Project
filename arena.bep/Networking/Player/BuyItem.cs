@@ -88,16 +88,11 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
         var localPacket = packet;
 
-        PlayerInventoryTimeGate.Enqueue(playerId, () =>
-        {
-            MutateApprovedPacket(ref localPacket, peer);
-            BroadcastAndApply(ref localPacket, peer);
-        });
+        PlayerInventoryTimeGate.Enqueue(playerId, () => base.ProcessApprovedPacket(ref localPacket, peer));
     }
 
     protected override void Apply(BuyItemPacket packet, NetPeer peer)
     {
-        D.Log(packet.item.GetType().ToString());
         if (H.Session.matchState != MatchState.Cleanup)
         {
             if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
@@ -155,6 +150,8 @@ public static class PlayerInventoryTimeGate
             {
                 while (_queue.TryDequeue(out var action))
                 {
+                    await UniTask.Delay(50);
+
                     try
                     {
                         action?.Invoke();
@@ -164,7 +161,6 @@ public static class PlayerInventoryTimeGate
                         D.LogError($"[PlayerInventoryTimeGate] Error processing packet: {ex}");
                     }
 
-                    await UniTask.Delay(25);
                 }
             }
             finally

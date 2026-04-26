@@ -80,15 +80,26 @@ public static class InventoryGetterExtensions
 
     public static bool CanFitPlates(this CompoundItem compoundItem)
     {
+        if (compoundItem == null) return false;
+
+        if (compoundItem.Slots.Any(slot => !string.IsNullOrEmpty(slot.Name) && slot.Name.EndsWith("_plate", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
         var armorHolder = compoundItem.GetItemComponent<ArmorHolderComponent>();
+        if (armorHolder != null)
+        {
+            var hasAnyPlateSlots = armorHolder.ArmorSlots.Any(slot =>
+                (!string.IsNullOrEmpty(slot.Name) && slot.Name.EndsWith("_plate", StringComparison.OrdinalIgnoreCase)) ||
+                (slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+            );
+            return hasAnyPlateSlots;
+        }
 
-        if (armorHolder == null)
-            return false;
-
-        var hasAnyPlateSlots = armorHolder.ArmorSlots.Any(slot => slot.CachedSlotName != null && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase));
-        return hasAnyPlateSlots;
+        return false;
     }
-
+    
     public static CompoundItem GetPlateCarrier(this Player player)
     {
         if (player.GetSlotItem(EquipmentSlot.TacticalVest) is VestItemClass tacRig)
@@ -109,6 +120,9 @@ public static class InventoryGetterExtensions
     {
         var tacRigTemplate = tacRig?.Template as VestTemplateClass;
         if (tacRigTemplate.BlocksArmorVest) return true;
+
+        if (tacRig.CanFitPlates()) return true;
+
         return false;
     }
 
