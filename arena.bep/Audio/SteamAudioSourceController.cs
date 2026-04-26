@@ -119,6 +119,11 @@ public static class SteamAudioSourceController
             shouldBypassSteamAudio = IsMixerBypassed(betterSource.source1.outputAudioMixerGroup);
         }
 
+        if (forceStereo)
+        {
+            shouldBypassSteamAudio = true;
+        }
+
         // D.Log(betterSource.source1.outputAudioMixerGroup.name);
         // D.Log(betterSource.source1.spatialize.ToString());
         // D.Log(betterSource.source1.spatialBlend.ToString());

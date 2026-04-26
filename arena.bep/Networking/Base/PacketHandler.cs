@@ -181,7 +181,6 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         // inside AfterServerApprovesPacket occurs. make sure nothing stupid is implemented here
         LocalPredictApproved(packet);
 
-        MutateApprovedPacket(ref packet, null);
 
         // this is slightly misleading inside this function
         // but sometimes we will send data to another client without ever applying it serverside
@@ -192,16 +191,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
         else
         {
+            // TODO: what the fuck is even happening
+            // if someone overrides ProcessApprovedPacket and defers the mutation/broadcasting and application (meaning ref is lost) -> we are fucked down below
             if (H.IsServer)
             {
-                if (ShouldProcessInstantly)
-                {
-                    BroadcastAndApply(ref packet, null);
-                }
-                else
-                {
-                    ProcessApprovedPacket(packet, null);
-                }
+                ProcessApprovedPacket(ref packet, null);
             }
             H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
         }
@@ -236,16 +230,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             return;
         }
 
-
-        if (ShouldProcessInstantly)
-        {
-            MutateApprovedPacket(ref packet, peer);
-            BroadcastAndApply(ref packet, peer);
-        }
-        else
-        {
-            ProcessApprovedPacket(packet, peer);
-        }
+        ProcessApprovedPacket(ref packet, peer);
     }
 
     // this function is the central place of "mutate right before applying anywhere made by anyone"
@@ -253,7 +238,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     // in case we need to control when the packet is broadcasted and applied on the server
     // YOU MUST HANDLE MUTATIONS MANUALLY HERE
-    protected virtual void ProcessApprovedPacket(T packet, NetPeer peer)
+    protected virtual void ProcessApprovedPacket(ref T packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
         BroadcastAndApply(ref packet, peer);
@@ -264,9 +249,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         // peer is null only in case we invoke this in DispatchPacket as the server
         if (peer != null)
         {
-            if (ShouldBroadcastApprovalsToAll(packet))
+            if (ShouldBroadcastApprovalsToAll(packet) && peer == null)
             {
-                H.FikaNet.SendData(ref packet, deliveryMethod, true);
+                H.FikaNet.SendData(ref packet, deliveryMethod, H.IsServer);
             }
             else
             {

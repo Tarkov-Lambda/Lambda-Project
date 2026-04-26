@@ -101,6 +101,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     // this logic needs to be abstracted elsewhere
     private void HandleKill(PlayerKilledPacket packet)
     {
+
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.IsAlive) return;
 
@@ -112,13 +113,23 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
-        // EventBus.OnPlayerKill.Invoke(packet);
-
-        if (H.IsHeadless)
+        if (packet.weaponId == null)
         {
-            Teleporter.Teleport(packet.victim, "lobby", Faction.None);
-            return;
+            try
+            {
+                packet.weaponId = killerScore.player?.HandsController?.Item?.TemplateId ?? "";
+            }
+            catch (Exception ex)
+            {
+                D.Log(ex.ToString());
+            }
         }
+
+        // if (H.IsHeadless)
+        // {
+        //     Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+        //     return;
+        // }
 
         if (packet.victim.IsYourPlayer)
         {
@@ -154,7 +165,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         // wait for the death cam sequence to finish in RagdollCreator
         await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
         H.MainPlayer.MovementContext.ResetFlying();
-        
+
         // if we are already alive after 4 seconds, do not teleport ourselves into the lobby
         if (!H.MainPlayerScore.IsAlive)
         {

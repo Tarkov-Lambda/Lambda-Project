@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using UnityEngine.SocialPlatforms;
 
 namespace ifp.arena.bep.networking;
 
@@ -18,20 +19,20 @@ public struct BuyItemPacket : INetSerializable, IAuthoredPacket
 {
     public Player Player { get; set; }
     public ItemPlacement placement;
-    public Item Item;
+    public Item item;
 
     public void Serialize(NetDataWriter writer)
     {
         writer.PutPlayer(Player);
         writer.Put(placement);
-        writer.PutItem(Item);
+        writer.PutItem(item);
     }
 
     public void Deserialize(NetDataReader reader)
     {
         Player = reader.GetPlayer();
         placement = reader.GetItemPlacement(Player);
-        Item = reader.GetItem();
+        item = reader.GetItem();
     }
 }
 
@@ -46,7 +47,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         var packet = new BuyItemPacket
         {
             Player = H.MainPlayer,
-            Item = item, // this item is only a template, the server clones it before application
+            item = item, // this item is only a template, the server clones it before application
             placement = placement,
         };
 
@@ -57,7 +58,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {
-            if (BuyMenuSelection.TryGetItemData(packet.Item.TemplateId, out ShopItem itemData))
+            if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
                 var playerScore = packet.Player.GetScore();
                 if (playerScore.Money < itemData.price)
@@ -73,41 +74,44 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
     {
-        packet.Item = packet.Item.CloneItem();
+        packet.item = packet.item.CloneItem();
+        var placement = AU.GetItemPlacement(packet.item, packet.Player);
+        if (packet.placement.Address != placement.Address)
+        {
+            packet.placement = placement;
+        }
     }
 
-    protected override void ProcessApprovedPacket(BuyItemPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
     {
         int playerId = packet.Player.Id;
 
+        var localPacket = packet;
+
         PlayerInventoryTimeGate.Enqueue(playerId, () =>
         {
-            var placement = AU.GetItemPlacement(packet.Item, packet.Player);
-            if (packet.placement.Address != placement.Address)
-            {
-                packet.placement = placement;
-            }
-
-            BroadcastAndApply(ref packet, peer);
+            MutateApprovedPacket(ref localPacket, peer);
+            BroadcastAndApply(ref localPacket, peer);
         });
     }
 
     protected override void Apply(BuyItemPacket packet, NetPeer peer)
     {
+        D.Log(packet.item.GetType().ToString());
         if (H.Session.matchState != MatchState.Cleanup)
         {
-            if (BuyMenuSelection.TryGetItemData(packet.Item.TemplateId, out ShopItem itemData))
+            if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
                 H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
             }
         }
 
-        IU.WhenApprovedGiveItem(packet.Item, packet.Player, packet.placement);
+        IU.WhenApprovedGiveItem(packet.item, packet.Player, packet.placement);
     }
 
     protected override void WhenRejected(BuyItemPacket packet, NetPeer peer)
     {
-        if (BuyMenuSelection.TryGetItemData(packet.Item.TemplateId, out ShopItem itemData))
+        if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
             H.MainPlayerScore.AddMoney(itemData.price);
         }

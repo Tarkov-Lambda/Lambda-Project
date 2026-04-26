@@ -127,9 +127,11 @@ public class Plugin : BaseUnityPlugin
             RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
             RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
             RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-            RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // This doesn't seem to do anything
-            RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());                     // This doesn't seem to do anything
-            RegisterPatch(new Patch_BetterSource_ResetOcclusion());                     // This doesn't seem to do anything
+            // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // This doesn't seem to do anything
+            // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());                     // This doesn't seem to do anything
+            // RegisterPatch(new Patch_BetterSource_ResetOcclusion());                     // This doesn't seem to do anything
+
+            RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
 
             RegisterPatch(new Patch_SimpleSource_Play());                               // Audio Source Routing
             RegisterPatch(new Patch_SuperSource_Play());                                // Audio Source Routing
@@ -143,8 +145,12 @@ public class Plugin : BaseUnityPlugin
             RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
 
             RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
+            RegisterPatch(new Patch_BetterSource_SetOcclusionRolloffScale());           
             RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
             RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
+
+            RegisterPatch(new Patch_BetterSource_SetLowPassFilterParameters());
+            RegisterPatch(new Patch_BetterSource_SetHighPassFilterParameters());
         }
 
         // RegisterPatch(new AudioDiscovery_Play_Patch());
