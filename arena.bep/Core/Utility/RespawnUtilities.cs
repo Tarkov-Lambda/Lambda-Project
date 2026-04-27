@@ -191,7 +191,7 @@ public static class RespawnUtilities
 
         foreach (var rootGameObject in scene.GetRootGameObjects())
         {
-            SpawnPointCluster[] sPoints = rootGameObject.GetComponentsInChildren<SpawnPointCluster>();
+            SpawnPointCluster[] sPoints = rootGameObject.GetComponentsInChildren<SpawnPointCluster>(false);
             if (sPoints.Length > 0)
             {
                 allSpawnPoints.AddRange(sPoints);

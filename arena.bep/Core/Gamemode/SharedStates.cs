@@ -97,6 +97,11 @@ public class SharedCleanup : IGameState
     {
         IU.GarbageCollectWorldLoot();
 
+        foreach (var player in H.AllPlayers)
+        {
+            player.ForceUnlockInventory();
+        }
+
         if (!H.IsHeadless)
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
@@ -125,7 +130,7 @@ public class SharedCleanup : IGameState
                 }
                 else
                 {
-                    await InventoryResetter.HardReset();
+                    await InventoryResetter.HardReset(H.MainPlayer);
                     await InventoryResetter.GiveDefaultPistol();
                 }
             });

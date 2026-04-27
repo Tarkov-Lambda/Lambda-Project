@@ -72,6 +72,15 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         return base.ValidatePacket(packet, peer, out rejectionReason);
     }
 
+    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
+    {
+        int playerId = packet.Player.Id;
+
+        var localPacket = packet;
+
+        PlayerInventoryTimeGate.Enqueue(playerId, () => base.ProcessApprovedPacket(ref localPacket, peer));
+    }
+
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
     {
         packet.item = packet.item.CloneItem();
@@ -80,15 +89,6 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         {
             packet.placement = placement;
         }
-    }
-
-    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
-    {
-        int playerId = packet.Player.Id;
-
-        var localPacket = packet;
-
-        PlayerInventoryTimeGate.Enqueue(playerId, () => base.ProcessApprovedPacket(ref localPacket, peer));
     }
 
     protected override void Apply(BuyItemPacket packet, NetPeer peer)
@@ -104,6 +104,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         IU.WhenApprovedGiveItem(packet.item, packet.Player, packet.placement);
     }
 
+    // refunded but where is the receipt?
     protected override void WhenRejected(BuyItemPacket packet, NetPeer peer)
     {
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))

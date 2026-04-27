@@ -87,16 +87,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
     protected override void ProcessApprovedPacket(ref AdminAuthPacket packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
-        
-        if (packet.Step == AdminAuthStep.Success)
-        {
-            H.FikaNet.SendData(ref packet, deliveryMethod, true);
-        }
-        else
-        {
-            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
-        }
-
+        H.FikaNet.SendData(ref packet, deliveryMethod, true);
         ApplyInternal(packet, peer);
     }
 

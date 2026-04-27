@@ -84,10 +84,6 @@ public static class InventoryResetter
         {
             List<Item> itemsToRemove = [];
 
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-
-            H.MainPlayer.ForceUnlockInventory();
-
             var secondPrimaryWeapon = H.MainPlayer.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
             AddItem(ref itemsToRemove, secondPrimaryWeapon);
 
@@ -132,14 +128,12 @@ public static class InventoryResetter
         }
     }
 
-    public static async UniTask HardReset()
+    public static async UniTask HardReset(Player player)
     {
         if (IsResetting) return;
         IsResetting = true;
         try
         {
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-
             H.MainPlayer.ForceUnlockInventory();
 
             List<Item> itemsToRemove = [];
@@ -152,16 +146,15 @@ public static class InventoryResetter
                 or EquipmentSlot.Scabbard
                 or EquipmentSlot.SecuredContainer) continue;
 
-                var currentItem = H.MainPlayer.GetSlotItem(slot);
+                var currentItem = player.GetSlotItem(slot);
                 AddItem(ref itemsToRemove, currentItem);
             }
 
-            await H.MainPlayer.TryPopItems(itemsToRemove);
+            await player.TryPopItems(itemsToRemove);
 
-            List<Item> pocketItemsToRemove = H.MainPlayer.GetVestAndPocketGridItems<Item>().ToList();
+            List<Item> pocketItemsToRemove = player.GetVestAndPocketGridItems<Item>().ToList();
 
-            await H.MainPlayer.TryPopItems(pocketItemsToRemove);
-
+            await player.TryPopItems(pocketItemsToRemove);
 
             // GIVING
             foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
@@ -173,7 +166,7 @@ public static class InventoryResetter
                         continue;
                 }
 
-                var currentItem = H.MainPlayer.GetSlotItem(kvp.Key);
+                var currentItem = player.GetSlotItem(kvp.Key);
                 if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
                 {
                     await UniTask.Delay(25);

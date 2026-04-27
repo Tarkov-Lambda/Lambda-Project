@@ -49,16 +49,11 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
 
             DateTime currentDateTime = H.GameWorld.GameDateTime.Calculate();
             DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);
-
-            var fixedTime = new DateTime(
-                2026, 4, 26,
-                0, 0, 0,
-                DateTimeKind.Utc
-            ).AddMinutes(packet.minutesSinceMidnight);
-
-            H.GameWorld.GameDateTime.Reset(fixedTime);
         }
         catch { }
+
+        var fixedTime = new DateTime(2026, 4, 26, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
+        H.GameWorld.GameDateTime.Reset(fixedTime);
     }
 }
 

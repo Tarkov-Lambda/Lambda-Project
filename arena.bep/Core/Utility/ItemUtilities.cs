@@ -1,21 +1,13 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
 using ifp.arena.bep.networking;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using System;
 using EFT.Interactive;
-using Fika.Core.Main.Players;
-using HarmonyLib;
-using System.Reflection;
 using ifp.arena.bep.Core.FX;
-using Fika.Core.Main.GameMode;
-using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.UI;
 
 namespace ifp.arena.bep.Core;
@@ -96,7 +88,9 @@ public static class ItemUtilities
             if (templateItem == null)
                 return false;
 
-            var placement = AU.GetItemPlacement(templateItem, H.MainPlayer);
+            var clonedItem = templateItem.CloneItem();
+            
+            var placement = AU.GetItemPlacement(clonedItem, H.MainPlayer);
             if (placement.Kind == PlacementKind.None)
             {
                 D.LogError("Local player can not find a placement for an item, aborting.");
@@ -110,12 +104,12 @@ public static class ItemUtilities
                 {
                     bool removed;
 
-                    if (templateItem is BackpackItemClass)
+                    if (clonedItem is BackpackItemClass)
                     {
                         removed = true;
                         Singleton<ForceRemoveItemPacketHandler>.Instance.Send(slot.ContainedItem);
                     }
-                    else if (templateItem is VestItemClass or ArmorItemClass)
+                    else if (clonedItem is VestItemClass or ArmorItemClass)
                     {
                         removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
                     }
@@ -125,14 +119,14 @@ public static class ItemUtilities
 
                         if (H.Gamemode is IGMRespawnable)
                         {
-                            if (templateItem is Weapon)
+                            if (clonedItem is Weapon)
                                 removed = await H.MainPlayer.TryPopWeaponAndMags(placement.Slot);
                             else
                                 removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
                         }
                         else
                         {
-                            if (templateItem is Weapon)
+                            if (clonedItem is Weapon)
                             {
                                 removed = await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot);
                             }
@@ -150,9 +144,9 @@ public static class ItemUtilities
                 }
             }
 
-            if (placement.Kind is not PlacementKind.ArmorPlate && templateItem is not BackpackItemClass)
+            if (placement.Kind is not PlacementKind.ArmorPlate && clonedItem is not BackpackItemClass)
             {
-                var addResult = placement.Address.Add(templateItem, true);
+                var addResult = placement.Address.Add(clonedItem, true);
                 if (addResult.Failed)
                 {
                     D.Notify(addResult.Error_0);
@@ -160,20 +154,20 @@ public static class ItemUtilities
                 }
             }
 
-            templateItem.StackObjectsCount = 1;
+            clonedItem.StackObjectsCount = 1;
 
 #if DEBUG
-            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {templateItem.LocalizedShortName()} ({templateItem.Id}) at ({placement.Address})");
+            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
 #endif
 
-            if (templateItem is ArmorItemClass armorItem)
+            if (clonedItem is ArmorItemClass armorItem)
             {
                 foreach (var plate in armorItem.GetArmorPlates())
                 {
                     plate.CurrentAddress.RemoveWithoutRestrictions(plate);
                 }
             }
-            else if (templateItem is VestItemClass vestItem)
+            else if (clonedItem is VestItemClass vestItem)
             {
                 if (vestItem.IsTacRigArmored())
                 {
@@ -187,7 +181,7 @@ public static class ItemUtilities
 
             if (H.IsNightTime)
             {
-                if (templateItem is HeadwearItemClass headwearItemClass)
+                if (clonedItem is HeadwearItemClass headwearItemClass)
                 {
                     // var BastionTemplateId = "5ea17ca01412a1425304d1c0";
                     var StrapTemplateId = "5c066ef40db834001966a595";
@@ -200,7 +194,7 @@ public static class ItemUtilities
                         if (slot.Name == "mod_nvg")
                         {
                             Item NVG;
-                            if (templateItem.TemplateId == StrapTemplateId)
+                            if (clonedItem.TemplateId == StrapTemplateId)
                             {
                                 NVG = PresetItemsCache.Instance.GetPresetItem(N15TemplateId).CloneItem();
                             }
@@ -218,7 +212,7 @@ public static class ItemUtilities
                 }
             }
 
-            Singleton<BuyItemPacketHandler>.Instance.Send(templateItem, placement);
+            Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement);
             return true;
         }
         finally

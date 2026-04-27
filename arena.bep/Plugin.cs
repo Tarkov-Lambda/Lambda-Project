@@ -224,15 +224,15 @@ public class Plugin : BaseUnityPlugin
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
-        RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
-        RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
-        RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
-        RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+        // RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
+        // RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
+        // RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
+        // RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
         // RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer());
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 
-        RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
+        // RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
@@ -341,7 +341,7 @@ public class Plugin : BaseUnityPlugin
         {
             PU.OpenEyes();
             // H.MainPlayer.SetEmptyHands(delegate { });
-            // H.MainPlayer.UnfuckHands();
+            H.MainPlayer.UnfuckHands();
             // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
     }

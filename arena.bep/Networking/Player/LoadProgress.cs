@@ -34,7 +34,7 @@ public class LoadProgressPacketHandler : PacketHandler<LoadProgressPacket>
             progress = progress
         };
 
-        DispatchPacket(packet);
+        // DispatchPacket(packet);
     }
 
     protected override void Apply(LoadProgressPacket packet, NetPeer peer)

@@ -102,8 +102,7 @@ internal static class ArenaInteractionHandler
 
         if (H.Gamemode is SNDGamemode && interactive is ObservedLootItem loot)
         {
-            if (loot.TemplateId == SNDGamemode.bombTemplateId &&
-                H.MainPlayerScore.Faction != Faction.T)
+            if (loot.TemplateId == SNDGamemode.bombTemplateId && H.MainPlayerScore.Faction != Faction.T)
             {
                 result = actions;
                 return true;

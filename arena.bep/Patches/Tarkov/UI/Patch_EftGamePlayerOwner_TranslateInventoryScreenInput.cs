@@ -29,7 +29,7 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
             or MatchState.Cleanup)
             {
                 AllowOpenInventory = false;
-                return false;
+                return true;
             }
 
             if (AllowOpenInventory && H.MainPlayerScore.IsAlive && !InventoryResetter.IsResetting)
