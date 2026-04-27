@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
-public class SND_Prepare : SharedPrepare
+public class SND_Cleanup : SharedCleanup
 {
     public override void OnEnter()
     {
@@ -26,19 +26,25 @@ public class SND_Prepare : SharedPrepare
         H.Session.bombState = BombState.None;
         H.Arena.LastObjectivePlayerId = -1;
         H.Arena.LastObjectiveBombState = BombState.None;
-
-        // Hide any leftover bomb visual from the previous round
         H.BombHandler?.Reset();
 
-        if (!H.IsHeadless)
+        if (H.IsServer)
         {
-            var backpack = H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack);
-            if (backpack != null)
-            {
-                Singleton<ForceRemoveItemPacketHandler>.Instance.Send(backpack);
-            }
+            SNDGamemode snd = H.Gamemode as SNDGamemode;
+            int roundIndex = H.Session.GetSideRoundIndex();
+            double newTime = TimeOfDayHelper.GetMinutesForRound(roundIndex, snd.MaxRoundsToWin);
+            Singleton<WeatherAndTimeSyncPacketHandler>.Instance.Send(newTime);
         }
 
+        base.OnEnter();
+    }
+
+}
+
+public class SND_Prepare : SharedPrepare
+{
+    public override void OnEnter()
+    {
         base.OnEnter();
     }
 }
@@ -129,11 +135,6 @@ public class SND_RoundEnd : SharedRoundEnd
 {
     public override void OnExit()
     {
-        // int currentRound = H.Session.factionWins.Values.Sum();
-        // int maxRounds = (H.ActiveRules as SNDGamemode).MaxRoundsToWin * 2 - 1;
-        // double minutes = TimeOfDayHelper.GetMinutesForRound(currentRound, maxRounds);
-        // Singleton<WeatherAndTimePacketHandler>.Instance.Send((int)minutes);
-
         base.OnExit();
     }
 }
@@ -143,6 +144,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
     public List<ILambdaObjective> Objectives { get; set; } = [];
 
     public int MaxRoundsToWin { get; set; } = 13;
+    public int RoundsPerSide => MaxRoundsToWin - 1;
 
     public bool HasSideSwapped { get; set; } = false;
 
@@ -153,6 +155,8 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 #else
     public int TimeInActivePhaseToBuy { get; set; } = 30;
 #endif
+
+    public bool IsNightTime => H.Session.GetSideRoundIndex() >= 9;
 
     public static float platingTime = 4.5f;
     public static float defusingTime = 10f;
@@ -180,7 +184,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         MatchState.None => new SharedNone(),
         MatchState.Warmup => new SharedWarmup(),
         MatchState.WarmupEnd => new SharedWarmupEnd(),
-        MatchState.Cleanup => new SharedCleanup(),
+        MatchState.Cleanup => new SND_Cleanup(),
         MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new SND_Prepare(),
         MatchState.RoundAction => new SND_Action(),

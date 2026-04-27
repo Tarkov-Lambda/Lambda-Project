@@ -15,15 +15,15 @@ public partial struct WeatherAndTimePacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<WeatherAndTimePacket>(reader);
 }
 
-public class WeatherAndTimePacketHandler : PacketHandler<WeatherAndTimePacket>
+public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacket>
 {
-    public WeatherAndTimePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    public WeatherAndTimeSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
 
-    public void Send(int id)
+    public void Send(double minutesSinceMidnight)
     {
         var packet = new WeatherAndTimePacket
         {
-            minutesSinceMidnight = id,
+            minutesSinceMidnight = minutesSinceMidnight,
         };
 
         DispatchPacket(packet);
@@ -40,15 +40,24 @@ public class WeatherAndTimePacketHandler : PacketHandler<WeatherAndTimePacket>
 
 public static class TimeOfDayHelper
 {
-    private const double START_MINUTES = 8 * 60;
-    private const double END_MINUTES = 23 * 60;
+    private const double DAY_START = 7 * 60;   // 07:00
+    private const double DAY_END = 18 * 60;    // 18:00
+
+    private const double NIGHT_START = 0;      // 00:00
+    private const double NIGHT_END = 3 * 60;   // 03:00
 
     public static double GetMinutesForRound(int roundIndex, int maxRounds)
     {
-        if (maxRounds <= 1)
-            return START_MINUTES;
-
-        double t = (double)roundIndex / (maxRounds - 1);
-        return START_MINUTES + (END_MINUTES - START_MINUTES) * t;
+        if (roundIndex < 9)
+        {
+            double t = roundIndex / 8.0; // spread across 9 rounds
+            return DAY_START + (DAY_END - DAY_START) * t;
+        }
+        else
+        {
+            int nightIndex = roundIndex - 9; // 0–2
+            double t = nightIndex / 2.0;
+            return NIGHT_START + (NIGHT_END - NIGHT_START) * t;
+        }
     }
 }

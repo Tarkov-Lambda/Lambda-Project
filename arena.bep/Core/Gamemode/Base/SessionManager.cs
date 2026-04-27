@@ -9,8 +9,8 @@ namespace ifp.arena.bep.GameTypes;
 public class SessionManager
 {
     public MatchState matchState = MatchState.None;
-    public Dictionary<int, PlayerScore> scoreboard = new Dictionary<int, PlayerScore>();
-    public Dictionary<Faction, int> factionWins = new Dictionary<Faction, int>();
+    public Dictionary<int, PlayerScore> scoreboard = new();
+    public Dictionary<Faction, int> factionWins = new();
     public BombState bombState = BombState.None;
 
     public string level = "";
@@ -69,6 +69,28 @@ public class SessionManager
             {
                 scoreboard[p.Id].RoundReset();
             }
+        }
+    }
+    
+    public int GetSideRoundIndex()
+    {
+        if (H.Gamemode is not IGMRound roundMode || H.Gamemode is not IGMSideSwappable sideMode)
+            return 0;
+
+        int totalRoundsPlayed = factionWins.Values.Sum();
+
+        int roundsPerSide = roundMode.MaxRoundsToWin - 1;
+
+        totalRoundsPlayed = Math.Max(0, totalRoundsPlayed);
+
+        if (!sideMode.HasSideSwapped)
+        {
+            return (totalRoundsPlayed % roundsPerSide) + 1;
+        }
+        else
+        {
+            int roundsIntoSecondHalf = totalRoundsPlayed - roundsPerSide;
+            return (roundsIntoSecondHalf % roundsPerSide) + 1;
         }
     }
 

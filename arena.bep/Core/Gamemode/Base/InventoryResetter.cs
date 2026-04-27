@@ -133,9 +133,18 @@ public static class InventoryResetter
 
             await H.MainPlayer.TryPopItems(pocketItemsToRemove);
 
+
+            var isNightTime = H.Gamemode is SNDGamemode snd && snd.IsNightTime;
             // GIVING
             foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
             {
+                if (kvp.Key is EquipmentSlot.Eyewear)
+                {
+                    // if this is night time we are giving out nvgs, eyewear conflicts.
+                    if (isNightTime)
+                        continue;
+                }
+
                 var currentItem = H.MainPlayer.GetSlotItem(kvp.Key);
                 if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))
                 {
@@ -143,6 +152,15 @@ public static class InventoryResetter
                     await IU.ClientRequestBuyItem(kvp.Value);
                 }
             }
+
+            if (isNightTime)
+            {
+                await UniTask.Delay(25);
+                var StrapTemplateId = "5c066ef40db834001966a595";
+                Item NVGStrap = PresetItemsCache.Instance.GetPresetItem(StrapTemplateId).CloneItem();
+                await IU.ClientRequestBuyItem(NVGStrap);
+            }
+
         }
         finally
         {

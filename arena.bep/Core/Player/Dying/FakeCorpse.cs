@@ -7,7 +7,7 @@ using HarmonyLib;
 using RootMotion.FinalIK;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Audio;
 using EasyAssetsExtensions = GClass1857;
 
 namespace ifp.arena.bep.Core.Dying
@@ -62,14 +62,14 @@ namespace ifp.arena.bep.Core.Dying
             this.bones = bones;
         }
 
-        public void VocalizeDeath(string playerVoiceId)
+        public void VocalizeDeath(Player player)
         {
             EPhraseTrigger trigger = EPhraseTrigger.OnDeath;
             ETagStatus tags = ETagStatus.BadlyInjured;
 
             Transform head = bones.HeadCameraCollider.transform;
 
-            string key = ResourceKeyManagerAbstractClass.TakePhrasePath(playerVoiceId);
+            string key = ResourceKeyManagerAbstractClass.TakePhrasePath(player.Speaker.PlayerVoice);
             if (!EasyAssetsExtensions.TryGetAsset<Voice>(H.IEasyAssets, out var asset, key))
             {
                 return;
@@ -99,10 +99,13 @@ namespace ifp.arena.bep.Core.Dying
                 return;
             }
 
-            BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Character, true);
-            speaker.StartTrackingPosition(head);
-            speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
-            speaker.Play(taggedClip.Clip, null, 1f);
+            // BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Speech, true);
+            // speaker.StartTrackingPosition(head);
+            // AudioMixerGroup targetMixerGroup = player.IsYourPlayer ? H.BetterAudio.ClientPlayerSpeechMixer : H.BetterAudio.ObservedPlayerSpeechMixer;
+            // speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
+            // speaker.Play(taggedClip.Clip, null, 1f);
+
+            player.Speaker.Play(EPhraseTrigger.OnDeath, ETagStatus.Dying);
         }
 
         public void SetAttachedCamera(Camera cam)

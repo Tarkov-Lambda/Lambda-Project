@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -159,8 +160,13 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
         RegisterPatch(new Patch_Gameworld_OnDispose());                             // Hooks
 
-        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Caching last damage packet for subsequent death packet
+        RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Cache last damage packet, multiply flame damage, negate blacked out limbs damage
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
+
+        RegisterPatch(new Patch_ActiveHealthController_DoFracture());              // Do not add fracture
+        RegisterPatch(new Patch_ActiveHealthController_DoBleedGeneric());          // Do not add bleeding
+        RegisterPatch(new Patch_ActiveHealthController_DoBleed_HeavyBleeding());   // Do not add bleeding
+        RegisterPatch(new Patch_ActiveHealthController_DoBleed_LightBleeding());   // Do not add bleeding
 
         // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
 
@@ -171,6 +177,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments());       // Procedural Blindfire Position
         RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());      // Override Blindfire Animation
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
+        RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
 
         // RegisterPatch(new Patch_Class1396_method_3());                              // In edge cases where the hands controller gets bugged out - we hard reset it
         // RegisterPatch(new Patch_GClass2037_Start());                              // In edge cases where the hands controller gets bugged out - we hard reset it
@@ -264,7 +271,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
-        RegisterSingleton<WeatherAndTimePacketHandler>();                           // Sync time of day between rounds
+        RegisterSingleton<WeatherAndTimeSyncPacketHandler>();                           // Sync time of day between rounds
 
         // Internal Classses (order matters)
         RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)

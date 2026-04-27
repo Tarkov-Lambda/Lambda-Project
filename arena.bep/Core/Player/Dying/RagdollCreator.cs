@@ -229,7 +229,9 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         }
         regsitry[player] = fakeCorpse;
 
-        fakeCorpse.VocalizeDeath(player.Speaker.PlayerVoice);
+        // fakeCorpse.VocalizeDeath(player);
+
+        player.Speaker.Play(EPhraseTrigger.OnDeath, ETagStatus.Dying);
 
         return fakeCorpse;
     }

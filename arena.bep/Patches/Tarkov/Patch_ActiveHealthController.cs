@@ -7,6 +7,7 @@ using HarmonyLib;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.networking;
 using SPT.Reflection.Patching;
+using System;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -52,6 +53,9 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     [PatchPrefix]
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {
+        // blacked out legs don't cause damage
+        if(damageInfo.DamageType == EDamageType.Fall && damage <= 3f) return false;
+
         if (damageInfo.DamageType == EDamageType.Flame)
         {
             damageInfo.Damage *= 2.5f;
@@ -78,7 +82,6 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
         }
 
         LastReceivedDamageInfo = damageInfo;
-
 
         return true;
     }
@@ -142,3 +145,37 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     }
 }
 
+
+public class Patch_ActiveHealthController_DoFracture : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoFracture));
+
+    [PatchPrefix]
+    static bool Prefix() => false;
+}
+
+public class Patch_ActiveHealthController_DoBleedGeneric : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(bool), typeof(EBodyPart)]);
+
+    [PatchPrefix]
+    static bool Prefix() => false;
+}
+
+public class Patch_ActiveHealthController_DoBleed_HeavyBleeding : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(EBodyPart)])
+            .MakeGenericMethod(AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+HeavyBleeding"));
+
+    [PatchPrefix]
+    static bool Prefix() => false;
+}
+
+public class Patch_ActiveHealthController_DoBleed_LightBleeding : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(EBodyPart)])
+            .MakeGenericMethod(AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+LightBleeding"));
+
+    [PatchPrefix]
+    static bool Prefix() => false;
+}

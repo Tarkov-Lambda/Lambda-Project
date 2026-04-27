@@ -15,6 +15,8 @@ using HarmonyLib;
 using System.Reflection;
 using ifp.arena.bep.Core.FX;
 using Fika.Core.Main.GameMode;
+using ifp.arena.bep.Core.Gamemode;
+using ifp.arena.bep.Core.UI;
 
 namespace ifp.arena.bep.Core;
 
@@ -182,7 +184,39 @@ public static class ItemUtilities
                 }
             }
 
-            // D.Dump(templateItem);
+
+            if (H.Gamemode is SNDGamemode snd && snd.IsNightTime)
+            {
+                if (templateItem is HeadwearItemClass headwearItemClass)
+                {
+                    // var BastionTemplateId = "5ea17ca01412a1425304d1c0";
+                    var StrapTemplateId = "5c066ef40db834001966a595";
+
+                    var GPNVG18TemplateId = "5c0558060db834001b735271";
+                    var N15TemplateId = "5c066e3a0db834001b7353f0";
+
+                    foreach (var slot in headwearItemClass.Slots)
+                    {
+                        if (slot.Name == "mod_nvg")
+                        {
+                            Item NVG;
+                            if (templateItem.TemplateId == StrapTemplateId)
+                            {
+                                NVG = PresetItemsCache.Instance.GetPresetItem(N15TemplateId).CloneItem();
+                            }
+                            else
+                            {
+                                NVG = PresetItemsCache.Instance.GetPresetItem(GPNVG18TemplateId).CloneItem();
+                            }
+
+                            TogglableComponent togglableComponent = NVG.GetItemComponent<TogglableComponent>();
+                            togglableComponent?.ForceToggle(true);
+
+                            slot.AddWithoutRestrictions(NVG);
+                        }
+                    }
+                }
+            }
 
             Singleton<BuyItemPacketHandler>.Instance.Send(templateItem, placement);
             return true;

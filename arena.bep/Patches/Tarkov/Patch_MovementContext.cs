@@ -11,6 +11,7 @@ using System.Reflection;
 using UnityEngine;
 using static EFT.MovementContext;
 using EFT.InventoryLogic;
+using EFT.Vaulting;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
@@ -203,4 +204,12 @@ public class Patch_MovementContext_method_15 : ModulePatch
         // __instance.method_14(smoothDiff, deltaTime);
         return true;
     }
+}
+
+public class Patch_MovementContext_ApplyDamageByVaulting : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ApplyDamageByVaulting));
+
+    [PatchPrefix]
+    private static bool Prefix() => false;
 }
