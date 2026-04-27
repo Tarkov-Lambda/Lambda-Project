@@ -99,13 +99,13 @@ namespace ifp.arena.bep.Core.Dying
                 return;
             }
 
-            // BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Speech, true);
-            // speaker.StartTrackingPosition(head);
-            // AudioMixerGroup targetMixerGroup = player.IsYourPlayer ? H.BetterAudio.ClientPlayerSpeechMixer : H.BetterAudio.ObservedPlayerSpeechMixer;
-            // speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
-            // speaker.Play(taggedClip.Clip, null, 1f);
+            BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Speech, true);
+            speaker.StartTrackingPosition(head);
+            AudioMixerGroup targetMixerGroup = player.IsYourPlayer ? H.BetterAudio.ClientPlayerSpeechMixer : H.BetterAudio.ObservedPlayerSpeechMixer;
+            speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
+            speaker.Play(taggedClip.Clip, null, 1f);
 
-            player.Speaker.Play(EPhraseTrigger.OnDeath, ETagStatus.Dying);
+            // player.Speaker.Play(EPhraseTrigger.OnDeath, ETagStatus.Dying);
         }
 
         public void SetAttachedCamera(Camera cam)

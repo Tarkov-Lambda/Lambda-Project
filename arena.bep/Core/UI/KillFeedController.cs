@@ -16,32 +16,34 @@ namespace ifp.arena.bep.Core.UI
             this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
-            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
+            PlayerKilledPacketHandler.BeforePacketApplied += OnPlayerKill;
         }
 
-        private void OnPlayerKill(PlayerKilledPacket killPacket)
+        private void OnPlayerKill(PlayerKilledPacket packet)
         {
-            H.Scoreboard.TryGetValue(killPacket.killer.Id, out PlayerScore playerKiller);
-            H.Scoreboard.TryGetValue(killPacket.victim.Id, out PlayerScore playerVictim);
+            PlayerScore victimScore = H.GetPlayerScore(packet.victim);
+            if (!victimScore.IsAlive) return;
 
-            string leftName = playerKiller?.player.Profile.Nickname;
-            string rightName = playerVictim?.player.Profile.Nickname;
+            PlayerScore killerScore = H.GetPlayerScore(packet.killer);
 
-            Faction leftFaction = playerKiller == null ? Faction.None : playerKiller.Faction;
-            Faction rightFaction = playerVictim == null ? Faction.None : playerVictim.Faction;
+            string leftName = killerScore?.player.Profile.Nickname;
+            string rightName = victimScore?.player.Profile.Nickname;
 
-            itemInfoProvider.RequestIcon(killPacket.weaponId, onRendered: (weaponSprite) =>
+            Faction leftFaction = killerScore == null ? Faction.None : killerScore.Faction;
+            Faction rightFaction = victimScore == null ? Faction.None : victimScore.Faction;
+
+            itemInfoProvider.RequestIcon(packet.weaponId, onRendered: (weaponSprite) =>
             {
                 killFeed.Pop(
                     leftName, leftFaction,
                     rightName, rightFaction,
-                    weaponSprite, killPacket.IsHeadshot);
+                    weaponSprite, packet.IsHeadshot);
             });
         }
 
         public void Dispose()
         {
-            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
+            PlayerKilledPacketHandler.BeforePacketApplied -= OnPlayerKill;
         }
     }
 }
