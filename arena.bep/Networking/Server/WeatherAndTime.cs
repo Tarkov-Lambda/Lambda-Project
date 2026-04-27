@@ -33,28 +33,32 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
 
     protected override void Apply(WeatherAndTimePacket packet, NetPeer peer)
     {
-        var weatherController = GameObject.Find("Weather").GetComponent<WeatherController>();
+        try
+        {
+            var weatherController = GameObject.Find("Weather").GetComponent<WeatherController>();
 
-        weatherController.WeatherDebug.Enabled = true;
-        weatherController.WeatherDebug.CloudDensity = 0f;
-        weatherController.WeatherDebug.Fog = 0f;
-        weatherController.WeatherDebug.LightningThunderProbability = 0f;
-        weatherController.WeatherDebug.Rain = 0f;
-        weatherController.WeatherDebug.WindDirection = WeatherDebug.Direction.NW;
-        weatherController.WeatherDebug.WindMagnitude = 0f;
+            weatherController.WeatherDebug.Enabled = true;
+            weatherController.WeatherDebug.CloudDensity = 0f;
+            weatherController.WeatherDebug.Fog = 0f;
+            weatherController.WeatherDebug.LightningThunderProbability = 0f;
+            weatherController.WeatherDebug.Rain = 0f;
+            weatherController.WeatherDebug.WindDirection = WeatherDebug.Direction.NW;
+            weatherController.WeatherDebug.WindMagnitude = 0f;
 
-        H.GameWorld.GameDateTime.TimeFactor = 0f;
+            H.GameWorld.GameDateTime.TimeFactor = 0f;
 
-        // DateTime currentDateTime = H.GameWorld.GameDateTime.Calculate();
-        // DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);
+            DateTime currentDateTime = H.GameWorld.GameDateTime.Calculate();
+            DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);
 
-        var fixedTime = new DateTime(
-            2026, 4, 26,
-            0, 0, 0,
-            DateTimeKind.Utc
-        ).AddMinutes(packet.minutesSinceMidnight);
+            var fixedTime = new DateTime(
+                2026, 4, 26,
+                0, 0, 0,
+                DateTimeKind.Utc
+            ).AddMinutes(packet.minutesSinceMidnight);
 
-        H.GameWorld.GameDateTime.Reset(fixedTime);
+            H.GameWorld.GameDateTime.Reset(fixedTime);
+        }
+        catch { }
     }
 }
 
