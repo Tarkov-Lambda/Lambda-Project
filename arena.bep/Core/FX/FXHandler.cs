@@ -11,8 +11,7 @@ namespace ifp.arena.bep.Core.FX;
 public class FXHandler : Singleton<FXHandler>, IDisposable
 {
     private const string FX_BUNDLE_NAME = "fx";
-    public readonly string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab";
-
+    private const string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab";
     public string FXBundlePath => Path.Combine(Plugin.pathToBundles, FX_BUNDLE_NAME);
 
     public AssetBundle FXBundle;

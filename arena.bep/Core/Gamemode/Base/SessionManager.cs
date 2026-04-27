@@ -71,25 +71,17 @@ public class SessionManager
             }
         }
     }
-    
-    public int GetSideRoundIndex()
+
+    public int GetRoundIndexOfTheCurrentHalf()
     {
         if (H.Gamemode is not IGMRound roundMode || H.Gamemode is not IGMSideSwappable sideMode)
             return 0;
 
         int totalRoundsPlayed = factionWins.Values.Sum();
 
-        int roundsPerSide = roundMode.MaxRoundsToWin - 1;
+        int roundsPerSide = roundMode.RoundsPerSide;
 
-        if (!sideMode.HasSideSwapped)
-        {
-            return (totalRoundsPlayed % roundsPerSide) + 1;
-        }
-        else
-        {
-            int roundsIntoSecondHalf = totalRoundsPlayed - roundsPerSide;
-            return (roundsIntoSecondHalf % roundsPerSide) + 1;
-        }
+        return totalRoundsPlayed % roundsPerSide;
     }
 
     public List<Player> GetPlayersFromFaction(Faction faction)

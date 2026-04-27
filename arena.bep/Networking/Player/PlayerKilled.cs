@@ -143,7 +143,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
         // Do local cleanup
         HU.HealMe().Forget();
-        Singleton<ReplenishPacketHandler>.Instance.Send();
+        // Singleton<ReplenishPacketHandler>.Instance.Send();
         packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
         _ = PU.CloseEyes(true, true);
         H.MainPlayer.SetEmptyHands(delegate { });

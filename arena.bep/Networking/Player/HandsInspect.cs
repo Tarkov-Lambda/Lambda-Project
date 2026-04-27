@@ -4,6 +4,7 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 using MemoryPack;
 using static EFT.Player;
+using PacketHandler.RateLimiting;
 
 namespace ifp.arena.bep.networking;
 
@@ -19,6 +20,8 @@ public partial struct HandsInspectPacket : INetSerializable, IAuthoredPacket
 
 public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
 {
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
+
     public void Send() => DispatchPacket(new HandsInspectPacket { Player = H.MainPlayer, });
 
     protected override void Apply(HandsInspectPacket packet, NetPeer peer)

@@ -31,7 +31,7 @@ public class SND_Cleanup : SharedCleanup
         if (H.IsServer)
         {
             SNDGamemode snd = H.Gamemode as SNDGamemode;
-            int roundIndex = H.Session.GetSideRoundIndex();
+            int roundIndex = H.Session.GetRoundIndexOfTheCurrentHalf();
             double newTime = TimeOfDayHelper.GetMinutesForRound(roundIndex, snd.MaxRoundsToWin);
             Singleton<WeatherAndTimeSyncPacketHandler>.Instance.Send(newTime);
         }
@@ -156,7 +156,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
     public int TimeInActivePhaseToBuy { get; set; } = 30;
 #endif
 
-    public bool IsNightTime => H.Session.GetSideRoundIndex() >= 9;
+    public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
 
     public static float platingTime = 4.5f;
     public static float defusingTime = 10f;

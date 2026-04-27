@@ -45,6 +45,7 @@ public interface IGMBuyable
 public interface IGMRound
 {
     public int MaxRoundsToWin { get; set; }
+    public int RoundsPerSide => MaxRoundsToWin - 1;
 }
 
 /// <summary>
