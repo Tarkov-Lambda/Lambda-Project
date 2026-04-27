@@ -33,6 +33,9 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
 
     protected override void Apply(WeatherAndTimePacket packet, NetPeer peer)
     {
+        var fixedTime = new DateTime(2026, 4, 26, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
+        H.GameWorld.GameDateTime.Reset(fixedTime);
+
         try
         {
             var weatherController = GameObject.Find("Weather").GetComponent<WeatherController>();
@@ -46,14 +49,8 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
             weatherController.WeatherDebug.WindMagnitude = 0f;
 
             H.GameWorld.GameDateTime.TimeFactor = 0f;
-
-            DateTime currentDateTime = H.GameWorld.GameDateTime.Calculate();
-            DateTime modifiedDateTime = currentDateTime.Date + TimeSpan.FromMinutes(packet.minutesSinceMidnight);
         }
         catch { }
-
-        var fixedTime = new DateTime(2026, 4, 26, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
-        H.GameWorld.GameDateTime.Reset(fixedTime);
     }
 }
 

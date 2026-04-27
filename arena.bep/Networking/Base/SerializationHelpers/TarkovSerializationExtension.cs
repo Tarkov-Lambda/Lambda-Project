@@ -25,6 +25,13 @@ public static class TarkovSerializationExtension
 
     public static void Put(this NetDataWriter writer, ItemAddress itemAddress)
     {
+        if (itemAddress == null)
+        {
+            writer.Put(false);
+            return;
+        }
+
+        writer.Put(true);
         GClass1950 descriptor = itemAddress.ToDescriptor();
         EFTWriterClass eftWriter = WriterPoolManager.GetWriter();
         eftWriter.WritePolymorph(descriptor);
@@ -35,10 +42,31 @@ public static class TarkovSerializationExtension
 
     public static ItemAddress GetItemAddress(this NetDataReader reader, Player player)
     {
+        if (!reader.GetBool())
+        {
+            return null;
+        }
+
         byte[] _addressDescriptor = reader.GetByteArray();
         using var eftReader = PacketToEFTReaderAbstractClass.Get(_addressDescriptor);
         var descriptor = eftReader.ReadPolymorph<GClass1950>();
         return player.InventoryController.ToItemAddress(descriptor);
+    }
+
+    public static void PutItemCompressed(this NetDataWriter writer, Item item)
+    {
+        var eftWriter = WriterPoolManager.GetWriter();
+        var descriptor = EFTItemSerializerClass.SerializeItem(item, FikaGlobals.SearchControllerSerializer);
+        eftWriter.WriteEFTItemDescriptor(descriptor);
+        writer.CompressAndPutByteArray(eftWriter.ToArray());
+        WriterPoolManager.ReturnWriter(eftWriter);
+    }
+
+    public static Item GetItemCompressed(this NetDataReader reader)
+    {
+        var bytes = reader.DecompressAndGetByteArray();
+        using var eftReader = PacketToEFTReaderAbstractClass.Get(bytes);
+        return EFTItemSerializerClass.DeserializeItem(eftReader.ReadEFTItemDescriptor(), Singleton<ItemFactoryClass>.Instance, []);
     }
 }
 

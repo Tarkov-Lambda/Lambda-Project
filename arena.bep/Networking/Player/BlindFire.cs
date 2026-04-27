@@ -3,6 +3,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 using MemoryPack;
+using PacketHandler.RateLimiting;
 
 namespace ifp.arena.bep.networking;
 
@@ -21,6 +22,8 @@ public partial struct BlindFirePacket : INetSerializable, IAuthoredPacket
 public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
 {
     protected override bool ShouldLog => false;
+
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
 
     public void Send(int value)
     {

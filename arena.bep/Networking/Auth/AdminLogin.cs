@@ -37,15 +37,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
 {
     private readonly Dictionary<Player, string> _pendingChallenges = new();
 
-    // protected override RateLimitConfig ServerRateLimit => new(
-    //     enabled: true,
-    //     refillPerSecond: 0.5,
-    //     burst: 3,
-    //     costPerPacket: 1,
-    //     action: RateLimitAction.Reject,
-    //     stateTtlSeconds: 60,
-    //     rejectCooldownSeconds: 2
-    // );
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(5);
 
     public void Send()
     {

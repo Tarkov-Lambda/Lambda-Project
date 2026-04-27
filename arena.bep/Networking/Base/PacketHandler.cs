@@ -248,7 +248,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         TryInvokeAction(AfterPacketApplied, packet);
     }
 
-    protected void WhenClientReceivesPacket(T packet, NetPeer peer)
+    protected virtual void WhenClientReceivesPacket(T packet, NetPeer peer)
     {
         if (!H.IsInRaid() || H.FikaNet == null) return;
 
