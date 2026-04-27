@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.InventoryLogic;
 using EFT.UI;
 using Fika.Core;
 using ifp.arena.bep.Core.Dying;
@@ -39,7 +40,7 @@ public class SharedWarmup : IGameState
     public virtual MatchState? OnUpdate()
     {
         var remaining = H.Arena.StateTimer;
-        var total = H.Gamemode.StateTimerConfig[MatchState.Warmup];
+        var total = H.Gamemode.StateTimerConfig[StateType];
         var elapsed = total - remaining;
 
         bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
@@ -117,6 +118,10 @@ public class SharedCleanup : IGameState
                 if (H.MainPlayerScore.IsAlive && totalRounds > 0 && !isHalfTime)
                 {
                     await InventoryResetter.SoftReset();
+                    if (H.MainPlayer.GetSlotItem(EquipmentSlot.Holster) == null)
+                    {
+                        await InventoryResetter.GiveDefaultPistol();
+                    }
                 }
                 else
                 {

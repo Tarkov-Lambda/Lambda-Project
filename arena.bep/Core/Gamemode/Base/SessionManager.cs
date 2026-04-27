@@ -81,8 +81,6 @@ public class SessionManager
 
         int roundsPerSide = roundMode.MaxRoundsToWin - 1;
 
-        totalRoundsPlayed = Math.Max(0, totalRoundsPlayed);
-
         if (!sideMode.HasSideSwapped)
         {
             return (totalRoundsPlayed % roundsPerSide) + 1;

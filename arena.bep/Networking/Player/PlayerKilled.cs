@@ -1,19 +1,13 @@
-﻿using System.Linq;
-using Comfort.Common;
+﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Fika.Core;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
 using PacketHandler;
-using ifp.arena.shared;
 using MemoryPack;
 using System;
-using ifp.arena.bep.Patches.Tarkov;
 using UnityEngine;
 
 namespace ifp.arena.bep.networking;
@@ -39,18 +33,16 @@ public partial struct PlayerKilledPacket : INetSerializable
     {
         get
         {
-            switch (bodyPartCollider)
+            return bodyPartCollider switch
             {
-                case EBodyPartColliderType.HeadCommon:
-                case EBodyPartColliderType.BackHead:
-                case EBodyPartColliderType.Jaw:
-                case EBodyPartColliderType.Eyes:
-                case EBodyPartColliderType.Ears:
-                case EBodyPartColliderType.ParietalHead:
-                    return true;
-                default:
-                    return false;
-            }
+                EBodyPartColliderType.HeadCommon
+                or EBodyPartColliderType.BackHead
+                or EBodyPartColliderType.Jaw
+                or EBodyPartColliderType.Eyes
+                or EBodyPartColliderType.Ears
+                or EBodyPartColliderType.ParietalHead => true,
+                _ => false,
+            };
         }
     }
 
@@ -101,7 +93,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     // this logic needs to be abstracted elsewhere
     private void HandleKill(PlayerKilledPacket packet)
     {
-
         PlayerScore victimScore = H.GetPlayerScore(packet.victim);
         if (!victimScore.IsAlive) return;
 

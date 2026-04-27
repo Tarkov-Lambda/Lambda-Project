@@ -146,7 +146,7 @@ public class Plugin : BaseUnityPlugin
             RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
 
             RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
-            RegisterPatch(new Patch_BetterSource_SetOcclusionRolloffScale());           
+            RegisterPatch(new Patch_BetterSource_SetOcclusionRolloffScale());
             RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
             RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
 
@@ -224,10 +224,10 @@ public class Plugin : BaseUnityPlugin
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
-        RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
-        RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
-        RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
-        RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+        // RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
+        // RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
+        // RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
+        // RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
         // RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer());
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
@@ -326,21 +326,22 @@ public class Plugin : BaseUnityPlugin
 
     private void Update()
     {
+        if (RestartKey.Value.IsDown())
+        {
+            Singleton<SessionStartPacketHandler>.Instance.Send();
+        }
+
         if (DeathKey.Value.IsDown())
         {
             EDamageType type = EDamageType.Fall;
             H.MainPlayer.ActiveHealthController.Kill(type);
-        }
-        if (RestartKey.Value.IsDown())
-        {
-            Singleton<SessionStartPacketHandler>.Instance.Send();
         }
 
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
             // H.MainPlayer.SetEmptyHands(delegate { });
-            H.MainPlayer.UnfuckHands();
+            // H.MainPlayer.UnfuckHands();
             // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
     }

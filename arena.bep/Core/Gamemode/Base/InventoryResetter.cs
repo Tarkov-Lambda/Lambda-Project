@@ -5,6 +5,7 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
+using EFT.UI;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.shared;
@@ -96,6 +97,34 @@ public static class InventoryResetter
             AddRange(ref itemsToRemove, H.MainPlayer.GetNonMatchingMags());
 
             await H.MainPlayer.TryPopItems(itemsToRemove);
+
+
+            // TODO: REFACTOR
+            if (H.IsNightTime)
+            {
+                var Eyewear = H.MainPlayer.GetSlotItem(EquipmentSlot.Eyewear);
+                if (Eyewear != null)
+                {
+                    await H.MainPlayer.TryPopItem(Eyewear);
+                }
+
+                await UniTask.Delay(25);
+
+                var NVGStrapTemplateId = "5c066ef40db834001966a595";
+
+                // item utilities automatically adds NVGs to headwear if it's night time
+                var Headwear = H.MainPlayer.GetSlotItem(EquipmentSlot.Headwear);
+                if (Headwear != null && Headwear.TemplateId != NVGStrapTemplateId)
+                {
+                    Item HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem();
+                    await IU.ClientRequestBuyItem(HelmetWithNVGs);
+                }
+                else
+                {
+                    Item NVGStrap = PresetItemsCache.Instance.GetPresetItem(NVGStrapTemplateId).CloneItem();
+                    await IU.ClientRequestBuyItem(NVGStrap);
+                }
+            }
         }
         finally
         {
@@ -134,14 +163,13 @@ public static class InventoryResetter
             await H.MainPlayer.TryPopItems(pocketItemsToRemove);
 
 
-            var isNightTime = H.Gamemode is SNDGamemode snd && snd.IsNightTime;
             // GIVING
             foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
             {
                 if (kvp.Key is EquipmentSlot.Eyewear)
                 {
                     // if this is night time we are giving out nvgs, eyewear conflicts.
-                    if (isNightTime)
+                    if (H.IsNightTime)
                         continue;
                 }
 
@@ -153,14 +181,13 @@ public static class InventoryResetter
                 }
             }
 
-            if (isNightTime)
+            if (H.IsNightTime)
             {
                 await UniTask.Delay(25);
                 var StrapTemplateId = "5c066ef40db834001966a595";
                 Item NVGStrap = PresetItemsCache.Instance.GetPresetItem(StrapTemplateId).CloneItem();
                 await IU.ClientRequestBuyItem(NVGStrap);
             }
-
         }
         finally
         {

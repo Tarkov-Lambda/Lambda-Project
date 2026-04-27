@@ -185,7 +185,7 @@ public static class ItemUtilities
             }
 
 
-            if (H.Gamemode is SNDGamemode snd && snd.IsNightTime)
+            if (H.IsNightTime)
             {
                 if (templateItem is HeadwearItemClass headwearItemClass)
                 {

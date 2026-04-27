@@ -69,6 +69,7 @@ public static class Helpers
     public static ArenaController Arena                                 => Singleton<ArenaController>.Instance;
     public static SessionManager Session                                => Arena.session;
     public static LambdaGamemode Gamemode                               => Arena.gamemode;
+    public static bool IsNightTime                                      => Gamemode is SNDGamemode snd && snd.IsNightTime;
 
     public static Dictionary<int, PlayerScore> Scoreboard               => Singleton<ArenaController>.Instance.session.scoreboard;
     public static PlayerScore MainPlayerScore                           => GetMainPlayerScore();

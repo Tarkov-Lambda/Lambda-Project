@@ -108,6 +108,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
             _serverRateLimiter.Clear();
             H.NetPacketProcessor.RemoveSubscription<T>();
             H.NetPacketProcessor.RemoveSubscription<RejectionPacket<T>>();
+            // H.FikaNet.UnregisterPacket<T>();
+            // H.FikaNet.UnregisterPacket<RejectionPacket<T>>();
         }
         catch (Exception ex)
         {
