@@ -15,8 +15,8 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public string FXBundlePath => Path.Combine(Plugin.pathToBundles, FX_BUNDLE_NAME);
 
-    public readonly AssetBundle FXBundle;
-    private readonly MolotovFXController MolotovFirePrefab;
+    public AssetBundle FXBundle;
+    private MolotovFXController MolotovFirePrefab;
 
     private Stack<MolotovFXController> molotovPool = new Stack<MolotovFXController>();
 
@@ -24,9 +24,6 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public FXHandler()
     {
-        FXBundle = AssetBundle.LoadFromFile(FXBundlePath);
-        MolotovFirePrefab = FXBundle.LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH).GetComponent<MolotovFXController>();
-
         H.OnGameStarted += Initialize;
         H.OnGameDispose += Dispose;
 
@@ -35,6 +32,9 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public void Initialize()
     {
+        FXBundle = AssetBundle.LoadFromFile(FXBundlePath);
+        MolotovFirePrefab = FXBundle.LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH).GetComponent<MolotovFXController>();
+
         parentEffects = new GameObject("FX").transform;
         GameObject.DontDestroyOnLoad(parentEffects.gameObject);
     }
