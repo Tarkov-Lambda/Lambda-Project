@@ -41,11 +41,15 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
     public void Dispose()
     {
-        if (parentEffects != null)
-            GameObject.Destroy(parentEffects.gameObject);
+        try
+        {
+            if (parentEffects != null)
+                GameObject.Destroy(parentEffects.gameObject);
 
-        FXBundle.Unload(false);
-        molotovPool.Clear();
+            FXBundle.Unload(false);
+            molotovPool.Clear();
+        } catch {}
+
         Release(this);
     }
 
