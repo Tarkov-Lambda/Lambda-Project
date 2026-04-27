@@ -28,7 +28,7 @@ namespace arena.ui.killfeed
             }
         }
 
-        public void Pop(string killerName, Faction killerFaction, string victimName, Faction victimFaction, Sprite weapon, bool isHeadshot)
+        public KillNotification Pop(string killerName, Faction killerFaction, string victimName, Faction victimFaction, bool isHeadshot)
         {
             KillNotification notif = SpawnOrGetFromPool();
             notif.gameObject.SetActive(true);
@@ -38,10 +38,12 @@ namespace arena.ui.killfeed
 
             notif.rectTransform.anchoredPosition = new Vector2(0, notif.rectTransform.sizeDelta.y + spacing);
 
-            notif.Set(killerName, factionColors.Get(killerFaction), victimName, factionColors.Get(victimFaction), weapon, isHeadshot);
+            notif.Set(killerName, factionColors.Get(killerFaction), victimName, factionColors.Get(victimFaction), isHeadshot);
             notif.SetAlpha(1f);
 
             currentlyShowing.Add(notif);
+
+            return notif;
         }
 
         void Update()

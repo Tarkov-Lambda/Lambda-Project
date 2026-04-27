@@ -32,12 +32,15 @@ namespace ifp.arena.bep.Core.UI
             Faction leftFaction = killerScore == null ? Faction.None : killerScore.Faction;
             Faction rightFaction = victimScore == null ? Faction.None : victimScore.Faction;
 
-            itemInfoProvider.RequestIcon(packet.weaponId, onRendered: (weaponSprite) =>
-            {
+            var pop =
                 killFeed.Pop(
                     leftName, leftFaction,
                     rightName, rightFaction,
-                    weaponSprite, packet.IsHeadshot);
+                    packet.IsHeadshot);
+
+            itemInfoProvider.RequestIcon(packet.weaponId, onRendered: (weaponSprite) =>
+            {
+                pop.SetWeaponSprite(weaponSprite);
             });
         }
 

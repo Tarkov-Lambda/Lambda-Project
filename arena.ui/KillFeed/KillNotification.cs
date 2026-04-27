@@ -35,17 +35,21 @@ namespace arena.ui
             ActivationTimeStamp = Time.time;
         }
 
-        public void Set(string left, Color colorLeft, string right, Color colorRight, Sprite weapon, bool isHeadshot)
+        public void Set(string left, Color colorLeft, string right, Color colorRight, bool isHeadshot)
         {
             leftText.text = left;
             leftColoredGraphic.color = colorLeft;
             rightText.text = right;
             rightColoredGraphic.color = colorRight;
 
-            imageWeapon.sprite = weapon;
-
             imageHeadshot.gameObject.SetActive(isHeadshot);
 
+            SetWeaponSprite(null);
+        }
+
+        public void SetWeaponSprite(Sprite sprite)
+        {
+            imageWeapon.sprite = sprite;
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
         }
 
