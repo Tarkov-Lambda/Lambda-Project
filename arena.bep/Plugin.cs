@@ -186,6 +186,7 @@ public class Plugin : BaseUnityPlugin
 
 
         RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
+        RegisterPatch(new Patch_Player_UpdateTick());                               // If the item can't be picked up -> unlock the player movement
         RegisterPatch(new Patch_MovementContext_ManualUpdate());                    // Something something old movement
         // RegisterPatch(new NostalgiaPatrolFixExitPatch());
         // RegisterPatch(new NostalgiaPatrolFixEnterPatch());

@@ -121,3 +121,52 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
         _lastShotTimeDict = null;
     }
 }
+
+public class Patch_Player_UpdateTick : ModulePatch
+{
+    private static float _lockTimer = 0f;
+    private static EPlayerState _lastState = EPlayerState.Idle;
+
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.UpdateTick));
+
+    [PatchPostfix]
+    public static void Postfix(Player __instance)
+    {
+        if (!__instance.IsYourPlayer) return;
+
+        var currentState = __instance.CurrentManagedState?.Name ?? EPlayerState.Idle;
+
+        bool isInteractionState = currentState is EPlayerState.Pickup or EPlayerState.Loot;
+
+        if (isInteractionState)
+        {
+            if (currentState != _lastState)
+            {
+                _lockTimer = 0f;
+                _lastState = currentState;
+            }
+
+            _lockTimer += Time.deltaTime;
+
+            if (_lockTimer > 1.5f)
+            {
+                if (__instance.CurrentManagedState != null)
+                {
+                    __instance.CurrentManagedState.Cancel();
+                }
+
+                if (__instance.InventoryController is PlayerInventoryController invController)
+                {
+                    invController.SetNextProcessLocked(false);
+                }
+
+                _lockTimer = 0f;
+            }
+        }
+        else
+        {
+            _lockTimer = 0f;
+            _lastState = currentState;
+        }
+    }
+}
