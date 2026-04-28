@@ -27,6 +27,7 @@ public class PlayerScore
 
     public bool IsAlive => score.IsAlive;
     public int Money => score.Money;
+    public bool shouldHardReset => score.ShouldHardReset;
 
     // Match Scope
     public int Kills => score.Kills;
@@ -121,15 +122,24 @@ public class PlayerScore
 
     public void Kill()
     {
-        score.Deaths++;
+        if (H.Session.matchState is MatchState.RoundAction or MatchState.RoundPlanted)
+        {
+            score.Deaths++;
+        }
         score.IsAlive = false;
         _deathTimestamp = NetworkTime.LocalNowSeconds;
+    }
+
+    public void SetHardReset()
+    {
+        score.ShouldHardReset = true;
     }
 
     public void Spawn()
     {
         score.IsAlive = true;
         _deathTimestamp = -1;
+        score.ShouldHardReset = false;
 
         if (!H.IsHeadless && player == H.MainPlayer)
             EventBus.OnSelfRespawn?.Invoke();

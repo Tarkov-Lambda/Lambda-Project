@@ -102,6 +102,10 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         if (killerScore != null && killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
+            if (H.Session.matchState is MatchState.RoundAction or MatchState.RoundPlanted)
+            {
+                victimScore.SetHardReset();
+            }
         }
 
         if (packet.weaponId == null)

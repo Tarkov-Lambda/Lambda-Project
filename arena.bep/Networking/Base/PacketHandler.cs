@@ -376,7 +376,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     // though this adds a bit of boilerplate, it's a good practice to explain rejection.
     protected virtual bool ValidatePacket(T packet, NetPeer peer, out string rejectionReason)
     {
-        rejectionReason = null;
+        rejectionReason = string.Empty;
         return true;
     }
 

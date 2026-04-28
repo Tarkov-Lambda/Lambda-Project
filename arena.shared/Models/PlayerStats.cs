@@ -13,6 +13,7 @@ namespace ifp.arena.shared.Models
         public float loadingProgress;
         public int Ping;
         public bool IsAdmin;
+        public bool ShouldHardReset;
 
         public int Kills;
         public int Damage;

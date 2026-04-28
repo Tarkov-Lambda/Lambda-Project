@@ -129,9 +129,6 @@ public class Plugin : BaseUnityPlugin
             RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
             RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
             RegisterPatch(new Patch_AudioSource_get_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge
-            // RegisterPatch(new Patch_BetterSource_IncludeInOcclusionProcess());          // This doesn't seem to do anything
-            // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());                     // This doesn't seem to do anything
-            // RegisterPatch(new Patch_BetterSource_ResetOcclusion());                     // This doesn't seem to do anything
 
             RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
 
@@ -342,10 +339,8 @@ public class Plugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            // H.MainPlayer.SetEmptyHands(delegate { });
             H.MainPlayer.UnfuckHands();
-            // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
-            Singleton<InventoryResyncPacketHandler>.Instance.Send();
+            Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
         }
     }
 
