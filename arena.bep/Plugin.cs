@@ -25,6 +25,7 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.LowLevel;
+using static EFT.Player;
 
 namespace ifp.arena.bep;
 

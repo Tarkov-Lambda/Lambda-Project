@@ -148,17 +148,10 @@ public class Patch_Player_UpdateTick : ModulePatch
 
             _lockTimer += Time.deltaTime;
 
-            if (_lockTimer > 1.5f)
+            if (_lockTimer > 0.7f)
             {
-                if (__instance.CurrentManagedState != null)
-                {
-                    __instance.CurrentManagedState.Cancel();
-                }
-
-                if (__instance.InventoryController is PlayerInventoryController invController)
-                {
-                    invController.SetNextProcessLocked(false);
-                }
+                D.Notify("Item is fucked, hol up chat");
+                H.MainPlayer.MovementContext.ProcessStateEnter(new IdleStateClass(H.MainPlayer.MovementContext));
 
                 _lockTimer = 0f;
             }
