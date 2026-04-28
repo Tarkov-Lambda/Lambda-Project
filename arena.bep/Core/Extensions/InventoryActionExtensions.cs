@@ -312,44 +312,18 @@ public static class InventoryActionExtensions
         catch (Exception ex) { D.LogError($"Error unlocking inventory: {ex}"); }
     }
 
-    private static void AutoExamineAndSearch(this Player player, Item rootItem)
+    public static void AutoExamineAndSearch(this Player player, Item rootItem)
     {
-        var searchController = player.InventoryController.SearchController;
-        Type searchType = searchController?.GetType();
+        if (player.InventoryController.SearchController is not PlayerSearchControllerClass searchController) return;
 
-        if (searchController != null && searchType != null)
+        var allItems = rootItem.GetAllItems();
+
+        foreach (var item in allItems)
         {
-            var fields = AccessTools.GetDeclaredFields(searchType);
-            foreach (var field in fields)
+            searchController.SetItemAsKnown(item, true);
+            if (item is SearchableItemItemClass searchable)
             {
-                var value = field.GetValue(searchController);
-                if (value == null) continue;
-
-                if (value is HashSet<string> hashSetStr)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        hashSetStr.Add(item.Id.ToString());
-                }
-                else if (value is HashSet<MongoID> hashSetMongo)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        hashSetMongo.Add(item.Id);
-                }
-                else if (value is Dictionary<string, bool> dictStr)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        dictStr[item.Id.ToString()] = true;
-                }
-                else if (value is Dictionary<MongoID, bool> dictMongo)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        dictMongo[item.Id] = true;
-                }
-                else if (value is HashSet<Item> hashSetItem)
-                {
-                    foreach (var item in rootItem.GetAllItems())
-                        hashSetItem.Add(item);
-                }
+                searchController.SetItemAsSearched(searchable);
             }
         }
     }

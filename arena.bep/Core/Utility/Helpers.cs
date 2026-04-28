@@ -136,10 +136,10 @@ public static class Helpers
         return AllPlayers.FirstOrDefault(p => p.Id == playerId);
     }
 
-    public static Player GetPlayer(string nickname)
+    public static Player GetPlayer(string profileId)
     {
         if (!IsInRaid()) return null;
-        return AllPlayers.FirstOrDefault(p => p.Profile.Nickname == nickname);
+        return AllPlayers.FirstOrDefault(p => p.Profile.ProfileId == profileId);
     }
 
 

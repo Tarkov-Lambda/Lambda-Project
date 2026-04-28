@@ -201,12 +201,11 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
 
-        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions()); // Looting Fake Corpses, Planting, Defusing
-
+        RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
 
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
         // RegisterPatch(new Patch_FikaHealthBar_Awake());                          // Very sloppy way to do this and causes errors
-
+        
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
 
         // Animation Patches
@@ -227,7 +226,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         // RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         // RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
-        // RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer());
+        RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 
@@ -235,10 +234,6 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
-
-        // RegisterPatch(new Patch_ObservedPlayer_HandleDamagePacket());
-        // RegisterPatch(new ObservedPlayer_PauseAllEffectsOnPlayer_Patch());
-        // RegisterPatch(new ObservedPlayer_UnpauseAllEffectsOnPlayer_Patch());
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
@@ -257,7 +252,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<ForceRemoveItemPacketHandler>();                          // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
-        RegisterSingleton<InventoryResyncPacketHandler>();                   // Manual current mongo id on observed players after manipulation
+        RegisterSingleton<InventoryResyncPacketHandler>();                          // Resynchronize Inventory Controller
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -339,7 +334,7 @@ public class Plugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            H.MainPlayer.UnfuckHands();
+            // H.MainPlayer.UnfuckHands();
             Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
         }
     }

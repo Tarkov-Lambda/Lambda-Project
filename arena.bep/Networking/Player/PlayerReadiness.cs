@@ -36,7 +36,7 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
 public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 {
-    public void Send(PlayerReadinessState readyState, float progress = 0f)
+    public void Send(PlayerReadinessState readyState)
     {
         if (H.IsHeadless) return;
 
@@ -49,7 +49,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         if (readyState is PlayerReadinessState.Connected)
         {
             packet.presetItems = PresetBundleHandler.Instance.itemsToLoad;
-            packet.buySelection = new();
+            packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
                 packet.buySelection[shopItem] = PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId);
@@ -75,10 +75,11 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         {
             var playerScore = H.GetPlayerScore(packet.Player);
             playerScore.SetBuySelection(packet.buySelection);
-            // This information is often redundant and other players don't need it here
-            // we will broadcast the non-redundant item manifest in SessionStart
             PresetBundleHandler.Instance.AddToCache(packet.presetItems);
+
+            // other clients don't need this info
             packet.presetItems = null;
+            packet.buySelection = null;
         }
     }
 

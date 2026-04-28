@@ -9,6 +9,7 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
+using ifp.arena.bep.Core;
 using ifp.arena.bep.Patches.Tarkov.UI;
 using PacketHandler;
 using PacketHandler.RateLimiting;
@@ -21,7 +22,6 @@ public struct InventoryResyncPacket : INetSerializable
     public Player Player { get; set; }
     public InventoryDescriptorClass inventoryDescriptor;
     public bool broadcast;
-
 
     public void Serialize(NetDataWriter writer)
     {
@@ -113,6 +113,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
             if (H.Session.matchState is not MatchState.Cleanup)
             {
                 D.Notify("Resetting inventory, please wait...");
+                H.MainPlayer.SetEmptyHands(delegate { });
             }
             Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = false;
         }
@@ -167,6 +168,11 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
             Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
+        }
+
+        if (!H.IsHeadless)
+        {
+            H.MainPlayer.AutoExamineAndSearch(packet.Player.Inventory.Equipment);
         }
 
         // D.DumpFile(player.InventoryController, $"{player.Profile.Nickname}'s Replaced Inventory Controller", 3);

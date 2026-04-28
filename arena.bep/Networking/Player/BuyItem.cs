@@ -12,6 +12,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UnityEngine;
+using Fika.Core.Main.ClientClasses;
 
 namespace ifp.arena.bep.networking;
 
