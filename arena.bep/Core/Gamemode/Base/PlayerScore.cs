@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using EFT;
+using EFT.InventoryLogic;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
@@ -15,6 +17,8 @@ public class PlayerScore
     private PlayerScoreInfo score;
 
     public PlayerScoreInfo Score => score;
+
+    public Dictionary<ShopItem, Item> BuySelection { get; private set; }
 
     public Faction Faction => score.Faction;
 
@@ -113,6 +117,11 @@ public class PlayerScore
     public void SetAdmin(bool isAdmin)
     {
         score.IsAdmin = isAdmin;
+    }
+
+    public void SetBuySelection(Dictionary<ShopItem, Item> buySelection)
+    {
+        BuySelection = buySelection;
     }
 
     public void AddDamage(int newDamage)

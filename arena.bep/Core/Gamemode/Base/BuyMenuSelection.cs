@@ -22,9 +22,17 @@ public static class BuyMenuSelection
         buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
     }
 
+    // пиздец буквально просто хуйню пишу
     public static bool TryGetItemData(string bsgId, out ShopItem itemData)
     {
-        foreach (var category in buyCategories)
+        var result = TryGetItemData(buyCategories, bsgId, out ShopItem itemDataInside);
+        itemData = itemDataInside;
+        return result;
+    }
+
+    public static bool TryGetItemData(this List<BuyCategory> buyMenu, string bsgId, out ShopItem itemData)
+    {
+        foreach (var category in buyMenu)
         {
             foreach (var item in category.items)
             {
@@ -44,18 +52,34 @@ public static class BuyMenuSelection
         return false;
     }
 
-    public static List<string> GetAllItemBsgId()
+    public static List<string> GetAllItemBsgId() => GetAllItemBsgId(buyCategories);
+
+    public static List<string> GetAllItemBsgId(this List<BuyCategory> buyMenu)
     {
         List<string> AllItemBsgIds = [];
 
-        foreach (var category in buyCategories)
+        foreach (var shopItem in buyMenu.GetAllShopItems())
         {
-            foreach (var item in category.items)
-            {
-                AllItemBsgIds.Add(item.bsgId);
-            }
+            AllItemBsgIds.Add(shopItem.bsgId);
         }
 
         return AllItemBsgIds;
+    }
+
+    public static List<ShopItem> GetAllShopItems() => GetAllShopItems(buyCategories);
+
+    public static List<ShopItem> GetAllShopItems(this List<BuyCategory> buyMenu)
+    {
+        List<ShopItem> AllItems = [];
+
+        foreach (var category in buyMenu)
+        {
+            foreach (var item in category.items)
+            {
+                AllItems.Add(item);
+            }
+        }
+
+        return AllItems;
     }
 }

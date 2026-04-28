@@ -20,7 +20,7 @@ public partial struct SessionStartPacket : INetSerializable
 {
     public string level;
     public string gamemode;
-    public Item[] presetItems;
+    public List<Item> asssetBundles;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStartPacket>(reader);
@@ -59,7 +59,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         // send manifest of all item assets that need to be loaded before starting
         if (H.IsServer)
         {
-            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+            packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
         }
 
         DispatchPacket(packet);
@@ -77,7 +77,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         if (H.IsServer)
         {
-            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+            packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
         }
 
         DispatchPacketToPeer(packet, peer);
@@ -101,7 +101,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, NetPeer peer)
     {
-        packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+        packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
     }
 
     protected override async void Apply(SessionStartPacket packet, NetPeer peer)
@@ -128,7 +128,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         NetworkTime.Reset();
 
-        PresetBundleHandler.Instance.AddToCache(packet.presetItems);
+        PresetBundleHandler.Instance.AddToCache(packet.asssetBundles);
 
         await UniTask.WhenAll(
             MapAssetBundleHandler.Instance.LoadMap(packet.level),

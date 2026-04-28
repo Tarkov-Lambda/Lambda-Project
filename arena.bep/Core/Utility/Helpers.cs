@@ -149,17 +149,17 @@ public static class Helpers
         return AllPlayers.FirstOrDefault(p => p.ProfileId == profileId);
     }
 
+    public static PlayerScore GetPlayerScore(Player player) => GetPlayerScore(player.Id);
+
     public static PlayerScore GetPlayerScore(int playerId)
     {
         if (!IsInRaid()) return null;
         Scoreboard.TryGetValue(playerId, out var playerScore);
-        return playerScore;
-    }
 
-    public static PlayerScore GetPlayerScore(Player player)
-    {
-        if (!IsInRaid()) return null;
-        H.Scoreboard.TryGetValue(player.Id, out var playerScore);
+        if (playerScore == null)
+        {
+            playerScore = new PlayerScore(playerId);
+        }
         return playerScore;
     }
 

@@ -22,12 +22,12 @@ public class DuelPrepare : SharedPrepare
     {
         if (!H.IsHeadless)
         {
-            if (H.MainPlayer.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) == null)
-            {
-                SniperRifleItemClass TRG = InventoryResetter.GetFirstSniperRifleItem();
-                BuyMenuSelection.TryGetItemData(TRG.TemplateId, out ShopItem carbineShopInfo);
-                Purchasing.BuyItem(carbineShopInfo);
-            }
+            // if (H.MainPlayer.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) == null)
+            // {
+            //     SniperRifleItemClass TRG = InventoryResetter.GetFirstSniperRifleItem();
+            //     BuyMenuSelection.TryGetItemData(TRG.TemplateId, out ShopItem carbineShopInfo);
+            //     Purchasing.BuyItem(carbineShopInfo);
+            // }
         }
 
         base.OnEnter();

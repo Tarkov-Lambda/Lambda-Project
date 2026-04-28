@@ -12,6 +12,10 @@ using ifp.arena.bep.Core.UI;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core.AssetBundleHandling;
+using ifp.arena.shared.Models;
+using ifp.arena.bep.Core.Economy;
+using arena.ui;
+using EFT.UI;
 
 namespace ifp.arena.bep.networking;
 
@@ -23,7 +27,8 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
     public PlayerReadinessState readyState;
 
-    public Item[] presetItems; // only sent by the player on the initial connection
+    public Dictionary<ShopItem, Item> buySelection;
+    public List<Item> presetItems; // only sent by the player on the initial connection
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
@@ -43,7 +48,12 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
         if (readyState is PlayerReadinessState.Connected)
         {
-            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad.ToArray();
+            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad;
+            packet.buySelection = new();
+            foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
+            {
+                packet.buySelection[shopItem] = PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId);
+            }
         }
 
         DispatchPacket(packet);
@@ -59,23 +69,12 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool ValidatePacket(PlayerReadinessPacket packet, NetPeer peer, out string rejectionReason)
-    {
-        if (packet.presetItems != null)
-        {
-            // This information is redundant and other players don't need it here
-            // we will broadcast the non-redundant item manifest in SessionStart
-            PresetBundleHandler.Instance.AddToCache(packet.presetItems);
-            packet.presetItems = null;
-        }
-
-        return base.ValidatePacket(packet, peer, out rejectionReason);
-    }
-
     protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, NetPeer peer)
     {
         if (packet.presetItems != null)
         {
+            var playerScore = H.GetPlayerScore(packet.Player);
+            playerScore.SetBuySelection(packet.buySelection);
             // This information is often redundant and other players don't need it here
             // we will broadcast the non-redundant item manifest in SessionStart
             PresetBundleHandler.Instance.AddToCache(packet.presetItems);

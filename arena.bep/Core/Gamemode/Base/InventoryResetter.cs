@@ -16,7 +16,7 @@ public static class InventoryResetter
 {
     public static bool IsResetting { get; private set; }
 
-    public static PistolItemClass GetDefaultPistol()
+    public static PistolItemClass GetDefaultPistol(this PlayerScore playerScore)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -29,7 +29,7 @@ public static class InventoryResetter
                 if (immutable is not PistolItemClass pistolItem)
                     continue;
 
-                if (shopItem.faction == H.MainPlayerScore.Faction || shopItem.faction == Faction.None)
+                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
                     return pistolItem;
             }
         }
@@ -37,7 +37,7 @@ public static class InventoryResetter
         return null;
     }
 
-    public static SniperRifleItemClass GetFirstSniperRifleItem()
+    public static SniperRifleItemClass GetFirstSniperRifleItem(this PlayerScore playerScore)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -50,7 +50,7 @@ public static class InventoryResetter
                 if (immutable is not SniperRifleItemClass assaultCarbine)
                     continue;
 
-                if (shopItem.faction == H.MainPlayerScore.Faction || shopItem.faction == Faction.None)
+                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
                     return assaultCarbine;
             }
         }
@@ -76,7 +76,7 @@ public static class InventoryResetter
     }
 
 
-    public static async UniTask SoftReset()
+    public static async UniTask SoftReset(this Player player)
     {
         if (IsResetting) return;
         IsResetting = true;
@@ -84,24 +84,24 @@ public static class InventoryResetter
         {
             List<Item> itemsToRemove = [];
 
-            var secondPrimaryWeapon = H.MainPlayer.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
+            var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
             AddItem(ref itemsToRemove, secondPrimaryWeapon);
 
-            var backpack = H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack);
+            var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
             AddItem(ref itemsToRemove, backpack);
 
-            AddRange(ref itemsToRemove, H.MainPlayer.GetNonMatchingMags());
+            AddRange(ref itemsToRemove, player.GetNonMatchingMags());
 
-            await H.MainPlayer.TryPopItems(itemsToRemove);
+            await player.TryPopItems(itemsToRemove);
 
 
             // TODO: REFACTOR
             if (H.IsNightTime)
             {
-                var Eyewear = H.MainPlayer.GetSlotItem(EquipmentSlot.Eyewear);
+                var Eyewear = player.GetSlotItem(EquipmentSlot.Eyewear);
                 if (Eyewear != null)
                 {
-                    await H.MainPlayer.TryPopItem(Eyewear);
+                    await player.TryPopItem(Eyewear);
                 }
 
                 await UniTask.Delay(25);
@@ -109,7 +109,7 @@ public static class InventoryResetter
                 var NVGStrapTemplateId = "5c066ef40db834001966a595";
 
                 // item utilities automatically adds NVGs to headwear if it's night time
-                var Headwear = H.MainPlayer.GetSlotItem(EquipmentSlot.Headwear);
+                var Headwear = player.GetSlotItem(EquipmentSlot.Headwear);
                 if (Headwear != null && Headwear.TemplateId != NVGStrapTemplateId)
                 {
                     Item HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem();
@@ -128,13 +128,13 @@ public static class InventoryResetter
         }
     }
 
-    public static async UniTask HardReset(Player player)
+    public static async UniTask HardReset(this Player player)
     {
         if (IsResetting) return;
         IsResetting = true;
         try
         {
-            H.MainPlayer.ForceUnlockInventory();
+            player.ForceUnlockInventory();
 
             List<Item> itemsToRemove = [];
 
@@ -188,8 +188,8 @@ public static class InventoryResetter
         }
     }
 
-    public static async UniTask GiveDefaultPistol()
+    public static async UniTask GiveDefaultPistol(this PlayerScore playerScore)
     {
-        await IU.ClientRequestBuyItem(GetDefaultPistol());
+        await IU.ClientRequestBuyItem(GetDefaultPistol(playerScore));
     }
 }

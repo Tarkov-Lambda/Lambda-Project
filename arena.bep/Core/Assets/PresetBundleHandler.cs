@@ -49,7 +49,7 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
 
     }
 
-    public void AddToCache(Item[] items)
+    public void AddToCache(List<Item> items)
     {
         foreach (var item in items)
         {

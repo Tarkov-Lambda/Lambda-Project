@@ -122,16 +122,16 @@ public class SharedCleanup : IGameState
 
                 if (H.MainPlayerScore.IsAlive && totalRounds > 0 && !isHalfTime)
                 {
-                    await InventoryResetter.SoftReset();
+                    await H.MainPlayer.SoftReset();
                     if (H.MainPlayer.GetSlotItem(EquipmentSlot.Holster) == null)
                     {
-                        await InventoryResetter.GiveDefaultPistol();
+                        await H.MainPlayerScore.GiveDefaultPistol();
                     }
                 }
                 else
                 {
-                    await InventoryResetter.HardReset(H.MainPlayer);
-                    await InventoryResetter.GiveDefaultPistol();
+                    await H.MainPlayer.HardReset();
+                    await H.MainPlayerScore.GiveDefaultPistol();
                 }
             });
         }
