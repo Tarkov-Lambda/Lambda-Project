@@ -11,7 +11,7 @@ using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
-using Fika.Core.Networking.Pooling;
+using UnityEngine;
 
 namespace ifp.arena.bep.networking;
 
@@ -25,14 +25,14 @@ public struct BuyItemPacket : INetSerializable, IAuthoredPacket
     {
         writer.PutPlayer(Player);
         writer.Put(placement);
-        writer.PutItemCompressed(item);
+        writer.PutItem(item);
     }
 
     public void Deserialize(NetDataReader reader)
     {
         Player = reader.GetPlayer();
         placement = reader.GetItemPlacement(Player);
-        item = reader.GetItemCompressed();
+        item = reader.GetItem();
     }
 }
 
@@ -119,6 +119,13 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             }
         }
 
+        // this is so retarded
+        // if (packet.Player.IsYourPlayer && packet.item is Weapon)
+        // {
+        //     packet.placement.Address.RaiseAddEvent(packet.item, CommandStatus.Begin, packet.Player.InventoryController);
+        //     await UniTask.Delay(200);
+        // }
+
         IU.WhenApprovedGiveItem(packet.item, packet.Player, packet.placement);
     }
 
@@ -176,16 +183,16 @@ public static class PlayerInventoryTimeGate
                 {
                     Player player = H.GetPlayer(_playerId);
 
-                    // Native EFT/Fika inventory operations take varying lengths of time to clear active events
                     if (player != null && player.InventoryController is TraderControllerClass traderController)
                     {
-                        float timeout = 3.0f; // Absolute failsafe to prevent infinite softlock
+                        float timeout = 3.0f;
                         while (traderController.HasActiveEvents && timeout > 0)
                         {
-                            await UniTask.Delay(5);
-                            timeout -= 0.005f;
+                            timeout -= Time.deltaTime;
                         }
                     }
+
+                    await UniTask.DelayFrame(1);
 
                     try
                     {
@@ -199,10 +206,8 @@ public static class PlayerInventoryTimeGate
             }
             finally
             {
-                // mark as stopped
                 Interlocked.Exchange(ref _isProcessing, 0);
 
-                // if a packet was enqueued exactly as we were stopping, restart the loop.
                 if (!_queue.IsEmpty && Interlocked.Exchange(ref _isProcessing, 1) == 0)
                 {
                     ProcessQueueAsync().Forget();

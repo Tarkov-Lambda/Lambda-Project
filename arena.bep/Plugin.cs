@@ -258,7 +258,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<ForceRemoveItemPacketHandler>();                          // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
-        // RegisterSingleton<InventoryCounterResyncPacketHandler>();                   // Manual current mongo id on observed players after manipulation
+        RegisterSingleton<InventoryResyncPacketHandler>();                   // Manual current mongo id on observed players after manipulation
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -343,6 +343,7 @@ public class Plugin : BaseUnityPlugin
             // H.MainPlayer.SetEmptyHands(delegate { });
             H.MainPlayer.UnfuckHands();
             // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
+            Singleton<InventoryResyncPacketHandler>.Instance.Send();
         }
     }
 

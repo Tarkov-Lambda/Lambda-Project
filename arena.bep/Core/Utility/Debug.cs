@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ifp.arena.bep;
 using Cysharp.Threading.Tasks;
+using System.IO;
 
 namespace ifp.arena.shared;
 
@@ -21,7 +22,7 @@ public static class Debugging
     public static void LogArenaController(string msg) => Plugin.Logger.LogInfo(msg);
     public static void LogInventory(string msg) => Plugin.Logger.LogInfo(msg); // for inventory item tracking
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
-    public static string DumpFile(object obj, int depth = 0, bool log = false, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
+    public static void DumpFile(object obj, string fileName = "Unknown Log", int depth = 0, [CallerArgumentExpression("obj")] string name = null) => _dumpFile(obj, fileName, depth);
 
     //     // public static void Log(string msg) => null;
     //     // public static void LogTransaction(string msg) { }
@@ -74,8 +75,12 @@ public static class Debugging
         _throttledChannel[key] = false;
     }
 
-    // public static void PlayMusic(MusicEvent musicEvent) => MusicManager.Instance?.PlayEvent(musicEvent);
-    // public static void PlayMusic(MusicEvent musicEvent) => D.Notify(musicEvent.ToString());
+    private static void _dumpFile(object obj, string fileName = "Unnamed Log", int depth = 1)
+    {
+        string dump = _dump(obj, depth, false);
+        var logFilePath = Path.Combine(Plugin.pathToLogs, $"{fileName}.txt");
+        File.WriteAllText(logFilePath, dump);
+    }
 
     private static string _dump(object obj, int depth = 1, bool log = true, [CallerArgumentExpression("obj")] string name = null)
     {

@@ -79,7 +79,7 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
         }
     }
 
-    public async UniTask LoadEverythingInCache()
+public async UniTask LoadEverythingInCache()
     {
         var prefabsToLoad = new List<ResourceKey>();
 
@@ -91,24 +91,24 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
                 if (i.Template == null)
                     continue;
 
-                var prefab = i.Template.Prefab;
-
-                if (prefab != null && !string.IsNullOrEmpty(prefab.path))
+                if (i.Template.AllResources != null)
                 {
-                    prefabsToLoad.Add(prefab);
+                    prefabsToLoad.AddRange(i.Template.AllResources);
                 }
             }
         }
 
         if (prefabsToLoad.Count > 0)
         {
+            var distinctPrefabs = prefabsToLoad.Distinct().ToList();
+
             await H.PoolManagerClass.LoadBundlesAndCreatePools(
                 PoolManagerClass.PoolsCategory.Raid,
                 PoolManagerClass.AssemblyType.Local,
-                prefabsToLoad,
+                distinctPrefabs,
                 JobPriorityClass.Immediate,
                 null,
-                default(CancellationToken)
+                default
             );
         }
     }

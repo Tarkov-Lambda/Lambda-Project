@@ -22,7 +22,7 @@ namespace ifp.arena.bep.Core.UI
 
         void OnPlayerKill(PlayerKilledPacket killPacket)
         {
-            if (killPacket.victim == H.MainPlayer)
+            if (killPacket.Player == H.MainPlayer)
             {
                 PlayerScore killerScore = H.GetPlayerScore(killPacket.killer);
                 OnSelfDeath(killerScore.Score);

@@ -44,10 +44,10 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     private void OnPlayerKilled(PlayerKilledPacket packet)
     {
-        if (observedPlayer == null || packet.victim != observedPlayer) return;
+        if (observedPlayer == null || packet.Player != observedPlayer) return;
 
         // Fetch the ragdoll from the creator to follow the death
-        observedCorpse = H.RagdollCreator.GetCorpse(packet.victim);
+        observedCorpse = H.RagdollCreator.GetCorpse(packet.Player);
         if (observedCorpse != null)
         {
             observedCorpse.SetAttachedCamera(CameraClass.Instance.Camera);

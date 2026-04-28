@@ -39,6 +39,8 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
 
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(5);
 
+    protected override bool ShouldNotifyAboutRejection => true;
+
     public void Send()
     {
         if (H.IsServer)
@@ -51,7 +53,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         {
             player = H.MainPlayer,
             Step = AdminAuthStep.Request,
-            Payload = ""
+            Payload = null
         };
 
         DispatchPacket(packet);
@@ -64,120 +66,142 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
         switch (packet.Step)
         {
             case AdminAuthStep.Request:
-                HandleLoginRequest(packet, peer);
                 return true;
 
             case AdminAuthStep.Verify:
-                return HandleVerification(packet);
+                return ValidateVerification(packet, out rejectionReason);
 
             default:
-                D.Log($"AdminLoginPacketHandler [Server]: Unhandled Step {packet.Step} in ServerValidation. Rejecting.");
+                rejectionReason = $"Unhandled auth step {packet.Step}";
                 return false;
         }
+    }
+
+    private bool ValidateVerification(AdminAuthPacket packet, out string rejectionReason)
+    {
+        rejectionReason = null;
+
+        if (!_pendingChallenges.TryGetValue(packet.player, out var nonce))
+        {
+            rejectionReason = "No pending challenge.";
+            return false;
+        }
+
+        string serverPassword = Plugin.Password.Value;
+        if (string.IsNullOrEmpty(serverPassword))
+        {
+            rejectionReason = "Server password not configured.";
+            return false;
+        }
+
+        string expected = ComputeHash(serverPassword, nonce);
+        bool valid = packet.Payload == expected;
+
+        if (!valid)
+            rejectionReason = "Invalid credentials.";
+
+        return valid;
     }
 
     protected override void ProcessApprovedPacket(ref AdminAuthPacket packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
-        H.FikaNet.SendData(ref packet, deliveryMethod, true);
+
+        switch (packet.Step)
+        {
+            case AdminAuthStep.Request:
+                HandleRequest(ref packet, peer);
+                break;
+
+            case AdminAuthStep.Verify:
+                HandleVerify(ref packet, peer);
+                break;
+        }
+
         ApplyInternal(packet, peer);
     }
 
-    protected override void Apply(AdminAuthPacket packet, NetPeer peer)
-    {
-        if (packet.Step == AdminAuthStep.Challenge)
-        {
-            if (string.IsNullOrEmpty(Plugin.Password.Value))
-            {
-                D.Log("AdminLoginPacketHandler [Client]: Local Plugin.Password.Value is empty! Aborting verification.");
-                return;
-            }
-
-            string responseHash = ComputeHash(Plugin.Password.Value, packet.Payload);
-
-            var responsePacket = new AdminAuthPacket
-            {
-                player = H.MainPlayer,
-                Step = AdminAuthStep.Verify,
-                Payload = responseHash
-            };
-
-            DispatchPacket(responsePacket);
-        }
-        else if (packet.Step == AdminAuthStep.Verify)
-        {
-            var successPacket = new AdminAuthPacket
-            {
-                player = packet.player,
-                Step = AdminAuthStep.Success
-            };
-
-            H.FikaNet.SendDataToPeer(ref successPacket, deliveryMethod, peer);
-        }
-        else if (packet.Step == AdminAuthStep.Success)
-        {
-            D.Log($"{packet.player.Profile.Nickname} is now an Admin");
-            H.GetPlayerScore(packet.player)?.SetAdmin(true);
-        }
-    }
-
-    protected override void WhenRejected(AdminAuthPacket packet, NetPeer peer)
-    {
-        D.Notify("Rejected");
-    }
-
-    private void HandleLoginRequest(AdminAuthPacket packet, NetPeer peer)
+    private void HandleRequest(ref AdminAuthPacket packet, NetPeer peer)
     {
         string nonce = Guid.NewGuid().ToString("N");
 
         _pendingChallenges[packet.player] = nonce;
 
-        var challengePacket = new AdminAuthPacket
+        var challenge = new AdminAuthPacket
         {
             player = packet.player,
             Step = AdminAuthStep.Challenge,
             Payload = nonce
         };
 
-        H.FikaNet.SendDataToPeer(ref challengePacket, deliveryMethod, peer);
+        H.FikaNet.SendDataToPeer(ref challenge, deliveryMethod, peer);
     }
 
-    private bool HandleVerification(AdminAuthPacket packet)
+    private void HandleVerify(ref AdminAuthPacket packet, NetPeer peer)
     {
-        if (!_pendingChallenges.TryGetValue(packet.player, out string nonce))
-        {
-            D.Log($"Auth failed: No challenge found for {packet.player.Profile.Nickname}");
-            return false;
-        }
-
         _pendingChallenges.Remove(packet.player);
 
-        string serverPassword = Plugin.Password.Value;
-        if (string.IsNullOrEmpty(serverPassword))
+        var success = new AdminAuthPacket
         {
-            D.Log("AdminLoginPacketHandler [Server]: Verification failed. Server password is empty/null!");
-            return false;
+            player = packet.player,
+            Step = AdminAuthStep.Success,
+            Payload = null
+        };
+
+        H.FikaNet.SendDataToPeer(ref success, deliveryMethod, peer);
+    }
+
+
+    protected override void Apply(AdminAuthPacket packet, NetPeer peer)
+    {
+        switch (packet.Step)
+        {
+            case AdminAuthStep.Challenge:
+                HandleChallenge(packet);
+                break;
+
+            case AdminAuthStep.Success:
+                HandleSuccess(packet);
+                break;
+        }
+    }
+
+    private void HandleChallenge(AdminAuthPacket packet)
+    {
+        if (string.IsNullOrEmpty(Plugin.Password.Value))
+        {
+            D.Log("Admin auth failed: client password is empty.");
+            return;
         }
 
-        string expectedHash = ComputeHash(serverPassword, nonce);
-        bool isMatch = packet.Payload == expectedHash;
+        string hash = ComputeHash(Plugin.Password.Value, packet.Payload);
 
-        return isMatch;
+        var verify = new AdminAuthPacket
+        {
+            player = H.MainPlayer,
+            Step = AdminAuthStep.Verify,
+            Payload = hash
+        };
+
+        DispatchPacket(verify);
+    }
+
+    private void HandleSuccess(AdminAuthPacket packet)
+    {
+        D.Log($"{packet.player.Profile.Nickname} is now an Admin");
+        H.GetPlayerScore(packet.player)?.SetAdmin(true);
     }
 
     private static string ComputeHash(string password, string nonce)
     {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            string rawData = password + nonce;
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+        using var sha256 = SHA256.Create();
 
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                builder.Append(bytes[i].ToString("x2"));
-            }
-            return builder.ToString();
-        }
+        byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password + nonce));
+
+        var builder = new StringBuilder(bytes.Length * 2);
+        foreach (var b in bytes)
+            builder.Append(b.ToString("x2"));
+
+        return builder.ToString();
     }
 }

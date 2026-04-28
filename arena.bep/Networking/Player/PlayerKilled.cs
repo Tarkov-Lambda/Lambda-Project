@@ -13,13 +13,13 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PlayerKilledPacket : INetSerializable
+public partial struct PlayerKilledPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player killer;
+    public Player Player { get; set; } // Player is the victim
 
     [MemoryPackAllowSerialize]
-    public Player victim;
+    public Player killer;
 
     [MemoryPackAllowSerialize]
     public Player assist;
@@ -60,8 +60,8 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 
         var packet = new PlayerKilledPacket
         {
+            Player = victim,
             killer = killer,
-            victim = victim,
             assist = null,
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
@@ -93,7 +93,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
     // this logic needs to be abstracted elsewhere
     private void HandleKill(PlayerKilledPacket packet)
     {
-        PlayerScore victimScore = H.GetPlayerScore(packet.victim);
+        PlayerScore victimScore = H.GetPlayerScore(packet.Player);
         if (!victimScore.IsAlive) return;
 
         victimScore.Kill();
@@ -122,18 +122,18 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         //     return;
         // }
 
-        if (packet.victim.IsYourPlayer)
+        if (packet.Player.IsYourPlayer)
         {
             HandleLocalPlayerDeath(packet).Forget();
         }
         else
         {
-            H.RagdollCreator.CreateRagdollFromPlayer(packet.victim);
+            H.RagdollCreator.CreateRagdollFromPlayer(packet.Player);
 
             // teleport without interpolation
-            HoldPlayerOut(packet.victim, Vector3.zero, 2.0f).Forget();
+            HoldPlayerOut(packet.Player, Vector3.zero, 2.0f).Forget();
 
-            Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+            Teleporter.Teleport(packet.Player, "lobby", Faction.None);
         }
     }
 
@@ -144,14 +144,14 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         // Do local cleanup
         HU.HealMe().Forget();
         // Singleton<ReplenishPacketHandler>.Instance.Send();
-        packet.victim.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+        packet.Player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
         _ = PU.CloseEyes(true, true);
         H.MainPlayer.SetEmptyHands(delegate { });
 
         // essentially teleport without interpolation
-        Vector3 deathPos = packet.victim.Position;
+        Vector3 deathPos = packet.Player.Position;
         Vector3 hiddenPos = deathPos + new Vector3(0, -10f, 0);
-        HoldPlayerOut(packet.victim, hiddenPos, 4.0f).Forget();
+        HoldPlayerOut(packet.Player, hiddenPos, 4.0f).Forget();
 
         // wait for the death cam sequence to finish in RagdollCreator
         await UniTask.Delay(4000, ignoreTimeScale: false, PlayerLoopTiming.Update);
@@ -160,7 +160,7 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         // if we are already alive after 4 seconds, do not teleport ourselves into the lobby
         if (!H.MainPlayerScore.IsAlive)
         {
-            Teleporter.Teleport(packet.victim, "lobby", Faction.None);
+            Teleporter.Teleport(packet.Player, "lobby", Faction.None);
         }
     }
 

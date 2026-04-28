@@ -28,7 +28,7 @@ public struct RejectionPacket<T> : INetSerializable where T : INetSerializable, 
     public void Serialize(NetDataWriter writer)
     {
         Payload.Serialize(writer);
-        writer.Put(rejectionReason);
+        writer.Put(rejectionReason ?? string.Empty);
     }
 
     public void Deserialize(NetDataReader reader)
@@ -361,11 +361,11 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
                 return false;
             }
 
-            // if (authoredPacket.Player != peer.Player)
-            // {
-            //     rejectionReason = "You can't send packets for other players";
-            //     return false;
-            // }
+            if (authoredPacket.Player != peer.Player)
+            {
+                rejectionReason = "You can't send packets for other players";
+                return false;
+            }
         }
 
         rejectionReason = null;

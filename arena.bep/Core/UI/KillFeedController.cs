@@ -21,7 +21,7 @@ namespace ifp.arena.bep.Core.UI
 
         private void OnPlayerKill(PlayerKilledPacket packet)
         {
-            PlayerScore victimScore = H.GetPlayerScore(packet.victim);
+            PlayerScore victimScore = H.GetPlayerScore(packet.Player);
             if (!victimScore.IsAlive) return;
 
             PlayerScore killerScore = H.GetPlayerScore(packet.killer);

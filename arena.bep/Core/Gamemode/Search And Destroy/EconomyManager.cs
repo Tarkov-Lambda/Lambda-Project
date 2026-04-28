@@ -86,14 +86,14 @@ public class EconomyManager : IDisposable
 
     private void HandleKillReward(PlayerKilledPacket packet)
     {
-        if (packet.killer == null || packet.victim == null) return;
+        if (packet.killer == null || packet.Player == null) return;
         if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
-        if (packet.killer == packet.victim) return; // Suicide handled in Round End usually
+        if (packet.killer == packet.Player) return; // Suicide handled in Round End usually
 
         int reward = 300;
 
         // Team Kill Penalty?
-        if (killerScore.Faction == H.GetPlayerScore(packet.victim)?.Faction)
+        if (killerScore.Faction == H.GetPlayerScore(packet.Player)?.Faction)
         {
             reward = -300;
         }

@@ -1,15 +1,49 @@
-using System.Reflection;
-using Comfort.Common;
-using EFT;
-using EFT.InventoryLogic;
-using Fika.Core.Main.ClientClasses;
-using HarmonyLib;
-using SPT.Reflection.Patching;
-using static Fika.Core.Main.ClientClasses.ClientInventoryController;
+// using System.Reflection;
+// using Comfort.Common;
+// using EFT;
+// using EFT.InventoryLogic;
+// using Fika.Core.Main.ClientClasses;
+// using Fika.Core.Main.HostClasses;
+// using HarmonyLib;
+// using ifp.arena.bep.networking;
+// using SPT.Reflection.Patching;
+// using static Fika.Core.Main.ClientClasses.ClientInventoryController;
 
 // internal class Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer : ModulePatch
 // {
 //     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ClientInventoryOperationHandler), nameof(ClientInventoryOperationHandler.ReceiveStatusFromServer));
+
+//     [PatchPostfix]
+//     public static void Postfix(ClientInventoryOperationHandler __instance, ServerOperationStatus serverStatus)
+//     {
+//         if (serverStatus.Status == EOperationStatus.Failed)
+//         {
+//             if (serverStatus.Error.StartsWith("Could not find item"))
+//             {
+//                 if (__instance.Operation is RemoveOperationClass removeOperation)
+//                 {
+//                     removeOperation.ItemAddress_0.RemoveWithoutRestrictions(removeOperation.Item);
+
+//                     removeOperation.ItemAddress_0.RaiseRemoveEvent(removeOperation.Item, CommandStatus.Begin, __instance.InventoryController);
+//                     removeOperation.ItemAddress_0.RaiseRemoveEvent(removeOperation.Item, CommandStatus.Succeed, __instance.InventoryController);
+//                 }
+//                 else if (__instance.Operation is ThrowOperationClass throwOperation)
+//                 {
+//                     throwOperation.ItemAddress_0.RemoveWithoutRestrictions(throwOperation.Item);
+
+//                     throwOperation.ItemAddress_0.RaiseRemoveEvent(throwOperation.Item, CommandStatus.Begin, __instance.InventoryController);
+//                     throwOperation.ItemAddress_0.RaiseRemoveEvent(throwOperation.Item, CommandStatus.Succeed, __instance.InventoryController);
+//                 }
+//             }
+//             // Singleton<InventoryResyncPacketHandler>.Instance.Request(H.FikaNet.NetId);
+//         }
+
+//     }
+// }
+
+// internal class Patch_ClientInventoryOperationHandler_HandleResult : ModulePatch
+// {
+//     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(HostInventoryOperationHandler), nameof(HostInventoryOperationHandler.HandleResult));
 
 //     [PatchPostfix]
 //     public static void Postfix(ClientInventoryOperationHandler __instance, ServerOperationStatus serverStatus)
@@ -34,9 +68,8 @@ using static Fika.Core.Main.ClientClasses.ClientInventoryController;
 //                     throwOperation.ItemAddress_0.RaiseRemoveEvent(throwOperation.Item, CommandStatus.Succeed, __instance.InventoryController);
 //                 }
 //             }
-//             // D.Notify("Error occured, resynchronizing inventory");
-//             // Singleton<InventoryResyncPacketHandler>.Instance.Request(H.FikaNet.NetId);
+//             D.Notify("Error occured, resynchronizing inventory");
+//             // Singleton<InventoryResyncPacketHandler>.Instance.Send();
 //         }
-
 //     }
 // }

@@ -37,6 +37,7 @@ namespace ifp.arena.bep.Core.UI
 
             Patch_ItemsTabController_Show.OnShow += OnInventoryScreenOpen;
             EventBus.OnSelfMoneyChanged += OnSelfMoneyChanged;
+            H.OnGameStarted += SetInteractable;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
             PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
@@ -91,6 +92,7 @@ namespace ifp.arena.bep.Core.UI
         {
             Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
+            H.OnGameStarted -= SetInteractable;
             EventBus.OnEnter -= OnMatchStateEnter;
             PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
 
