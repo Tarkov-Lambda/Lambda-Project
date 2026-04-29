@@ -2,58 +2,58 @@
   {
     "name": "Debug",
     "items": [
-      // {
-      //   "bsgId": "67ab3f146d7ece17bf0096ff",
-      //   "price": 650
-      // },
-      // {
-      //   "bsgId": "5b44d0de86f774503d30cba8",
-      //   "price": 350
-      // },
-      // {
-      //   "bsgId": "66b5f6985891c84aab75ca76",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "67ab4b2d6f7ae4aa550bbcf6",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "60a3c68c37ea821725773ef5",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "67a9cd6ecade15e0f00123b8",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "5c0558060db834001b735271",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "5f60b34a41e30a4ab12a6947",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "5c066ef40db834001966a595",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "5ea17ca01412a1425304d1c0",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "5c066e3a0db834001b7353f0",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "56def37dd2720bec348b456a",
-      //   "price": 400
-      // },
-      // {
-      //   "bsgId": "6269220d70b6c02e665f2635",
-      //   "price": 400
-      // }
+      {
+        "bsgId": "67ab3f146d7ece17bf0096ff",
+        "price": 650
+      },
+      {
+        "bsgId": "5b44d0de86f774503d30cba8",
+        "price": 350
+      },
+      {
+        "bsgId": "66b5f6985891c84aab75ca76",
+        "price": 400
+      },
+      {
+        "bsgId": "67ab4b2d6f7ae4aa550bbcf6",
+        "price": 400
+      },
+      {
+        "bsgId": "60a3c68c37ea821725773ef5",
+        "price": 400
+      },
+      {
+        "bsgId": "67a9cd6ecade15e0f00123b8",
+        "price": 400
+      },
+      {
+        "bsgId": "5c0558060db834001b735271",
+        "price": 400
+      },
+      {
+        "bsgId": "5f60b34a41e30a4ab12a6947",
+        "price": 400
+      },
+      {
+        "bsgId": "5c066ef40db834001966a595",
+        "price": 400
+      },
+      {
+        "bsgId": "5ea17ca01412a1425304d1c0",
+        "price": 400
+      },
+      {
+        "bsgId": "5c066e3a0db834001b7353f0",
+        "price": 400
+      },
+      {
+        "bsgId": "56def37dd2720bec348b456a",
+        "price": 400
+      },
+      {
+        "bsgId": "6269220d70b6c02e665f2635",
+        "price": 400
+      }
     ]
   },
   {

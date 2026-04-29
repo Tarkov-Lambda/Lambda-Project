@@ -194,7 +194,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     private async UniTaskVoid InitBombVisualsAsync()
     {
-        Item bombItem = IU.CreateItemFromTemplateId(SNDGamemode.bombTemplateId);
+        Item bombItem = IU.CreateItemFromTemplateId(Hardcode.BOMB_BACKPACK);
         await IU.LoadBundlesForItem(bombItem);
         BombVisuals = H.PoolManagerClass.CreateLootPrefab(bombItem, ECameraType.Default);
         BombVisuals?.SetActive(false);

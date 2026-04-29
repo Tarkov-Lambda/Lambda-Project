@@ -130,6 +130,7 @@ public class SharedCleanup : IGameState
                 }
                 else
                 {
+                    D.Log("Trying to hard reset");
                     await H.MainPlayer.HardReset();
                     await H.MainPlayerScore.GiveDefaultPistol();
                 }

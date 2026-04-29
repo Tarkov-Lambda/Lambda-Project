@@ -80,7 +80,7 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
     private static int lastSentState;
     private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), new Type[] { typeof(int) });
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), [typeof(int)]);
 
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, int b)

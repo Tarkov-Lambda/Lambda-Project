@@ -27,7 +27,7 @@ internal static class CustomInteractions
 
         if (interactive is ObservedLootItem loot && H.Gamemode is SNDGamemode snd)
         {
-            if (loot.TemplateId == SNDGamemode.bombTemplateId && H.MainPlayerScore.Faction != Faction.T)
+            if (loot.TemplateId == Hardcode.BOMB_BACKPACK && H.MainPlayerScore.Faction != Faction.T)
             {
                 result = actions;
                 return false;
@@ -48,7 +48,7 @@ internal static class CustomInteractions
             if (roundState != MatchState.RoundPlanted) return true;
             if (H.MainPlayer.IsInPronePose) return true;
 
-            bool hasKit = TryFindItem(SNDGamemode.defuseKitTemplateId, out Item defuseKit);
+            bool hasKit = TryFindItem(Hardcode.DEFUSE_KIT, out Item defuseKit);
             float time = hasKit ? SNDGamemode.defusingTime / 2 : SNDGamemode.defusingTime;
 
             actions.Actions.Add(new ActionsTypesClass
@@ -64,7 +64,7 @@ internal static class CustomInteractions
         if (interactive is BombPlantZone)
         {
             if (roundState != MatchState.RoundAction) return true;
-            if (!TryFindItem(SNDGamemode.bombTemplateId, out Item bomb)) return true;
+            if (!TryFindItem(Hardcode.BOMB_BACKPACK, out Item bomb)) return true;
 
             float time = SNDGamemode.platingTime;
 

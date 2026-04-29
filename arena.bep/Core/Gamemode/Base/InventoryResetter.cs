@@ -78,6 +78,9 @@ public static class InventoryResetter
 
     public static async UniTask SoftReset(this Player player)
     {
+        // in future it would be nice to allocate a new inventory altogether, but for now we just mutate existing
+        
+        // Inventory newInventory = new Inventory()
         if (IsResetting) return;
         IsResetting = true;
         try
@@ -106,18 +109,16 @@ public static class InventoryResetter
 
                 await UniTask.Delay(25);
 
-                var NVGStrapTemplateId = "5c066ef40db834001966a595";
-
                 // item utilities automatically adds NVGs to headwear if it's night time
                 var Headwear = player.GetSlotItem(EquipmentSlot.Headwear);
-                if (Headwear != null && Headwear.TemplateId != NVGStrapTemplateId)
+                if (Headwear != null && Headwear.TemplateId != Hardcode.STRAP_NVG)
                 {
                     Item HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem();
                     await IU.ClientRequestBuyItem(HelmetWithNVGs);
                 }
                 else
                 {
-                    Item NVGStrap = PresetItemsCache.Instance.GetPresetItem(NVGStrapTemplateId).CloneItem();
+                    Item NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem();
                     await IU.ClientRequestBuyItem(NVGStrap);
                 }
             }
@@ -134,8 +135,6 @@ public static class InventoryResetter
         IsResetting = true;
         try
         {
-            player.ForceUnlockInventory();
-
             List<Item> itemsToRemove = [];
 
             foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
@@ -159,12 +158,11 @@ public static class InventoryResetter
             // GIVING
             foreach (var kvp in DefaultEquipmentManager.Instance.RecordedItems)
             {
-                if (kvp.Key is EquipmentSlot.Eyewear)
-                {
-                    // if this is night time we are giving out nvgs, eyewear conflicts.
-                    if (H.IsNightTime)
-                        continue;
-                }
+                // if (kvp.Key is EquipmentSlot.Eyewear)
+                // {
+                //     if (H.IsNightTime)
+                //         continue;
+                // }
 
                 var currentItem = player.GetSlotItem(kvp.Key);
                 if (kvp.Value != null && (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId))

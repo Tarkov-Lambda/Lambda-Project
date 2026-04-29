@@ -42,7 +42,7 @@ public class BombAssignmentPacketHandler : PacketHandler<BombAssignmentPacket>
     {
         if (!packet.Player.IsYourPlayer) return;
         
-        Item BombBackpack = IU.CreateItemFromTemplateId(SNDGamemode.bombTemplateId);
+        Item BombBackpack = IU.CreateItemFromTemplateId(Hardcode.BOMB_BACKPACK);
         IU.ClientRequestBuyItem(BombBackpack).Forget();
     }
 }

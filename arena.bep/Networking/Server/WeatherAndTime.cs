@@ -56,8 +56,8 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
 
 public static class TimeOfDayHelper
 {
-    private const double DAY_START = 7 * 60;   // 07:00
-    private const double DAY_END = 18 * 60;    // 18:00
+    private const double DAY_START = 15 * 60;
+    private const double DAY_END = 18 * 60;
 
     private const double NIGHT_START = 0;      // 00:00
     private const double NIGHT_END = 3 * 60;   // 03:00

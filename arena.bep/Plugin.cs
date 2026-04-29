@@ -4,7 +4,6 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using HarmonyLib;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
@@ -25,7 +24,6 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.LowLevel;
-using static EFT.Player;
 
 namespace ifp.arena.bep;
 
@@ -82,9 +80,6 @@ public class Plugin : BaseUnityPlugin
         var instance = new T();
         Singleton<T>.Create(instance);
         _disposables.Add(instance);
-        // Capture a typed release delegate now, while T is known at compile time.
-        // PacketHandler<T>.Dispose() cannot clear Singleton<ConcreteType> because it only
-        // has access to Singleton<PacketHandler<TPacket>> (a different generic slot).
         _releases.Add(() => Singleton<T>.Release(instance));
     }
 
@@ -177,7 +172,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
 
-        // RegisterPatch(new Patch_Class1396_method_3());                              // In edge cases where the hands controller gets bugged out - we hard reset it
+        RegisterPatch(new Patch_Class1396_method_3());                            // In edge cases where the hands controller gets bugged out - we hard reset it
         // RegisterPatch(new Patch_GClass2037_Start());                              // In edge cases where the hands controller gets bugged out - we hard reset it
 
         RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
@@ -196,6 +191,9 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
         RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());         // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
+
+        RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
+        RegisterPatch(new Patch_Effects_GetEmissionEffect());                       // Smoke tuning
 
         RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
@@ -286,9 +284,6 @@ public class Plugin : BaseUnityPlugin
             RegisterSingletonInRaid<LadderManager>().Forget();                    // Overwrites Player Controller on Ladder Collision and moves them.
             RegisterSingletonInRaid<BombHandler>().Forget();                      // Handler for the entirety of Bomb's lifecycle
             RegisterSingletonInRaid<HardpointZoneManager>().Forget();             // Manages Hardpoint zones and synchronization
-
-            // H.MainPlayer.NukeResetHands();
-            D.Log(SNDGamemode.bombTemplateId);
         }
         catch (Exception ex)
         {
@@ -333,7 +328,6 @@ public class Plugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;   
             H.MainPlayer.UnfuckHands();
             Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
         }

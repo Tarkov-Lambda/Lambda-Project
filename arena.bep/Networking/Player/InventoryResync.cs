@@ -67,10 +67,10 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
             broadcast = broadcast
         };
 
-        if (packet.Player.IsYourPlayer)
-        {
-            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = false;
-        }
+        // if (packet.Player.IsYourPlayer)
+        // {
+        //     Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = false;
+        // }
 
         DispatchPacket(packet);
     }
@@ -118,7 +118,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
                 D.Notify("Resetting inventory, please wait...");
                 H.MainPlayer.SetEmptyHands(delegate { });
             }
-            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = false;
+            // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = false;
         }
 
         var newInventory = new EFTInventoryClass()
@@ -170,7 +170,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
             }
 
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
+            // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
         }
 
         if (!H.IsHeadless)

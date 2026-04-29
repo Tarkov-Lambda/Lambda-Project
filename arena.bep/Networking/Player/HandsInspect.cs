@@ -22,6 +22,8 @@ public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
 {
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
 
+    protected override bool ShouldLog => false;
+
     public void Send() => DispatchPacket(new HandsInspectPacket { Player = H.MainPlayer, });
 
     protected override void Apply(HandsInspectPacket packet, NetPeer peer)

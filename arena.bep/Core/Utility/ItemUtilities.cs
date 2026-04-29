@@ -9,6 +9,7 @@ using Cysharp.Threading.Tasks;
 using EFT.Interactive;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.UI;
+using Fika.Core.Main.ClientClasses;
 
 namespace ifp.arena.bep.Core;
 
@@ -73,75 +74,27 @@ public static class ItemUtilities
 
     public static async UniTask<bool> ClientRequestBuyItem(Item templateItem)
     {
-        if (H.IsHeadless) return false;
-
-        if (H.MainPlayer.MovementContext.CurrentState is not IdleStateClass)
-        {
-            D.Notify("You can't buy when moving");
+        if (!PassesPrePurchaseChecks(templateItem))
             return false;
-        }
 
         await _lock.WaitAsync();
 
         try
         {
-            if (templateItem == null)
-                return false;
-
             var clonedItem = templateItem.CloneItem();
-            
             var placement = AU.GetItemPlacement(clonedItem, H.MainPlayer);
+
             if (placement.Kind == PlacementKind.None)
             {
                 D.LogError("Local player can not find a placement for an item, aborting.");
                 return false;
             }
 
-            if (placement.Kind == PlacementKind.EquipmentSlot)
+            bool isSlotCleared = await TryClearEquipmentSlotAsync(clonedItem, placement);
+            if (!isSlotCleared)
             {
-                var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
-                if (slot.ContainedItem != null)
-                {
-                    bool removed;
-
-                    if (clonedItem is BackpackItemClass)
-                    {
-                        removed = true;
-                        Singleton<ForceRemoveItemPacketHandler>.Instance.Send(slot.ContainedItem);
-                    }
-                    else if (clonedItem is VestItemClass or ArmorItemClass)
-                    {
-                        removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
-                    }
-                    else
-                    {
-                        D.LogInventory("Trying to remove an item");
-
-                        if (H.Gamemode is IGMRespawnable)
-                        {
-                            if (clonedItem is Weapon)
-                                removed = await H.MainPlayer.TryPopWeaponAndMags(placement.Slot);
-                            else
-                                removed = await H.MainPlayer.TryPopContainedItem(placement.Slot);
-                        }
-                        else
-                        {
-                            if (clonedItem is Weapon)
-                            {
-                                removed = await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot);
-                            }
-                            else
-                                removed = await H.MainPlayer.TryThrowContainedItem(placement.Slot);
-                        }
-
-                    }
-
-                    if (!removed)
-                    {
-                        D.Notify("Failed to allocate slot space in the inventory.");
-                        return false;
-                    }
-                }
+                D.Notify("Failed to allocate slot space in the inventory.");
+                return false;
             }
 
             if (placement.Kind is not PlacementKind.ArmorPlate && clonedItem is not BackpackItemClass)
@@ -160,65 +113,106 @@ public static class ItemUtilities
             D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
 #endif
 
-            if (clonedItem is ArmorItemClass armorItem)
-            {
-                foreach (var plate in armorItem.GetArmorPlates())
-                {
-                    plate.CurrentAddress.RemoveWithoutRestrictions(plate);
-                }
-            }
-            else if (clonedItem is VestItemClass vestItem)
-            {
-                if (vestItem.IsTacRigArmored())
-                {
-                    foreach (var plate in vestItem.GetArmorPlates())
-                    {
-                        plate.CurrentAddress.RemoveWithoutRestrictions(plate);
-                    }
-                }
-            }
-
-
-            if (H.IsNightTime)
-            {
-                if (clonedItem is HeadwearItemClass headwearItemClass)
-                {
-                    // var BastionTemplateId = "5ea17ca01412a1425304d1c0";
-                    var StrapTemplateId = "5c066ef40db834001966a595";
-
-                    var GPNVG18TemplateId = "5c0558060db834001b735271";
-                    var N15TemplateId = "5c066e3a0db834001b7353f0";
-
-                    foreach (var slot in headwearItemClass.Slots)
-                    {
-                        if (slot.Name == "mod_nvg")
-                        {
-                            Item NVG;
-                            if (clonedItem.TemplateId == StrapTemplateId)
-                            {
-                                NVG = PresetItemsCache.Instance.GetPresetItem(N15TemplateId).CloneItem();
-                            }
-                            else
-                            {
-                                NVG = PresetItemsCache.Instance.GetPresetItem(GPNVG18TemplateId).CloneItem();
-                            }
-
-                            TogglableComponent togglableComponent = NVG.GetItemComponent<TogglableComponent>();
-                            togglableComponent?.ForceToggle(true);
-
-                            slot.AddWithoutRestrictions(NVG);
-                        }
-                    }
-                }
-            }
+            StripArmorPlatesIfNeeded(clonedItem);
+            AttachNightVisionIfNeeded(clonedItem);
 
             Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement);
             return true;
         }
         finally
         {
-            // await UniTask.Delay(100);
             _lock.Release();
+        }
+    }
+
+    private static bool PassesPrePurchaseChecks(Item templateItem)
+    {
+        if (H.IsHeadless || templateItem == null)
+            return false;
+
+        if (H.MainPlayer.MovementContext.CurrentState is not IdleStateClass)
+        {
+            D.Notify("You can't buy when moving");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static async UniTask<bool> TryClearEquipmentSlotAsync(Item clonedItem, ItemPlacement placement)
+    {
+        if (placement.Kind != PlacementKind.EquipmentSlot)
+            return true;
+
+        var slot = H.MainInventory.Equipment.GetSlot(placement.Slot);
+        if (slot.ContainedItem == null)
+            return true; // Slot is already empty
+
+        if (clonedItem is BackpackItemClass)
+        {
+            Singleton<ForceRemoveItemPacketHandler>.Instance.Send(slot.ContainedItem);
+            return true;
+        }
+
+        if (clonedItem is VestItemClass or ArmorItemClass)
+        {
+            return await H.MainPlayer.TryPopContainedItem(placement.Slot);
+        }
+
+        D.LogInventory("Trying to remove an item");
+
+        bool isWeapon = clonedItem is Weapon;
+
+        if (H.Gamemode is IGMRespawnable)
+        {
+            return isWeapon
+                ? await H.MainPlayer.TryPopWeaponAndMags(placement.Slot)
+                : await H.MainPlayer.TryPopContainedItem(placement.Slot);
+        }
+        else
+        {
+            return isWeapon
+                ? await H.MainPlayer.TryThrowWeaponAndMags(placement.Slot)
+                : await H.MainPlayer.TryThrowContainedItem(placement.Slot);
+        }
+    }
+
+    private static void StripArmorPlatesIfNeeded(Item clonedItem)
+    {
+        if (clonedItem is ArmorItemClass armorItem)
+        {
+            foreach (var plate in armorItem.GetArmorPlates())
+            {
+                plate.CurrentAddress.RemoveWithoutRestrictions(plate);
+            }
+        }
+        else if (clonedItem is VestItemClass vestItem && vestItem.IsTacRigArmored())
+        {
+            foreach (var plate in vestItem.GetArmorPlates())
+            {
+                plate.CurrentAddress.RemoveWithoutRestrictions(plate);
+            }
+        }
+    }
+
+    private static void AttachNightVisionIfNeeded(Item clonedItem)
+    {
+        if (!H.IsNightTime) return;
+        if (clonedItem is not HeadwearItemClass headwearItemClass) return;
+
+        foreach (var slot in headwearItemClass.Slots)
+        {
+            if (slot.Name == "mod_nvg")
+            {
+                string targetNvgId = (clonedItem.TemplateId == Hardcode.STRAP_NVG) ? Hardcode.N15 : Hardcode.GPNVG;
+                Item nvg = PresetItemsCache.Instance.GetPresetItem(targetNvgId).CloneItem();
+
+                TogglableComponent togglableComponent = nvg.GetItemComponent<TogglableComponent>();
+                togglableComponent?.ForceToggle(true);
+
+                slot.AddWithoutRestrictions(nvg);
+                break; // Added break: Once NVGs are attached to the slot, no need to keep checking other slots.
+            }
         }
     }
 
@@ -250,11 +244,17 @@ public static class ItemUtilities
     public static void GarbageCollectWorldLoot()
     {
         ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
+        ObservedSmokeGrenade[] allSmokes = GameObject.FindObjectsByType<ObservedSmokeGrenade>(FindObjectsSortMode.None);
 
         foreach (ObservedLootItem loot in allLoot)
         {
             if (!loot.isActiveAndEnabled) continue;
             loot.Kill();
+        }
+
+        foreach (ObservedSmokeGrenade smoke in allSmokes)
+        {
+            Object.Destroy(smoke);
         }
     }
 }

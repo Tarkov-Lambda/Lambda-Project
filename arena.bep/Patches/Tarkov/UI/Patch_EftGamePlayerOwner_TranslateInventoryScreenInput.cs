@@ -19,24 +19,27 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
     {
         if (command == ECommand.ToggleInventory)
         {
-
-            // TODO: REFACTOR
-            // bruteforce disallow inventory to open during these states
             if (H.Session.matchState
-            is MatchState.SideSwap
-            or MatchState.MatchEnd
-            or MatchState.None
-            or MatchState.Cleanup)
+                is MatchState.SideSwap
+                or MatchState.MatchEnd
+                or MatchState.Warmup
+                or MatchState.WarmupEnd
+                or MatchState.None
+                or MatchState.Cleanup)
             {
                 AllowOpenInventory = false;
+                __result = true;
+                return false;
+            }
+
+            bool wasAllowed = AllowOpenInventory;
+            AllowOpenInventory = false;
+
+            if (wasAllowed && H.MainPlayerScore.IsAlive)
+            {
                 return true;
             }
 
-            if (AllowOpenInventory && H.MainPlayerScore.IsAlive && !InventoryResetter.IsResetting)
-            {
-                AllowOpenInventory = false;
-                return true;
-            }
 
             __result = true;
             return false;

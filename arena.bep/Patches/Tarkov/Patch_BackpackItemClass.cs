@@ -14,7 +14,7 @@ public class Patch_BackpackItemClass_Constructor : ModulePatch
     [PatchPrefix]
     static bool Prefix(BackpackItemClass __instance, string id, ref BackpackTemplateClass template)
     {
-        if (SNDGamemode.bombTemplateId == template.StringId)
+        if (Hardcode.BOMB_BACKPACK == template.StringId)
         {
             template.Grids = [];
             template.mousePenalty = 0f;
