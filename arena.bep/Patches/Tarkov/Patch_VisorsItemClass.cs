@@ -13,6 +13,8 @@ public class Patch_VisorsItemClass_Constructor : ModulePatch
     static bool Prefix(VisorsItemClass __instance, string id, ref VisorsTemplateClass template)
     {
         template.BlindnessProtection = 0.94f;
+        template.BlocksHeadwear = false;
+        template.BlocksFaceCover = false;
 
         return true;
     }
