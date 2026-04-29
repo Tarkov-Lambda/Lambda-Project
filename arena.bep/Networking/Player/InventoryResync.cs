@@ -58,6 +58,9 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
     public void Send(Player player, bool broadcast = false)
     {
+        // server player does not need to send this
+        if (H.IsServer && !H.IsHeadless && player.IsYourPlayer) return;
+
         var packet = new InventoryResyncPacket
         {
             Player = player,

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Comfort.Common;
-using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using ifp.arena.bep.Core.AssetBundleHandling;

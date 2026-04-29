@@ -197,15 +197,12 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());         // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
 
-
+        RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
+        RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
-
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
-
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
-        // RegisterPatch(new Patch_FikaHealthBar_Awake());                          // Very sloppy way to do this and causes errors
-        
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
 
         // Animation Patches
@@ -227,6 +224,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         // RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
+        RegisterPatch(new Patch_FikaHealthBar_UseNamePlates());                     // Very sloppy way to do this and causes errors
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 
@@ -290,6 +288,7 @@ public class Plugin : BaseUnityPlugin
             RegisterSingletonInRaid<HardpointZoneManager>().Forget();             // Manages Hardpoint zones and synchronization
 
             // H.MainPlayer.NukeResetHands();
+            D.Log(SNDGamemode.bombTemplateId);
         }
         catch (Exception ex)
         {
@@ -334,7 +333,8 @@ public class Plugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            // H.MainPlayer.UnfuckHands();
+            Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;   
+            H.MainPlayer.UnfuckHands();
             Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
         }
     }

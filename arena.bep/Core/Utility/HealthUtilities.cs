@@ -58,7 +58,10 @@ public static class HealthUtilities
 
     public static async Task HealMe()
     {
-        Singleton<ReplenishPacketHandler>.Instance.Send();
+        if (H.Gamemode is IGMRespawnable)
+        {
+            Singleton<ReplenishPacketHandler>.Instance.Send();
+        }
 
         var healthController = H.MainPlayer.ActiveHealthController;
         healthController.ChangeHydration(100f);

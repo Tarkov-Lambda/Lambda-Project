@@ -2,6 +2,7 @@ using System;
 using Comfort.Common;
 using EFT;
 using ifp.arena.bep.Core;
+using static EFT.PlayerAnimator;
 
 public static class PlayerExtensions
 {
@@ -34,6 +35,27 @@ public static class PlayerExtensions
 
             if (player.HandsController != null)
             {
+                if (player.HandsController is Player.FirearmController firearmController)
+                {
+                    if (player.MovementContext != null)
+                    {
+                        player.MovementContext.OnStateChanged -= firearmController.method_17;
+                    }
+                    if (player.Physical != null)
+                    {
+                        player.Physical.OnSprintStateChangedEvent -= firearmController.method_16;
+                    }
+
+                    try
+                    {
+                        firearmController.RemoveBallisticCalculator();
+                    }
+                    catch (Exception ex)
+                    {
+                        D.LogError("failed to RemoveBallisticCalculator: " + ex);
+                    }
+                }
+
                 try
                 {
                     player.DestroyController();
@@ -61,8 +83,8 @@ public static class PlayerExtensions
             if (player.MovementContext != null)
             {
                 player.MovementContext.SetBlindFire(0);
-
-                player.MovementContext.PlayerAnimatorSetWeaponId(PlayerAnimator.EWeaponAnimationType.EmptyHands);
+                // Make sure you include the namespace depending on your usings, e.g. EFT.Animations.PlayerAnimator
+                player.MovementContext.PlayerAnimatorSetWeaponId(EWeaponAnimationType.EmptyHands);
             }
 
             player.SetEmptyHands(new Callback<GInterface198>(result =>

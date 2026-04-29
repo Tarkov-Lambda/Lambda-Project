@@ -18,7 +18,9 @@ public class PlayerScore
 
     public PlayerScoreInfo Score => score;
 
+    // server only data about the player for resets/buying
     public Dictionary<ShopItem, Item> BuySelection { get; private set; }
+    public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; }
 
     public Faction Faction => score.Faction;
 
