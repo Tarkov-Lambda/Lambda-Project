@@ -377,7 +377,7 @@ public class Plugin : BaseUnityPlugin
         _releases.Clear();
 
 
-        BepInEx.Logging.Logger.Sources.Add(Logger);
+        BepInEx.Logging.Logger.Sources.Remove(Logger);
         Logger = null;
     }
 }
