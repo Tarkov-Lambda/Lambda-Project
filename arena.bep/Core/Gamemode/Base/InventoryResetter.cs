@@ -119,10 +119,6 @@ public static class InventoryResetter
             {
                 var HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem() as HeadwearItemClass;
                 IU.AttachNightVisionIfNeeded(HelmetWithNVGs);
-
-                var placement = AU.GetItemPlacement(HelmetWithNVGs, player);
-
-                placement.Address.AddWithoutRestrictions(HelmetWithNVGs);
             }
             else
             {

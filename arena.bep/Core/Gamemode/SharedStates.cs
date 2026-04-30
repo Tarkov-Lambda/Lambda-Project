@@ -112,7 +112,7 @@ public class SharedCleanup : IGameState
             {
                 var playerScore = H.GetPlayerScore(player);
 
-                if (playerScore.IsAlive && totalRounds > 0 && !isHalfTime)
+                if (!playerScore.shouldHardReset && totalRounds > 0 && !isHalfTime)
                 {
                     player.SoftReset();
                 }
@@ -198,7 +198,7 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-        
+
     }
 }
 
