@@ -8,17 +8,14 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches
 {
-    internal class Patch_FikaHealthBar_UseNamePlates : ModulePatch
+    internal class Patch_FikaHealthBar_Create : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertyGetter(typeof(FikaConfig), nameof(FikaConfig.UseNamePlates));
-        }
-
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaHealthBar), nameof(FikaHealthBar.Create));
+        
         [PatchPrefix]
-        static bool Prefix(ref ConfigEntry<bool> __result)
+        static bool Prefix(ref FikaHealthBar __result)
         {
-            __result.Value = false;
+            __result = null;
             return false;
         }
     }

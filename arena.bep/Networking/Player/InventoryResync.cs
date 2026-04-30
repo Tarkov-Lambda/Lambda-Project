@@ -3,6 +3,7 @@ using EFT;
 using EFT.InputSystem;
 using EFT.InventoryLogic;
 using EFT.UI;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
@@ -79,7 +80,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
     protected override void MutateApprovedPacket(ref InventoryResyncPacket packet, NetPeer peer)
     {
-        packet.inventoryDescriptor = EFTItemSerializerClass.SerializeItem(packet.Player.Inventory.Equipment, Fika.Core.Main.Utils.FikaGlobals.SearchControllerSerializer);
+        packet.inventoryDescriptor = EFTItemSerializerClass.SerializeItem(packet.Player.Inventory.Equipment, FikaGlobals.SearchControllerSerializer);
     }
 
     protected override void ProcessApprovedPacket(ref InventoryResyncPacket packet, NetPeer peer)
@@ -121,7 +122,6 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
             Equipment = packet.inventoryDescriptor,
         }.ToInventory();
 
-        // 1. Replace the core inventory data
         player.Profile.Inventory = newInventory;
         player.InventoryController.ReplaceInventory(newInventory);
 
@@ -144,10 +144,8 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
             D.Log($"Failed to reflect TraderControllerClass root item: {ex}");
         }
 
-        // 2. PROPERLY RE-REGISTER ALL VISUALS AND OBSERVERS
         ReregisterPlayerVisuals(player, newInventory.Equipment);
 
-        // 3. Update the UI and Interaction states
         if (packet.Player.IsYourPlayer)
         {
             if (ItemUiContext.Instance != null)
@@ -173,22 +171,19 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
         if (!H.IsHeadless)
         {
-            player.AutoExamineAndSearch(packet.Player.Inventory.Equipment);
-            player.AutoExamineAndSearch(player.GetSlotItem(EquipmentSlot.TacticalVest));
-            player.AutoExamineAndSearch(player.GetSlotItem(EquipmentSlot.Pockets));
+            H.MainPlayer.AutoExamineAndSearch(packet.Player.Inventory.Equipment);
+            // H.MainPlayer.AutoExamineAndSearch(player.GetSlotItem(EquipmentSlot.TacticalVest));
+            // H.MainPlayer.AutoExamineAndSearch(player.GetSlotItem(EquipmentSlot.Pockets));
         }
     }
 
     private static void ReregisterPlayerVisuals(Player player, InventoryEquipment newEquipment)
     {
-        // 1. Update Player.GClass2059<T> Observers
-        // Updating the slot natively preserves all the Audio (Sound) and logic bindings created during Player.Init()
         UpdateObserver(player.NightVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
         UpdateObserver(player.ThermalVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
         UpdateObserver(player.FaceShieldObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
         UpdateObserver(player.FaceCoverObserver, newEquipment.GetSlot(EquipmentSlot.FaceCover));
 
-        // 2. Rebuild PlayerBody.SlotViews
         if (player.PlayerBody != null)
         {
             player.PlayerBody.Equipment = newEquipment;
@@ -210,7 +205,6 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
                 Transform bone = null;
                 Transform altBone = null;
                 
-                // Preserve alternative holsters/bones if they existed
                 if (oldSlotView != null)
                 {
                     bone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_0").GetValue(oldSlotView);
@@ -222,14 +216,12 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
                     altBone = player.PlayerBody.GetAlternativeHolsterBone(slotName);
                 }
 
-                // Call internal EquipmentSlotClass constructor to natively spawn the new 3D model
                 var newSlotView = Activator.CreateInstance(
                     equipmentSlotClassType,
-                    new object[] { player.PlayerBody, newSlot, bone, slotName, backpackSlot, altBone, false }
+                    [player.PlayerBody, newSlot, bone, slotName, backpackSlot, altBone, false]
                 );
 
-                // Safely swap it in the dictionary and Dispose the old one (destroys old 3D models)
-                var replacedView = addOrReplaceMethod.Invoke(slotViews, new object[] { slotName, newSlotView });
+                var replacedView = addOrReplaceMethod.Invoke(slotViews, [slotName, newSlotView]);
                 if (replacedView != null)
                 {
                     disposeMethod.Invoke(replacedView, null);

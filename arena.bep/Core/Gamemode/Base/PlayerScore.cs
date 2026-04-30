@@ -21,6 +21,7 @@ public class PlayerScore
     // server only data about the player for resets/buying
     public Dictionary<ShopItem, Item> BuySelection { get; private set; }
     public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; }
+    public Dictionary<ShopItem, int> ItemQuantityBoughtInRound { get; private set; }
 
     public Faction Faction => score.Faction;
 
@@ -59,6 +60,9 @@ public class PlayerScore
 
         score.Name = player.Profile.Nickname;
         score.Money = EconomyConstants.MAX_MONEY;
+
+        ItemQuantityBoughtInRound = new Dictionary<ShopItem, int>();
+
 
         if (H.IsHeadless) return;
         if (H.IsServer && H.MainPlayer.Id == id)
@@ -182,6 +186,30 @@ public class PlayerScore
         score.RoundDamage = 0;
         score.RoundHeadshots = 0;
         score.RoundKills = 0;
+        ItemQuantityBoughtInRound.Clear();
+    }
+
+    public bool HasReachedLimit(ShopItem shopItem)
+    {
+        if (shopItem.maxBuy <= 0) return false;
+
+        if (ItemQuantityBoughtInRound.TryGetValue(shopItem, out int count))
+        {
+            return count >= shopItem.maxBuy;
+        }
+        return false;
+    }
+
+    public void AddItemQuantity(ShopItem shopItem)
+    {
+        if (ItemQuantityBoughtInRound.ContainsKey(shopItem))
+        {
+            ItemQuantityBoughtInRound[shopItem]++;
+        }
+        else
+        {
+            ItemQuantityBoughtInRound[shopItem] = 1;
+        }
     }
 
     // Locking out the player from shooting/jumping/moving

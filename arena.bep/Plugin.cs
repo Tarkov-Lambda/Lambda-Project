@@ -189,7 +189,8 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking
         RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
-        RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());         // For controller locking
+        // RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());      // For controller locking
+        RegisterPatch(new Patch_FirearmController_SetTriggerPressed());             // For controller locking
         // RegisterPatch(new Patch_ApplyShot());
 
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
@@ -222,7 +223,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         // RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
-        // RegisterPatch(new Patch_FikaHealthBar_UseNamePlates());                     // Very sloppy way to do this and causes errors
+        RegisterPatch(new Patch_FikaHealthBar_Create());                            // Very sloppy way to do this and causes errors
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 

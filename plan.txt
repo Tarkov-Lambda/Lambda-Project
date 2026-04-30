@@ -1,7 +1,22 @@
-killfeed missing/full white sprites (no pepsi)
+ui:
 faction change ability to cancel
 
 potentially match end ui
 side swap ui
+buy menu gift ui
+buy menu locking
+screen space objective ui (hardpoint)
+finish and polish quick access
 
-rework buymenuselection
+core:
+inventory resetter modular per gamemode
+better smokes
+buy menu keep track of maxQuantity per round per player
+
+
+backend:
+password
+bepinex mod synchronization
+
+eft map sdk:
+water

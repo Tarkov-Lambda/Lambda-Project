@@ -152,7 +152,12 @@ public class SharedCleanup : IGameState
                 await UniTask.Delay(750);
 
                 HU.HealMe().Forget();
-                // HU.ResetObservedPlayersHealth();
+                if (H.MainPlayer.MovementContext.IsInPronePose)
+                {
+                    H.MainPlayer.MovementContext.IsInPronePose = false;
+                }
+
+                H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
             });
         }
     }

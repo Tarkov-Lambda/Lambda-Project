@@ -62,9 +62,16 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
                 var playerScore = packet.Player.GetScore();
+
                 if (playerScore.Money < itemData.price)
                 {
                     rejectionReason = "You don't have enough money";
+                    return false;
+                }
+
+                if (playerScore.HasReachedLimit(itemData))
+                {
+                    rejectionReason = $"Limit reached for this round ({itemData.maxBuy})";
                     return false;
                 }
             }
@@ -72,6 +79,7 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
         return base.ValidatePacket(packet, peer, out rejectionReason);
     }
+
 
     // SERVER: Wait for the host's representation of the player's inventory to settle, then mutate and broadcast.
     protected override void ProcessApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
@@ -126,6 +134,8 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
                 H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+
+                packet.Player.GetScore().AddItemQuantity(itemData);
             }
         }
 

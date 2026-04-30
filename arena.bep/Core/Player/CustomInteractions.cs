@@ -129,8 +129,6 @@ internal static class CustomInteractions
             {
                 owner.CloseObjectivesPanel();
 
-                D.Log(success.ToString());
-
                 if (!success)
                 {
                     Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.None, pos);

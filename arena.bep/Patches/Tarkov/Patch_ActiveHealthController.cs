@@ -54,7 +54,10 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {
         if (!H.IsInRaid()) return false; // mid raid connect protection
-        if (__instance.Player == null || __instance.Player.GetScore() == null) return false; // mid raid connect protection
+        if (__instance.Player == null) return false; // mid raid connect protection
+
+        var playerScore = __instance.Player.GetScore();
+        if (playerScore == null) return false;
 
         // blacked out legs don't cause damage
         if (damageInfo.DamageType == EDamageType.Fall && damage <= 3f) return false;
@@ -71,8 +74,6 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
             if (H.Session.matchState == MatchState.RoundPrepare)
             {
                 __instance.Player.MovementContext.ResetFlying();
-
-                PlayerScore playerScore = H.GetPlayerScore(__instance.Player);
 
                 if (playerScore != null)
                 {

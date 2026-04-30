@@ -56,7 +56,7 @@ public static class SteamAudioSourceController
         steamAudio.airAbsorption = false;
         steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
         steamAudio.distanceAttenuation = true;
-        steamAudio.distanceAttenuationInput = DistanceAttenuationInput.CurveDriven;
+        steamAudio.distanceAttenuationInput = DistanceAttenuationInput.PhysicsBased;
         steamAudio.distanceAttenuationValue = 1f;
         steamAudio.directivity = false;
         steamAudio.occlusionType = OcclusionType.Raycast;
@@ -64,12 +64,12 @@ public static class SteamAudioSourceController
         steamAudio.occlusionSamples = 8;
         steamAudio.transmissionType = TransmissionType.FrequencyDependent;
         steamAudio.transmissionInput = TransmissionInput.UserDefined;
-        // steamAudio.transmissionHigh = 0.2f;
-        // steamAudio.transmissionMid = 0.4f;
-        // steamAudio.transmissionLow = 0.5f;
-        steamAudio.transmissionHigh = 0.4f;
-        steamAudio.transmissionMid = 0.65f;
-        steamAudio.transmissionLow = 0.75f;
+        steamAudio.transmissionHigh = 0.1f;
+        steamAudio.transmissionMid = 0.3f;
+        steamAudio.transmissionLow = 0.4f;
+        // steamAudio.transmissionHigh = 0.4f;
+        // steamAudio.transmissionMid = 0.65f;
+        // steamAudio.transmissionLow = 0.75f;
         steamAudio.reflections = false;
 
         audioSource.spatialize = initialSpatialize;

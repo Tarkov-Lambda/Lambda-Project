@@ -23,3 +23,18 @@ public class Patch_ClientFirearmController_CanPressTrigger : ModulePatch
     }
 }
 
+
+public class Patch_FirearmController_SetTriggerPressed : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.SetTriggerPressed));
+
+    [PatchPrefix]
+    static void Prefix(Player.FirearmController __instance, ref bool pressed)
+    {
+        if (!H.IsInRaid()) return;
+        if (H.MainPlayerScore.IsControllerPartiallyLocked())
+        {
+            pressed = false;
+        }
+    }
+}
