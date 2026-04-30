@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -25,30 +24,71 @@ public static class ReplenishmentUtilities
 
                 if (item is Weapon weapon)
                 {
-                    if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo)) 
+                    if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
                     {
                         if (shouldReloadGun)
                         {
                             ReplenishGun(weapon, ammo);
                         }
 
-                        if (player.IsYourPlayer) ReplenishMagazines(weapon, ammo, player).Forget();
+                        ReplenishMagazines(weapon, player, ammo);
                     }
                 }
             }
         }
     }
 
-    public static void SetupWeaponAfterEquip(Weapon weapon, Player player)
+    public static void SetupWeapon(Weapon weapon, Player player)
     {
+        weapon.SwitchFullAutoIfNeeded();
+
         if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
         {
             ReplenishGun(weapon, ammo);
 
             // Only the local player's machine should create and broadcast vest magazines.
-            if (player.IsYourPlayer) ReplenishMagazines(weapon, ammo, player).Forget();
+            ReplenishMagazines(weapon, player);
+        }
+    }
+
+    public static void ReplenishMagazinesImmediate(Weapon weapon, Player player)
+    {
+        var vest = player.GetSlotItem(EquipmentSlot.TacticalVest) as CompoundItem;
+        var pockets = player.GetPlayerPockets();
+        if (vest == null && pockets == null) return;
+
+        string weaponMagTemplate = weapon.GetMagTemplateForWeapon(player)?.TemplateId;
+        if (weaponMagTemplate == null) return;
+
+        if (!FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo)) return;
+
+        var existingMags = player.GetMatchingMags(weaponMagTemplate, vest).ToList();
+
+        foreach (var mag in existingMags)
+        {
+            ReplenishMagazine(mag, ammo);
         }
 
+        int missing = 3 - existingMags.Count;
+        if (missing <= 0) return;
+
+        for (int i = 0; i < missing; i++)
+        {
+            if (!IU.TryCreateItem(weaponMagTemplate, out Item newItem)) continue;
+            if (newItem is not MagazineItemClass newMag) continue;
+
+            ReplenishMagazine(newMag, ammo);
+
+            var placement = AU.GetItemPlacement(newMag, player);
+            if (placement.Kind != PlacementKind.None)
+            {
+                placement.Address.AddWithoutRestrictions(newMag);
+            }
+        }
+    }
+
+    public static void SwitchFullAutoIfNeeded(this Weapon weapon)
+    {
         var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
         if (firemode != null && firemode.AvailableEFireModes.Contains(Weapon.EFireMode.fullauto))
         {
@@ -56,14 +96,24 @@ public static class ReplenishmentUtilities
         }
     }
 
-    // Local only, sends spawn item packets
-    public static async UniTask ReplenishMagazines(Weapon weapon, AmmoItemClass ammo, Player player)
+    public static void SetupWeaponImmediate(Weapon weapon, Player player)
     {
-        await UniTask.Delay(25);
+        weapon.SwitchFullAutoIfNeeded();
 
+        if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+        {
+            ReplenishGun(weapon, ammo);
+
+            ReplenishMagazinesImmediate(weapon, player);
+        }
+    }
+
+    // Local only, sends spawn item packets
+    public static void ReplenishMagazines(Weapon weapon, Player player, AmmoItemClass ammo = null)
+    {
         if (player.GetSlotItem(EquipmentSlot.TacticalVest) is not CompoundItem vest) return;
 
-        string weaponMagTemplate = weapon.GetMagTemplateForWeapon()?.TemplateId;
+        string weaponMagTemplate = weapon.GetMagTemplateForWeapon(player)?.TemplateId;
         if (weaponMagTemplate == null)
         {
             D.LogError($"Can't find {weapon.LocalizedName()}'s mag");
@@ -73,12 +123,18 @@ public static class ReplenishmentUtilities
         // Collect all matching mags from vest grids and pockets in one pass.
         var mags = player.GetMatchingMags(weaponMagTemplate, vest);
 
+        if (ammo == null)
+        {
+            FU.TryGetGunAmmo(weapon, out AmmoItemClass newAmmo);
+            ammo = newAmmo;
+        }
+
         foreach (var mag in mags)
         {
             ReplenishMagazine(mag, ammo);
         }
 
-        if (!player.IsYourPlayer) return; // below we spawn request missing mags on client
+        if (H.IsClient) return; // server gives new mags
 
         int missing = 3 - mags.Count();
         if (missing <= 0)
@@ -94,13 +150,15 @@ public static class ReplenishmentUtilities
 
             ReplenishMagazine(newMag, ammo);
 
+            var placement = AU.GetItemPlacement(newMag, player);
+
             if (AU.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
             {
                 D.NotifyLong("Can't find space for a mag");
                 continue;
             }
 
-            IU.ClientRequestBuyItem(newMag).Forget();
+            Singleton<BuyItemPacketHandler>.Instance.Send(newItem, placement, player);
         }
     }
 
@@ -150,6 +208,11 @@ public static class ReplenishmentUtilities
                 slot.AddWithoutRestrictions(newItem);
             }
         }
+    }
+
+    public static void ReplaceMagIfNeeded(this Weapon weapon)
+    {
+
     }
 
     private static void Repair(this Item item)

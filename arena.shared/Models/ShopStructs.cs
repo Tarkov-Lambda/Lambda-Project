@@ -27,5 +27,6 @@ namespace ifp.arena.shared.Models
         public Faction faction; // Only shown for this faction
         public int maxQuantity; // Maximum amount on person (Grenades)
         public int maxBuy; // Maximum round buy amount (Grenades)
+        public int maxMagSize; // Maximum mag allowed within this weapon (if the preset has a bigger mag = replace it on the server)
     }
 }

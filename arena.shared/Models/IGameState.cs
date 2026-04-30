@@ -49,6 +49,14 @@ public interface IGMRound
 }
 
 /// <summary>
+/// Whether this gamemode has night mode
+/// </summary>
+public interface IGMWithNightMode
+{
+    public bool IsNightTime { get; }
+}
+
+/// <summary>
 /// Whether it's a CT/T gamemode
 /// </summary>
 public interface IGMTeam

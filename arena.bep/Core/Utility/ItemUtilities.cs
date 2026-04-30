@@ -67,7 +67,7 @@ public static class ItemUtilities
                 prefabsToLoad,
                 JobPriorityClass.Immediate,
                 null,
-                default(CancellationToken)
+                default
             );
         }
     }
@@ -114,9 +114,8 @@ public static class ItemUtilities
 #endif
 
             StripArmorPlatesIfNeeded(clonedItem);
-            AttachNightVisionIfNeeded(clonedItem);
 
-            Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement);
+            Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement, H.MainPlayer);
             return true;
         }
         finally
@@ -177,7 +176,7 @@ public static class ItemUtilities
         }
     }
 
-    private static void StripArmorPlatesIfNeeded(Item clonedItem)
+    public static void StripArmorPlatesIfNeeded(Item clonedItem)
     {
         if (clonedItem is ArmorItemClass armorItem)
         {
@@ -195,16 +194,15 @@ public static class ItemUtilities
         }
     }
 
-    private static void AttachNightVisionIfNeeded(Item clonedItem)
+    public static void AttachNightVisionIfNeeded(HeadwearItemClass headwear)
     {
         if (!H.IsNightTime) return;
-        if (clonedItem is not HeadwearItemClass headwearItemClass) return;
 
-        foreach (var slot in headwearItemClass.Slots)
+        foreach (var slot in headwear.Slots)
         {
             if (slot.Name == "mod_nvg")
             {
-                string targetNvgId = (clonedItem.TemplateId == Hardcode.STRAP_NVG) ? Hardcode.N15 : Hardcode.GPNVG;
+                string targetNvgId = (headwear.TemplateId == Hardcode.STRAP_NVG) ? Hardcode.N15 : Hardcode.GPNVG;
                 Item nvg = PresetItemsCache.Instance.GetPresetItem(targetNvgId).CloneItem();
 
                 TogglableComponent togglableComponent = nvg.GetItemComponent<TogglableComponent>();
@@ -214,31 +212,6 @@ public static class ItemUtilities
                 break; // Added break: Once NVGs are attached to the slot, no need to keep checking other slots.
             }
         }
-    }
-
-    public static void ClientRequestPopItem(Item item)
-    {
-        Singleton<ForceRemoveItemPacketHandler>.Instance.Send(item);
-        // IU.TryPopItemWithoutRestriction(item, item.CurrentAddress, H.MainPlayer).Forget();
-    }
-
-
-    public static void WhenApprovedGiveItem(Item item, Player player, ItemPlacement placement)
-    {
-        if (placement.Kind == PlacementKind.EquipmentSlot && item is Weapon)
-        {
-            player.HandsController?.FastForwardCurrentState();
-        }
-
-        player.PlaceItem(item, placement);
-
-        // if (placement.Kind == PlacementKind.EquipmentSlot && item is Weapon)
-        // {
-        //     player.HandsController?.FastForwardCurrentState();
-        // }
-
-        if (item is Weapon weapon) RU.SetupWeaponAfterEquip(weapon, player);
-        if (player.IsYourPlayer) AudioHandler.PlayEquipSound(item);
     }
 
     public static void GarbageCollectWorldLoot()

@@ -11,6 +11,8 @@ using System.Linq;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Core.Dying;
 using Cysharp.Threading.Tasks;
+using EFT.UI;
+using EFT.InputSystem;
 
 namespace ifp.arena.bep.Core;
 
@@ -40,6 +42,24 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKilled;
         StopSpectating();
         Release(this);
+    }
+
+    private void SwitchUI(Player player)
+    {
+        ItemUiContext.Instance.Configure(
+            player.InventoryController,
+            player.Profile,
+            ItemUiContext.Instance.Session,
+            ItemUiContext.Instance.Session?.InsuranceCompany,
+            null,
+            player.HealthController,
+            ItemUiContext.Instance.CompoundItem_0,
+            ItemUiContext.Instance.ContextType,
+            ECursorResult.Ignore,
+            null,
+            player.Equipment,
+            player.AbstractQuestControllerClass
+        );
     }
 
     private void OnPlayerKilled(PlayerKilledPacket packet)
@@ -203,6 +223,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
         ChangeCameraPOV(observedPlayer);
 
+        SwitchUI(observedPlayer);
+
         OnSelfStartSpectating?.Invoke(observedPlayer);
     }
 
@@ -223,6 +245,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         }
 
         observedPlayer = null;
+
+        SwitchUI(H.MainPlayer);
 
         ChangeCameraPOV(H.MainPlayer);
         OnSelfStopSpectating?.Invoke();

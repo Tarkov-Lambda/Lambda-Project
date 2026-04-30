@@ -151,7 +151,7 @@ public static class InventoryGetterExtensions
 
         foreach (var weapon in weapons)
         {
-            var mag = GetMagTemplateForWeapon(weapon);
+            var mag = weapon.GetMagTemplateForWeapon(player);
             if (mag != null)
             {
                 validMagIds.Add(mag.TemplateId);
@@ -169,7 +169,7 @@ public static class InventoryGetterExtensions
         }
     }
 
-    public static MagazineItemClass GetMagTemplateForWeapon(this Weapon weapon)
+    public static MagazineItemClass GetMagTemplateForWeapon(this Weapon weapon, Player player)
     {
         MagazineItemClass currentWeaponMag = weapon.GetCurrentMagazine();
         if (currentWeaponMag != null)

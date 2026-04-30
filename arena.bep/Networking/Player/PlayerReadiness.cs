@@ -16,6 +16,7 @@ using ifp.arena.shared.Models;
 using ifp.arena.bep.Core.Economy;
 using arena.ui;
 using EFT.UI;
+using ifp.arena.bep.Core;
 
 namespace ifp.arena.bep.networking;
 
@@ -27,8 +28,10 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
     public PlayerReadinessState readyState;
 
+    // presetItems is redundant as it can be derrived form buySelection and defaultItems
+    public List<Item> assetItems;
     public Dictionary<ShopItem, Item> buySelection;
-    public List<Item> presetItems; // only sent by the player on the initial connection
+    public Dictionary<EquipmentSlot, Item> defaultItems;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
@@ -48,11 +51,12 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
         if (readyState is PlayerReadinessState.Connected)
         {
-            packet.presetItems = PresetBundleHandler.Instance.itemsToLoad;
+            packet.assetItems = PresetBundleHandler.Instance.itemsToLoad;
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
-                packet.buySelection[shopItem] = PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId);
+                packet.buySelection.Add(shopItem, PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId));
+                packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
             }
         }
 
@@ -71,14 +75,15 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, NetPeer peer)
     {
-        if (packet.presetItems != null)
+        if (packet.assetItems != null)
         {
             var playerScore = H.GetPlayerScore(packet.Player);
             playerScore.SetBuySelection(packet.buySelection);
-            PresetBundleHandler.Instance.AddToCache(packet.presetItems);
+            playerScore.SetDefaultItems(packet.defaultItems);
+            PresetBundleHandler.Instance.AddToCache(packet.assetItems);
 
             // other clients don't need this info
-            packet.presetItems = null;
+            packet.assetItems = null;
             packet.buySelection = null;
         }
     }

@@ -1,5 +1,5 @@
 
-public static class Hardcode
+internal static class Hardcode
 {
     public const string BOMB_BACKPACK = "628bc7fb408e2b2e9c0801b1";
     public const string DEFUSE_KIT    = "544fb5454bdc2df8738b456a";

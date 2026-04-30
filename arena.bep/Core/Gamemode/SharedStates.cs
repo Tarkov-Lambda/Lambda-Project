@@ -97,10 +97,51 @@ public class SharedCleanup : IGameState
     {
         IU.GarbageCollectWorldLoot();
 
+        int totalRounds = H.Session.factionWins.Values.Sum();
+        bool isHalfTime = false;
+        if (H.Gamemode is IGMRound roundBased and IGMSideSwappable)
+        {
+            isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
+        }
+
         foreach (var player in H.AllPlayers)
         {
             player.ForceUnlockInventory();
+
+            if (H.IsServer)
+            {
+                var playerScore = H.GetPlayerScore(player);
+
+                if (playerScore.IsAlive && totalRounds > 0 && !isHalfTime)
+                {
+                    player.SoftReset();
+                }
+                else
+                {
+                    player.HardReset();
+                }
+            }
         }
+
+        if (H.Gamemode is SNDGamemode)
+        {
+            if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
+            {
+                var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).RandomElement();
+                var backpackSlot = randomTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
+
+                backpackSlot.RemoveItemWithoutRestrictions();
+
+                Item BombBackpack = IU.CreateItemFromTemplateId(Hardcode.BOMB_BACKPACK);
+                backpackSlot.AddWithoutRestrictions(BombBackpack.CloneItem());
+            }
+        }
+
+        foreach (var player in H.AllPlayers)
+        {
+            Singleton<InventoryResyncPacketHandler>.Instance.Send(player, true);
+        }
+
 
         if (!H.IsHeadless)
         {
@@ -111,36 +152,14 @@ public class SharedCleanup : IGameState
                 await UniTask.Delay(750);
 
                 HU.HealMe().Forget();
-                HU.ResetObservedPlayersHealth();
+                // HU.ResetObservedPlayersHealth();
 
-                int totalRounds = H.Session.factionWins.Values.Sum();
-                bool isHalfTime = false;
-                if (H.Gamemode is IGMRound roundBased and IGMSideSwappable)
-                {
-                    isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
-                }
 
-                if (H.MainPlayerScore.IsAlive && totalRounds > 0 && !isHalfTime)
-                {
-                    await H.MainPlayer.SoftReset();
-                    if (H.MainPlayer.GetSlotItem(EquipmentSlot.Holster) == null)
-                    {
-                        await H.MainPlayerScore.GiveDefaultPistol();
-                    }
-                }
-                else
-                {
-                    D.Log("Trying to hard reset");
-                    await H.MainPlayer.HardReset();
-                    await H.MainPlayerScore.GiveDefaultPistol();
-                }
             });
         }
     }
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-    public virtual void OnExit()
-    {
-    }
+    public virtual void OnExit() { }
 }
 
 public class SharedPause : IGameState
@@ -181,10 +200,7 @@ public class SharedPrepare : IGameState
 
     public virtual void OnExit()
     {
-        if (H.IsServer && H.Gamemode != null && H.Gamemode is SNDGamemode)
-        {
-            Singleton<BombAssignmentPacketHandler>.Instance.Send();
-        }
+        
     }
 }
 

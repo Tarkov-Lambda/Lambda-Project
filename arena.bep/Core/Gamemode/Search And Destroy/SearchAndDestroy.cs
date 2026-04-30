@@ -139,7 +139,7 @@ public class SND_RoundEnd : SharedRoundEnd
     }
 }
 
-public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable
+public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable, IGMWithNightMode
 {
     public List<ILambdaObjective> Objectives { get; set; } = [];
 
@@ -156,7 +156,11 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
     public int TimeInActivePhaseToBuy { get; set; } = 30;
 #endif
 
+#if DEBUG
+    public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 1;
+#else
     public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
+#endif
 
     public static float platingTime = 4.5f;
     public static float defusingTime = 10f;

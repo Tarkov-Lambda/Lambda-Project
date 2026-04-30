@@ -126,6 +126,11 @@ public class PlayerScore
         BuySelection = buySelection;
     }
 
+    public void SetDefaultItems(Dictionary<EquipmentSlot, Item> defaultItems)
+    {
+        RecordedItems = defaultItems;
+    }
+
     public void AddDamage(int newDamage)
     {
         score.RoundDamage += newDamage;

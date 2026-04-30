@@ -43,11 +43,11 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
 
     protected override bool ShouldProcessInstantly => false;
 
-    public void Send(Item item, ItemPlacement placement)
+    public void Send(Item item, ItemPlacement placement, Player player)
     {
         var packet = new BuyItemPacket
         {
-            Player = H.MainPlayer,
+            Player = player,
             item = item, // this item is only a template, the server clones it before application
             placement = placement,
         };
@@ -107,6 +107,15 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
     {
         packet.item = packet.item.CloneItem();
         packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
+
+        if (packet.item is Weapon weapon)
+        {
+            RU.SetupWeapon(weapon, packet.Player);
+        }
+        else if (packet.item is HeadwearItemClass headwear)
+        {
+            IU.AttachNightVisionIfNeeded(headwear);
+        }
     }
 
     protected override void Apply(BuyItemPacket packet, NetPeer peer)
@@ -120,14 +129,12 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
             }
         }
 
-        // this is so retarded
-        // if (packet.Player.IsYourPlayer && packet.item is Weapon)
-        // {
-        //     packet.placement.Address.RaiseAddEvent(packet.item, CommandStatus.Begin, packet.Player.InventoryController);
-        //     await UniTask.Delay(200);
-        // }
+        if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
+        {
+            packet.Player.HandsController?.FastForwardCurrentState();
+        }
 
-        IU.WhenApprovedGiveItem(packet.item, packet.Player, packet.placement);
+        packet.Player.PlaceItem(packet.item, packet.placement);
     }
 
     protected override void WhenRejected(BuyItemPacket packet, NetPeer peer)

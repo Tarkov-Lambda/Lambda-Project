@@ -58,9 +58,6 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
     public void Send(Player player, bool broadcast = false)
     {
-        // server player does not need to send this
-        if (H.IsServer && !H.IsHeadless && player.IsYourPlayer) return;
-
         var packet = new InventoryResyncPacket
         {
             Player = player,
@@ -95,13 +92,19 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
     protected override void ProcessApprovedPacket(ref InventoryResyncPacket packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
+
         if (packet.broadcast)
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
         }
-        else
+        else if (peer.Id != H.FikaNet.NetId) // if server is peer, skip and just apply internally
         {
             H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
+        }
+        
+        if (packet.Player.IsYourPlayer)
+        {
+            ApplyInternal(packet, peer);
         }
     }
 
@@ -113,10 +116,10 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         if (packet.Player.IsYourPlayer)
         {
             H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+            H.MainPlayer.UnfuckHands();
             if (H.Session.matchState is not MatchState.Cleanup)
             {
                 D.Notify("Resetting inventory, please wait...");
-                H.MainPlayer.SetEmptyHands(delegate { });
             }
             // Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = false;
         }
@@ -176,6 +179,8 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         if (!H.IsHeadless)
         {
             H.MainPlayer.AutoExamineAndSearch(packet.Player.Inventory.Equipment);
+            H.MainPlayer.AutoExamineAndSearch(packet.Player.GetSlotItem(EquipmentSlot.TacticalVest));
+            H.MainPlayer.AutoExamineAndSearch(packet.Player.GetSlotItem(EquipmentSlot.Pockets));
         }
 
         // D.DumpFile(player.InventoryController, $"{player.Profile.Nickname}'s Replaced Inventory Controller", 3);

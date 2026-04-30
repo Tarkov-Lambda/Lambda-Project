@@ -31,17 +31,17 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
     public DefaultEquipmentManager()
     {
         LoadItems(File.ReadAllText(PresetDataPath));
-        H.OnGameStarted += CapturePreset;
-        H.AfterApplicationLoaded += AfterApplicationLoaded;
+        // H.OnGameStarted += CapturePreset;
+        // H.AfterApplicationLoaded += AfterApplicationLoaded;
 
-        if (H.IsInRaid()) CapturePreset(); // Hot-reload
+        // if (H.IsInRaid()) CapturePreset(); // Hot-reload
     }
 
 
     public void Dispose()
     {
-        H.OnGameStarted -= CapturePreset;
-        H.AfterApplicationLoaded -= AfterApplicationLoaded;
+        // H.OnGameStarted -= CapturePreset;
+        // H.AfterApplicationLoaded -= AfterApplicationLoaded;
 
         Release(this);
     }
@@ -63,7 +63,7 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
     // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
     // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    private void CapturePreset()
+    public void CapturePreset()
     {
         if (H.IsHeadless) return;
 

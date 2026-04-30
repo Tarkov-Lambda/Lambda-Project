@@ -115,6 +115,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
 
             PresetBundleHandler.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
+            DefaultEquipmentManager.Instance.CapturePreset();
 
             if (H.GameWorld is not HideoutGameWorld)
             {
