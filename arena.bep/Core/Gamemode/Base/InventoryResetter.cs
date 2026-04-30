@@ -79,110 +79,52 @@ public static class InventoryResetter
 
     public static void SoftReset(this Player player)
     {
-        // in future it would be nice to allocate a new inventory altogether, but for now we just mutate existing
-        // Inventory newInventory = new Inventory()
+        List<Item> itemsToRemove = [];
 
-        if (IsResetting) return;
-        IsResetting = true;
-        try
+        var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
+        AddItem(ref itemsToRemove, secondPrimaryWeapon);
+
+        var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
+        AddItem(ref itemsToRemove, backpack);
+
+        AddRange(ref itemsToRemove, player.GetNonMatchingMags());
+
+        foreach (var itemToRemove in itemsToRemove)
         {
-            List<Item> itemsToRemove = [];
-
-            var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
-            AddItem(ref itemsToRemove, secondPrimaryWeapon);
-
-            var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
-            AddItem(ref itemsToRemove, backpack);
-
-            AddRange(ref itemsToRemove, player.GetNonMatchingMags());
-
-            foreach (var itemToRemove in itemsToRemove)
-            {
-                itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
-            }
-
-            // player.TryPopItems(itemsToRemove);
-
-
-            // TODO: REFACTOR
-            if (H.IsNightTime)
-            {
-                // var Eyewear = player.GetSlotItem(EquipmentSlot.Eyewear);
-                // if (Eyewear != null)
-                // {
-                //     await player.TryPopItem(Eyewear);
-                // }
-
-
-                // item utilities automatically adds NVGs to headwear if it's night time
-                var Headwear = player.GetSlotItem(EquipmentSlot.Headwear);
-                if (Headwear != null && Headwear.TemplateId != Hardcode.STRAP_NVG)
-                {
-                    Item HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem();
-                    // await IU.ClientRequestBuyItem(HelmetWithNVGs);
-                }
-                else
-                {
-                    Item NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem();
-                    // await IU.ClientRequestBuyItem(NVGStrap);
-                }
-            }
-
-            Singleton<InventoryResyncPacketHandler>.Instance.Send(player);
+            itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
         }
-        finally
+
+        var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
+        if (firstPrimaryWeapon != null)
         {
-            IsResetting = false;
+            RU.SetupWeaponImmediate(firstPrimaryWeapon, player);
         }
-    }
 
-    public static async void HardReset(this Player player)
-    {
-        if (IsResetting) return;
-        IsResetting = true;
-        try
+        var pistol = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
+        if (pistol == null)
         {
-            List<Item> itemsToRemove = [];
+            PistolItemClass defaultPistol = GetDefaultPistol(player.GetScore()).CloneItem();
+            var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
+            pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
+            pistol = defaultPistol;
+        }
 
-            foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
+        RU.SetupWeaponImmediate(pistol, player);
+
+        if (H.IsNightTime)
+        {
+            // item utilities automatically adds NVGs to headwear if it's night time
+            var Headwear = player.GetSlotItem(EquipmentSlot.Headwear);
+            if (Headwear != null && Headwear.TemplateId != Hardcode.STRAP_NVG)
             {
-                if (slot
-                is EquipmentSlot.ArmBand
-                or EquipmentSlot.Dogtag
-                or EquipmentSlot.Scabbard
-                or EquipmentSlot.SecuredContainer
-                or EquipmentSlot.Pockets) continue;
+                var HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem() as HeadwearItemClass;
+                IU.AttachNightVisionIfNeeded(HelmetWithNVGs);
 
-                var currentItem = player.GetSlotItem(slot);
-                AddItem(ref itemsToRemove, currentItem);
+                var placement = AU.GetItemPlacement(HelmetWithNVGs, player);
+
+                placement.Address.AddWithoutRestrictions(HelmetWithNVGs);
             }
-
-            AddRange(ref itemsToRemove, player.GetVestAndPocketGridItems<Item>().ToList());
-
-            foreach (var itemToRemove in itemsToRemove)
-            {
-                itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
-            }
-
-            // GIVING
-            foreach (var kvp in H.GetPlayerScore(player.Id).RecordedItems)
-            {
-                if (kvp.Value == null) continue;
-
-                var currentItem = player.GetSlotItem(kvp.Key);
-                if (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId)
-                {
-                    var clonedItem = kvp.Value.CloneItem();
-                    var placement = AU.GetItemPlacement(clonedItem, player);
-
-                    IU.StripArmorPlatesIfNeeded(clonedItem);
-
-                    placement.Address.AddWithoutRestrictions(clonedItem);
-                }
-            }
-
-            // NVG for night time
-            if (H.IsNightTime)
+            else
             {
                 var NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem() as HeadwearItemClass;
                 IU.AttachNightVisionIfNeeded(NVGStrap);
@@ -191,24 +133,68 @@ public static class InventoryResetter
 
                 placement.Address.AddWithoutRestrictions(NVGStrap);
             }
-
-            // Default Pistol
-            PistolItemClass defaultPistol = GetDefaultPistol(player.GetScore()).CloneItem();
-
-            var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
-
-            pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-
-            RU.SetupWeaponImmediate(defaultPistol, player);
-        }
-        finally
-        {
-            IsResetting = false;
         }
     }
 
-    public static async UniTask GiveDefaultPistol(this PlayerScore playerScore)
+    public static async void HardReset(this Player player)
     {
-        await IU.ClientRequestBuyItem(GetDefaultPistol(playerScore));
+        List<Item> itemsToRemove = [];
+
+        foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
+        {
+            if (slot
+            is EquipmentSlot.ArmBand
+            or EquipmentSlot.Dogtag
+            or EquipmentSlot.Scabbard
+            or EquipmentSlot.SecuredContainer
+            or EquipmentSlot.Pockets) continue;
+
+            var currentItem = player.GetSlotItem(slot);
+            AddItem(ref itemsToRemove, currentItem);
+        }
+
+        AddRange(ref itemsToRemove, player.GetVestAndPocketGridItems<Item>().ToList());
+
+        foreach (var itemToRemove in itemsToRemove)
+        {
+            itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
+        }
+
+        // GIVING
+        foreach (var kvp in H.GetPlayerScore(player.Id).RecordedItems)
+        {
+            if (kvp.Value == null) continue;
+
+            var currentItem = player.GetSlotItem(kvp.Key);
+            if (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId)
+            {
+                var clonedItem = kvp.Value.CloneItem();
+                var placement = AU.GetItemPlacement(clonedItem, player);
+
+                IU.StripArmorPlatesIfNeeded(clonedItem);
+
+                placement.Address.AddWithoutRestrictions(clonedItem);
+            }
+        }
+
+        // NVG for night time
+        if (H.IsNightTime)
+        {
+            var NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem() as HeadwearItemClass;
+            IU.AttachNightVisionIfNeeded(NVGStrap);
+
+            var placement = AU.GetItemPlacement(NVGStrap, player);
+
+            placement.Address.AddWithoutRestrictions(NVGStrap);
+        }
+
+        // Default Pistol
+        PistolItemClass defaultPistol = GetDefaultPistol(player.GetScore()).CloneItem();
+
+        var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
+
+        pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
+
+        RU.SetupWeaponImmediate(defaultPistol, player);
     }
 }

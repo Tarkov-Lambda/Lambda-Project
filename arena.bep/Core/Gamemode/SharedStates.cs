@@ -153,8 +153,6 @@ public class SharedCleanup : IGameState
 
                 HU.HealMe().Forget();
                 // HU.ResetObservedPlayersHealth();
-
-
             });
         }
     }

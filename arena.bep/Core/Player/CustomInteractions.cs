@@ -9,6 +9,7 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core;
+using Cysharp.Threading.Tasks;
 
 internal static class CustomInteractions
 {
@@ -90,7 +91,7 @@ internal static class CustomInteractions
         {
             Vector3 pos = H.BombHandler.BombPlantedPosition;
 
-            Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defusing, pos);
+            Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Defusing, pos);
 
             owner.ShowObjectivesPanel("Defusing {0:F1}", time);
 
@@ -100,11 +101,11 @@ internal static class CustomInteractions
 
                 if (!success)
                 {
-                    Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Planted, pos);
+                    Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planted, pos);
                     return;
                 }
 
-                Singleton<BombStatePacketHandler>.Instance.Send(H.MainPlayer, BombState.Defused, pos);
+                Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Defused, pos);
                 owner.ClearInteractionState();
             });
         }
@@ -128,14 +129,16 @@ internal static class CustomInteractions
             {
                 owner.CloseObjectivesPanel();
 
+                D.Log(success.ToString());
+
                 if (!success)
                 {
                     Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.None, pos);
                     return;
                 }
 
-                await H.MainPlayer.TryPopContainedItem(EquipmentSlot.Backpack, false);
                 Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planted, pos);
+                player.TryPopContainedItem(EquipmentSlot.Backpack, false).Forget();
 
                 owner.ClearInteractionState();
             });
