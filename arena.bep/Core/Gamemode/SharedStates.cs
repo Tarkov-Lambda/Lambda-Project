@@ -104,7 +104,7 @@ public class SharedCleanup : IGameState
             isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
         }
 
-        foreach (var player in H.AllPlayers)
+        foreach (var player in H.AllPlayingPlayers)
         {
             player.ForceUnlockInventory();
 
@@ -127,7 +127,7 @@ public class SharedCleanup : IGameState
         {
             if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
             {
-                var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).RandomElement();
+                var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.GetScore().ReadyState == PlayerReadinessState.Ready).RandomElement();
                 var backpackSlot = randomTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
 
                 backpackSlot.RemoveItemWithoutRestrictions();
@@ -137,11 +137,13 @@ public class SharedCleanup : IGameState
             }
         }
 
-        foreach (var player in H.AllPlayers)
+        if (H.IsServer)
         {
-            Singleton<InventoryResyncPacketHandler>.Instance.Send(player, true);
+            foreach (var player in H.AllPlayingPlayers)
+            {
+                Singleton<InventoryResyncPacketHandler>.Instance.Send(player, true);
+            }
         }
-
 
         if (!H.IsHeadless)
         {
@@ -193,9 +195,9 @@ public class SharedPrepare : IGameState
             PU.OpenEyes();
         }
 
-        foreach (var p in H.Arena.session.scoreboard.Values)
+        foreach (var player in H.AllPlayingPlayers)
         {
-            p.Spawn();
+            player.GetScore().Spawn();
         }
     }
 

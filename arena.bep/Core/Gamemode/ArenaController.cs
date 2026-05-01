@@ -2,7 +2,6 @@
 using EFT;
 using Fika.Core.Modding.Events;
 using ifp.arena.bep.Core.AssetBundleHandling;
-using ifp.arena.bep.Core.Debug;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
@@ -30,7 +29,7 @@ public partial struct RoundActionPhaseEnd
 // This is the place where we manage both server/client arena behaviour
 public class ArenaController : Singleton<ArenaController>, IDisposable
 {
-    public SessionManager session;
+    public SessionManager Session { get; private set; } = null;
     public LambdaGamemode gamemode = null;
     public EconomyManager economyManager = new();
     public RespawnManager respawnManager = new();
@@ -49,11 +48,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     private IGameState _currentState;
 
-    private TimeSyncTicker timeSyncTicker;
+    private TimeSyncTicker _timeSyncTicker;
 
-    // public HandsAnimatorDebugger handsAnimatorDebugger;
-
-    public GameObject _musicObject;
+    public event Action OnArenaBeginInitializing;
+    public event Action OnArenaInitialized;
+    public event Action OnArenaBeginDisposing;
+    public event Action OnArenaDisposed;
 
     public ArenaController()
     {
@@ -78,15 +78,18 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         {
             if (H.IsClient) return;
 
-            // Player player = ;
-            // if (player != null)
-            // {
-            //     Singleton<PlayerKilledPacketHandler>.Instance.Send(Patch_Player_ShotReactions.LastDamageToPlayer[player], player, player);
-
-            //     player.GetScore().ChangeReadiness(PlayerReadinessState.Disconnected);
-            //     player.GetScore().ChangeFaction(Faction.Spectator);
-            //     // Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
-            // }
+            Player player = peerDisconnectedEvent.Peer.Player;
+            if (player != null)
+            {
+                Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
+                var damageInfo = new DamageInfoStruct
+                {
+                    Damage = 1f,
+                    BodyPartColliderType = EBodyPartColliderType.RibcageUp
+                };
+                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, player, player);
+                // Singleton<DictateTeleportHandler>.Instance.SendToPlayer();
+            }
         }
     }
 
@@ -96,14 +99,10 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         UnityTicker.OnUpdate += Update;
 
-        timeSyncTicker = new TimeSyncTicker();
-        UnityTicker.OnUpdate += timeSyncTicker.Update;
+        _timeSyncTicker = new TimeSyncTicker();
+        UnityTicker.OnUpdate += _timeSyncTicker.Update;
 
-        // handsAnimatorDebugger = new HandsAnimatorDebugger();
-
-        // _tickerObject.GetOrAddComponent<AudioSourceWorldDebug>();
-
-        session = new SessionManager();
+        Session = new SessionManager();
 
         if (!H.IsHeadless)
         {
@@ -129,7 +128,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
 
-
             PU.OpenEyes();
         }
 
@@ -139,7 +137,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     void CreateFullBrightHack()
     {
         _hideoutLight = new GameObject("hideoutlight");
-        
+
         CreateDirLight(_hideoutLight.transform, new Vector3(90, 0, 0));
         CreateDirLight(_hideoutLight.transform, new Vector3(-90, 0, 0));
         CreateDirLight(_hideoutLight.transform, new Vector3(0, 90, 0));
@@ -166,37 +164,25 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         _currentState?.OnExit();
         _currentState = null;
 
-        session = null;
+        Session = null;
 
         UnityTicker.OnUpdate -= Update;
 
-        if (timeSyncTicker != null)
+        if (_timeSyncTicker != null)
         {
-            UnityTicker.OnUpdate -= timeSyncTicker.Update;
-            timeSyncTicker.Dispose();
+            UnityTicker.OnUpdate -= _timeSyncTicker.Update;
+            _timeSyncTicker.Dispose();
         }
 
         if (_hideoutLight != null)
         {
             GameObject.Destroy(_hideoutLight);
         }
-
-        if (_musicObject != null)
-        {
-            UnityEngine.Object.Destroy(_musicObject);
-            _musicObject = null;
-        }
-
-        // if (handsAnimatorDebugger != null)
-        // {
-        //     handsAnimatorDebugger.Dispose();
-        //     handsAnimatorDebugger = null;
-        // }
     }
 
     public void Update()
     {
-        if (session == null || _currentState == null) return;
+        if (Session == null || _currentState == null) return;
 
         // On Server: Start + Duration - Now ~= Duration (since Start is Now)
         // On Client: Start + Duration - Now = Remaining Time accurately synced
@@ -248,7 +234,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             EventBus.OnRoundActionEnd?.Invoke(packet.roundActionEnd.Value);
         }
 
-        session.matchState = packet.matchState;
+        Session.matchState = packet.matchState;
         _currentState = gamemode.CreateState(packet.matchState);
 
         StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);

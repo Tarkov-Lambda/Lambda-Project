@@ -67,6 +67,17 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         DispatchPacket(packet);
     }
 
+    public void SendToPeer(Player player, NetPeer peer)
+    {
+        var packet = new InventoryResyncPacket
+        {
+            Player = player,
+            broadcast = false
+        };
+
+        DispatchPacketToPeer(packet, peer);
+    }
+
     protected override bool ValidatePacket(InventoryResyncPacket packet, NetPeer peer, out string rejectionReason)
     {
         if (packet.broadcast == true)
@@ -91,11 +102,11 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, true);
         }
-        else if (peer.Id != H.FikaNet.NetId) 
+        else if (peer.Id != H.FikaNet.NetId)
         {
             H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
         }
-        
+
         if (packet.Player.IsYourPlayer)
         {
             ApplyInternal(packet, peer);
@@ -187,11 +198,11 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         if (player.PlayerBody != null)
         {
             player.PlayerBody.Equipment = newEquipment;
-            
+
             var backpackSlot = newEquipment.GetSlot(EquipmentSlot.Backpack);
             var slotNames = (EquipmentSlot[])AccessTools.Field(typeof(PlayerBody), "SlotNames").GetValue(null);
-            var slotViews = player.PlayerBody.SlotViews; 
-            
+            var slotViews = player.PlayerBody.SlotViews;
+
             var getByKeyMethod = AccessTools.Method(slotViews.GetType(), "GetByKey");
             var addOrReplaceMethod = AccessTools.Method(slotViews.GetType(), "AddOrReplace");
             var equipmentSlotClassType = typeof(PlayerBody).GetNestedType("EquipmentSlotClass", BindingFlags.Public | BindingFlags.NonPublic);
@@ -201,10 +212,10 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
             {
                 var newSlot = newEquipment.GetSlot(slotName);
                 var oldSlotView = getByKeyMethod.Invoke(slotViews, [slotName]);
-                
+
                 Transform bone = null;
                 Transform altBone = null;
-                
+
                 if (oldSlotView != null)
                 {
                     bone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_0").GetValue(oldSlotView);
@@ -230,7 +241,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
             var disposeField = AccessTools.Field(typeof(PlayerBody), "_dispose");
             var compositeDisposable = disposeField?.GetValue(player.PlayerBody);
-            
+
             if (compositeDisposable != null)
             {
                 var addDisposableMethod = AccessTools.Method(compositeDisposable.GetType(), "AddDisposable", [typeof(Action)]);
@@ -261,7 +272,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
     private static void UpdateObserver(object observer, Slot newSlot)
     {
         if (observer == null || newSlot == null) return;
-        
+
         var slotField = AccessTools.Field(observer.GetType(), "Slot_0");
         if (slotField != null)
         {

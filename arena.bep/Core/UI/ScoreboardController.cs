@@ -23,16 +23,18 @@ namespace ifp.arena.bep.Core.UI
             this.scoreboardUI = scoreboardUI;
 
             PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
+            PlayerReadinessPacketHandler.AfterPacketApplied += OnPlayerReadiness;
             EventBus.OnEnter += OnMatchStateEnter;
 
             Patch_Gameworld_OnGameStarted.OnGameStarted += AddInventoryHotkeyInterceptor;
-            if (Singleton<GameWorld>.Instantiated) 
+            if (Singleton<GameWorld>.Instantiated)
                 AddInventoryHotkeyInterceptor();
 
             scoreboardUI.gameObject.SetActive(false);
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
+        private void OnPlayerReadiness(PlayerReadinessPacket packet) => Refresh();
         private void OnMatchStateEnter(MatchState state) => Refresh();
 
         private void AddInventoryHotkeyInterceptor()
@@ -51,6 +53,7 @@ namespace ifp.arena.bep.Core.UI
         public void Dispose()
         {
             PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
+            PlayerReadinessPacketHandler.AfterPacketApplied -= OnPlayerReadiness;
             EventBus.OnEnter -= OnMatchStateEnter;
 
             Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;

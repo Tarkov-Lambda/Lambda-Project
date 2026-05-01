@@ -67,15 +67,16 @@ public static class Helpers
 
     // Internal Pointers
     public static ArenaController Arena                                 => Singleton<ArenaController>.Instance;
-    public static SessionManager Session                                => Arena.session;
+    public static SessionManager Session                                => Arena.Session;
     public static LambdaGamemode Gamemode                               => Arena.gamemode;
     public static bool IsNightTime                                      => Gamemode is IGMWithNightMode nm && nm.IsNightTime;
 
-    public static Dictionary<int, PlayerScore> Scoreboard               => Singleton<ArenaController>.Instance.session.scoreboard;
+    public static Dictionary<int, PlayerScore> Scoreboard               => Singleton<ArenaController>.Instance.Session.scoreboard;
     public static PlayerScore MainPlayerScore                           => GetMainPlayerScore();
     public static List<Player> AllTeammates                             => Session.GetPlayersFromFaction(H.MainPlayerScore.Faction);
     public static List<PlayerScore> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
     public static List<Player> AllPlayers                               => IsInRaid() ? GetAllPlayers() : new();
+    public static List<Player> AllPlayingPlayers                        => IsInRaid() ? GetAllPlayingPlayers() : new();
 
     public static AudioHandler AudioHandler                             => IsInRaid() ? Singleton<AudioHandler>.Instance : null;
     public static LambdaSounds Sounds                                   => IsInRaid() ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
@@ -142,7 +143,6 @@ public static class Helpers
         return AllPlayers.FirstOrDefault(p => p.Profile.ProfileId == profileId);
     }
 
-
     public static Player GetPlayerByName(string profileId)
     {
         if (!IsInRaid()) return null;
@@ -154,11 +154,10 @@ public static class Helpers
     public static PlayerScore GetPlayerScore(int playerId)
     {
         if (!IsInRaid()) return null;
-        Scoreboard.TryGetValue(playerId, out var playerScore);
-
-        if (playerScore == null)
+        if (!Scoreboard.TryGetValue(playerId, out var playerScore))
         {
             playerScore = new PlayerScore(playerId);
+            Scoreboard[playerId] = playerScore;
         }
         return playerScore;
     }
@@ -173,6 +172,12 @@ public static class Helpers
     private static List<Player> GetAllPlayers()
     {
         return GameWorld.AllAlivePlayersList;
+    }
+
+    private static List<Player> GetAllPlayingPlayers()
+    {
+        if (!IsInRaid()) return null;
+        return GameWorld.AllAlivePlayersList.Where(player => player.GetScore().ReadyState != PlayerReadinessState.Disconnected && player.GetScore().Faction != Faction.Spectator).ToList();
     }
 
     public static bool HasMainMenuLoaded()

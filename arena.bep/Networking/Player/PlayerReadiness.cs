@@ -39,6 +39,8 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
 public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 {
+    protected override bool ShouldApplyBeforeArenaInitialized => true;
+
     public void Send(PlayerReadinessState readyState)
     {
         if (H.IsHeadless) return;
@@ -78,8 +80,8 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         if (packet.assetItems != null)
         {
             var playerScore = H.GetPlayerScore(packet.Player);
-            playerScore.SetBuySelection(packet.buySelection);
             playerScore.SetDefaultItems(packet.defaultItems);
+            playerScore.SetBuySelection(packet.buySelection);
             PresetBundleHandler.Instance.AddToCache(packet.assetItems);
 
             // other clients don't need this info
@@ -90,36 +92,36 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
 
     protected override void Apply(PlayerReadinessPacket packet, NetPeer peer)
     {
+        bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerScore playerScore = H.GetPlayerScore(packet.Player);
-        if (playerScore == null)
-        {
-            H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
-            playerScore = H.Scoreboard[packet.Player.Id];
 
+        if (isNewPlayer)
+        {
             if (packet.readyState == PlayerReadinessState.Ready)
             {
                 playerScore.ChangeProgress(100f);
+                playerScore.ChangeFaction(Faction.Spectator);
             }
         }
 
         playerScore.ChangeReadiness(packet.readyState);
 
-        if (!H.IsClient)
+        if (H.IsServer)
         {
             // In case a player is reporting they are connected mid session (reconnects, new joins)
-            if (H.Session?.matchState > MatchState.WarmupEnd && packet.readyState == PlayerReadinessState.Connected)
+            if (H.Arena.gamemode != null && H.Session.matchState != MatchState.None)
             {
-
-                // 
-                if (!H.Scoreboard.ContainsKey(packet.Player.Id))
+                if (packet.readyState == PlayerReadinessState.Connected)
                 {
-                    H.Scoreboard[packet.Player.Id] = new PlayerScore(packet.Player.Id);
-                    H.GetPlayerScore(packet.Player.Id).ChangeFaction(Faction.Spectator);
+                    Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
+                    Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peer);
+                    Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peer);
+                    // holy size but who gives a fuck
+                    foreach (var player in H.AllPlayers)
+                    {
+                        Singleton<InventoryResyncPacketHandler>.Instance.SendToPeer(player, peer);
+                    }
                 }
-
-                Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
-                Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peer);
-                Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peer);
             }
         }
 

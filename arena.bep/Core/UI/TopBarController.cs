@@ -14,6 +14,7 @@ namespace ifp.arena.bep.Core.UI
         internal TopBarController(TopBar topBar)
         {
             PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
+            PlayerReadinessPacketHandler.AfterPacketApplied += OnPlayerReadiness;
             EventBus.OnEnter += OnMatchStateEnter;
             UnityTicker.OnUpdate += OnUpdate;
 
@@ -21,6 +22,7 @@ namespace ifp.arena.bep.Core.UI
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
+        private void OnPlayerReadiness(PlayerReadinessPacket packet) => Refresh();
         private void OnMatchStateEnter(MatchState state) => Refresh();
 
         void Refresh()
@@ -46,6 +48,7 @@ namespace ifp.arena.bep.Core.UI
         public void Dispose()
         {
             PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
+            PlayerReadinessPacketHandler.AfterPacketApplied -= OnPlayerReadiness;
             EventBus.OnEnter -= OnMatchStateEnter;
             UnityTicker.OnUpdate -= OnUpdate;
         }

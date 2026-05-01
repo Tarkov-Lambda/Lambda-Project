@@ -54,7 +54,7 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {
         if (!H.IsInRaid()) return false; // mid raid connect protection
-        if (__instance.Player == null) return false; // mid raid connect protection
+        if (H.Arena?.Session == null) return false;
 
         var playerScore = __instance.Player.GetScore();
         if (playerScore == null) return false;

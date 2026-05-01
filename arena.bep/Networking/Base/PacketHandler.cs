@@ -52,6 +52,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected virtual bool ShouldProcessInstantly => true;
 
+    // Make sure arena is initialized before we apply this packet type
+    protected virtual bool ShouldApplyBeforeArenaInitialized => false;
+
     public static event Action<T> BeforePacketApplied;
     public static event Action<T> AfterPacketApplied;
 
@@ -193,9 +196,14 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         {
             H.FikaNet.SendData(ref packet, deliveryMethod, false);
         }
-        else
+        else if (targetPeer == null)
         {
             ProcessApprovedPacket(ref packet, targetPeer);
+        }
+        else
+        {
+            MutateApprovedPacket(ref packet, targetPeer);
+            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
         }
     }
 
@@ -238,6 +246,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         ApplyInternal(packet, peer);
     }
 
+
     // this function is the central place of "mutate right before applying anywhere made by anyone"
     protected virtual void MutateApprovedPacket(ref T packet, NetPeer peer) { }
 
@@ -250,7 +259,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected virtual void WhenClientReceivesPacket(T packet, NetPeer peer)
     {
-        if (!H.IsInRaid() || H.FikaNet == null) return;
+        if (!ShouldApplyBeforeArenaInitialized && H.Arena?.Session == null) return;
 
 #if DEBUG
         if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");

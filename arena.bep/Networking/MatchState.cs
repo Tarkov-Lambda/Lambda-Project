@@ -29,7 +29,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         var packet = new MatchStateSyncPacket
         {
             matchState = matchState,
-            Timestamp = NetworkTime.ServerNowSeconds,    // phase start = right now
+            Timestamp = NetworkTime.ServerNowSeconds,           // phase start = right now
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
             roundActionEnd = roundActionEnd
         };
@@ -44,7 +44,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         var packet = new MatchStateSyncPacket
         {
             matchState = H.Session.matchState,
-            Timestamp = H.Arena.ServerPhaseStartSeconds, // historical phase start — preserved by DispatchPacket fix
+            Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
@@ -54,11 +54,6 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
     protected override bool ValidatePacket(MatchStateSyncPacket packet, NetPeer peer, out string rejectionReason)
     {
         return base.ValidatePacket(packet, peer, out rejectionReason);
-    }
-
-    protected override void MutateApprovedPacket(ref MatchStateSyncPacket packet, NetPeer peer)
-    {
-        packet.Timestamp = NetworkTime.ServerNowSeconds;
     }
 
     protected override void Apply(MatchStateSyncPacket packet, NetPeer peer)

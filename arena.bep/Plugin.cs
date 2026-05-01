@@ -145,6 +145,9 @@ public class Plugin : BaseUnityPlugin
 
             RegisterPatch(new Patch_BetterSource_SetLowPassFilterParameters());
             RegisterPatch(new Patch_BetterSource_SetHighPassFilterParameters());
+
+            RegisterPatch(new Patch_SpatialAudioSystem_Update());                       // bypass high filter muffling
+            RegisterPatch(new Patch_SpatialAudioSystem_LateUpdate());                   // bypass high filter muffling
         }
 
         // RegisterPatch(new AudioDiscovery_Play_Patch());
@@ -172,8 +175,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
 
-        RegisterPatch(new Patch_Class1396_method_3());                            // In edge cases where the hands controller gets bugged out - we hard reset it
-        // RegisterPatch(new Patch_GClass2037_Start());                              // In edge cases where the hands controller gets bugged out - we hard reset it
+        // RegisterPatch(new Patch_Class1396_method_3());                           // In edge cases where the hands controller gets bugged out - we hard reset it
+        // RegisterPatch(new Patch_GClass2037_Start());                             // In edge cases where the hands controller gets bugged out - we hard reset it
 
         RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
 
@@ -218,16 +221,24 @@ public class Plugin : BaseUnityPlugin
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
-        // RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
-        // RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
-        // RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
-        // RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
+        RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
+        RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
+        RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
+        RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
+        RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
-        RegisterPatch(new Patch_FikaHealthBar_Create());                            // Very sloppy way to do this and causes errors
+        // RegisterPatch(new Patch_FikaHealthBar_Create());
+        RegisterPatch(new Patch_HostGameController_GetHostLootItems());      
+
+        // RegisterPatch(new Patch_HostGameController_InitializeLoot());
+
+        // RegisterPatch(new Debug_FikaHeadless_Handshake());
+        // RegisterPatch(new Debug_FikaReconnect_NRE_Hunter());
+
 
         // RegisterPatch(new Patch_FikaClient_OnNetworkSettingsPacketReceived());      // When IFikaNetworkManager is ready during mid session connect (really fucking stupid)
 
-        // RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
+        RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard

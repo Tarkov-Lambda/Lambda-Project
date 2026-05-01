@@ -21,6 +21,7 @@ public partial struct SessionStartPacket : INetSerializable
     public string level;
     public string gamemode;
     public List<Item> asssetBundles;
+    public bool isForLateJoiner;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStartPacket>(reader);
@@ -73,6 +74,7 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         var packet = new SessionStartPacket
         {
             level = H.Session.level,
+            gamemode = H.Gamemode.GetType().Name, // deal with it
         };
 
         if (H.IsServer)

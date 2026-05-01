@@ -1,6 +1,5 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using EFT;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Patches.Tarkov;
 using System;
@@ -13,8 +12,7 @@ namespace ifp.arena.bep.Core.AssetBundleHandling;
 
 public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposable
 {
-    public static readonly string pathToBundlesDir = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
-    private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new Dictionary<string, AssetBundle>();
+    private readonly Dictionary<string, AssetBundle> loadedAssetBundles = [];
 
     public MapAssetBundleHandler()
     {
@@ -91,7 +89,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
 
     public async UniTask<AssetBundle> LoadAssetBundle(string name)
     {
-        string fullPath = Path.Combine(pathToBundlesDir, name);
+        string fullPath = Path.Combine(Plugin.pathToBundles, name);
         if (!File.Exists(fullPath))
         {
             D.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");
@@ -101,7 +99,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         // Check if it's already loaded, OR if it was previously cached as null
         if (!loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) || bundle == null)
         {
-            BundleLoadingProgressReport progressReportBundle = new BundleLoadingProgressReport();
+            BundleLoadingProgressReport progressReportBundle = new();
 
             bundle = await AssetBundle.LoadFromFileAsync(fullPath).ToUniTask(progressReportBundle);
 

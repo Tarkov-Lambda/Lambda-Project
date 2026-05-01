@@ -78,10 +78,25 @@ namespace ifp.arena.shared
         {
             lock (_lock)
             {
-                if (_binaural != IntPtr.Zero) { PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero; }
-                if (_direct != IntPtr.Zero) { PhononNative.iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero; }
-                if (_reflectionEffect != IntPtr.Zero) { PhononNative.iplReflectionEffectRelease(ref _reflectionEffect); _reflectionEffect = IntPtr.Zero; }
-                if (_ambiDecodeEffect != IntPtr.Zero) { PhononNative.iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect); _ambiDecodeEffect = IntPtr.Zero; }
+                if (_binaural != IntPtr.Zero)
+                {
+                    PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero;
+                }
+                
+                if (_direct != IntPtr.Zero)
+                {
+                    PhononNative.iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero;
+                }
+
+                if (_reflectionEffect != IntPtr.Zero)
+                {
+                    PhononNative.iplReflectionEffectRelease(ref _reflectionEffect); _reflectionEffect = IntPtr.Zero;
+                }
+
+                if (_ambiDecodeEffect != IntPtr.Zero)
+                {
+                    PhononNative.iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect); _ambiDecodeEffect = IntPtr.Zero;
+                }
 
                 if (_reflBufsAllocated)
                 {

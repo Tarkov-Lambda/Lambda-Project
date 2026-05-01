@@ -201,38 +201,5 @@ public class Patch_BetterSource_SetOcclusionVolumeFactor : ModulePatch
     }
 }
 
-public class Patch_SpatialLowPassFilter_CalculateFrequency : ModulePatch
-{
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialLowPassFilter), nameof(SpatialLowPassFilter.CalculateFrequency));
 
-    [PatchPrefix]
-    static bool Prefix(SpatialLowPassFilter __instance)
-    {
-        var unityFilter = __instance.GetComponent<AudioLowPassFilter>();
-        if (unityFilter != null)
-        {
-            unityFilter.enabled = false;
-            unityFilter.cutoffFrequency = 22000f;
-        }
 
-        return false;
-    }
-}
-
-public class Patch_SpatialHighPassFilter_CalculateFrequency : ModulePatch
-{
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialHighPassFilter), nameof(SpatialHighPassFilter.CalculateFrequency));
-
-    [PatchPrefix]
-    static bool Prefix(SpatialHighPassFilter __instance)
-    {
-        var unityFilter = __instance.GetComponent<AudioHighPassFilter>();
-        if (unityFilter != null)
-        {
-            unityFilter.enabled = false;
-            unityFilter.cutoffFrequency = 10f;
-        }
-
-        return false;
-    }
-}
