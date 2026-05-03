@@ -53,6 +53,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldProcessInstantly => true;
 
     // Make sure arena is initialized before we apply this packet type
+    // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)
+    // later on it might be better to hook the arena initialization into loading process
+    // however for now it works and should not be touched
     protected virtual bool ShouldApplyBeforeArenaInitialized => false;
 
     public static event Action<T> BeforePacketApplied;

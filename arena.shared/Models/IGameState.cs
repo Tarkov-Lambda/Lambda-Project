@@ -13,7 +13,7 @@ public abstract class LambdaGamemode
 {
     public abstract IGameState CreateState(MatchState state);
 
-    public Dictionary<MatchState, float> StateTimerConfig = new()
+    public virtual Dictionary<MatchState, float> StateTimerConfig { get; } = new()
     {
         {MatchState.None, 0},
         {MatchState.Warmup, 120},

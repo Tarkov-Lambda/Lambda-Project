@@ -28,11 +28,21 @@ public class DictateTeleportHandler : PacketHandler<DictateTeleport>
     {
         var packet = new DictateTeleport
         {
-            Player = H.MainPlayer,
+            Player = player,
             position = position
         };
 
         DispatchPacketToPlayer(packet, player);
+    }
+
+    protected override void ProcessApprovedPacket(ref DictateTeleport packet, NetPeer peer)
+    {
+        MutateApprovedPacket(ref packet, peer);
+        if (!packet.Player.IsAI)
+        {
+            H.FikaNet.SendData(ref packet, deliveryMethod, true);
+        }
+        ApplyInternal(packet, peer);
     }
 
     protected override void Apply(DictateTeleport packet, NetPeer peer)

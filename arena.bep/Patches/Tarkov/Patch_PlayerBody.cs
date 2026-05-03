@@ -14,7 +14,7 @@ public class Patch_PlayerBody_UpdatePlayerRenders : ModulePatch
     [PatchPrefix]
     static bool Prefix(PlayerBody __instance, PluggableBone ____watches, EPointOfView pointOfView, EPlayerSide side)
     {
-        bool isFirstPerson = pointOfView is EPointOfView.FirstPerson ? true : false;
+        bool isFirstPerson = pointOfView is EPointOfView.FirstPerson;
 
         foreach (var (eBodyModelPart2, loddedSkin2) in __instance.BodySkins)
         {

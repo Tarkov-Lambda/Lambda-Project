@@ -5,11 +5,8 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
-using ifp.arena.bep.networking;
-using ifp.arena.shared;
 
 namespace ifp.arena.bep.Core.Gamemode;
 
@@ -157,7 +154,7 @@ public static class InventoryResetter
         }
 
         // GIVING
-        foreach (var kvp in H.GetPlayerScore(player.Id).RecordedItems)
+        foreach (var kvp in H.GetPlayerScore(player.Id).DefaultEquipment)
         {
             if (kvp.Value == null) continue;
 
@@ -186,11 +183,8 @@ public static class InventoryResetter
 
         // Default Pistol
         PistolItemClass defaultPistol = GetDefaultPistol(player.GetScore()).CloneItem();
-
         var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
-
         pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-
         RU.SetupWeaponImmediate(defaultPistol, player);
     }
 }

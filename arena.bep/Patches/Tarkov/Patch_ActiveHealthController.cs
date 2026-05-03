@@ -13,16 +13,6 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
-
-// Place for patching out damage application if the shooter is already dead.
-// On the server if a shooter headshots, instead of waiting for the victim to report that they are dead
-// the server preemptively will report death (via PlayerKilledPacket).
-// however, considering the server will broadcast any damage packet
-// the victim may also be shooting the original shooter.
-// This will result in non stop kill trading.
-//
-// Here we can theoretically check if the shooter is already dead not damage
-// ourselves, or at least tighen up the kill trade window.
 public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 {
     public static DamageInfoStruct LastReceivedDamageInfo { get; private set; }
@@ -46,10 +36,8 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
         }
     }
 
-
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
 
-    // Has to be prefix so that we can capture the damageInfo packet before Kill is invoked
     [PatchPrefix]
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {

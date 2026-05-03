@@ -12,8 +12,6 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
     protected override MethodBase GetTargetMethod() =>
     AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
 
-    private static readonly float PistolADSMotionScale = 0.1f;
-
     [PatchPrefix]
     static bool Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 motion, ref Vector3 velocity)
     {
@@ -25,8 +23,8 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 
         if (__instance.IsAiming)
         {
-            motion *= PistolADSMotionScale;
-            velocity *= PistolADSMotionScale;
+            motion *= GameplayVariables.PistolADSMotionScale;
+            velocity *= GameplayVariables.PistolADSMotionScale;
             __instance.Mask &= ~EProceduralAnimationMask.Walking; // no bobbing effect
         }
         else
@@ -46,8 +44,6 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
     protected override MethodBase GetTargetMethod() =>
     AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.UpdateSwayFactors));
 
-    private static readonly float PistolDisplacementStrScale = 0.25f;
-
     [PatchPostfix]
     static void Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController,
     ref float ____displacementStr,
@@ -58,12 +54,12 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
         if (____firearmController is null) return;
         if (____firearmController.Item is not PistolItemClass) return;
 
-        __instance.AimingDisplacementStr *= PistolDisplacementStrScale;
-        __instance.MotionReact.SwayFactors *= PistolDisplacementStrScale;
+        __instance.AimingDisplacementStr *= GameplayVariables.PistolDisplacementStrScale;
+        __instance.MotionReact.SwayFactors *= GameplayVariables.PistolDisplacementStrScale;
 
-        ____displacementStr *= PistolDisplacementStrScale;
-        ____swayStrength *= PistolDisplacementStrScale;
-        ____aimSwayStrength *= PistolDisplacementStrScale;
+        ____displacementStr *= GameplayVariables.PistolDisplacementStrScale;
+        ____swayStrength *= GameplayVariables.PistolDisplacementStrScale;
+        ____aimSwayStrength *= GameplayVariables.PistolDisplacementStrScale;
 
     }
 }
@@ -73,8 +69,6 @@ public class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePat
     protected override MethodBase GetTargetMethod() =>
     AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.CalculateCameraPosition));
 
-    private static readonly float PistolZoomBoostScale = 0.1f;
-
     [PatchPostfix]
     static void Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 ____vCameraTarget)
     {
@@ -82,7 +76,7 @@ public class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePat
         {
             if (____firearmController.Weapon is PistolItemClass)
             {
-                ____vCameraTarget.z += PistolZoomBoostScale;
+                ____vCameraTarget.z += GameplayVariables.PistolZoomBoostScale;
             }
         }
     }

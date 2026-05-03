@@ -46,7 +46,6 @@ public static class ReplenishmentUtilities
         {
             ReplenishGun(weapon, ammo);
 
-            // Only the local player's machine should create and broadcast vest magazines.
             ReplenishMagazines(weapon, player);
         }
     }

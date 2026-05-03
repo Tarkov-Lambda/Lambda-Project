@@ -32,7 +32,6 @@ public partial struct AdminAuthPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AdminAuthPacket>(reader);
 }
 
-// I can't tell if I should refactor this thing to be more inline; though who cares if it's slightly different so long as it works I guess?
 public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
 {
     private readonly Dictionary<Player, string> _pendingChallenges = new();

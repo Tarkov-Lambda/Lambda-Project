@@ -89,7 +89,7 @@ public class DuelGamemode : LambdaGamemode, IGMRound, IGMTeam
         MatchState.RoundPrepare => new DuelPrepare(),
         MatchState.RoundAction  => new DuelAction(),
         MatchState.RoundEnd     => new SharedRoundEnd(),
-        MatchState.MatchEnd     => new SharedFinish(),
-        _                       => null
+        MatchState.MatchEnd     => new SharedMatchEnd(),
+        _ => null
     };
 }

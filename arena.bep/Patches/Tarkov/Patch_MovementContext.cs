@@ -2,7 +2,6 @@
 using EFT;
 using HarmonyLib;
 using ifp.arena.bep.Core;
-using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
 using ifp.arena.bep.Core.MovementStates;
 using SPT.Reflection.Patching;
@@ -10,8 +9,6 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using static EFT.MovementContext;
-using EFT.InventoryLogic;
-using EFT.Vaulting;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
@@ -188,7 +185,7 @@ public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, bool isAiming, ref float slow)
     {
-        slow *= 1.15f;
+        slow *= GameplayVariables.AimSpeedPenaltyReduction;
         return true;
     }
 }
@@ -200,7 +197,7 @@ public class Patch_MovementContext_method_15 : ModulePatch
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, ref float smoothDiff, ref float deltaTime)
     {
-        deltaTime *= 1.3f;
+        deltaTime *= GameplayVariables.LeanSpeed;
         // __instance.method_14(smoothDiff, deltaTime);
         return true;
     }

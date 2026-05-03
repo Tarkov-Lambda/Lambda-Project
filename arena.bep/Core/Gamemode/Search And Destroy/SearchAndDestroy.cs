@@ -166,16 +166,20 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
     public static float defusingTime = 10f;
     public static float defuseRadius = 2.5f;
 
-    public new Dictionary<MatchState, float> StateTimerConfig = new()
+    public override Dictionary<MatchState, float> StateTimerConfig { get; } = new()
     {
         {MatchState.None, 0},
         {MatchState.Warmup, 120},
         {MatchState.WarmupEnd, 5},
         {MatchState.Cleanup, 3},
         {MatchState.Pause, 45},
+#if DEBUG
+        {MatchState.RoundPrepare, 5},
+#else
         {MatchState.RoundPrepare, 15},
+#endif
         {MatchState.RoundAction, 115},
-        {MatchState.RoundEnd, 8},
+        {MatchState.RoundEnd, 7},
         {MatchState.RoundPlanted, 45},
         {MatchState.SideSwap, 10},
         {MatchState.MatchEnd, 15}
@@ -183,17 +187,17 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None => new SharedNone(),
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
-        MatchState.Cleanup => new SND_Cleanup(),
-        MatchState.Pause => new SharedPause(),
+        MatchState.None         => new SharedNone(),
+        MatchState.Warmup       => new SharedWarmup(),
+        MatchState.WarmupEnd    => new SharedWarmupEnd(),
+        MatchState.Cleanup      => new SND_Cleanup(),
+        MatchState.Pause        => new SharedPause(),
         MatchState.RoundPrepare => new SND_Prepare(),
-        MatchState.RoundAction => new SND_Action(),
+        MatchState.RoundAction  => new SND_Action(),
         MatchState.RoundPlanted => new SND_Planted(),
-        MatchState.RoundEnd => new SND_RoundEnd(),
-        MatchState.SideSwap => new SharedSideSwap(),
-        MatchState.MatchEnd => new SharedFinish(),
+        MatchState.RoundEnd     => new SND_RoundEnd(),
+        MatchState.SideSwap     => new SharedSideSwap(),
+        MatchState.MatchEnd     => new SharedMatchEnd(),
         _ => null
     };
 }

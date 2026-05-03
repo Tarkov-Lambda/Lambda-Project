@@ -1,7 +1,9 @@
 using System;
 using Comfort.Common;
 using EFT;
+using HarmonyLib;
 using ifp.arena.bep.Core;
+using static EFT.Player;
 using static EFT.PlayerAnimator;
 
 public static class PlayerExtensions
@@ -33,9 +35,11 @@ public static class PlayerExtensions
                 player.AbstractProcess_0 = null;
             }
 
+            var firearmController = player.HandsController as FirearmController;
+
             if (player.HandsController != null)
             {
-                if (player.HandsController is Player.FirearmController firearmController)
+                if (firearmController != null)
                 {
                     if (player.MovementContext != null)
                     {
@@ -83,7 +87,6 @@ public static class PlayerExtensions
             if (player.MovementContext != null)
             {
                 player.MovementContext.SetBlindFire(0);
-                // Make sure you include the namespace depending on your usings, e.g. EFT.Animations.PlayerAnimator
                 player.MovementContext.PlayerAnimatorSetWeaponId(EWeaponAnimationType.EmptyHands);
             }
 
@@ -103,6 +106,28 @@ public static class PlayerExtensions
         catch (Exception ex3)
         {
             D.LogError("error during hands resetting: " + ex3);
+        }
+    }
+
+    public static void EquipSomething(this Player player)
+    {
+        var firearmController = player.HandsController as FirearmController;
+        if (player.LastEquippedWeaponOrKnifeItem != null)
+        {
+            InteractionsHandlerClass.Discard(player.LastEquippedWeaponOrKnifeItem, H.MainPlayer.InventoryController, true);
+
+            player.ProcessStatus = EProcessStatus.None;
+            player.TrySetLastEquippedWeapon();
+        }
+        else
+        {
+            player.ProcessStatus = EProcessStatus.None;
+            player.SetFirstAvailableItem((result) => { });
+        }
+
+        if (firearmController != null && firearmController.Weapon != null)
+        {
+            Traverse.Create(player.ProceduralWeaponAnimation).Field("_firearmAnimationData").SetValue(firearmController);
         }
     }
 }

@@ -381,7 +381,8 @@ internal class Patch_FikaServer_OnDestroy : ModulePatch
     }
 }
 
-// we do not have any loot items in the game mod
+// we do not have any loot items in the mod ig?
+// for some reason it errors
 public class Patch_HostGameController_GetHostLootItems : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -416,372 +417,48 @@ public class Patch_HostGameController_GetHostLootItems : ModulePatch
     }
 }
 
-
-public class Debug_FikaHeadless_Handshake : ModulePatch
+// either because of what I did or the new 2.2.4 patch
+// during disconnect - the observed player's snapshot timestamps are not reset/cleared (or vice versa the client does not get the timestamp that they left off)
+// because of that the server will reject every single movement packet from the reconnected client
+// causing the player to be motionless until their reconnected timestamp state reaches the old timestamp
+// as a result we are checking if the observed player already exists OnNetworkSettingsPacketReceived
+// and clearing the snapshotter manually 
+public class Patch_FikaServer_ReconnectFix : ModulePatch
 {
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(FikaServer), "OnLoadingProfilePacketReceived");
-    }
-
-    [PatchPostfix]
-    static void Postfix(FikaServer __instance, LoadingProfilePacket packet, NetPeer peer)
-    {
-        var profile = packet.Profiles.Keys.FirstOrDefault();
-        D.Log($"[DEBUG] Handshake Postfix: {profile?.Nickname} connected to Headless.");
-
-        // Let's see if the server thinks it should send this new guy to everyone else
-        // and if it should send everyone else to this new guy.
-        var coopHandler = Traverse.Create(__instance).Field("_coopHandler").GetValue<Fika.Core.Main.Components.CoopHandler>();
-        if (coopHandler != null)
-        {
-            foreach (var existing in coopHandler.HumanPlayers)
-            {
-                D.Log($"[DEBUG] Server currently tracking existing player: {existing.Profile.Nickname} (NetID: {existing.NetId})");
-            }
-        }
-    }
-}
-
-public class Debug_FikaReconnect_NRE_Hunter : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(FikaServer), "OnReconnectPacketReceived");
-    }
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnNetworkSettingsPacketReceived");
 
     [PatchPrefix]
-    static bool Prefix(FikaServer __instance, CoopHandler ____coopHandler, ReconnectPacket packet, NetPeer peer)
+    static void Prefix(FikaServer __instance, NetworkSettingsPacket packet)
     {
-        D.Log("[FikaReconnect-Debug] Entered OnReconnectPacketReceived");
+        var coopHandler = __instance.CoopHandler;
+        if (coopHandler == null) return;
 
-        try
+        foreach (var player in coopHandler.Players.Values)
         {
-            if (__instance == null) { D.LogError("[FikaReconnect-Debug] __instance is null!"); return false; }
-            if (packet == null) { D.LogError("[FikaReconnect-Debug] packet is null!"); return false; }
-            if (peer == null) { D.LogError("[FikaReconnect-Debug] peer is null!"); return false; }
-
-            if (!packet.IsRequest)
+            if (player.ProfileId == packet.ProfileId && player is ObservedPlayer observedPlayer)
             {
-                D.Log("[FikaReconnect-Debug] packet.IsRequest is false, exiting.");
-                return false;
-            }
+                Debug.Log($"[FIKA Reconnect Fix] Reconnecting player '{player.Profile.Nickname}' (NetId: {player.NetId}) detected. Resetting network state.");
 
-            if (packet.InitialRequest)
-            {
-                D.Log("[FikaReconnect-Debug] Processing InitialRequest...");
-                NotificationManagerClass.DisplayMessageNotification(
-                    LocaleUtils.RECONNECT_REQUESTED.Localized(),
-                    iconType: EFT.Communications.ENotificationIconType.Alert);
+                observedPlayer.Snapshotter?.Clear();
 
-                if (____coopHandler == null) { D.LogError("[FikaReconnect-Debug] ____coopHandler is null!"); return false; }
-                if (____coopHandler.HumanPlayers == null) { D.LogError("[FikaReconnect-Debug] ____coopHandler.HumanPlayers is null!"); return false; }
-
-                foreach (var player in ____coopHandler.HumanPlayers)
+                var traverse = Traverse.Create(observedPlayer);
+                var stateField = traverse.Field("CurrentPlayerState");
+                if (stateField.FieldExists())
                 {
-                    if (player == null) { D.LogError("[FikaReconnect-Debug] A HumanPlayer in loop is null!"); continue; }
-
-                    if (player.ProfileId == packet.ProfileId && player is ObservedPlayer observedPlayer)
+                    var stateObject = stateField.GetValue();
+                    if (stateObject != null)
                     {
-                        D.Log($"[FikaReconnect-Debug] Found matching ObservedPlayer: {player.ProfileId}");
-
-                        if (observedPlayer.Profile == null) D.LogError("[FikaReconnect-Debug] observedPlayer.Profile is null!");
-                        if (observedPlayer.NetworkHealthController == null) D.LogError("[FikaReconnect-Debug] observedPlayer.NetworkHealthController is null!");
-
-                        ReconnectPacket ownCharacterPacket = new()
+                        var stateType = stateObject.GetType();
+                        var ctor = stateType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [typeof(Vector3), typeof(Vector2)], null);
+                        if (ctor != null)
                         {
-                            Type = ReconnectPacket.EReconnectDataType.OwnCharacter,
-                            Profile = observedPlayer.Profile,
-                            ProfileHealthClass = observedPlayer.NetworkHealthController?.Store(),
-                            PlayerPosition = observedPlayer.Position
-                        };
-
-                        D.Log("[FikaReconnect-Debug] Sending OwnCharacter ReconnectPacket");
-                        CallSendDataToPeer(__instance, ownCharacterPacket, DeliveryMethod.ReliableOrdered, peer);
-
-                        if (observedPlayer.HealthBar == null) D.LogError("[FikaReconnect-Debug] observedPlayer.HealthBar is null!");
-                        else observedPlayer.HealthBar.ClearEffects();
-
-                        D.Log("[FikaReconnect-Debug] Sending ClearEffects generic packet");
-
-                        try
-                        {
-                            __instance.SendGenericPacket(EGenericSubPacketType.ClearEffects, ClearEffects.FromValue(observedPlayer.NetId), true, peer);
-                        }
-                        catch (Exception ex)
-                        {
-                            D.LogError($"[FikaReconnect-Debug] Failed to invoke SendGenericPacket: {ex.Message}");
+                            var newState = ctor.Invoke([observedPlayer.Position, observedPlayer.Rotation]);
+                            stateField.SetValue(newState);
                         }
                     }
                 }
-
-                D.Log("[FikaReconnect-Debug] Finished InitialRequest");
-                return false;
+                return;
             }
-
-            D.Log("[FikaReconnect-Debug] Processing Main Reconnect Data...");
-
-            var gameWorld = Singleton<GameWorld>.Instance;
-            if (gameWorld == null) { D.LogError("[FikaReconnect-Debug] Singleton<GameWorld>.Instance is null!"); return false; }
-            if (gameWorld.World_0 == null) { D.LogError("[FikaReconnect-Debug] gameWorld.World_0 is null!"); return false; }
-
-            var worldTraverse = Traverse.Create(gameWorld.World_0);
-
-            if (gameWorld.Grenades == null) D.LogError("[FikaReconnect-Debug] gameWorld.Grenades is null!");
-            else
-            {
-                D.Log("[FikaReconnect-Debug] Processing Grenades");
-                var grenades = gameWorld.Grenades.GetValuesEnumerator();
-                List<SmokeGrenadeDataPacketStruct> smokeData = new();
-                foreach (var item in grenades)
-                {
-                    if (item == null) { D.LogError("[FikaReconnect-Debug] Grenade item is null!"); continue; }
-                    if (item is SmokeGrenade smokeGrenade)
-                    {
-                        smokeData.Add(smokeGrenade.NetworkData);
-                    }
-                }
-
-                if (smokeData.Count > 0)
-                {
-                    D.Log($"[FikaReconnect-Debug] Sending {smokeData.Count} SmokeGrenade data");
-                    ReconnectPacket throwablePacket = new() { Type = ReconnectPacket.EReconnectDataType.Throwable, ThrowableData = smokeData };
-                    CallSendDataToPeer(__instance, throwablePacket, DeliveryMethod.ReliableOrdered, peer);
-                }
-            }
-
-            D.Log("[FikaReconnect-Debug] Processing InteractiveObjects");
-            var interactivesField = worldTraverse.Field<WorldInteractiveObject[]>("worldInteractiveObject_0");
-            if (interactivesField == null) D.LogError("[FikaReconnect-Debug] worldInteractiveObject_0 field not found via Reflection!");
-            else if (interactivesField.Value == null) D.LogError("[FikaReconnect-Debug] worldInteractiveObject_0 array is null!");
-            else
-            {
-                List<WorldInteractiveObject.WorldInteractiveDataPacketStruct> interactivesData = new();
-                foreach (var interactiveObject in interactivesField.Value)
-                {
-                    if (interactiveObject == null) { D.LogError("[FikaReconnect-Debug] Interactive object in array is null!"); continue; }
-                    if ((interactiveObject.DoorState != interactiveObject.InitialDoorState && interactiveObject.DoorState != EDoorState.Interacting) ||
-                        (interactiveObject is Door door && door.IsBroken))
-                    {
-                        interactivesData.Add(interactiveObject.GetStatusInfo(true));
-                    }
-                }
-
-                if (interactivesData.Count > 0)
-                {
-                    D.Log($"[FikaReconnect-Debug] Sending {interactivesData.Count} Interactives data");
-                    ReconnectPacket interactivePacket = new() { Type = ReconnectPacket.EReconnectDataType.Interactives, InteractivesData = interactivesData };
-                    CallSendDataToPeer(__instance, interactivePacket, DeliveryMethod.ReliableOrdered, peer);
-                }
-            }
-
-            D.Log("[FikaReconnect-Debug] Processing LampControllers");
-            var lampControllers = LocationScene.GetAllObjects<LampController>(false);
-            if (lampControllers == null) D.LogError("[FikaReconnect-Debug] LocationScene.GetAllObjects<LampController> returned null!");
-            else
-            {
-                Dictionary<int, byte> lampStates = new();
-                foreach (var controller in lampControllers)
-                {
-                    if (controller == null) { D.LogError("[FikaReconnect-Debug] LampController in array is null!"); continue; }
-                    lampStates.Add(controller.NetId, (byte)controller.LampState);
-                }
-
-                if (lampStates.Count > 0)
-                {
-                    D.Log($"[FikaReconnect-Debug] Sending {lampStates.Count} Lamp states");
-                    ReconnectPacket lampPacket = new() { Type = ReconnectPacket.EReconnectDataType.LampControllers, LampStates = lampStates };
-                    CallSendDataToPeer(__instance, lampPacket, DeliveryMethod.ReliableOrdered, peer);
-                }
-            }
-
-            D.Log("[FikaReconnect-Debug] Processing Windows");
-            if (gameWorld.Windows == null) D.LogError("[FikaReconnect-Debug] gameWorld.Windows is null!");
-            else
-            {
-                var windows = gameWorld.Windows.GetValuesEnumerator();
-                Dictionary<int, Vector3> windowData = new();
-                foreach (var window in windows)
-                {
-                    if (window == null) { D.LogError("[FikaReconnect-Debug] window item is null!"); continue; }
-                    if (window.AvailableToSync && window.IsDamaged)
-                    {
-                        // BUG CATCH: Calling .Value on a nullable that has no value behaves exactly like an NRE
-                        if (!window.FirstHitPosition.HasValue)
-                        {
-                            D.LogError($"[FikaReconnect-Debug] Window {window.NetId} is damaged but FirstHitPosition is null!");
-                        }
-                        else
-                        {
-                            windowData.Add(window.NetId, window.FirstHitPosition.Value);
-                        }
-                    }
-                }
-
-                if (windowData.Count > 0)
-                {
-                    D.Log($"[FikaReconnect-Debug] Sending {windowData.Count} Windows data");
-                    ReconnectPacket windowPacket = new() { Type = ReconnectPacket.EReconnectDataType.Windows, WindowBreakerStates = windowData };
-                    CallSendDataToPeer(__instance, windowPacket, DeliveryMethod.ReliableOrdered, peer);
-                }
-            }
-
-            D.Log("[FikaReconnect-Debug] Processing Other Players");
-            if (____coopHandler == null) D.LogError("[FikaReconnect-Debug] ____coopHandler is null (checking players)!");
-            else if (____coopHandler.Players == null) D.LogError("[FikaReconnect-Debug] ____coopHandler.Players is null!");
-            else
-            {
-                foreach (var player in ____coopHandler.Players.Values)
-                {
-                    if (player == null) { D.LogError("[FikaReconnect-Debug] Player in Players.Values is null!"); continue; }
-                    if (player.ProfileId == packet.ProfileId) continue;
-
-                    D.Log($"[FikaReconnect-Debug] Processing Player {player.ProfileId}");
-                    if (player.Profile == null) D.LogError($"[FikaReconnect-Debug] Player {player.ProfileId} Profile is null!");
-                    if (player.InventoryController == null) D.LogError($"[FikaReconnect-Debug] Player {player.ProfileId} InventoryController is null!");
-                    if (player.HealthController == null) D.LogError($"[FikaReconnect-Debug] Player {player.ProfileId} HealthController is null!");
-
-                    var characterPacket = SendCharacterPacket.FromValue(new()
-                    {
-                        Profile = player.Profile,
-                        ControllerId = player.InventoryController?.CurrentId ?? "",
-                        FirstOperationId = player.InventoryController?.NextOperationId ?? 0
-                    },
-                    player.HealthController?.IsAlive ?? false, player.IsAI, player.Position, player.NetId);
-
-                    if (player.ActiveHealthController != null)
-                    {
-                        characterPacket.PlayerInfoPacket.HealthByteArray = player.ActiveHealthController.SerializeState();
-                    }
-                    else if (player is ObservedPlayer observedPlayer2)
-                    {
-                        if (observedPlayer2.NetworkHealthController == null) D.LogError($"[FikaReconnect-Debug] observedPlayer {player.ProfileId} NetworkHealthController is null!");
-                        else characterPacket.PlayerInfoPacket.HealthByteArray = observedPlayer2.NetworkHealthController.Store().SerializeHealthInfo();
-                    }
-
-                    if (player.HandsController != null)
-                    {
-                        if (player.HandsController.Item == null) D.LogError($"[FikaReconnect-Debug] Player {player.ProfileId} HandsController.Item is null!");
-                        else
-                        {
-                            characterPacket.PlayerInfoPacket.ControllerType = HandsControllerToEnumClass.FromController(player.HandsController);
-                            characterPacket.PlayerInfoPacket.ItemId = player.HandsController.Item.Id;
-                            characterPacket.PlayerInfoPacket.IsStationary = player.MovementContext?.IsStationaryWeaponInHands ?? false;
-                        }
-                    }
-
-                    try
-                    {
-                        __instance.SendGenericPacketToPeer(EGenericSubPacketType.SendCharacter, characterPacket, peer);
-                    }
-                    catch (Exception ex)
-                    {
-                        D.LogError($"[FikaReconnect-Debug] Failed to invoke SendGenericPacket: {ex.Message}");
-                    }
-                }
-            }
-
-            D.Log("[FikaReconnect-Debug] Processing Stashes (BTR/Transit)");
-            StashesPacket stashesPacket = new();
-            if (gameWorld.BtrController != null)
-            {
-                D.Log("[FikaReconnect-Debug] Found BtrController");
-                stashesPacket.HasBTR = true;
-                if (gameWorld.BtrController.TransferItemsController == null) D.LogError("[FikaReconnect-Debug] BtrController.TransferItemsController is null!");
-                else if (gameWorld.BtrController.TransferItemsController.List_0 == null) D.LogError("[FikaReconnect-Debug] TransferItemsController.List_0 is null!");
-                else
-                {
-                    var length = gameWorld.BtrController.TransferItemsController.List_0.Count;
-                    stashesPacket.BTRStashes = new StashItemClass[length];
-                    for (var i = 0; i < length; i++)
-                    {
-                        stashesPacket.BTRStashes[i] = gameWorld.BtrController.TransferItemsController.List_0[i];
-                    }
-                }
-            }
-
-            if (gameWorld.TransitController != null)
-            {
-                D.Log("[FikaReconnect-Debug] Found TransitController");
-                stashesPacket.HasTransit = true;
-                if (gameWorld.TransitController.TransferItemsController == null) D.LogError("[FikaReconnect-Debug] TransitController.TransferItemsController is null!");
-                else if (gameWorld.TransitController.TransferItemsController.List_0 == null) D.LogError("[FikaReconnect-Debug] TransitController.TransferItemsController.List_0 is null!");
-                else
-                {
-                    var length = gameWorld.TransitController.TransferItemsController.List_0.Count;
-                    stashesPacket.TransitStashes = new StashItemClass[length];
-                    for (var i = 0; i < length; i++)
-                    {
-                        stashesPacket.TransitStashes[i] = gameWorld.TransitController.TransferItemsController.List_0[i];
-                    }
-                }
-            }
-
-            D.Log("[FikaReconnect-Debug] Sending Stashes packet");
-            CallSendDataToPeer(__instance, stashesPacket, DeliveryMethod.ReliableOrdered, peer);
-
-            D.Log("[FikaReconnect-Debug] Sending Finished packet");
-            ReconnectPacket finishPacket = new() { Type = ReconnectPacket.EReconnectDataType.Finished };
-            CallSendDataToPeer(__instance, finishPacket, DeliveryMethod.ReliableOrdered, peer);
-
-            D.Log("[FikaReconnect-Debug] Reconnect successfully processed to completion.");
-        }
-        catch (Exception ex)
-        {
-            D.LogError($"[FikaReconnect-Debug] FATAL EXCEPTION CAUGHT: {ex.Message}\n{ex.StackTrace}");
-        }
-
-        // Must return false to entirely skip the original crashy function!
-        return false;
-    }
-
-    // --- Reflection Helpers to replace private function calls ---
-
-    private static void CallSendDataToPeer<T>(FikaServer instance, T packet, DeliveryMethod deliveryMethod, NetPeer peer)
-    {
-        try
-        {
-            var method = AccessTools.GetDeclaredMethods(typeof(FikaServer))
-                .FirstOrDefault(m => m.Name == "SendDataToPeer" && m.IsGenericMethod);
-
-            if (method != null)
-            {
-                var genericMethod = method.MakeGenericMethod(typeof(T));
-                object[] args = new object[] { packet, deliveryMethod, peer };
-                genericMethod.Invoke(instance, args);
-            }
-            else
-            {
-                D.LogError("[FikaReconnect-Debug] CallSendDataToPeer: Method not found!");
-            }
-        }
-        catch (Exception ex)
-        {
-            D.LogError($"[FikaReconnect-Debug] Failed to invoke SendDataToPeer: {ex.Message}");
-        }
-    }
-
-    private static void CallSendGenericPacket(FikaServer instance, EGenericSubPacketType type, ISubPacket subPacket, bool isReliable, NetPeer peer)
-    {
-        try
-        {
-            Traverse.Create(instance).Method("SendGenericPacket", type, subPacket, isReliable, peer).GetValue();
-        }
-        catch (Exception ex)
-        {
-            D.LogError($"[FikaReconnect-Debug] Failed to invoke SendGenericPacket: {ex.Message}");
-        }
-    }
-
-    private static void CallSendGenericPacketToPeer(FikaServer instance, EGenericSubPacketType type, ISubPacket subPacket, NetPeer peer)
-    {
-        try
-        {
-            Traverse.Create(instance).Method("SendGenericPacketToPeer", type, subPacket, peer).GetValue();
-        }
-        catch (Exception ex)
-        {
-            D.LogError($"[FikaReconnect-Debug] Failed to invoke SendGenericPacketToPeer: {ex.Message}");
         }
     }
 }

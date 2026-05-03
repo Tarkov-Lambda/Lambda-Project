@@ -23,8 +23,6 @@ public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
 {
     protected override bool ShouldLog => false;
 
-    // protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
-
     public void Send(int value)
     {
         var packet = new BlindFirePacket

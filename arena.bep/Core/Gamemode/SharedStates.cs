@@ -9,6 +9,7 @@ using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.networking;
 using ifp.arena.shared.Models;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;
@@ -71,7 +72,7 @@ public class SharedWarmupEnd : IGameState
         {
             UniTask.Void(async () =>
             {
-                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 1500);
+                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000);
                 PU.CloseEyes(false, false).Forget();
             });
         }
@@ -79,6 +80,7 @@ public class SharedWarmupEnd : IGameState
         foreach (var player in H.AllPlayers)
         {
             player.ForceUnlockInventory();
+            player.GetScore()?.SetHardReset();
         }
     }
 
@@ -87,6 +89,7 @@ public class SharedWarmupEnd : IGameState
     {
         H.Session.InitializeScoreBoard();
         H.Arena.economyManager.ResetEconomy();
+
     }
 }
 
@@ -266,10 +269,13 @@ public class SharedSideSwap : IGameState
     public MatchState StateType => MatchState.SideSwap;
     public virtual void OnEnter()
     {
-        H.Arena.economyManager.ResetEconomy();
 
         if (H.Gamemode is IGMSideSwappable sideSwappable)
         {
+            if (H.Gamemode is IGMBuyable)
+            {
+                H.Arena.economyManager.ResetEconomy();
+            }
             foreach (var player in H.AllPlayers)
             {
                 var playerScore = H.GetPlayerScore(player.Id);
@@ -287,11 +293,11 @@ public class SharedSideSwap : IGameState
     }
 }
 
-// Really only used for UI and actions so doesn't really matter ig
-public class SharedFinish : IGameState
+// we go back to none and lobby here
+public class SharedMatchEnd : IGameState
 {
     public MatchState StateType => MatchState.MatchEnd;
     public virtual void OnEnter() { }
-    public virtual MatchState? OnUpdate() => null;
+    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.None : null;
     public virtual void OnExit() { }
 }

@@ -32,11 +32,11 @@ public class HardpointGamemode : LambdaGamemode, IGMTeam, IGMObjective
         MatchState.WarmupEnd    => new SharedWarmupEnd(),
         MatchState.RoundPrepare => new SharedPrepare(),
         MatchState.RoundAction  => new HardpointAction(),
-        MatchState.MatchEnd     => new SharedFinish(),
-        _                       => null
+        MatchState.MatchEnd     => new SharedMatchEnd(),
+        _ => null
     };
 
-    public new Dictionary<MatchState, float> StateTimerConfig = new()
+    public override Dictionary<MatchState, float> StateTimerConfig { get; } = new()
     {
         {MatchState.None, 0},
         {MatchState.Warmup, 120},

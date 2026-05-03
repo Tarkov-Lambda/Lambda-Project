@@ -20,7 +20,7 @@ public class PlayerScore
 
     // server only data about the player for resets/buying
     public Dictionary<ShopItem, Item> BuySelection { get; private set; }
-    public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; }
+    public Dictionary<EquipmentSlot, Item> DefaultEquipment { get; private set; }
     public Dictionary<ShopItem, int> ItemQuantityBoughtInRound { get; private set; }
 
     public Faction Faction => score.Faction;
@@ -61,8 +61,7 @@ public class PlayerScore
         score.Name = player.Profile.Nickname;
         score.Money = EconomyConstants.MAX_MONEY;
 
-        ItemQuantityBoughtInRound = new Dictionary<ShopItem, int>();
-
+        ItemQuantityBoughtInRound = [];
 
         if (H.IsHeadless) return;
         if (H.IsServer && H.MainPlayer.Id == id)
@@ -132,7 +131,7 @@ public class PlayerScore
 
     public void SetDefaultItems(Dictionary<EquipmentSlot, Item> defaultItems)
     {
-        RecordedItems = defaultItems;
+        DefaultEquipment = defaultItems;
     }
 
     public void AddDamage(int newDamage)

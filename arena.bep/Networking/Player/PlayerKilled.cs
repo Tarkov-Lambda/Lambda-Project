@@ -9,6 +9,7 @@ using PacketHandler;
 using MemoryPack;
 using System;
 using UnityEngine;
+using ifp.arena.bep.Core.Gamemode;
 
 namespace ifp.arena.bep.networking;
 
@@ -54,10 +55,6 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
-        // D.Log(victim.Profile.Nickname);
-        // D.Log(killer.Profile.Nickname);
-        // D.Dump(damage);
-
         var packet = new PlayerKilledPacket
         {
             Player = victim,
@@ -102,9 +99,21 @@ public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
         if (killerScore != null && killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
+        }
+
+        // needs to go elsewhere
+        if (H.Gamemode is not IGMRespawnable)
+        {
             if (H.Session.matchState is MatchState.RoundAction or MatchState.RoundPlanted)
             {
                 victimScore.SetHardReset();
+            }
+            else if (H.Session.matchState is MatchState.RoundEnd)
+            {
+                if (killerScore != victimScore && killerScore.Faction != victimScore.Faction || killerScore == victimScore)
+                {
+                    victimScore.SetHardReset();
+                }
             }
         }
 
