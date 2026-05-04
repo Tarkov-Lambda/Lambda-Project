@@ -21,14 +21,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 {
     protected override bool ShouldLog => false;
 
-    protected override RateLimitConfig ServerRateLimit => new(
-        enabled: false,
-        refillPerSecond: 5,
-        burst: 10,
-        costPerPacket: 1,
-        action: RateLimitAction.Drop,
-        stateTtlSeconds: 30,
-        rejectCooldownSeconds: 0.5);
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(3, RateLimitAction.Drop);
 
     public void Send()
     {

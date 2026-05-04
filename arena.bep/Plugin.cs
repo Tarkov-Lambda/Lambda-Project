@@ -259,7 +259,8 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<SessionManagerSyncPacketHandler>();                       // Server sends a snapshot of the entire session info (start of the match / on round end)
         RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
         RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
-        RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where the server broadcast
+        RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where admins start the game
+        RegisterSingleton<SessionStopPacketHandler>();                              // Stop match prematurely and teleport everyone back to the lobby
         RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
         RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization

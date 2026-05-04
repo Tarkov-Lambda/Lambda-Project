@@ -22,7 +22,7 @@ public partial struct MatchStateSyncPacket : INetSerializable, IServerTimestampe
 
 public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
 {
-    public MatchStateSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(MatchState matchState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
     {

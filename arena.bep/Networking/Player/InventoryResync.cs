@@ -100,11 +100,11 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 
         if (packet.broadcast)
         {
-            H.FikaNet.SendData(ref packet, deliveryMethod, true);
+            H.FikaNet.SendData(ref packet, DeliveryMethod, true);
         }
         else if (peer.Id != H.FikaNet.NetId)
         {
-            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, peer);
+            H.FikaNet.SendDataToPeer(ref packet, DeliveryMethod, peer);
         }
 
         if (packet.Player.IsYourPlayer)

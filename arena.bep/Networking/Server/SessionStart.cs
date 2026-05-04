@@ -30,7 +30,7 @@ public partial struct SessionStartPacket : INetSerializable
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
 public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 {
-    public SessionStartPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Admin) { }
+    protected override PacketAuthority Authority => PacketAuthority.Admin;
 
     protected override bool ShouldNotifyAboutRejection => true;
 

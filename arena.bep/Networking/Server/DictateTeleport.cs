@@ -22,7 +22,7 @@ public partial struct DictateTeleport : INetSerializable, IAuthoredPacket
 
 public class DictateTeleportHandler : PacketHandler<DictateTeleport>
 {
-    public DictateTeleportHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void SendToPlayer(Player player, Vector3 position)
     {
@@ -40,7 +40,7 @@ public class DictateTeleportHandler : PacketHandler<DictateTeleport>
         MutateApprovedPacket(ref packet, peer);
         if (!packet.Player.IsAI)
         {
-            H.FikaNet.SendData(ref packet, deliveryMethod, true);
+            H.FikaNet.SendData(ref packet, DeliveryMethod, true);
         }
         ApplyInternal(packet, peer);
     }

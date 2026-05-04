@@ -2,6 +2,7 @@
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 using MemoryPack;
+using ifp.arena.bep.Core.AssetBundleHandling;
 
 namespace ifp.arena.bep.networking;
 
@@ -16,13 +17,13 @@ public partial struct SessionStopPacket : INetSerializable
 
 public class SessionStopPacketHandler : PacketHandler<SessionStopPacket>
 {
-    public SessionStopPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.Admin) { }
+    protected override PacketAuthority Authority => PacketAuthority.Admin;
 
     protected override bool ShouldNotifyAboutRejection => base.ShouldNotifyAboutRejection;
 
     public void Send()
     {
-        var packet = new SessionStopPacket { isItTrue = true };
+        var packet = new SessionStopPacket { isItTrue = true }; // true
 
         DispatchPacket(packet);
     }
@@ -30,5 +31,6 @@ public class SessionStopPacketHandler : PacketHandler<SessionStopPacket>
     protected override async void Apply(SessionStopPacket packet, NetPeer peer)
     {
         H.Arena.ChangeState(MatchState.None);
+        MapAssetBundleHandler.Instance.UnloadAll();
     }
 }

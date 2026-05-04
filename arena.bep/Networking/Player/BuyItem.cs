@@ -93,8 +93,9 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         PlayerInventoryTimeGate.Enqueue(playerId, () =>
         {
             MutateApprovedPacket(ref localPacket, peer); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
-
-            H.FikaNet.SendData(ref localPacket, deliveryMethod, true);
+            if (localPacket.placement.Kind == PlacementKind.None) return;
+            
+            H.FikaNet.SendData(ref localPacket, DeliveryMethod, true);
             ApplyInternal(localPacket, peer);
         });
     }

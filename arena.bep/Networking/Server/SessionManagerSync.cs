@@ -35,7 +35,7 @@ public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncP
 {
     private CancellationTokenSource _cts = new();
 
-    public SessionManagerSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public override void Dispose()
     {

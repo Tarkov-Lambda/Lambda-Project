@@ -20,7 +20,7 @@ public partial struct ZoneOwnershipPacket : INetSerializable
 
 public class ZoneOwnershipPacketHandler : PacketHandler<ZoneOwnershipPacket>
 {
-    public ZoneOwnershipPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(int netId, ZoneOwnership ownership)
     {

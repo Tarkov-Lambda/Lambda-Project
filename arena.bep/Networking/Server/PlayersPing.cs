@@ -25,7 +25,7 @@ public partial struct PlayersPingPacket : INetSerializable
 // This runs on interval
 public class PlayersPingPacketHandler : PacketHandler<PlayersPingPacket>
 {
-    public PlayersPingPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send()
     {

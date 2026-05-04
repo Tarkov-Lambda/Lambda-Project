@@ -28,7 +28,7 @@ public partial struct CustomGrenadeExplosionPacket : INetSerializable
 
 public class CustomGrenadeExplosionPacketHandler : PacketHandler<CustomGrenadeExplosionPacket>
 {
-    public CustomGrenadeExplosionPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(Vector3 explosionPos, CustomGrenadeType grenadeType)
     {

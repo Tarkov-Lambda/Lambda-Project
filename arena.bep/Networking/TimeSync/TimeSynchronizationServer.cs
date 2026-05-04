@@ -20,7 +20,7 @@ public partial struct TimeSyncResponsePacket : INetSerializable
 
 public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacket>
 {
-    public TimeSyncResponsePacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     protected override bool ShouldLog => false;
 

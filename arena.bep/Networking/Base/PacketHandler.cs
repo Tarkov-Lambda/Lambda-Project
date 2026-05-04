@@ -41,9 +41,6 @@ public struct RejectionPacket<T> : INetSerializable where T : INetSerializable, 
 
 public abstract class PacketHandler<T> : IDisposable where T : INetSerializable, new()
 {
-    protected DeliveryMethod deliveryMethod;
-    protected PacketAuthority authority;
-
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
     protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Default; // OPTIONAl
 
@@ -51,6 +48,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
 
     protected virtual bool ShouldProcessInstantly => true;
+
+    protected virtual DeliveryMethod DeliveryMethod => DeliveryMethod.ReliableOrdered;
+    protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
     // Make sure arena is initialized before we apply this packet type
     // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)
@@ -61,11 +61,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     public static event Action<T> BeforePacketApplied;
     public static event Action<T> AfterPacketApplied;
 
-    protected PacketHandler(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, PacketAuthority authority = PacketAuthority.Anyone)
+    protected PacketHandler()
     {
-        this.deliveryMethod = deliveryMethod;
-        this.authority = authority;
-
         Initialize();
     }
 
@@ -128,12 +125,12 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (H.IsServer) return false;
 
-        if (authority == PacketAuthority.Admin)
+        if (Authority == PacketAuthority.Admin)
         {
             PlayerScore score = H.GetPlayerScore(id);
             return score == null || !score.IsAdmin; // unauthorized only if NOT admin
         }
-        else if (authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
+        else if (Authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
         {
             return true;
         }
@@ -197,7 +194,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         // decision must be made here
         if (H.IsClient)
         {
-            H.FikaNet.SendData(ref packet, deliveryMethod, false);
+            H.FikaNet.SendData(ref packet, DeliveryMethod, false);
         }
         else if (targetPeer == null)
         {
@@ -206,7 +203,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         else
         {
             MutateApprovedPacket(ref packet, targetPeer);
-            H.FikaNet.SendDataToPeer(ref packet, deliveryMethod, targetPeer);
+            H.FikaNet.SendDataToPeer(ref packet, DeliveryMethod, targetPeer);
         }
     }
 
@@ -245,7 +242,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual void ProcessApprovedPacket(ref T packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
-        H.FikaNet.SendData(ref packet, deliveryMethod, true);
+        H.FikaNet.SendData(ref packet, DeliveryMethod, true);
         ApplyInternal(packet, peer);
     }
 
@@ -289,7 +286,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected void SendRejection(ref T packet, NetPeer peer, string rejectionReason = null)
     {
         var rejected = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
-        H.FikaNet.SendDataToPeer(ref rejected, deliveryMethod, peer);
+        H.FikaNet.SendDataToPeer(ref rejected, DeliveryMethod, peer);
     }
 
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, NetPeer peer)

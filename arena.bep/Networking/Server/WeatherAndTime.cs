@@ -19,7 +19,7 @@ public partial struct WeatherAndTimePacket : INetSerializable
 
 public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacket>
 {
-    public WeatherAndTimeSyncPacketHandler() : base(DeliveryMethod.ReliableOrdered, PacketAuthority.ServerOnly) { }
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(double minutesSinceMidnight)
     {
@@ -33,11 +33,20 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
 
     protected override void Apply(WeatherAndTimePacket packet, NetPeer peer)
     {
-        var fixedTime = new DateTime(2026, 4, 26, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
+        var fixedTime = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
+
         H.GameWorld.GameDateTime.Reset(fixedTime);
+        H.GameWorld.GameDateTime.TimeFactor = 0f;
 
         try
         {
+            var todSky = TOD_Sky.Instance;
+            if (todSky?.CurrentTime?.GameDateTime != null)
+            {
+                todSky.CurrentTime.GameDateTime.Reset(fixedTime);
+                todSky.CurrentTime.GameDateTime.TimeFactor = 0f;
+            }
+
             var weatherController = GameObject.Find("Weather").GetComponent<WeatherController>();
 
             weatherController.WeatherDebug.Enabled = true;
@@ -47,10 +56,11 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
             weatherController.WeatherDebug.Rain = 0f;
             weatherController.WeatherDebug.WindDirection = WeatherDebug.Direction.NW;
             weatherController.WeatherDebug.WindMagnitude = 0f;
-
-            H.GameWorld.GameDateTime.TimeFactor = 0f;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            D.LogError($"Failed to apply packet: {ex}");
+        }
     }
 }
 

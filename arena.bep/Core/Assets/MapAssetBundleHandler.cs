@@ -123,7 +123,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         UnloadAll(true);
     }
 
-    void UnloadAll(bool includingLobby = false)
+    public void UnloadAll(bool includingLobby = false)
     {
         MapLoadEvent.OnBeginUnload?.Invoke();
         foreach (var kvp in loadedAssetBundles)
@@ -138,7 +138,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
                 {
                     if (SceneManager.GetSceneByPath(scenePath).isLoaded)
                     {
-                        SceneManager.UnloadScene(scenePath);
+                        SceneManager.UnloadScene(scenePath); // synchronous unloading because of ScriptEngine hotreloading
                     }
                 }
 

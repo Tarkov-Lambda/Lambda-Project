@@ -118,7 +118,7 @@ public class Patch_Class1396_method_3 : ModulePatch
             player.HandsController.ControllerGameObject.transform.SetPositionAndRotation(player.PlayerBones.Ribcage.Original.position, handsRotation);
             player.CameraContainer.transform.rotation = handsRotation;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             D.Log("Error in MovementContext.method_3: This usually occurs when a player is trying to equip an item they are about to drop");
             if (player != null && player.IsYourPlayer)

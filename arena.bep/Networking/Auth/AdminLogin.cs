@@ -133,7 +133,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
             Payload = nonce
         };
 
-        H.FikaNet.SendDataToPeer(ref challenge, deliveryMethod, peer);
+        H.FikaNet.SendDataToPeer(ref challenge, DeliveryMethod, peer);
     }
 
     private void HandleVerify(ref AdminAuthPacket packet, NetPeer peer)
@@ -147,7 +147,7 @@ public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
             Payload = null
         };
 
-        H.FikaNet.SendDataToPeer(ref success, deliveryMethod, peer);
+        H.FikaNet.SendDataToPeer(ref success, DeliveryMethod, peer);
     }
 
 
