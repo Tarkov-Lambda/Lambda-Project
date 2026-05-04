@@ -36,14 +36,7 @@ public struct PopPacket : INetSerializable, IAuthoredPacket
 
 public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
 {
-    protected override RateLimitConfig ServerRateLimit => new(
-        enabled: true,
-        refillPerSecond: 5,
-        burst: 20,
-        costPerPacket: 1,
-        action: RateLimitAction.Reject,
-        stateTtlSeconds: 60,
-        rejectCooldownSeconds: 1.0);
+    // protected override RateLimitConfig ServerRateLimit => RateLimitPresets.StrictInteraction;
 
     public void Send(Item item)
     {
@@ -57,15 +50,11 @@ public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
         DispatchPacket(packet);
     }
 
-    // protected override void LocalPredictApproved(PopPacket packet)
-    // {
-    //     IU.TryPopItemWithoutRestriction(packet.item, packet.itemAddress, packet.Player).Forget();
-    // }
-
     protected override async void Apply(PopPacket packet, NetPeer peer)
     {
         try
         {
+            // sussy
             if (!packet.Player.IsYourPlayer && packet.Player is ObservedPlayer obsPlayer)
             {
                 obsPlayer.OperationCallbacks.Clear();

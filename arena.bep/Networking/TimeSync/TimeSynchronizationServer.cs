@@ -21,6 +21,7 @@ public partial struct TimeSyncResponsePacket : INetSerializable
 public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
+    protected override DeliveryMethod DeliveryMethod => DeliveryMethod.Sequenced;
 
     protected override bool ShouldLog => false;
 

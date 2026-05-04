@@ -22,6 +22,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
     protected override bool ShouldLog => false;
 
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(3, RateLimitAction.Drop);
+    protected override DeliveryMethod DeliveryMethod => DeliveryMethod.Sequenced;
 
     public void Send()
     {
@@ -38,7 +39,6 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     protected override void ProcessApprovedPacket(ref TimeSynchronizationPacket packet, NetPeer peer)
     {
-        MutateApprovedPacket(ref packet, peer);
         ApplyInternal(packet, peer);
     }
 
