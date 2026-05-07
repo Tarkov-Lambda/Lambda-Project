@@ -11,8 +11,8 @@
 - Gamemode Framework  
 - Search and Destroy, AWP Only, Duel, King Of The Hill
 - Headless Support
-- Respawning Mechanic  
-- Preemptive Server-Side Deaths  
+- Respawning Mechanic
+- Preemptive Server-Side Deaths
 - Mid-Raid Spawning
 - Lootable Fake Corpses  
 - Molotovs
@@ -34,10 +34,11 @@
 ## Reworks
 
 - Sound Occlusion & Transmission overhaul  
-- No Inertia movement system  
+- Arena-like movement
 - Accurate Pistols  
 - No Unequip Animations  
-- Blindfire movement enabled  
+- Blindfire movement enabled
+- Flash and Smoke changes
 
 ---
 

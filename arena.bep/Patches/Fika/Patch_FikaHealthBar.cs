@@ -1,22 +1,18 @@
 ﻿using BepInEx.Configuration;
 using Fika.Core;
-using Fika.Core.Main.Components;
-using Fika.Core.Main.Players;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace ifp.arena.bep.Patches
+namespace ifp.arena.bep.Patches;
+
+internal class Patch_FikaConfig_UseNamePlates : ModulePatch
 {
-    internal class Patch_FikaHealthBar_Create : ModulePatch
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(FikaConfig), nameof(FikaConfig.UseNamePlates));
+
+    [PatchPostfix]
+    static void Postfix(ref ConfigEntry<bool> __result)
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaHealthBar), nameof(FikaHealthBar.Create));
-        
-        [PatchPrefix]
-        static bool Prefix(ref FikaHealthBar __result)
-        {
-            __result = null;
-            return false;
-        }
+        __result.Value = false;
     }
 }

@@ -203,6 +203,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
+        RegisterPatch(new Patch_ArmorPlateCollider_RicochetChance());                // Set ricochet chance to 0
+        RegisterPatch(new Patch_BodyPartCollider_RicochetChance());                // Set ricochet chance to 0
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
@@ -225,8 +227,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnConnectionRequest());                  // Allow clients to connect mid raid
         RegisterPatch(new Patch_FikaServer_StopNatIntroduceRoutine());              // Server keeps NAT Introduction during the raid
         RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
-        RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
-        // RegisterPatch(new Patch_FikaHealthBar_Create());
+
         RegisterPatch(new Patch_HostGameController_GetHostLootItems());             // no bytes for loot items (some nre fix idk)
         RegisterPatch(new Patch_FikaServer_ReconnectFix());                         // snapshotter timestamp reconnect fix
 
@@ -234,6 +235,14 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
+        RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
+
+        RegisterPatch(new Patch_FikaConfig_UseNamePlates());
+        RegisterPatch(new Patch_FikaGlobals_ToNumber());                            // Crank movement send rate to 60hz
+        RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Crank movement send rate to 60hz (TRANSPILER)
+        RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Crank movement send rate to 60hz (TRANSPILER)
+        RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Crank movement send rate to 60hz (TRANSPILER)
+        RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Crank movement send rate to 60hz (TRANSPILER)
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID

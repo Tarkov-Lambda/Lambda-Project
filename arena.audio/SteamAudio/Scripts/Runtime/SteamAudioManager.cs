@@ -462,7 +462,7 @@ namespace SteamAudio
 
 #if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
                 // If the developer has disabled scene reload, SceneManager.sceneLoaded won't fire during initial load
-                if ( EditorSettings.enterPlayModeOptionsEnabled &&
+                if (EditorSettings.enterPlayModeOptionsEnabled &&
                     EditorSettings.enterPlayModeOptions.HasFlag(EnterPlayModeOptions.DisableSceneReload))
                 {
                     OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
@@ -1423,7 +1423,12 @@ namespace SteamAudio
                         {
                             if (IsActiveInHierarchy(mesh.gameObject.transform))
                             {
-                                gameObjects.Add(mesh.gameObject);
+                                // --- ADDED CHECK ---
+                                // Skip if the mesh or any of its parents have the SteamAudioIgnore script
+                                if (mesh.gameObject.GetComponentInParent<SteamAudioIgnore>() == null)
+                                {
+                                    gameObjects.Add(mesh.gameObject);
+                                }
                             }
                         }
                     }
@@ -1435,7 +1440,12 @@ namespace SteamAudio
                         {
                             if (IsActiveInHierarchy(terrain.gameObject.transform))
                             {
-                                gameObjects.Add(terrain.gameObject);
+                                // --- ADDED CHECK ---
+                                // Skip if the terrain or any of its parents have the SteamAudioIgnore script
+                                if (terrain.gameObject.GetComponentInParent<SteamAudioIgnore>() == null)
+                                {
+                                    gameObjects.Add(terrain.gameObject);
+                                }
                             }
                         }
                     }
@@ -1447,7 +1457,11 @@ namespace SteamAudio
                         if (geometry.gameObject.GetComponent<MeshFilter>() != null ||
                             geometry.gameObject.GetComponent<Terrain>() != null)
                         {
-                            gameObjects.Add(geometry.gameObject);
+                            // --- ADDED CHECK ---
+                            if (geometry.gameObject.GetComponentInParent<SteamAudioIgnore>() == null)
+                            {
+                                gameObjects.Add(geometry.gameObject);
+                            }
                         }
                     }
                 }
@@ -1895,9 +1909,9 @@ namespace SteamAudio
                     {
                         var height = heights[v, u];
 
-                        var x = ((float) u / terrain.terrainData.heightmapResolution) * terrain.terrainData.size.x;
+                        var x = ((float)u / terrain.terrainData.heightmapResolution) * terrain.terrainData.size.x;
                         var y = height * terrain.terrainData.size.y;
-                        var z = ((float) v / terrain.terrainData.heightmapResolution) * terrain.terrainData.size.z;
+                        var z = ((float)v / terrain.terrainData.heightmapResolution) * terrain.terrainData.size.z;
 
                         var vertex = new UnityEngine.Vector3 { x = x, y = y, z = z };
                         var transformedVertex = terrain.transform.TransformPoint(vertex);

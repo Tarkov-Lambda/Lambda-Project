@@ -32,6 +32,10 @@ namespace SteamAudio
 #if STEAMAUDIO_ENABLED
         public int GetNumVertices()
         {
+            // Return 0 if this object or a parent has the Ignore script
+            if (gameObject.GetComponentInParent<SteamAudioIgnore>() != null)
+                return 0;
+
             if (exportAllChildren)
             {
                 var objects = SteamAudioManager.GetGameObjectsForExport(gameObject);
@@ -52,6 +56,10 @@ namespace SteamAudio
 
         public int GetNumTriangles()
         {
+            // Return 0 if this object or a parent has the Ignore script
+            if (gameObject.GetComponentInParent<SteamAudioIgnore>() != null)
+                return 0;
+
             if (exportAllChildren)
             {
                 var objects = SteamAudioManager.GetGameObjectsForExport(gameObject);

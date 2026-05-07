@@ -1,13 +1,8 @@
 ﻿using Fika.Core.Main.Components;
 using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.Packets.Backend;
 using Fika.Core.Networking.Packets.Player.Common;
 using HarmonyLib;
-using ifp.arena.bep.Core;
 using SPT.Reflection.Patching;
-using System;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace ifp.arena.bep.Patches;
