@@ -35,6 +35,12 @@ public struct PlayerAssetBundleLoadState
 // this is kind of bad but I don't have time to fix it
 public class AssetBundleLoadPacketHandler : PacketHandler<AssetBundleLoadPacket>
 {
+    public override void Dispose()
+    {
+        AssetBundleLoadProgress = null;
+        base.Dispose();
+    }
+
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public Dictionary<string, List<PlayerAssetBundleLoadState>> AssetBundleLoadProgress;
@@ -60,7 +66,7 @@ public class AssetBundleLoadPacketHandler : PacketHandler<AssetBundleLoadPacket>
 
         DispatchPacket(packet);
 
-        await UniTask.WaitUntil(() => AssetBundleLoadProgress[packet.id] == null);
+        await UniTask.WaitUntil(() => !AssetBundleLoadProgress.ContainsKey(packet.id));
 
         return;
     }

@@ -9,8 +9,7 @@ namespace ifp.arena.bep.Patches.Tarkov;
 
 public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() =>
-    AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
 
     [PatchPrefix]
     static bool Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 motion, ref Vector3 velocity)
@@ -23,8 +22,8 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 
         if (__instance.IsAiming)
         {
-            motion *= GameplayVariables.PistolADSMotionScale;
-            velocity *= GameplayVariables.PistolADSMotionScale;
+            motion *= GameplayVariables.vars.PistolADSMotionScale;
+            velocity *= GameplayVariables.vars.PistolADSMotionScale;
             __instance.Mask &= ~EProceduralAnimationMask.Walking; // no bobbing effect
         }
         else
@@ -41,8 +40,7 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 
 public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() =>
-    AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.UpdateSwayFactors));
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.UpdateSwayFactors));
 
     [PatchPostfix]
     static void Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController,
@@ -54,12 +52,12 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
         if (____firearmController is null) return;
         if (____firearmController.Item is not PistolItemClass) return;
 
-        __instance.AimingDisplacementStr *= GameplayVariables.PistolDisplacementStrScale;
-        __instance.MotionReact.SwayFactors *= GameplayVariables.PistolDisplacementStrScale;
+        __instance.AimingDisplacementStr *= GameplayVariables.vars.PistolDisplacementStrScale;
+        __instance.MotionReact.SwayFactors *= GameplayVariables.vars.PistolDisplacementStrScale;
 
-        ____displacementStr *= GameplayVariables.PistolDisplacementStrScale;
-        ____swayStrength *= GameplayVariables.PistolDisplacementStrScale;
-        ____aimSwayStrength *= GameplayVariables.PistolDisplacementStrScale;
+        ____displacementStr *= GameplayVariables.vars.PistolDisplacementStrScale;
+        ____swayStrength *= GameplayVariables.vars.PistolDisplacementStrScale;
+        ____aimSwayStrength *= GameplayVariables.vars.PistolDisplacementStrScale;
 
     }
 }
@@ -76,7 +74,7 @@ public class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePat
         {
             if (____firearmController.Weapon is PistolItemClass)
             {
-                ____vCameraTarget.z += GameplayVariables.PistolZoomBoostScale;
+                ____vCameraTarget.z += GameplayVariables.vars.PistolZoomBoostScale;
             }
         }
     }

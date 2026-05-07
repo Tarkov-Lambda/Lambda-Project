@@ -33,9 +33,9 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
     {
         var packet = new BombStatePacket
         {
-            Player    = player,
-            state     = state,
-            position  = position,
+            Player = player,
+            state = state,
+            position = position,
             Timestamp = NetworkTime.ServerNowSeconds
         };
 
@@ -75,7 +75,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
 
         if (packet.state is BombState.Planted)
         {
-            H.Arena.LastObjectivePlayerId = packet.Player.Id;
+            H.Arena.LastObjectivePlayer = packet.Player;
             foreach (var bombPlantZone in Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
                 bombPlantZone.GetComponent<BoxCollider>().enabled = false;
@@ -86,7 +86,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
         if (packet.state is BombState.Defused or BombState.Exploded)
         {
             H.Arena.LastObjectiveBombState = packet.state;
-            if (packet.Player.Id > 0) H.Arena.LastObjectivePlayerId = packet.Player.Id;
+            if (packet.Player != null) H.Arena.LastObjectivePlayer = packet.Player;
         }
 
         H.BombHandler.SetBombVisuals(packet);

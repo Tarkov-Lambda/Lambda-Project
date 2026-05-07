@@ -1,3 +1,4 @@
+using EFT;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.shared;
@@ -9,7 +10,7 @@ namespace ifp.arena.bep.Core.Gamemode;
 
 public static class MvpCalculator
 {
-    public static (int mvpId, string mvpReason) CalculateRoundMvp(Faction winner, RoundWinReason winReason, BombState objectiveBombState, int objectivePlayerId, System.Random rng = null)
+    public static (int mvpId, string mvpReason) CalculateRoundMvp(Faction winner, RoundWinReason winReason, BombState objectiveBombState, Player objectivePlayer, System.Random rng = null)
     {
         if (winner is Faction.None) return (-1, null);
 
@@ -33,19 +34,18 @@ public static class MvpCalculator
         }
 
         // Objective priority: defuse/explosion should pick objective player.
-        if (winReason == RoundWinReason.Objective
-            && objectivePlayerId > 0)
+        if (winReason == RoundWinReason.Objective && objectivePlayer != null)
         {
             // Planter: bomb exploded — planter always wins MVP.
             if (objectiveBombState == BombState.Exploded)
             {
-                return (objectivePlayerId, "planting the bomb");
+                return (objectivePlayer.Id, "planting the bomb");
             }
 
             // Defuse exception: defuser w/ exactly 0 round kills can lose MVP to top-frag teammate.
             if (objectiveBombState == BombState.Defused)
             {
-                var defuser = winners.FirstOrDefault(p => p.player != null && p.player.Id == objectivePlayerId);
+                var defuser = winners.FirstOrDefault(p => p.player != null && p.player == objectivePlayer);
                 if (defuser != null && defuser.RoundKills == 0)
                 {
                     int maxKills = winners.Max(p => p.RoundKills);
@@ -53,10 +53,10 @@ public static class MvpCalculator
                         return BreakTies(winners.Where(p => p.RoundKills == maxKills).ToList(), rng);
                 }
 
-                return (objectivePlayerId, "defusing the bomb");
+                return (objectivePlayer.Id, "defusing the bomb");
             }
 
-            return (objectivePlayerId, null);
+            return (objectivePlayer.Id, null);
         }
 
         // Elimination/timeout fallback: most kills this round.

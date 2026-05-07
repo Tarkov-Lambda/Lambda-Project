@@ -39,12 +39,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public float StateTimer;
     public double ServerPhaseStartSeconds, PhaseDurationSeconds;
 
-    // This here is absolute bullshit
+    // this block of vars just seems wrong
     public RoundActionPhaseEnd? PendingRoundActionEnd;
     public RoundActionPhaseEnd? LastRoundActionEnd;
-    public int LastObjectivePlayerId = -1; // planter/defuser
+    public Player LastObjectivePlayer;
     public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
-    // End of bullshit
 
     private IGameState _currentState;
 
@@ -261,7 +260,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             H.Session.factionWins[w] = 0;
         H.Session.factionWins[w]++;
 
-        var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayerId);
+        var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayer);
 
         H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
     }

@@ -188,6 +188,7 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         }
     }
 
+    // Lord forgive me
     private static void ReregisterPlayerVisuals(Player player, InventoryEquipment newEquipment)
     {
         UpdateObserver(player.NightVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));

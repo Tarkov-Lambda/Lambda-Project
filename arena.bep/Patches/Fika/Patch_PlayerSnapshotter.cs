@@ -17,7 +17,7 @@ namespace ifp.arena.bep.Patches;
 // crank send rate to 60hz
 internal class Patch_FikaGlobals_ToNumber : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(PlayerSnapshotter<PlayerStateSnapshot>), "_capacity");
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(FikaGlobals), nameof(FikaGlobals.ToNumber));
 
     [PatchPostfix]
     void Postfix(ref int __result)

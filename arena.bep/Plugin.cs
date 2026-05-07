@@ -204,8 +204,6 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
-        // RegisterPatch(new Patch_ArmorPlateCollider_RicochetChance());                // Set ricochet chance to 0
-        // RegisterPatch(new Patch_BodyPartCollider_RicochetChance());                // Set ricochet chance to 0
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
@@ -240,10 +238,10 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_FikaConfig_UseNamePlates());
         // RegisterPatch(new Patch_FikaGlobals_ToNumber());                            // Crank movement send rate to 60hz
-        // RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Crank movement send rate to 60hz (TRANSPILER)
-        // RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Crank movement send rate to 60hz (TRANSPILER)
-        // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Crank movement send rate to 60hz (TRANSPILER)
-        // RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Crank movement send rate to 60hz (TRANSPILER)
+        // RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Reduce Adaptive Jitter Buffer's base delay to 20ms
+        // RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
+        // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
+        // RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
@@ -280,7 +278,6 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<AssetBundleLoadPacketHandler>();                          // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketHandler>();                  // Player responds back saying they loaded a specific batch of asset bundles
 
-
         // Internal Classses (order matters)
         RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)
         RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
@@ -294,7 +291,7 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
             RegisterSingleton<MusicHandler>();                                      // Listens to ArenaController and plays music when necessary
-            RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT
+            RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT!!!!!!!
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
 
             _disposables.Add(new UIManager());  // not a singleton (fuck you) - тебе ебало разбить сука? не зли меня

@@ -28,6 +28,14 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
 {
     public CancellationTokenSource _cts { get; private set; }
 
+    public override void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        base.Dispose();
+    }
+
     bool CanChangeFaction(PlayerScore playerScore, Faction faction)
     {
         if (!playerScore.IsAlive) return true;
@@ -66,14 +74,6 @@ public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
         {
             return;
         }
-    }
-
-    public override void Dispose()
-    {
-        _cts?.Cancel();
-        _cts?.Dispose();
-        _cts = null;
-        base.Dispose();
     }
 
     protected override bool ValidatePacket(FactionChangePacket packet, NetPeer peer, out string rejectionReason)

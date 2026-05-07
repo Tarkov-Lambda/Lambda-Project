@@ -18,7 +18,7 @@ public static class EconomyConstants
 #endif
 
 #if DEBUG
-    public const int START_MONEY = MAX_MONEY/2;
+    public const int START_MONEY = MAX_MONEY / 2;
 #else 
     public const int START_MONEY = 800;
 #endif
@@ -113,8 +113,10 @@ public class EconomyManager : IDisposable
 
     private void HandleObjectiveReward(BombState state)
     {
-        int playerId = H.Arena.LastObjectivePlayerId;
-        if (playerId == -1 || !H.Scoreboard.TryGetValue(playerId, out var score)) return;
+        if (H.Arena.LastObjectivePlayer == null) return;
+        
+        var score = H.Arena.LastObjectivePlayer.GetScore();
+        if (score == null) return;
 
         if (state == BombState.Planted)
         {

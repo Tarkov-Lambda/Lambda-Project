@@ -29,7 +29,7 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
 
     public PlayerReadinessState readyState;
 
-    // presetItems is redundant as it can be derrived form buySelection and defaultItems
+    // presetItems is redundant as it can be derived form buySelection and defaultItems
     public List<Item> assetItems;
     public Dictionary<ShopItem, Item> buySelection;
     public Dictionary<EquipmentSlot, Item> defaultItems;
@@ -123,6 +123,7 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
                     Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
                     Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peer);
                     Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peer);
+                    Singleton<GameplayVariablesSyncPacketHandler>.Instance.SendToPeer(peer);
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {

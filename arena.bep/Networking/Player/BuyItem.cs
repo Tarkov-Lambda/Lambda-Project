@@ -93,8 +93,12 @@ public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
         PlayerInventoryTimeGate.Enqueue(playerId, () =>
         {
             MutateApprovedPacket(ref localPacket, peer); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
-            if (localPacket.placement.Kind == PlacementKind.None) return;
-            
+            if (localPacket.placement.Kind == PlacementKind.None)
+            {
+                SendRejection(ref localPacket, peer, "Can't find placement for your item");
+                return;
+            }
+
             H.FikaNet.SendData(ref localPacket, DeliveryMethod, true);
             ApplyInternal(localPacket, peer);
         });
@@ -224,8 +228,9 @@ public static class PlayerInventoryTimeGate
                     if (player != null && player.InventoryController is TraderControllerClass traderController)
                     {
                         float timeout = 3.0f;
-                        while (traderController.HasActiveEvents && timeout > 0)
+                        while (traderController.HasActiveEvents && timeout > 0f)
                         {
+                            await UniTask.DelayFrame(1);
                             timeout -= Time.deltaTime;
                         }
                     }

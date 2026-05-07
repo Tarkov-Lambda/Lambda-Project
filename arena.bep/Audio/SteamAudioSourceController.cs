@@ -15,21 +15,13 @@ public struct SteamSourceData
 
 public static class SteamAudioSourceController
 {
-    public static AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef =
-        AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
+    public static AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef = AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
+    public static AccessTools.FieldRef<BetterSource, bool> ForceStereoRef = AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
+    public static AccessTools.FieldRef<ReverbSimpleSource, AudioSource> ReverbSimpleSourceFieldRef = AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>("_reverbSource");
+    public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceAFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceA");
+    public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceBFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
 
-    public static AccessTools.FieldRef<BetterSource, bool> ForceStereoRef =
-        AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
-
-    public static AccessTools.FieldRef<ReverbSimpleSource, AudioSource> ReverbSimpleSourceFieldRef =
-        AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>("_reverbSource");
-
-    public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceAFieldRef =
-        AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceA");
-
-    public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceBFieldRef =
-        AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
-
+    // Selection of mixers we do not route through steam audio (it's non-spatial anyways)
     private static readonly Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
 
     public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
@@ -39,6 +31,10 @@ public static class SteamAudioSourceController
         if (cache.TryGetValue(audioSource, out var data))
             return data;
 
+        // Save initial Unity spatial properties before we enable AudioSource patches for:
+        // get/set_spatialize
+        // get/set_spatialBlend
+        // to completely proxy the original fields and give control to PhononDSPBridge (unless we decide otherwise below)
         bool initialSpatialize = audioSource.spatialize;
         float initialBlend = audioSource.spatialBlend;
 
@@ -51,26 +47,33 @@ public static class SteamAudioSourceController
         cache[audioSource] = data;
 
         SteamAudioSource steamAudio = data.steam;
+
         steamAudio.occlusion = true;
         steamAudio.transmission = true;
-        steamAudio.airAbsorption = false;
-        steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+
         steamAudio.distanceAttenuation = true;
         steamAudio.distanceAttenuationInput = DistanceAttenuationInput.PhysicsBased;
         steamAudio.distanceAttenuationValue = 1f;
-        steamAudio.directivity = false;
+
+        steamAudio.airAbsorption = true;
+        steamAudio.airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+
         steamAudio.occlusionType = OcclusionType.Raycast;
         steamAudio.occlusionRadius = 1.4f;
         steamAudio.occlusionSamples = 8;
+
         steamAudio.transmissionType = TransmissionType.FrequencyDependent;
         steamAudio.transmissionInput = TransmissionInput.UserDefined;
-        steamAudio.transmissionHigh = 0.1f;
-        steamAudio.transmissionMid = 0.3f;
-        steamAudio.transmissionLow = 0.4f;
+
+        steamAudio.transmissionHigh = GameplayVariables.vars.transmissionHigh;
+        steamAudio.transmissionMid = GameplayVariables.vars.transmissionMid;
+        steamAudio.transmissionLow = GameplayVariables.vars.transmissionLow;
+        
         // steamAudio.transmissionHigh = 0.4f;
         // steamAudio.transmissionMid = 0.65f;
         // steamAudio.transmissionLow = 0.75f;
-        steamAudio.reflections = false;
+
+        // steamAudio.reflections = false;
 
         audioSource.spatialize = initialSpatialize;
         audioSource.spatialBlend = initialBlend;
@@ -106,10 +109,11 @@ public static class SteamAudioSourceController
         if (preset != null)
         {
             var type = preset.Type;
-            if (type == BetterAudio.AudioSourceGroupType.Nonspatial ||
-                type == BetterAudio.AudioSourceGroupType.NonspatialBypass ||
-                type == BetterAudio.AudioSourceGroupType.Environment ||
-                type == BetterAudio.AudioSourceGroupType.OutEnvironment)
+            if (type
+                is BetterAudio.AudioSourceGroupType.Nonspatial
+                or BetterAudio.AudioSourceGroupType.NonspatialBypass
+                or BetterAudio.AudioSourceGroupType.Environment
+                or BetterAudio.AudioSourceGroupType.OutEnvironment)
             {
                 shouldBypassSteamAudio = true;
             }
@@ -124,11 +128,6 @@ public static class SteamAudioSourceController
         {
             shouldBypassSteamAudio = true;
         }
-
-        // D.Log(betterSource.source1.outputAudioMixerGroup.name);
-        // D.Log(betterSource.source1.spatialize.ToString());
-        // D.Log(betterSource.source1.spatialBlend.ToString());
-        // D.Log(shouldBypassSteamAudio.ToString());
 
         ProcessAudioSource(betterSource.source1, shouldBypassSteamAudio);
 

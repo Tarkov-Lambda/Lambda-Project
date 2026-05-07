@@ -185,7 +185,7 @@ public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, bool isAiming, ref float slow)
     {
-        slow *= GameplayVariables.AimSpeedPenaltyReduction;
+        slow *= GameplayVariables.vars.AimSpeedPenaltyReduction;
         return true;
     }
 }
@@ -197,7 +197,7 @@ public class Patch_MovementContext_method_15 : ModulePatch
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, ref float smoothDiff, ref float deltaTime)
     {
-        deltaTime *= GameplayVariables.LeanSpeed;
+        deltaTime *= GameplayVariables.vars.LeanSpeed;
         // __instance.method_14(smoothDiff, deltaTime);
         return true;
     }

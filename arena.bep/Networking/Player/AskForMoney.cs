@@ -37,8 +37,7 @@ public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
 
     public void OnEnter(MatchState matchState)
     {
-        if (matchState == MatchState.Cleanup)
-            playerToItem = [];
+        if (matchState == MatchState.Cleanup) playerToItem = [];
     }
 
     public override void Dispose()

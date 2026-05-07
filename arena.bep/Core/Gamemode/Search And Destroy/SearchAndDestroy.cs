@@ -24,7 +24,7 @@ public class SND_Cleanup : SharedCleanup
         }
 
         H.Session.bombState = BombState.None;
-        H.Arena.LastObjectivePlayerId = -1;
+        H.Arena.LastObjectivePlayer = null;
         H.Arena.LastObjectiveBombState = BombState.None;
         H.BombHandler?.Reset();
 
@@ -120,8 +120,7 @@ public class SND_Planted : IGameState
         if (H.Arena.StateTimer <= 0)
         {
             H.Arena.Award(Faction.T, RoundWinReason.Objective);
-            Player lastObjectivePlayer = H.GetPlayer(H.Arena.LastObjectivePlayerId);
-            Singleton<BombStatePacketHandler>.Instance.Send(lastObjectivePlayer, BombState.Exploded, Vector3.zero);
+            Singleton<BombStatePacketHandler>.Instance.Send(H.Arena.LastObjectivePlayer, BombState.Exploded, Vector3.zero);
             return MatchState.RoundEnd;
         }
 
@@ -157,7 +156,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 #endif
 
 #if DEBUG
-    public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 1;
+    public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
 #else
     public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
 #endif
