@@ -34,6 +34,7 @@ public class Plugin : BaseUnityPlugin
     public static new EFTLogger Logger;
 
     public static readonly string pathToBundles = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
+    public static readonly string pathToMaps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "maps");
     public static readonly string pathToDeps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "deps");
     public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json");
     public static readonly string pathToLogs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "logs");
@@ -203,8 +204,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
-        RegisterPatch(new Patch_ArmorPlateCollider_RicochetChance());                // Set ricochet chance to 0
-        RegisterPatch(new Patch_BodyPartCollider_RicochetChance());                // Set ricochet chance to 0
+        // RegisterPatch(new Patch_ArmorPlateCollider_RicochetChance());                // Set ricochet chance to 0
+        // RegisterPatch(new Patch_BodyPartCollider_RicochetChance());                // Set ricochet chance to 0
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
@@ -238,11 +239,11 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
 
         RegisterPatch(new Patch_FikaConfig_UseNamePlates());
-        RegisterPatch(new Patch_FikaGlobals_ToNumber());                            // Crank movement send rate to 60hz
-        RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Crank movement send rate to 60hz (TRANSPILER)
-        RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Crank movement send rate to 60hz (TRANSPILER)
-        RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Crank movement send rate to 60hz (TRANSPILER)
-        RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Crank movement send rate to 60hz (TRANSPILER)
+        // RegisterPatch(new Patch_FikaGlobals_ToNumber());                            // Crank movement send rate to 60hz
+        // RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Crank movement send rate to 60hz (TRANSPILER)
+        // RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Crank movement send rate to 60hz (TRANSPILER)
+        // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Crank movement send rate to 60hz (TRANSPILER)
+        // RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Crank movement send rate to 60hz (TRANSPILER)
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
@@ -274,7 +275,11 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
-        RegisterSingleton<WeatherAndTimeSyncPacketHandler>();                           // Sync time of day between rounds
+        RegisterSingleton<WeatherAndTimeSyncPacketHandler>();                       // Sync time of day between rounds
+        
+        RegisterSingleton<AssetBundleLoadPacketHandler>();                          // Server broadcasts a batch of asset bundles to load
+        RegisterSingleton<AssetBundleLoadFinishedPacketHandler>();                  // Player responds back saying they loaded a specific batch of asset bundles
+
 
         // Internal Classses (order matters)
         RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)

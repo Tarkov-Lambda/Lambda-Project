@@ -89,7 +89,7 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
 
     public async UniTask<AssetBundle> LoadAssetBundle(string name)
     {
-        string fullPath = Path.Combine(Plugin.pathToBundles, name);
+        string fullPath = Path.Combine(Plugin.pathToMaps, name);
         if (!File.Exists(fullPath))
         {
             D.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");

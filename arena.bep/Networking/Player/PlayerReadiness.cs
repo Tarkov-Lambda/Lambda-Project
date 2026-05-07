@@ -17,6 +17,7 @@ using ifp.arena.bep.Core.Economy;
 using arena.ui;
 using EFT.UI;
 using ifp.arena.bep.Core;
+using System.Threading.Tasks;
 
 namespace ifp.arena.bep.networking;
 
@@ -113,6 +114,12 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
             {
                 if (packet.readyState == PlayerReadinessState.Connected)
                 {
+                    // Broadcast updated itemsToLoad list
+                    // whilst this is ridiculously wasteful, I know for a fact that it will work
+                    // We should not forget about this, but for now it's fine
+                    Singleton<AssetBundleLoadPacketHandler>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.itemsToLoad).Forget();
+
+                    // get the player up to speed
                     Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
                     Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peer);
                     Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peer);
