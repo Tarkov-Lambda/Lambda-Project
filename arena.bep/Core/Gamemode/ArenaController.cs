@@ -106,8 +106,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         if (!H.IsHeadless)
         {
-            Physics.simulationMode = SimulationMode.FixedUpdate;
-
             SteamAudioInitializer.AttachListenerIfNeeded();
 
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");

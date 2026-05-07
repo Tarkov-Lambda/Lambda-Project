@@ -17,7 +17,7 @@ namespace ifp.arena.shared
     }
 
     [RequireComponent(typeof(BoxCollider))]
-    public class Ladder : MonoBehaviour
+    public class Ladder : MonoBehaviour, IPhysicsTrigger
     {
         public static Action<LadderEventPayload> onPlayerEnterLadder;
         public static Action<LadderEventPayload> onPlayerExitLadder;
@@ -54,12 +54,14 @@ namespace ifp.arena.shared
             }
         }
 
+        public string Description => "eto ladder kstati btw";
+
         private void Awake()
         {
             Collider.isTrigger = true; // just in case
         }
 
-        private void OnTriggerEnter(Collider other)
+        public void OnTriggerEnter(Collider other)
         {
             LadderEventPayload ladderEvent = new LadderEventPayload
             {
@@ -70,7 +72,7 @@ namespace ifp.arena.shared
             onPlayerEnterLadder?.Invoke(ladderEvent);
         }
 
-        private void OnTriggerExit(Collider other)
+        public void OnTriggerExit(Collider other)
         {
             LadderEventPayload ladderEvent = new LadderEventPayload
             {
