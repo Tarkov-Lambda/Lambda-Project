@@ -17,7 +17,10 @@ namespace ifp.arena.shared
     }
 
     [RequireComponent(typeof(BoxCollider))]
-    public class Ladder : MonoBehaviour, IPhysicsTrigger
+    public class Ladder : MonoBehaviour
+#if EFT_RUNTIME
+        , IPhysicsTrigger
+#endif
     {
         public static Action<LadderEventPayload> onPlayerEnterLadder;
         public static Action<LadderEventPayload> onPlayerExitLadder;
