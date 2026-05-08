@@ -225,14 +225,11 @@ public static class PlayerInventoryTimeGate
                 {
                     Player player = H.GetPlayer(_playerId);
 
-                    if (player != null && player.InventoryController is TraderControllerClass traderController)
+                    float timeout = 3.0f;
+                    while (player.InventoryController.HasActiveEvents && timeout > 0f)
                     {
-                        float timeout = 3.0f;
-                        while (traderController.HasActiveEvents && timeout > 0f)
-                        {
-                            await UniTask.DelayFrame(1);
-                            timeout -= Time.deltaTime;
-                        }
+                        await UniTask.DelayFrame(1);
+                        timeout -= Time.deltaTime;
                     }
 
                     await UniTask.DelayFrame(1);

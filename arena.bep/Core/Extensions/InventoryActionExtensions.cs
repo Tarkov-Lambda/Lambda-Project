@@ -97,23 +97,6 @@ public static class InventoryActionExtensions
         {
             D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
             D.LogTransaction($"Reason: {result.Error}");
-
-            if (result.Error.StartsWith("Could not find") || result.Error.StartsWith("Can not execute") || result.Error.StartsWith("Forcefully unlocked inventory"))
-            {
-                var cachedAddress = item.CurrentAddress;
-
-                if (player.HandsController != null && player.HandsController.Item == item)
-                {
-                    player.HandsController.Destroy();
-                    player.HandsController = null;
-                }
-
-                cachedAddress.RemoveWithoutRestrictions(item);
-
-                cachedAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
-                cachedAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
-                return true;
-            }
         }
 
         return !result.Failed;
@@ -232,6 +215,17 @@ public static class InventoryActionExtensions
 
     public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
     {
+        // TODO: stop being a retard
+        if (H.IsServer)
+        {
+            if (player.HandsController.Item == player.GetSlotItem(equipmentSlot))
+            {
+                player.UnfuckHands();
+                await UniTask.Delay(50);
+            }
+        }
+
+
         return await player.TryOperateWeaponAndMags(
             equipmentSlot,
             (p, item) => p.TryThrowItem(item),
