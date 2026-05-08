@@ -36,6 +36,9 @@ namespace SteamAudio
             if (gameObject.GetComponentInParent<SteamAudioIgnore>() != null)
                 return 0;
 
+            if (gameObject.layer == 18) // lowpoly gets ignored entirely
+                return 0;
+
             if (exportAllChildren)
             {
                 var objects = SteamAudioManager.GetGameObjectsForExport(gameObject);
@@ -58,6 +61,9 @@ namespace SteamAudio
         {
             // Return 0 if this object or a parent has the Ignore script
             if (gameObject.GetComponentInParent<SteamAudioIgnore>() != null)
+                return 0;
+
+            if (gameObject.layer == 18)
                 return 0;
 
             if (exportAllChildren)
