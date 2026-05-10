@@ -22,8 +22,9 @@ public class SharedNone : IGameState
     {
         Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
 
-        if (!H.IsHeadless && H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
+        if (!H.IsHeadless)
         {
+            
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
         }
     }
@@ -82,10 +83,8 @@ public class SharedWarmupEnd : IGameState
 
                 await UniTask.Delay(2250);
 
-                if (H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
-                {
-                    H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75f);
-                }
+                H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75f);
+
             });
         }
 
@@ -209,11 +208,7 @@ public class SharedPrepare : IGameState
 
             PU.OpenEyes();
 
-            if (H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
-            {
-                // H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.MainMixerVolume, 0f, 0.5f);
-                H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 0.5f);
-            }
+            H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 0.5f);
         }
 
         foreach (var player in H.AllPlayingPlayers)
@@ -250,11 +245,7 @@ public class SharedRoundEnd : IGameState
 
                 await UniTask.Delay(2250);
 
-                // Fade out audio alongside the screen fading to black
-                if (H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
-                {
-                    H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
-                }
+                H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
             });
         }
     }

@@ -1,4 +1,5 @@
-﻿using Comfort.Common;
+﻿using arena.ui.scoreboard;
+using Comfort.Common;
 using EFT;
 using Fika.Core.Modding.Events;
 using ifp.arena.bep.Core.AssetBundleHandling;
@@ -123,6 +124,9 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             }
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
+            H.Session.scoreboard[H.MainPlayer.Id] = new PlayerScore(H.MainPlayer.Id);
+            H.MainPlayerScore.Spawn();
+
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
 
             PU.OpenEyes();

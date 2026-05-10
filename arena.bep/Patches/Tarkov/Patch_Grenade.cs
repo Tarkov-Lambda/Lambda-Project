@@ -19,20 +19,20 @@ public class Patch_Grenade_InvokeBlowUpEvent : ModulePatch
     {
         if (__instance.WeaponSource.StringTemplateId is Hardcode.MOLOTOV_GRENADE)
         {
-            if (!string.IsNullOrEmpty(__instance.WeaponSource.ExplosionEffectType))
-            {
-                H.Effects.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
-            }
+            // if (!string.IsNullOrEmpty(__instance.WeaponSource.ExplosionEffectType))
+            // {
+            //     H.Effects.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
+            // }
 
-            __instance.method_4();
+            // __instance.method_4();
 
             if (H.IsServer)
             {
                 Singleton<MolotovExplosionPacketHandler>.Instance.Send(__instance.transform.position);
             }
 
-            UnityEngine.Object.DestroyImmediate(__instance.gameObject);
-            return false;
+            // UnityEngine.Object.DestroyImmediate(__instance.gameObject);
+            return true;
         }
 
         return true;

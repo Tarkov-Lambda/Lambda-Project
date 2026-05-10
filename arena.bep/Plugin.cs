@@ -202,6 +202,9 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
+        RegisterPatch(new Patch_ThrowWeapItemClass_FragmentsCount());               // Molly no fragments
+        RegisterPatch(new Patch_ThrowWeapItemClass_MinFragmentDamage());               // Molly no fragments
+        RegisterPatch(new Patch_ThrowWeapItemClass_MaxFragmentDamage());               // Molly no fragments
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing

@@ -85,22 +85,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
         DispatchPacketToPeer(packet, peer);
     }
 
-    protected override bool ValidatePacket(SessionStartPacket packet, NetPeer peer, out string rejectionReason)
-    {
-        Type type = GetLambdaGamemode(packet.gamemode);
-        if (type != null)
-        {
-            H.Arena.gamemode = (LambdaGamemode)Activator.CreateInstance(type);
-        }
-        else
-        {
-            rejectionReason = "Can't find specified gamemode";
-            return false;
-        }
-
-        return base.ValidatePacket(packet, peer, out rejectionReason);
-    }
-
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, NetPeer peer)
     {
         packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;

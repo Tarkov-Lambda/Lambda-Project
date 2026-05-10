@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.HealthSystem;
 using Fika.Core;
@@ -97,7 +98,6 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     {
         if (!H.IsInRaid()) return false; // mid raid connect protection
         if (__instance.Player == null || __instance.Player.GetScore() == null) return false; // mid raid connect protection
-        if (__instance.Player.IsAI) return true;
 
         long now = Stopwatch.GetTimestamp();
         long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;
@@ -131,6 +131,17 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
             }
 
             Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, victim, killer);
+
+            // for the memes
+            if (H.Session.matchState == MatchState.None)
+            {
+                UniTask.RunOnThreadPool(async () =>
+                {
+                    await UniTask.Delay(500);
+                    H.MainPlayerScore.Spawn();
+                    Teleporter.Teleport(__instance.Player, "lobby", Faction.None);
+                });
+            }
         }
 
         return false;

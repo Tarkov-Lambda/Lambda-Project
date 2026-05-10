@@ -18,6 +18,7 @@ public static class MemoryPackWrapper
         MemoryPackSerializer.Serialize(_sharedWriter, value);
 
         writer.Put(_sharedWriter.WrittenSpan);
+        // D.Log(writer.Length.ToString());
     }
 
     public static T Deserialize<T>(NetDataReader reader)

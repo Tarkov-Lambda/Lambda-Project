@@ -10,7 +10,8 @@ using System.Collections.Generic;
 
 namespace ifp.arena.bep.networking;
 
-
+// TODO: REFACTOR STRUCT
+// currently this is 1288 bytes per explosion
 [MemoryPackable]
 public partial struct MolotovExplosionPacket : INetSerializable, IServerTimestampedPacket
 {

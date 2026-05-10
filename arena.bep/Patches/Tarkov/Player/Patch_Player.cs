@@ -1,6 +1,7 @@
 ﻿using EFT;
 using EFT.Animations;
 using EFT.EnvironmentEffect;
+using Fika.Core.Main.Players;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System;
