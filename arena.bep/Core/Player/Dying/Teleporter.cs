@@ -3,6 +3,7 @@ using EFT;
 using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
+using ifp.arena.bep.networking;
 using ifp.arena.shared;
 using System;
 using System.Collections.Generic;
@@ -40,19 +41,28 @@ public class Teleporter
         //     targetFaction = Faction.None;
         // }
 
-        if (!TryGetNewPosition(targetMap, targetFaction, pair, out Vector3 nextPlayerPosition))
+        if (!TryGetNewPosition(targetMap, targetFaction, pair, out Transform nextPlayerPosition))
         {
             D.LogError($"Can't find a teleport position in {targetMap.ToLower()}");
             return;
         }
 
         D.Log($"Teleporting {player.Profile.Nickname}");
-        player.Teleport(nextPlayerPosition);
+
+
+        var tpPacket = new DictateTeleportPacket
+        {
+            Player = player,
+            position = nextPlayerPosition.position,
+            rotation = nextPlayerPosition.rotation
+        };
+
+        Singleton<DictateTeleportPacketHandler>.Instance.Apply(tpPacket);
     }
 
-    public static bool TryGetNewPosition(string sceneName, Faction faction, int pair, out Vector3 newPos)
+    public static bool TryGetNewPosition(string sceneName, Faction faction, int pair, out Transform newPos)
     {
-        newPos = Vector3.zero;
+        newPos = new Transform();
 
         if (!RespawnUtilities.TryGetAllSpawnPointClusters(sceneName, faction, pair, out List<SpawnPointCluster> spawnPoints))
         {

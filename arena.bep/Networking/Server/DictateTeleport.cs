@@ -5,37 +5,40 @@ using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct DictateTeleport : INetSerializable, IAuthoredPacket
+public partial struct DictateTeleportPacket : INetSerializable, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public Vector3 position;
+    public Quaternion rotation;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<DictateTeleport>(reader);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<DictateTeleportPacket>(reader);
 }
 
-public class DictateTeleportHandler : PacketHandler<DictateTeleport>
+public class DictateTeleportPacketHandler : PacketHandler<DictateTeleportPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
-    public void SendToPlayer(Player player, Vector3 position)
+    public void SendToPlayer(Player player, Vector3 position, Quaternion rotation)
     {
-        var packet = new DictateTeleport
+        var packet = new DictateTeleportPacket
         {
             Player = player,
-            position = position
+            position = position,
+            rotation = rotation
         };
 
         DispatchPacketToPlayer(packet, player);
     }
 
-    protected override void ProcessApprovedPacket(ref DictateTeleport packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref DictateTeleportPacket packet, NetPeer peer)
     {
         MutateApprovedPacket(ref packet, peer);
         if (!packet.Player.IsAI)
@@ -45,21 +48,35 @@ public class DictateTeleportHandler : PacketHandler<DictateTeleport>
         ApplyInternal(packet, peer);
     }
 
-    protected override void Apply(DictateTeleport packet, NetPeer peer)
-    {
-        // for AI teleportation
-        if (H.IsServer)
-        {
-            if (packet.Player.IsAI)
-            {
-                packet.Player.Teleport(packet.position);
-            }
-        }
+    // duct tape for now
+    public void Apply(DictateTeleportPacket packet) => Apply(packet, null);
 
-        if (!H.IsHeadless)
+    protected override void Apply(DictateTeleportPacket packet, NetPeer peer)
+    {
+        if (packet.Player.IsYourPlayer || (H.IsServer && packet.Player.IsAI))
         {
-            if (!packet.Player.IsYourPlayer) return;
             packet.Player.Teleport(packet.position);
+
+            Vector3 euler = packet.rotation.eulerAngles;
+            Vector2 lookRotation = new Vector2(euler.y, Mathf.DeltaAngle(0f, euler.x));
+
+            packet.Player.Transform.rotation = Quaternion.Euler(0f, euler.y, 0f);
+            packet.Player.Rotation = lookRotation;
+            packet.Player.MovementContext.CachedRotation = lookRotation;
+
+            UniTask.RunOnThreadPool(async () =>
+            {
+                await UniTask.Delay(1500);
+                if (!packet.Player.MovementContext.IsGrounded)
+                {
+                    var canWeGetMuchHigher = packet.position;
+                    canWeGetMuchHigher.y += 1.25f;
+                    packet.Player.MovementContext.ResetFlying();
+                    packet.Player.Teleport(canWeGetMuchHigher);
+                    await UniTask.DelayFrame(1);
+                    packet.Player.MovementContext.ResetFlying();
+                }
+            });
         }
     }
 }

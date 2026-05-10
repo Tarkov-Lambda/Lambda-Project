@@ -39,6 +39,13 @@ namespace arena.ui
             textTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
         }
 
+        public void ToggleTimer(bool show)
+        {
+            if (textTimer == null)
+                return;
+            textTimer.alpha = show ? 1f : 0f;
+        }
+
         public void SetTeamStatuses(PlayerScoreInfo[] leftTeam, PlayerScoreInfo[] rightTeam)
         {
             teamStatusLeft?.Set(leftTeam);

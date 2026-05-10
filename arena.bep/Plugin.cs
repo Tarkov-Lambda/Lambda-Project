@@ -254,12 +254,13 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<HandsInspectPacketHandler>();                             // Hands Examination Packet
         RegisterSingleton<BlindFirePacketHandler>();                                // Procedural blindfire state synchronization
         RegisterSingleton<ReplenishPacketHandler>();                                // Player announcens a replenishment
-        RegisterSingleton<MolotovExplosionPacketHandler>();                   // Explosion of a custom grenade
+        RegisterSingleton<MolotovExplosionPacketHandler>();                         // Explosion of a custom grenade
         RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
         RegisterSingleton<ForceRemoveItemPacketHandler>();                          // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
         RegisterSingleton<InventoryResyncPacketHandler>();                          // Resynchronize Inventory Controller
+        RegisterSingleton<DictateTeleportPacketHandler>();                          // Tell the player to teleport somewhere
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map

@@ -13,17 +13,35 @@ namespace ifp.arena.bep.Core.UI
 
         internal TopBarController(TopBar topBar)
         {
+            this.topBar = topBar;
+
             PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
             PlayerReadinessPacketHandler.AfterPacketApplied += OnPlayerReadiness;
             EventBus.OnEnter += OnMatchStateEnter;
             UnityTicker.OnUpdate += OnUpdate;
 
-            this.topBar = topBar;
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
         private void OnPlayerReadiness(PlayerReadinessPacket packet) => Refresh();
-        private void OnMatchStateEnter(MatchState state) => Refresh();
+        private void OnMatchStateEnter(MatchState state)
+        {
+            if (state
+            is MatchState.Cleanup
+            or MatchState.SideSwap
+            or MatchState.RoundPlanted
+            or MatchState.RoundEnd
+            or MatchState.MatchEnd)
+            {
+                topBar.ToggleTimer(false);
+            }
+            else
+            {
+                topBar.ToggleTimer(true);
+            }
+
+            Refresh();
+        }
 
         void Refresh()
         {

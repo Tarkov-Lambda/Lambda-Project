@@ -33,13 +33,13 @@ public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacke
 
     protected override void Apply(WeatherAndTimePacket packet, NetPeer peer)
     {
-        var fixedTime = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
-
-        H.GameWorld.GameDateTime.Reset(fixedTime);
-        H.GameWorld.GameDateTime.TimeFactor = 0f;
-
         try
         {
+            var fixedTime = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
+
+            H.GameWorld.GameDateTime.Reset(fixedTime);
+            H.GameWorld.GameDateTime.TimeFactor = 0f;
+
             var todSky = TOD_Sky.Instance;
             if (todSky?.CurrentTime?.GameDateTime != null)
             {

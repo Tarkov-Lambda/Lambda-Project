@@ -17,21 +17,22 @@ namespace ifp.arena.shared
         [Header("Generation")]
         [SerializeField] private GameObject spawnPointPrefab;
         [SerializeField] private int spawnPointCount = 8;
+        [SerializeField] private Transform lookAtTarget;
 
         private readonly float minSpawnDistance = 2f;
         private readonly int maxPlacementAttempts = 50;
 
         BoxCollider box;
 
-        public Vector3 GetRandomSpawn()
+        public Transform GetRandomSpawn()
         {
             int count = transform.childCount;
 
             if (count == 0)
-                return transform.position;
+                return transform;
 
             int index = Random.Range(0, count);
-            return transform.GetChild(index).position;
+            return transform.GetChild(index);
         }
 
         void Awake()
@@ -119,7 +120,18 @@ namespace ifp.arena.shared
             GameObject spawn = Instantiate(spawnPointPrefab, transform);
 #endif
 
-                    spawn.transform.SetPositionAndRotation(candidatePosition, Quaternion.identity);
+                    Quaternion rotation = Quaternion.identity;
+
+                    if (lookAtTarget != null)
+                    {
+                        Vector3 flatDirection = lookAtTarget.position - candidatePosition;
+                        flatDirection.y = 0f;
+
+                        if (flatDirection.sqrMagnitude > 0.0001f) rotation = Quaternion.LookRotation(flatDirection);
+                    }
+
+                    spawn.transform.SetPositionAndRotation(candidatePosition, rotation);
+                    
                     spawn.name = $"SpawnPoint_{i}";
 
                     placedPositions.Add(candidatePosition);
