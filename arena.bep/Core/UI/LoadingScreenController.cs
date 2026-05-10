@@ -24,6 +24,7 @@ namespace ifp.arena.bep.Core.UI
 
             PlayerReadinessPacketHandler.AfterPacketApplied += ReceivePlayerReadinessPacket;
             EventBus.OnEnter += OnMatchStateEnter;
+            EventBus.OnExit += OnMatchStateExit;
             MapLoadEvent.OnBeginLoad += OnBeginLoad;
             MapLoadEvent.OnSuccessfulLoad += OnSuccessfulMapLoad;
         }
@@ -67,7 +68,20 @@ namespace ifp.arena.bep.Core.UI
         {
             if (state == MatchState.WarmupEnd)
                 ToggleVisibility(false);
+
+            if (state == MatchState.SideSwap)
+                ToggleVisibility(true);
+
+            if (state == MatchState.Cleanup)
+                ToggleVisibility(true);
         }
+
+        private void OnMatchStateExit(MatchState state)
+        {
+            if (state == MatchState.Cleanup)
+                ToggleVisibility(false);
+        }
+
 
         bool IsWaitingOnOtherPlayers(out string text)
         {
@@ -104,22 +118,24 @@ namespace ifp.arena.bep.Core.UI
 
         void ToggleVisibility(bool show)
         {
-            // if (show)
-            //     screen.gameObject.SetActive(true);
-
-            screen.gameObject.SetActive(show);
-
-
             float fadeAlphaTarget = show ? 1f : 0f;
             float fadeDuration = 0.3f;
-            CanvasGroup canvasGroup = screen.gameObject.GetComponent<CanvasGroup>();
+
+            CanvasGroup canvasGroup = screen.gameObject.GetOrAddComponent<CanvasGroup>();
             canvasGroup.DOKill();
+
+            if (show)
+            {
+                screen.gameObject.SetActive(true);
+                canvasGroup.alpha = 0f;
+            }
+
             canvasGroup.DOFade(fadeAlphaTarget, fadeDuration)
-                .onComplete = () => 
+                .OnComplete(() =>
                 {
-                    if (!show) 
+                    if (!show)
                         screen.gameObject.SetActive(false);
-                };
+                });
         }
     }
 }

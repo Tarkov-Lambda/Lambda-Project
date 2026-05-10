@@ -21,6 +21,12 @@ public class SharedNone : IGameState
     public virtual void OnEnter()
     {
         Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
+
+        if (!H.IsHeadless && H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
+        {
+            H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.MainMixerVolume, 0f, 1f);
+            H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
+        }
     }
 
     public virtual MatchState? OnUpdate()
@@ -67,13 +73,20 @@ public class SharedWarmupEnd : IGameState
     public MatchState StateType => MatchState.WarmupEnd;
     public virtual void OnEnter()
     {
-
         if (!H.IsHeadless)
         {
             UniTask.Void(async () =>
             {
                 await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000);
+
                 PU.CloseEyes(false, false).Forget();
+
+                await UniTask.Delay(2250);
+
+                if (H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
+                {
+                    H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75f);
+                }
             });
         }
 
@@ -196,6 +209,12 @@ public class SharedPrepare : IGameState
             Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
+
+            if (H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
+            {
+                // H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.MainMixerVolume, 0f, 0.5f);
+                H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 0.5f);
+            }
         }
 
         foreach (var player in H.AllPlayingPlayers)
@@ -226,8 +245,17 @@ public class SharedRoundEnd : IGameState
         {
             UniTask.Void(async () =>
             {
-                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 1500);
+                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000);
+
                 PU.CloseEyes(false, false).Forget();
+
+                await UniTask.Delay(2250);
+
+                // Fade out audio alongside the screen fading to black
+                if (H.BetterAudio != null && H.BetterAudio.AudioMixerData != null)
+                {
+                    H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
+                }
             });
         }
     }
