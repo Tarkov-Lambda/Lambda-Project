@@ -14,6 +14,7 @@ using PacketHandler.RateLimiting;
 using System;
 using System.Reflection;
 using UnityEngine;
+using static EFT.Player;
 
 namespace ifp.arena.bep.networking;
 
@@ -37,6 +38,8 @@ public struct InventoryResyncPacket : INetSerializable
         }
 
         writer.Put(broadcast);
+
+        // D.Log(writer.Length.ToString());
     }
 
     public void Deserialize(NetDataReader reader)
@@ -54,6 +57,8 @@ public struct InventoryResyncPacket : INetSerializable
 
 public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
 {
+    readonly FieldInfo traderControllerClassItem_0FieldInfo = AccessTools.Field(typeof(TraderControllerClass), "Item_0");
+
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(5);
 
     public void Send(Player player, bool broadcast = false)
@@ -137,25 +142,11 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         player.InventoryController.ReplaceInventory(newInventory);
 
         newInventory.Equipment.CurrentAddress = player.InventoryController.CreateItemAddress();
-        if (newInventory.Stash != null)
-        {
-            newInventory.Stash.CurrentAddress = player.InventoryController.CreateItemAddress();
-        }
+        newInventory.Stash?.CurrentAddress = player.InventoryController.CreateItemAddress();
 
-        try
-        {
-            var rootItemField = AccessTools.Field(typeof(TraderControllerClass), "Item_0") ?? AccessTools.Field(typeof(TraderControllerClass), "RootItem");
-            if (rootItemField != null)
-            {
-                rootItemField.SetValue(player.InventoryController, newInventory.Equipment);
-            }
-        }
-        catch (Exception ex)
-        {
-            D.Log($"Failed to reflect TraderControllerClass root item: {ex}");
-        }
+        traderControllerClassItem_0FieldInfo.SetValue(player.InventoryController, newInventory.Equipment);
 
-        ReregisterPlayerVisuals(player, newInventory.Equipment);
+        player.UpdateVisuals(newInventory.Equipment);
 
         if (packet.Player.IsYourPlayer)
         {
@@ -183,107 +174,11 @@ public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
         if (!H.IsHeadless)
         {
             H.MainPlayer.AutoExamineAndSearch(packet.Player.Inventory.Equipment);
-            // H.MainPlayer.AutoExamineAndSearch(player.GetSlotItem(EquipmentSlot.TacticalVest));
-            // H.MainPlayer.AutoExamineAndSearch(player.GetSlotItem(EquipmentSlot.Pockets));
-        }
-    }
-
-    // Lord forgive me
-    private static void ReregisterPlayerVisuals(Player player, InventoryEquipment newEquipment)
-    {
-        UpdateObserver(player.NightVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
-        UpdateObserver(player.ThermalVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
-        UpdateObserver(player.FaceShieldObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
-        UpdateObserver(player.FaceCoverObserver, newEquipment.GetSlot(EquipmentSlot.FaceCover));
-
-        if (player.PlayerBody != null)
-        {
-            player.PlayerBody.Equipment = newEquipment;
-
-            var backpackSlot = newEquipment.GetSlot(EquipmentSlot.Backpack);
-            var slotNames = (EquipmentSlot[])AccessTools.Field(typeof(PlayerBody), "SlotNames").GetValue(null);
-            var slotViews = player.PlayerBody.SlotViews;
-
-            var getByKeyMethod = AccessTools.Method(slotViews.GetType(), "GetByKey");
-            var addOrReplaceMethod = AccessTools.Method(slotViews.GetType(), "AddOrReplace");
-            var equipmentSlotClassType = typeof(PlayerBody).GetNestedType("EquipmentSlotClass", BindingFlags.Public | BindingFlags.NonPublic);
-            var disposeMethod = AccessTools.Method(equipmentSlotClassType, "Dispose");
-
-            foreach (EquipmentSlot slotName in slotNames)
+            if (packet.Player.IsYourPlayer && H.Session.matchState == MatchState.Cleanup)
             {
-                var newSlot = newEquipment.GetSlot(slotName);
-                var oldSlotView = getByKeyMethod.Invoke(slotViews, [slotName]);
-
-                Transform bone = null;
-                Transform altBone = null;
-
-                if (oldSlotView != null)
-                {
-                    bone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_0").GetValue(oldSlotView);
-                    altBone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_1").GetValue(oldSlotView);
-                }
-                else
-                {
-                    bone = player.PlayerBody.GetSlotBone(slotName);
-                    altBone = player.PlayerBody.GetAlternativeHolsterBone(slotName);
-                }
-
-                var newSlotView = Activator.CreateInstance(
-                    equipmentSlotClassType,
-                    [player.PlayerBody, newSlot, bone, slotName, backpackSlot, altBone, false]
-                );
-
-                var replacedView = addOrReplaceMethod.Invoke(slotViews, [slotName, newSlotView]);
-                if (replacedView != null)
-                {
-                    disposeMethod.Invoke(replacedView, null);
-                }
+                player.ProcessStatus = EProcessStatus.None;
+                player.SetFirstAvailableItem((result) => { });
             }
-
-            var disposeField = AccessTools.Field(typeof(PlayerBody), "_dispose");
-            var compositeDisposable = disposeField?.GetValue(player.PlayerBody);
-
-            if (compositeDisposable != null)
-            {
-                var addDisposableMethod = AccessTools.Method(compositeDisposable.GetType(), "AddDisposable", [typeof(Action)]);
-
-                var headwearSlotView = getByKeyMethod.Invoke(slotViews, [EquipmentSlot.Headwear]);
-                var faceCoverSlotView = getByKeyMethod.Invoke(slotViews, [EquipmentSlot.FaceCover]);
-
-                var headwearParentedModel = AccessTools.Field(equipmentSlotClassType, "ParentedModel").GetValue(headwearSlotView);
-                var faceCoverParentedModel = AccessTools.Field(equipmentSlotClassType, "ParentedModel").GetValue(faceCoverSlotView);
-
-                var bindMethod = AccessTools.Method(headwearParentedModel.GetType(), "Bind");
-                var method1Delegate = Delegate.CreateDelegate(typeof(Action<GameObject>), player.PlayerBody, "method_1");
-
-                var hwDisposable = bindMethod.Invoke(headwearParentedModel, [method1Delegate]);
-                var fcDisposable = bindMethod.Invoke(faceCoverParentedModel, [method1Delegate]);
-
-                addDisposableMethod.Invoke(compositeDisposable, [hwDisposable]);
-                addDisposableMethod.Invoke(compositeDisposable, [fcDisposable]);
-            }
-
-            AccessTools.Method(typeof(PlayerBody), "method_1").Invoke(player.PlayerBody, [null]);
-
-            var method86Delegate = Delegate.CreateDelegate(typeof(Action<GameObject>), player, "method_86");
-            player.BindSlotViewChangedAction(EquipmentSlot.Headwear, (Action<GameObject>)method86Delegate);
-        }
-    }
-
-    private static void UpdateObserver(object observer, Slot newSlot)
-    {
-        if (observer == null || newSlot == null) return;
-
-        var slotField = AccessTools.Field(observer.GetType(), "Slot_0");
-        if (slotField != null)
-        {
-            slotField.SetValue(observer, newSlot);
-        }
-
-        var updateMethod = AccessTools.Method(observer.GetType(), "Update");
-        if (updateMethod != null)
-        {
-            updateMethod.Invoke(observer, null);
         }
     }
 }

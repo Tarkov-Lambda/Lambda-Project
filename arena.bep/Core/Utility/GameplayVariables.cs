@@ -1,26 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using ifp.arena.bep;
 using MemoryPack;
+using Newtonsoft.Json;
 
 public static class GameplayVariables
 {
-    public static GameplayVariablesStruct vars = new()
-    {
-        LeanSpeed = 1.3f,
-        AimSpeedPenaltyReduction = 0.15f,
+    private readonly static string DefaultGameplayVariablesPath = Path.Combine(Plugin.pathToConfigs, "GameplayVariables.jsonc");
 
-        PistolADSMotionScale = 0.1f,
-        PistolDisplacementStrScale = .25f,
-        PistolZoomBoostScale = 0.1f,
-
-        RifleADSMotionScale = 1f,
-        RifleDisplacementStrScale = 1f,
-
-        transmissionHigh = 0.25f,
-        transmissionMid = 0.3f,
-        transmissionLow = 0.4f,
-    };
+    public static GameplayVariablesStruct vars = JsonConvert.DeserializeObject<GameplayVariablesStruct>(File.ReadAllText(DefaultGameplayVariablesPath));
 
     public static List<string> GetAllFieldStrings()
     {
@@ -58,22 +48,4 @@ public static class GameplayVariables
             return false;
         }
     }
-}
-
-[MemoryPackable]
-public partial struct GameplayVariablesStruct
-{
-    public float LeanSpeed;
-    public float AimSpeedPenaltyReduction;
-
-    public float PistolADSMotionScale;
-    public float PistolDisplacementStrScale;
-    public float PistolZoomBoostScale;
-
-    public float RifleADSMotionScale;
-    public float RifleDisplacementStrScale;
-
-    public float transmissionHigh;
-    public float transmissionMid;
-    public float transmissionLow;
 }

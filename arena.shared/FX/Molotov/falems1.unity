@@ -239,6 +239,7 @@ GameObject:
   - component: {fileID: 1483481142}
   - component: {fileID: 1483481141}
   - component: {fileID: 1483481140}
+  - component: {fileID: 1483481144}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -332,6 +333,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1483481144
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1483481139}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: a0ead5c13eb8dc54f87e9de20024becc, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &8167032742519240448
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -343,6 +365,10 @@ PrefabInstance:
     - target: {fileID: 3120810787457954832, guid: 385fa3b6bd2a7164e99503c735095bef, type: 3}
       propertyPath: m_Name
       value: Fire_zone_Animaton
+      objectReference: {fileID: 0}
+    - target: {fileID: 3120810787457954832, guid: 385fa3b6bd2a7164e99503c735095bef, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4189349996390999896, guid: 385fa3b6bd2a7164e99503c735095bef, type: 3}
       propertyPath: m_LocalScale.x

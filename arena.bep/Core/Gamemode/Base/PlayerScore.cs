@@ -34,7 +34,7 @@ public class PlayerScore
 
     public bool IsAlive => score.IsAlive;
     public int Money => score.Money;
-    public bool shouldHardReset => score.ShouldHardReset;
+    public bool ShouldHardReset => score.ShouldHardReset;
 
     // Match Scope
     public int Kills => score.Kills;

@@ -24,9 +24,11 @@ public class Patch_Grenade_InvokeBlowUpEvent : ModulePatch
                 H.Effects.EmitGrenade(__instance.WeaponSource.ExplosionEffectType, __instance.transform.position, Vector3.up, 0f);
             }
 
+            __instance.method_4();
+
             if (H.IsServer)
             {
-                Singleton<CustomGrenadeExplosionPacketHandler>.Instance.Send(__instance.transform.position, CustomGrenadeType.Molotov);
+                Singleton<MolotovExplosionPacketHandler>.Instance.Send(__instance.transform.position);
             }
 
             UnityEngine.Object.DestroyImmediate(__instance.gameObject);

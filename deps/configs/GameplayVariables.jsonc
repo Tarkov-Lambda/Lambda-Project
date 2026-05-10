@@ -1,0 +1,25 @@
+{
+  // Movement
+  "LeanSpeed": 1.3,
+  "AimSpeedPenaltyReduction": 0.15,
+
+  // Procedural Weapon Animations
+  "PistolADSMotionScale": 0.1,
+  "PistolDisplacementStrScale": 0.25,
+  "PistolZoomBoostScale": 0.1,
+  "RifleADSMotionScale": 1.0,
+  "RifleDisplacementStrScale": 1.0,
+
+  // Steam Audio Transmission Frequencies
+  "transmissionHigh": 0.25,
+  "transmissionMid": 0.3,
+  "transmissionLow": 0.4,
+
+  // Mollies
+  "MaxNodes": 35,
+  "SpreadRadius": 0.8,
+  "FireRadius": 1.0,
+  "TimeBetweenNodes": 0.15,
+  "MaxStepHeight": 0.5,
+  "MaxDropHeight": 2.0
+}

@@ -12,10 +12,12 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 {
     private const string FX_BUNDLE_NAME = "fx";
     private const string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.ifp.arena.shared/FX/Molotov/MolotovFX.prefab";
+    private const string FIRE_NODE_EFFECT_PATH = "Packages/com.ifp.arena.shared/FX/Molotov/FireNodeEffect.prefab";
     public string FXBundlePath => Path.Combine(Plugin.pathToBundles, FX_BUNDLE_NAME);
 
     public AssetBundle FXBundle;
     private MolotovFXController MolotovFirePrefab;
+    public GameObject FireNodeEffectPrefab { get; private set; }
 
     private Stack<MolotovFXController> molotovPool = new Stack<MolotovFXController>();
 
@@ -33,6 +35,7 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
     {
         FXBundle = AssetBundle.LoadFromFile(FXBundlePath);
         MolotovFirePrefab = FXBundle.LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH).GetComponent<MolotovFXController>();
+        FireNodeEffectPrefab = FXBundle.LoadAsset<GameObject>(FIRE_NODE_EFFECT_PATH);
 
         parentEffects = new GameObject("FX").transform;
         GameObject.DontDestroyOnLoad(parentEffects.gameObject);
@@ -47,7 +50,8 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
 
             FXBundle.Unload(false);
             molotovPool.Clear();
-        } catch {}
+        }
+        catch { }
 
         Release(this);
     }

@@ -9,19 +9,6 @@ using UnityEngine;
 
 namespace ifp.arena.bep.Patches;
 
-internal class Patch_BetterSource_SetOcclusionRolloffScale : ModulePatch
-{
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetOcclusionRolloffScale));
-
-    [PatchPrefix]
-    static bool Prefix(BetterSource __instance)
-    {
-        // Force the scale to stay at 1.0, bypassing EFT's distance shrink and fixing the native pooling bug
-        __instance.OcclusionRolloffScale = 1f;
-        return false;
-    }
-}
-
 internal class Patch_BetterSource_SetLowPassFilterParameters : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetLowPassFilterParameters));
@@ -201,5 +188,15 @@ public class Patch_BetterSource_SetOcclusionVolumeFactor : ModulePatch
     }
 }
 
+internal class Patch_BetterSource_SetOcclusionRolloffScale : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetOcclusionRolloffScale));
 
-
+    [PatchPrefix]
+    static bool Prefix(BetterSource __instance)
+    {
+        // Force the scale to stay at 1.0, bypassing EFT's distance shrink and fixing the native pooling bug
+        __instance.OcclusionRolloffScale = 1f;
+        return false;
+    }
+}

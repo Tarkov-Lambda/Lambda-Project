@@ -18,6 +18,7 @@ namespace ifp.arena.shared
 #endif
     {
         BoxCollider _boxCollider;
+        MeshRenderer _meshRenderer;
 
         public int NetId { get; }
 
@@ -40,6 +41,10 @@ namespace ifp.arena.shared
         void Awake()
         {
             _boxCollider = GetComponent<BoxCollider>();
+            _meshRenderer = GetComponent<MeshRenderer>();
+#if EFT_RUNTIME
+            _meshRenderer.enabled = false;
+#endif
         }
 
         private void OnValidate()

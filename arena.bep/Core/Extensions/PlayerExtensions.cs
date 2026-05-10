@@ -1,11 +1,15 @@
 using System;
+using System.Reflection;
 using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using ifp.arena.bep.Core;
+using UnityEngine;
 using static EFT.Player;
 using static EFT.PlayerAnimator;
 
+// class full of bruteforce player manipulations 
 public static class PlayerExtensions
 {
     public static PlayerScore GetScore(this Player player)
@@ -109,25 +113,95 @@ public static class PlayerExtensions
         }
     }
 
-    public static void EquipSomething(this Player player)
+    // Lord forgive me
+    public static void UpdateVisuals(this Player player, InventoryEquipment newEquipment)
     {
-        var firearmController = player.HandsController as FirearmController;
-        if (player.LastEquippedWeaponOrKnifeItem != null)
-        {
-            InteractionsHandlerClass.Discard(player.LastEquippedWeaponOrKnifeItem, H.MainPlayer.InventoryController, true);
+        UpdateObserver(player.NightVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
+        UpdateObserver(player.ThermalVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
+        UpdateObserver(player.FaceShieldObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
+        UpdateObserver(player.FaceCoverObserver, newEquipment.GetSlot(EquipmentSlot.FaceCover));
 
-            player.ProcessStatus = EProcessStatus.None;
-            player.TrySetLastEquippedWeapon();
-        }
-        else
+        if (player.PlayerBody == null) return;
+
+        player.PlayerBody.Equipment = newEquipment;
+
+        var backpackSlot = newEquipment.GetSlot(EquipmentSlot.Backpack);
+        var slotNames = (EquipmentSlot[])AccessTools.Field(typeof(PlayerBody), "SlotNames").GetValue(null);
+        var slotViews = player.PlayerBody.SlotViews;
+
+        var getByKeyMethod = AccessTools.Method(slotViews.GetType(), "GetByKey");
+        var addOrReplaceMethod = AccessTools.Method(slotViews.GetType(), "AddOrReplace");
+        var equipmentSlotClassType = typeof(PlayerBody).GetNestedType("EquipmentSlotClass", BindingFlags.Public | BindingFlags.NonPublic);
+        var disposeMethod = AccessTools.Method(equipmentSlotClassType, "Dispose");
+
+        foreach (EquipmentSlot slotName in slotNames)
         {
-            player.ProcessStatus = EProcessStatus.None;
-            player.SetFirstAvailableItem((result) => { });
+            var newSlot = newEquipment.GetSlot(slotName);
+            var oldSlotView = getByKeyMethod.Invoke(slotViews, [slotName]);
+
+            Transform bone = null;
+            Transform altBone = null;
+
+            if (oldSlotView != null)
+            {
+                bone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_0").GetValue(oldSlotView);
+                altBone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_1").GetValue(oldSlotView);
+            }
+            else
+            {
+                bone = player.PlayerBody.GetSlotBone(slotName);
+                altBone = player.PlayerBody.GetAlternativeHolsterBone(slotName);
+            }
+
+            var newSlotView = Activator.CreateInstance(
+                equipmentSlotClassType,
+                [player.PlayerBody, newSlot, bone, slotName, backpackSlot, altBone, false]
+            );
+
+            var replacedView = addOrReplaceMethod.Invoke(slotViews, [slotName, newSlotView]);
+            if (replacedView != null)
+            {
+                disposeMethod.Invoke(replacedView, null);
+            }
         }
 
-        if (firearmController != null && firearmController.Weapon != null)
+        var disposeField = AccessTools.Field(typeof(PlayerBody), "_dispose");
+        var compositeDisposable = disposeField?.GetValue(player.PlayerBody);
+
+        if (compositeDisposable != null)
         {
-            Traverse.Create(player.ProceduralWeaponAnimation).Field("_firearmAnimationData").SetValue(firearmController);
+            var addDisposableMethod = AccessTools.Method(compositeDisposable.GetType(), "AddDisposable", [typeof(Action)]);
+
+            var headwearSlotView = getByKeyMethod.Invoke(slotViews, [EquipmentSlot.Headwear]);
+            var faceCoverSlotView = getByKeyMethod.Invoke(slotViews, [EquipmentSlot.FaceCover]);
+
+            var headwearParentedModel = AccessTools.Field(equipmentSlotClassType, "ParentedModel").GetValue(headwearSlotView);
+            var faceCoverParentedModel = AccessTools.Field(equipmentSlotClassType, "ParentedModel").GetValue(faceCoverSlotView);
+
+            var bindMethod = AccessTools.Method(headwearParentedModel.GetType(), "Bind");
+            var method1Delegate = Delegate.CreateDelegate(typeof(Action<GameObject>), player.PlayerBody, "method_1");
+
+            var hwDisposable = bindMethod.Invoke(headwearParentedModel, [method1Delegate]);
+            var fcDisposable = bindMethod.Invoke(faceCoverParentedModel, [method1Delegate]);
+
+            addDisposableMethod.Invoke(compositeDisposable, [hwDisposable]);
+            addDisposableMethod.Invoke(compositeDisposable, [fcDisposable]);
         }
+
+        AccessTools.Method(typeof(PlayerBody), "method_1").Invoke(player.PlayerBody, [null]);
+
+        var method86Delegate = Delegate.CreateDelegate(typeof(Action<GameObject>), player, "method_86");
+        player.BindSlotViewChangedAction(EquipmentSlot.Headwear, (Action<GameObject>)method86Delegate);
+    }
+
+    private static void UpdateObserver<T>(Player.GClass2059<T> observer, Slot newSlot) where T : class, IItemComponent
+    {
+        if (observer == null || newSlot == null)
+            return;
+
+        var type = typeof(Player.GClass2059<T>);
+
+        AccessTools.Field(type, "Slot_0")?.SetValue(observer, newSlot);
+        AccessTools.Method(type, "Update")?.Invoke(observer, null);
     }
 }

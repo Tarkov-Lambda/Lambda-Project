@@ -23,6 +23,7 @@ public class LambdaSounds : ScriptableObject
     [Header("Molotov")]
     public AudioClip MolotovExplosion;
     public AudioClip MolotovBurning;
+    public AudioClip MolotovBurnedOut;
     public AudioClip MolotovExtinquished;
 
     [Header("Smoke")]

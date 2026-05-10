@@ -23,6 +23,7 @@ public readonly struct ItemPlacement(PlacementKind kind, EquipmentSlot slot = de
     public static readonly ItemPlacement None = new(PlacementKind.None);
 }
 
+// literally my way on the highway type beat way of determining where shit goes
 public static class AddressUtilities
 {
     public static ItemPlacement GetItemPlacement(Item item, Player player) => item switch

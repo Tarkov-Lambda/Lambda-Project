@@ -1,14 +1,9 @@
 ﻿using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
-using ifp.arena.shared;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using MemoryPack;
-using Cysharp.Threading.Tasks;
-using EFT;
 using PacketHandler;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.shared.Models;
