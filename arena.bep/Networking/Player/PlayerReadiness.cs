@@ -96,6 +96,12 @@ public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerScore playerScore = H.GetPlayerScore(packet.Player);
 
+        if (packet.Player.TryGetHandsResourceKey(out ResourceKey handsBundle))
+        {
+            List<ResourceKey> handsBundleCollection = [handsBundle];
+            handsBundleCollection.LoadBundles().Forget();
+        }
+
         if (isNewPlayer)
         {
             if (packet.readyState == PlayerReadinessState.Ready)

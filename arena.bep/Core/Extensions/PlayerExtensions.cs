@@ -204,4 +204,16 @@ public static class PlayerExtensions
         AccessTools.Field(type, "Slot_0")?.SetValue(observer, newSlot);
         AccessTools.Method(type, "Update")?.Invoke(observer, null);
     }
+
+    public static bool TryGetHandsResourceKey(this Player player, out ResourceKey resourceKey)
+    {
+        if (player.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID handsId))
+        {
+            resourceKey = H.CustomizationSolverClass.GetBundle(handsId);
+            return true;
+        }
+
+        resourceKey = null;
+        return false;
+    }
 }

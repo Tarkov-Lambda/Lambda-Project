@@ -12,6 +12,7 @@ using System.Linq;
 using System.Collections.Generic;
 using ifp.arena.bep.Core.Gamemode;
 using EFT;
+using ifp.arena.bep.Core;
 
 namespace ifp.arena.bep.networking;
 
@@ -20,7 +21,7 @@ public partial struct SessionStartPacket : INetSerializable
 {
     public string level;
     public string gamemode;
-    public List<Item> asssetBundles;
+    public List<Item> asssetBundles; // this needs to change to ResourceKeys
     public bool isForLateJoiner;
 
     public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
@@ -96,16 +97,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         H.Arena.gamemode = GetGamemodeByName(packet.gamemode);
 
-        // Type type = GetLambdaGamemode(packet.gamemode);
-        // if (type != null)
-        // {
-        //     H.Arena.activeRules = (LambdaGamemode)Activator.CreateInstance(type);
-        // }
-        // else
-        // {
-        //     Singleton<RaiseErrorPacketHandler>.Instance.Send("Can't find specified Gamemode");
-        // }
-
         if (!H.IsClient)
         {
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
@@ -116,53 +107,50 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
 
         PresetBundleHandler.Instance.AddToCache(packet.asssetBundles);
 
+        List<ResourceKey> firstPersonHands = new();
+        foreach (var player in H.AllPlayers)
+        {
+            if (player.TryGetHandsResourceKey(out ResourceKey handsBundle))
+            {
+                firstPersonHands.Add(handsBundle);
+            }
+        }
+
         await UniTask.WhenAll(
             MapAssetBundleHandler.Instance.LoadMap(packet.level),
-            PresetBundleHandler.Instance.LoadEverythingInCache()
+            PresetBundleHandler.Instance.LoadEverythingInCache(),
+            firstPersonHands.LoadBundles()
         );
 
         if (!H.IsHeadless)
         {
-            // Main player is ready
+            // we're ready chat
             Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
         }
     }
 
-    private LambdaGamemode GetGamemodeByName(string gamemodeName)
+    // you gonna have to prefix patch this bro
+    public LambdaGamemode GetGamemodeByName(string gamemodeName)
     {
-        LambdaGamemode gamemode;
-
         if (gamemodeName == "SNDGamemode")
         {
-            gamemode = new SNDGamemode();
+            return new SNDGamemode();
         }
         else if (gamemodeName == "DuelGamemode")
         {
-            gamemode = new SNDGamemode();
+            return new SNDGamemode();
         }
         else if (gamemodeName == "FFAGamemode")
         {
-            gamemode = new FFAGamemode();
+            return new FFAGamemode();
         }
         else if (gamemodeName == "HardpointGamemode")
         {
-            gamemode = new HardpointGamemode();
+            return new HardpointGamemode();
         }
         else
         {
-            gamemode = null;
+            return null;
         }
-
-        return gamemode;
-    }
-
-    private Type GetLambdaGamemode(string gamemode)
-    {
-        IEnumerable<Type> gamemodeTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a => a.GetTypes())
-            .Where(t => typeof(LambdaGamemode).IsAssignableFrom(t)
-                        && !t.IsAbstract);
-
-        return gamemodeTypes.FirstOrDefault(t => t.Name == gamemode);
     }
 }

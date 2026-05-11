@@ -44,7 +44,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         Release(this);
     }
 
-    private void SwitchUI(Player player)
+    private void ChangeBattleUIPOV(Player player)
     {
         ItemUiContext.Instance.Configure(
             player.InventoryController,
@@ -144,7 +144,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         }
         else
         {
-            // Case 2: You are a player who died. 
             // First, try to find living teammates.
             validPlayersToSpectate = H.AllTeammateScores
                 .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
@@ -159,7 +158,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             // }
         }
 
-        // If there is literally no one alive to watch, stop spectating
         if (validPlayersToSpectate.Count == 0)
         {
             StopSpectating();
@@ -169,8 +167,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         int currentIndex;
         if (observedPlayer != null)
         {
-            // Find current player index in the list. IndexOf returns -1 if not found 
-            // (which happens when you transition from Teammate list to Global list)
+
             currentIndex = validPlayersToSpectate.FindIndex(s => s.player.Id == observedPlayer.Id);
         }
         else
@@ -197,7 +194,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SpectatePlayer(Player player)
     {
-        if (H.MainPlayer == null) return;
         if (player.IsYourPlayer) return;
 
         if (observedPlayer != null)
@@ -208,22 +204,32 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         observedPlayer = player;
         PU.OpenEyes();
 
-        if (H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID handsId))
-        {
-            var customizationSolver = H.CustomizationSolverClass;
-            ResourceKey handsBundle = customizationSolver.GetBundle(handsId);
+        var observedPlayerHandsKnown = observedPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID observedPlayerHandsId);
+        H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID mainPlayerHandsId);
 
-            if (handsBundle != null)
+        ResourceKey selectedHandsBundle = null;
+
+        if (observedPlayerHandsKnown)
+        {
+            ResourceKey observedHandsBundle = H.CustomizationSolverClass.GetBundle(observedPlayerHandsId);
+            if (observedHandsBundle.IsReadyNow())
             {
-                var handsKvp = new KeyValuePair<EBodyModelPart, ResourceKey>(EBodyModelPart.Hands, handsBundle);
-                observedPlayer.PlayerBody.SetSkin(handsKvp, observedPlayer.PlayerBody.SkeletonHands);
+                selectedHandsBundle = observedHandsBundle;
             }
         }
+
+        if (selectedHandsBundle == null)
+        {
+            selectedHandsBundle = H.CustomizationSolverClass.GetBundle(mainPlayerHandsId);
+        }
+
+        var handsKvp = new KeyValuePair<EBodyModelPart, ResourceKey>(EBodyModelPart.Hands, selectedHandsBundle);
+        observedPlayer.PlayerBody.SetSkin(handsKvp, observedPlayer.PlayerBody.SkeletonHands);
 
         UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
         ChangeCameraPOV(observedPlayer);
 
-        SwitchUI(observedPlayer);
+        ChangeBattleUIPOV(observedPlayer);
 
         OnSelfStartSpectating?.Invoke(observedPlayer);
     }
@@ -246,7 +252,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
         observedPlayer = null;
 
-        SwitchUI(H.MainPlayer);
+        ChangeBattleUIPOV(H.MainPlayer);
 
         ChangeCameraPOV(H.MainPlayer);
         OnSelfStopSpectating?.Invoke();
@@ -261,7 +267,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         observedPlayerCameraTransform = player.IsYourPlayer ? null : observedPlayer.Transform.Original.FindTransform("Cam");
     }
 
-    // Token: 0x06018A7A RID: 100986 RVA: 0x00724CA4 File Offset: 0x00722EA4
     private bool UpdatePointOfView(Player player, EPointOfView pointOfView)
     {
         if (!(player.PlayerBody == null))
@@ -270,7 +275,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             {
                 player.PlayerBody.PointOfView.Value = pointOfView;
                 player.PlayerBody.UpdatePlayerRenders(pointOfView, player.Side);
-                // player.\uE003();
                 method_22(player);
                 return true;
             }
@@ -278,23 +282,14 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         return false;
     }
 
-    // Token: 0x06018A7B RID: 100987 RVA: 0x00837C04 File Offset: 0x00835E04
     private void method_22(Player player)
     {
-        // Default FOV fallback
-        // Note: BSG FOV is vertical, 75 vertical is insanely high (like 105 horizontal). Default is ~50.
-        float targetFov = CameraClass.Instance.Camera.fieldOfView;
-
-        // Set Ribcage / FOV Compensators
         player.ProceduralWeaponAnimation.SetFovParams(1f);
 
         if (player.PlayerBody.PointOfView.Value == EPointOfView.ThirdPerson)
         {
             player.PlayerBones.Ribcage.Original.localScale = new Vector3(1f, 1f, 1f);
         }
-
-        // THIS is where we fix the misaligned ADS
-        method_24(player, player.PlayerBody.PointOfView.Value);
 
         player.ProceduralWeaponAnimation.Overweight = 0f;
         player.ProceduralWeaponAnimation.PointOfView = player.PlayerBody.PointOfView;
@@ -304,8 +299,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             player.ProceduralWeaponAnimation.UpdateWeaponVariables();
             player.ProceduralWeaponAnimation.ResetSpring();
 
-            // DO NOT comment these out, or red dots/scopes won't turn on or align
-            // player.ProceduralWeaponAnimation.ResetOptics();
             player.ProceduralWeaponAnimation.FindAimTransforms();
 
             if (player.ProceduralWeaponAnimation.ScopeAimTransforms.Count > 0)
@@ -313,25 +306,5 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
                 player.ProceduralWeaponAnimation.OnScopesModeUpdated();
             }
         }
-    }
-
-    // Token: 0x06018A7C RID: 100988 RVA: 0x00837D70 File Offset: 0x00835F70
-    private void method_23(Player player, float fov)
-    {
-        // float num = Mathf.InverseLerp((float)GClass1155.MinFieldOfView, (float)GClass1155.MaxFieldOfView, fov);
-        // ...
-    }
-
-    // Token: 0x06018A7D RID: 100989 RVA: 0x00837DDC File Offset: 0x00835FDC
-    private void method_24(Player player, EPointOfView pointOfView)
-    {
-        // bool isThirdPerson = pointOfView == EPointOfView.ThirdPerson;
-        // ...
-    }
-
-    // Token: 0x06018A7E RID: 100990 RVA: 0x002BACDD File Offset: 0x002B8EDD
-    private void method_25(Player player, bool force = false)
-    {
-        // ...
     }
 }

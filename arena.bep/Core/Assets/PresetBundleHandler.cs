@@ -25,7 +25,7 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
         H.OnGameStarted += Initialize;
         H.OnGameDispose += ResetCache;
 
-        if(H.IsInRaid()) Initialize();
+        if (H.IsInRaid()) Initialize();
         // SessionStartPacketHandler.BeforePacketApplied += ResetCache;
     }
 
@@ -79,7 +79,7 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
         }
     }
 
-public async UniTask LoadEverythingInCache()
+    public async UniTask LoadEverythingInCache()
     {
         var prefabsToLoad = new List<ResourceKey>();
 
