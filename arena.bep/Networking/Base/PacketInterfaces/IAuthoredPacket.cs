@@ -3,12 +3,9 @@
 namespace ifp.arena.bep.networking;
 
 /// <summary>
-/// Server validated packet that will be 
+/// Peer can send only for its own player, and server can send for any player
 /// </summary>
 public interface IAuthoredPacket
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public Player Player { get; set; }
 }

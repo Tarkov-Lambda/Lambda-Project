@@ -203,13 +203,15 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
         RegisterPatch(new Patch_ThrowWeapItemClass_FragmentsCount());               // Molly no fragments
-        RegisterPatch(new Patch_ThrowWeapItemClass_MinFragmentDamage());               // Molly no fragments
-        RegisterPatch(new Patch_ThrowWeapItemClass_MaxFragmentDamage());               // Molly no fragments
+        RegisterPatch(new Patch_ThrowWeapItemClass_MinFragmentDamage());            // Molly no fragments
+        RegisterPatch(new Patch_ThrowWeapItemClass_MaxFragmentDamage());            // Molly no fragments
+        RegisterPatch(new Patch_ThrowWeapItemClass_MinTimeToContactExplode());      // Molly no fragments
 
         RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
-        RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Bypassing explosion for custom grenades
+        RegisterPatch(new Patch_Grenade_Init());                                    // Force explode mollies after delay
+        RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Server Generates Molly BFS Pattern on Explosion
 
         // Animation Patches
         // RegisterPatch(new Patch_GClass2963_Spawn());

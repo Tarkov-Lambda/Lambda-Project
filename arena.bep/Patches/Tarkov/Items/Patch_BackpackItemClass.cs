@@ -6,7 +6,6 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
-
 public class Patch_BackpackItemClass_Constructor : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Constructor(typeof(BackpackItemClass), [typeof(string), typeof(BackpackTemplateClass)]);

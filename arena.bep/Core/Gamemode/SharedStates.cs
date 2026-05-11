@@ -24,7 +24,6 @@ public class SharedNone : IGameState
 
         if (!H.IsHeadless)
         {
-            
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
         }
     }

@@ -25,20 +25,10 @@ public partial struct SessionManagerSyncPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionManagerSyncPacket>(reader);
 }
 
-// This only runs explicitly, not on interval
+// Runs on MatchState.RoundEnd
 public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncPacket>
 {
-    private CancellationTokenSource _cts = new();
-
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
-
-    public override void Dispose()
-    {
-        _cts?.Cancel();
-        _cts?.Dispose();
-        _cts = null;
-        base.Dispose();
-    }
 
     public SessionManagerSyncPacket FormatPacket()
     {

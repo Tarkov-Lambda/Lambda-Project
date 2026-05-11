@@ -7,14 +7,16 @@ using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace ifp.arena.bep.networking;
 
 // TODO: REFACTOR STRUCT
-// currently this is 1288 bytes per explosion
+// currently this is around 1300 bytes per explosion
 [MemoryPackable]
-public partial struct MolotovExplosionPacket : INetSerializable, IServerTimestampedPacket
+public partial struct MolotovExplosionPacket : INetSerializable, IServerTimestampedPacket, ITrackable
 {
+    public Guid ID { get; set; }
     public double Timestamp { get; set; }
     public Vector3 explosionPos;
     public List<FireNode> fireNodes;
@@ -33,6 +35,7 @@ public class MolotovExplosionPacketHandler : PacketHandler<MolotovExplosionPacke
 
         var packet = new MolotovExplosionPacket
         {
+            ID = Guid.NewGuid(),
             Timestamp = NetworkTime.LocalNowSeconds,
             explosionPos = explosionPos,
             fireNodes = generatedNodes

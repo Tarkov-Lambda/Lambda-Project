@@ -53,3 +53,19 @@ public class Patch_ThrowWeapItemClass_MaxFragmentDamage : ModulePatch
         return true;
     }
 }
+
+public class Patch_ThrowWeapItemClass_MinTimeToContactExplode : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MinTimeToContactExplode));
+
+    [PatchPrefix]
+    static bool Prefix(ThrowWeapItemClass __instance, ref float __result)
+    {
+        if (Hardcode.MOLOTOV_GRENADE == __instance.TemplateId)
+        {
+            __result = 0.25f;
+            return false;
+        }
+        return true;
+    }
+}

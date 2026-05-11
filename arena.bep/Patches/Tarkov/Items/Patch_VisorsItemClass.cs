@@ -4,7 +4,6 @@ using System.Reflection;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 
-
 public class Patch_VisorsItemClass_Constructor : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Constructor(typeof(VisorsItemClass), [typeof(string), typeof(VisorsTemplateClass)]);
