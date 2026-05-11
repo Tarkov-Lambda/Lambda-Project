@@ -57,7 +57,11 @@
       {
         "bsgId": "6269220d70b6c02e665f2635",
         "price": 400
-      }
+      },
+      {
+        "bsgId": "5c07df7f0db834001b73588a",
+        "price": 400
+      },
     ]
   },
   {
@@ -72,11 +76,11 @@
       //   "price": 650
       // },
       {
-        "bsgId": "656fa25e94b480b8a500c0e0",
+        "bsgId": "656fa25e94b480b8a500c0e0", // T4 Armor
         "price": 650
       },
       {
-        "bsgId": "5ea17ca01412a1425304d1c0",
+        "bsgId": "5ea17ca01412a1425304d1c0", // Bastion Helmet
         "price": 350
       },
       // {

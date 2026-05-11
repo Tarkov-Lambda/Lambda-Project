@@ -9,6 +9,8 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using static EFT.MovementContext;
+using System.Linq;
+using EFT.InputSystem;
 
 namespace ifp.arena.bep.Patches.Tarkov;
 

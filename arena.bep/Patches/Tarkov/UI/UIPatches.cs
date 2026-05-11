@@ -40,6 +40,7 @@ internal static class UIPatches
         // Inventory opening control (for when we reset inv or hold tab for scoreboard)
         RegisterAndEnable(new Patch_ItemsTabController_Show());
         RegisterAndEnable(new Patch_EftGamePlayerOwner_TranslateInventoryScreenInput());
+        RegisterAndEnable(new Patch_EftGamePlayerOwner_BlockScrollDuringMagSelect());
 
         RegisterAndEnable(new Patch_BattleStancePanel_Awake());
 
@@ -53,12 +54,12 @@ internal static class UIPatches
         RegisterAndEnable(new PatchGroup_QuickAccessPanel_HideItemBG());
         RegisterAndEnable(new PatchGroup_QuickAccessPanel_ModifyItemIcon());
 
-        RegisterAndEnable(new Patch_AmmoSelector_Position());
+        RegisterAndEnable(new PatchGroup_AmmoSelector_NewLook());
 
-        if (Singleton<EFT.UI.CommonUI>.Instantiated)
+        if (Singleton<CommonUI>.Instantiated)
         {
-            Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<EFT.UI.CommonUI>.Instance);
-            Patch_CommonUI_Awake.StretchInventoryScreen(Singleton<EFT.UI.CommonUI>.Instance);
+            Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<CommonUI>.Instance);
+            Patch_CommonUI_Awake.StretchInventoryScreen(Singleton<CommonUI>.Instance);
         }
 
 

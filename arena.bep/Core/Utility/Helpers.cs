@@ -187,11 +187,13 @@ public static class Helpers
 
     public static bool IsInRaid()
     {
-#if DEBUG
-        return GameWorld != null;
-#else
         return GameWorld != null && GameWorld is not HideoutGameWorld;
-#endif
+
+// #if DEBUG
+//         return GameWorld != null;
+// #else
+//         return GameWorld != null && GameWorld is not HideoutGameWorld;
+// #endif
     }
 
 

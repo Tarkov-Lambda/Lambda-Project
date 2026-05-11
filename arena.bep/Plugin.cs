@@ -200,6 +200,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
         RegisterPatch(new Patch_Effects_GetEmissionEffect());                       // Smoke tuning
 
+        RegisterPatch(new Patch_MagazineItemClass_GetAmmoCountByLevel());           // Mags autosearched
         RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
         RegisterPatch(new Patch_ThrowWeapItemClass_FragmentsCount());               // Molly no fragments
@@ -248,6 +249,9 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
         // RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
 
+        // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                    //
+        RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
+
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
         RegisterMemoryPackFormatter(new ItemFormatter());                           // Item -> Binary via EFT internals
@@ -259,7 +263,8 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<HandsInspectPacketHandler>();                             // Hands Examination Packet
         RegisterSingleton<BlindFirePacketHandler>();                                // Procedural blindfire state synchronization
         RegisterSingleton<ReplenishPacketHandler>();                                // Player announcens a replenishment
-        RegisterSingleton<MolotovExplosionPacketHandler>();                         // Explosion of a custom grenade
+        RegisterSingleton<SmokeExplosionPacketHandler>();                           // Smoke Bloom Broadcast
+        RegisterSingleton<MolotovExplosionPacketHandler>();                         // Molotov BFS Explosion Broadcast
         RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
         RegisterSingleton<ForceRemoveItemPacketHandler>();                          // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
@@ -280,7 +285,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketHandler>();                       // Sync time of day between rounds
-        
+
         RegisterSingleton<AssetBundleLoadPacketHandler>();                          // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketHandler>();                  // Player responds back saying they loaded a specific batch of asset bundles
 

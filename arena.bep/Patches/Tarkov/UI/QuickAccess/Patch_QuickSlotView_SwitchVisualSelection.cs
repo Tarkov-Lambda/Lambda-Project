@@ -9,10 +9,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 
 internal class Patch_QuickSlotView_SwitchVisualSelection : ModulePatch
 {
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.SwitchVisualSelection));
-    }
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.SwitchVisualSelection));
 
     [PatchPostfix]
     private static void PatchPostfix(QuickSlotView __instance, bool selected, CustomTextMeshProUGUI ___Caption)

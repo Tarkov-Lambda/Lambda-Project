@@ -12,8 +12,7 @@ internal class PatchGroup_QuickAccessPanel_HideEmptySlots : PatchGroup
 {
     private class Patch_BoundItemView_Show : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-            => AccessTools.Method(typeof(BoundItemView), nameof(BoundItemView.Show));
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BoundItemView), nameof(BoundItemView.Show));
 
         [PatchPostfix]
         private static void PatchPostfix(BoundItemView __instance, InventoryController inventoryController, ItemUiContext itemUiContext)
@@ -30,8 +29,7 @@ internal class PatchGroup_QuickAccessPanel_HideEmptySlots : PatchGroup
     }
     private class Patch_BoundSlotView_Show : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-            => AccessTools.Method(typeof(BoundSlotView), nameof(BoundSlotView.Show));
+        protected override MethodBase GetTargetMethod()=> AccessTools.Method(typeof(BoundSlotView), nameof(BoundSlotView.Show));
 
         [PatchPostfix]
         private static void PatchPostfix(BoundSlotView __instance, Slot slot)
@@ -41,8 +39,7 @@ internal class PatchGroup_QuickAccessPanel_HideEmptySlots : PatchGroup
     }
     private class Patch_FastAccessGrenadeItemView_SetNewTopPriorityGrenade : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-            => AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.method_2));
+        protected override MethodBase GetTargetMethod()=> AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.method_2));
 
         [PatchPostfix]
         private static void PatchPostfix(FastAccessGrenadeItemView __instance, Item ___Item)
@@ -52,8 +49,7 @@ internal class PatchGroup_QuickAccessPanel_HideEmptySlots : PatchGroup
     }
     private class Patch_FastAccessGrenadeItemView_Show : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-            => AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.Show));
+        protected override MethodBase GetTargetMethod()=> AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.Show));
 
         [PatchPostfix]
         private static void PatchPostfix(FastAccessGrenadeItemView __instance, Item ___Item)
@@ -63,8 +59,7 @@ internal class PatchGroup_QuickAccessPanel_HideEmptySlots : PatchGroup
     }
     private class Patch_QuickSlotView_Show : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-            => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.RemoveItemView));
+        protected override MethodBase GetTargetMethod()=> AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.RemoveItemView));
 
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance)
@@ -74,8 +69,7 @@ internal class PatchGroup_QuickAccessPanel_HideEmptySlots : PatchGroup
     }
     private class Patch_QuickSlotView_ShowInfoPanel : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-            => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.ShowInfoPanel));
+        protected override MethodBase GetTargetMethod()=> AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.ShowInfoPanel));
 
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance, Item item, TMP_Text ___Caption)

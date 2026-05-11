@@ -14,7 +14,7 @@ public class Patch_ThrowWeapItemClass_FragmentsCount : ModulePatch
     {
         if (Hardcode.MOLOTOV_GRENADE == __instance.TemplateId)
         {
-            __result = 1;
+            __result = 0;
             return false;
         }
         return true;

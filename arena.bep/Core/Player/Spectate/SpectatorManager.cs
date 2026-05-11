@@ -264,7 +264,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
         PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
         playerCameraController.enabled = player.IsYourPlayer;
-        observedPlayerCameraTransform = player.IsYourPlayer ? null : observedPlayer.Transform.Original.FindTransform("Cam");
+        observedPlayerCameraTransform = player.IsYourPlayer ? null : player.ProceduralWeaponAnimation.HandsContainer.CameraTransform;
     }
 
     private bool UpdatePointOfView(Player player, EPointOfView pointOfView)

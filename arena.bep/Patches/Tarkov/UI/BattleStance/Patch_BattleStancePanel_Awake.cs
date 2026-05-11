@@ -11,10 +11,7 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.BattleStance;
 
 internal class Patch_BattleStancePanel_Awake : ModulePatch
 {
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(BattleStancePanel), nameof(BattleStancePanel.Awake));
-    }
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BattleStancePanel), nameof(BattleStancePanel.Awake));
 
     [PatchPostfix]
     private static void PatchPostfix(BattleStancePanel __instance,

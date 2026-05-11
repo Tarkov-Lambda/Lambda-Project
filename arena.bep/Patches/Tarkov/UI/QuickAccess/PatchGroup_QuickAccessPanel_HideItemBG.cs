@@ -10,12 +10,20 @@ namespace ifp.arena.bep.Patches.Tarkov.UI.QuickAccess;
 
 internal class PatchGroup_QuickAccessPanel_HideItemBG : PatchGroup
 {
+    private class Patch_QuickSlotView_ShowArrow : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.ShowArrow));
+
+        [PatchPrefix]
+        static void Prefix(ref bool show)
+        {
+            show = false;
+        }
+    }
+
     private class Patch_QuickSlotView_Awake : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.Awake));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.Awake));
 
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance, Image ___Background, Image ____arrow, TMP_Text ___Caption, TMP_Text ___HotKey)
@@ -72,10 +80,7 @@ internal class PatchGroup_QuickAccessPanel_HideItemBG : PatchGroup
 
     private class Patch_QuickSlotView_RefreshMalfunctionForWeapon : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.method_0));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.method_0));
 
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance, Image ___InstallPlace)

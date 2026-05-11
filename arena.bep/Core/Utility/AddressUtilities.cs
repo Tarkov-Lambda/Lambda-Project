@@ -37,6 +37,7 @@ public static class AddressUtilities
         FaceCoverItemClass _ => ResolveSlotAddress(EquipmentSlot.FaceCover, player),
         HeadphonesItemClass _ => ResolveSlotAddress(EquipmentSlot.Earpiece, player),
         VisorsItemClass _ => ResolveSlotAddress(EquipmentSlot.Eyewear, player),
+        KnifeItemClass _ => ResolveSlotAddress(EquipmentSlot.Scabbard, player),
 
         ArmorPlateItemClass _ => ResolveArmorPlatePlacement(player),
 

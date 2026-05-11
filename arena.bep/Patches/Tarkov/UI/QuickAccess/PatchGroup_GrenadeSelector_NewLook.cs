@@ -14,12 +14,9 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
     const float SELECTED_ALPHA = 1.0f;
     const float UNSELECTED_ALPHA = 0.5f;
 
-    internal class Patch_GrenadeSelector_Awake : ModulePatch
+    class Patch_GrenadeSelector_Awake : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(GrenadeSelector), nameof(GrenadeSelector.Awake));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GrenadeSelector), nameof(GrenadeSelector.Awake));
 
         [PatchPostfix]
         private static void PatchPostfix(GrenadeSelector __instance,
@@ -30,9 +27,6 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
             ref Color ____selectedCancelColor
             )
         {
-            ____arrowOffset = new Vector2(70, 50);
-
-
             var cross = __instance.transform.Find("Cancel/Image");
             if (cross != null && cross.TryGetComponent<Image>(out var crossImage))
             {
@@ -55,12 +49,9 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
         static readonly FieldInfo Field_ItemView__border = AccessTools.Field(typeof(ItemView), "_border");
         static readonly FieldInfo Field_ItemView_ColorPanel = AccessTools.Field(typeof(ItemView), "ColorPanel");
         static readonly FieldInfo Field_ItemView_MainImage = AccessTools.Field(typeof(ItemView), "MainImage");
-        //static readonly FieldInfo Field_ItemView_Caption = AccessTools.Field(typeof(ItemView), "Caption");
+        static readonly FieldInfo Field_ItemView_Caption = AccessTools.Field(typeof(ItemView), "Caption");
 
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(FastAccessGrenadeGridItemView), nameof(FastAccessGrenadeGridItemView.Create));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FastAccessGrenadeGridItemView), nameof(FastAccessGrenadeGridItemView.Create));
 
         [PatchPostfix]
         private static void PatchPostfix(ref FastAccessGrenadeGridItemView __result)
@@ -77,19 +68,16 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
             if (imageMainImage != null)
                 imageMainImage.color = new Color(1, 1, 1, UNSELECTED_ALPHA);
 
-            //TMP_Text caption = Field_ItemView_Caption.GetValue(__result) as TMP_Text;
-            //caption.rectTransform.anchorMin = new Vector2(0, 0);
-            //caption.rectTransform.anchorMax = new Vector2(1, 0);
-            //caption.rectTransform.pivot = new Vector2(0.5f, 0);
+            // TMP_Text caption = Field_ItemView_Caption.GetValue(__result) as TMP_Text;
+            // caption.rectTransform.anchorMin = new Vector2(0, 0);
+            // caption.rectTransform.anchorMax = new Vector2(1, 0);
+            // caption.rectTransform.pivot = new Vector2(0.5f, 0);
         }
     }
 
-    internal class Patch_FastAccessGrenadeItemView_Awake : ModulePatch
+    class Patch_FastAccessGrenadeItemView_Awake : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.Awake));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.Awake));
 
         [PatchPostfix]
         private static void PatchPostfix(FastAccessGrenadeItemView __instance)
@@ -100,14 +88,14 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
 
     class Patch_FastAccessGrenadeGridItemView_Highlight : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(FastAccessGrenadeGridItemView), nameof(FastAccessGrenadeGridItemView.Highlight));
-        }
+        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FastAccessGrenadeGridItemView), nameof(FastAccessGrenadeGridItemView.Highlight));
 
         [PatchPostfix]
         private static void PatchPostfix(FastAccessGrenadeGridItemView __instance, Image ___MainImage, bool highlight)
         {
+            if (__instance.GetComponentInParent<GrenadeSelector>() == null)
+                return;
+
             ___MainImage.color = new Color(1, 1, 1, highlight ? SELECTED_ALPHA : UNSELECTED_ALPHA);
         }
     }
