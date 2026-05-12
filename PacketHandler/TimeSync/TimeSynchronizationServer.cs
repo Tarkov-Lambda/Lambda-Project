@@ -25,7 +25,7 @@ public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacke
 
     protected override void Apply(TimeSyncResponsePacket packet, int peerId)
     {
-        if (H.IsServer)
+        if (Plugin.Network.IsServer)
             return;
 
         double clientReceiveLocal = NetworkTime.LocalNowSeconds;

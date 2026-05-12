@@ -1,5 +1,4 @@
 ﻿using Fika.Core.Networking.LiteNetLib.Utils;
-using MemoryPack;
 
 public struct FikaPacketWrapper<T> : INetSerializable where T : IPacket
 {
@@ -7,13 +6,11 @@ public struct FikaPacketWrapper<T> : INetSerializable where T : IPacket
 
     public readonly void Serialize(NetDataWriter writer)
     {
-        byte[] bytes = MemoryPackSerializer.Serialize(Payload);
-        writer.PutBytesWithLength(bytes);
+        MemoryPackWrapper.Serialize(writer, Payload);
     }
 
     public void Deserialize(NetDataReader reader)
     {
-        byte[] bytes = reader.GetBytesWithLength();
-        Payload = MemoryPackSerializer.Deserialize<T>(bytes);
+        Payload = MemoryPackWrapper.Deserialize<T>(reader);
     }
 }

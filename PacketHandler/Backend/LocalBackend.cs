@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using EFT;
 
-public class LocalSPBackend : INetworkBackend
+public class LocalBackend : INetworkBackend
 {
     public bool IsServer => true;
     public bool IsClient => false;
     public bool IsHeadless => false;
+    public int NetId => 0;
 
     private Dictionary<Type, Delegate> _handlers = new();
 
@@ -21,16 +23,26 @@ public class LocalSPBackend : INetworkBackend
 
     public void SendData<T>(ref T packet, DeliveryType method, bool broadcast) where T : IPacket
     {
-        // In SP, sending a packet just immediately routes it to the local receiver.
-        // Simulate local loopback:
+
         if (_handlers.TryGetValue(typeof(T), out var del))
         {
             var handler = (Action<T, int>)del;
-            handler(packet, 0); // 0 = local player ID
+            handler(packet, 0);
         }
     }
 
     public void SendDataToPeer<T>(ref T packet, DeliveryType method, int id) where T : IPacket { }
 
     public void DisconnectPeer(int peerId) { }
+
+
+    public Player GetPlayerByPeerId(int peerId)
+    {
+        return H.MainPlayer;
+    }
+
+    public int GetPeerIdByPlayer(Player player)
+    {
+        return 0;
+    }
 }

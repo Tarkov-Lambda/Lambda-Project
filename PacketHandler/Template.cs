@@ -1,35 +1,10 @@
-﻿using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
+﻿using PacketHandler;
 using MemoryPack;
 
-namespace ifp.arena.bep.networking;
-
-// if you wanna automatically de/serialize
-// if you need to create a custom MemoryPack class formatter - look at PlayerFormatter (don't forget to register it like I do in Plugin)
 [MemoryPackable]
 public partial struct TemplatePacket : IPacket
 {
     public int id;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<TemplatePacket>(reader);
-}
-
-// if you wanna manually de/serialize
-public partial struct ManuallySerializedTemplatePacket : IPacket
-{
-    public int id;
-
-    public void Serialize(NetDataWriter writer)
-    {
-        writer.Put(id);
-    }
-
-    public void Deserialize(NetDataReader reader)
-    {
-        id = reader.GetInt();
-    }
 }
 
 public class TemplatePacketHandler : PacketHandler<TemplatePacket>

@@ -1,8 +1,6 @@
 ﻿using Fika.Core.Networking.LiteNetLib.Utils;
 using UnityEngine;
 
-namespace ifp.arena.bep.networking;
-
 public static class UnitySerializationExtension
 {
     public static void Put(this NetDataWriter writer, Vector3 v)

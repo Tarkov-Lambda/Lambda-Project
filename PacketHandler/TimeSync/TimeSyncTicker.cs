@@ -16,7 +16,7 @@ public class TimeSyncTicker : IDisposable
 
     public void Update()
     {
-        if (H.IsServer)
+        if (Plugin.Network.IsServer)
             return;
 
         double now = NetworkTime.LocalNowSeconds;

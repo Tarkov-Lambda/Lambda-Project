@@ -1,12 +1,14 @@
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using ifp.arena.bep.networking;
 using MemoryPack;
+using PacketHandler.TimeSync;
 using SPT.Reflection;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine.LowLevel;
 
 
@@ -14,12 +16,14 @@ using UnityEngine.LowLevel;
 [BepInPlugin("com.ifp.PacketHandler", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 internal class Plugin : BaseUnityPlugin
 {
-    // internal static new ManualLogSource Logger => Logger;
+    internal static new ManualLogSource Logger = null;
 
     private readonly List<IDisposable> _disposables = new();
     private readonly List<Action> _releases = new();
 
     public static INetworkBackend Network { get; private set; }
+
+    public readonly TimeSyncTicker Ticker = new();
 
     private void RegisterMemoryPackFormatter<T>(IMemoryPackFormatter<T> formatter)
     {
@@ -29,53 +33,64 @@ internal class Plugin : BaseUnityPlugin
         }
     }
 
+    private void RegisterSingleton<T>() where T : class, IDisposable, new()
+    {
+        Logger.LogInfo($"Registering {typeof(T).Name}");
+        var instance = new T();
+        Singleton<T>.Create(instance);
+        _disposables.Add(instance);
+        _releases.Add(() => Singleton<T>.Release(instance));
+    }
+
     void Start()
     {
-        if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.fika.core"))
-        {
-            InitFikaBackend();
-        }
-        else
-        {
-            Network = new LocalSPBackend();
-            Logger.LogInfo("Fika not found. PacketHandler running in Local SP Mode.");
-        }
+        Logger = base.Logger;
 
-        // Logger.LogInfo("PacketHandler is loading");
+        Logger.LogInfo("PacketHandler is loading");
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
 
-        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> int id
-        RegisterMemoryPackFormatter(new ItemFormatter());
-        RegisterMemoryPackFormatter(new InventoryDescriptorClassFormatter());
-        RegisterMemoryPackFormatter(new ItemAddressFormatter());
+        if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
+        {
+            RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> int id
+            RegisterMemoryPackFormatter(new ItemFormatter());
+            RegisterMemoryPackFormatter(new InventoryDescriptorClassFormatter());
+            RegisterMemoryPackFormatter(new ItemAddressFormatter());
+            InitFikaBackend();
+
+            RegisterSingleton<TimeSynchronizationPacketHandler>();
+            RegisterSingleton<TimeSyncResponsePacketHandler>();
+        }
+        else
+        {
+            Network = new LocalBackend();
+            Logger.LogInfo("Fika not found. PacketHandler running in Local SP Mode.");
+        }
+
+        // RegisterSingleton<TestPacketHandler>();
+        // Singleton<TestPacketHandler>.Instance.Send();
     }
 
-    // CRITICAL: MethodImplOptions.NoInlining prevents the JIT compiler from 
-    // inspecting FikaBackend until we are 100% sure Fika exists. 
-    // If you don't do this, the plugin will crash on Awake() before the if statement even runs.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void InitFikaBackend()
     {
         Network = new FikaBackend();
         Logger.LogInfo("Fika detected. PacketHandler running in MP Mode.");
     }
 
-    private void Update()
-    {
-    }
+    private void Update() => Ticker.Update();
 
     void OnDestroy()
     {
         Logger.LogInfo("PacketHandler is unloading");
+
+        Ticker.Dispose();
 
         foreach (var disposable in _disposables)
             disposable.Dispose();
 
         _disposables.Clear();
 
-        // Release concrete singleton slots AFTER all Dispose() calls so that
-        // singletons can still safely access each other's Instance during teardown.
         foreach (var release in _releases)
             release();
 

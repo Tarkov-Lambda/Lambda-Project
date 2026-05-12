@@ -21,8 +21,13 @@ public partial struct PlayerReadinessPacket : IPacket, IAuthoredPacket
     public PlayerReadinessState readyState;
 
     // presetItems is redundant as it can be derived form buySelection and defaultItems
+    [MemoryPackAllowSerialize]
     public List<Item> assetItems;
+
+    [MemoryPackAllowSerialize]
     public Dictionary<ShopItem, Item> buySelection;
+
+    [MemoryPackAllowSerialize]
     public Dictionary<EquipmentSlot, Item> defaultItems;
 }
 
@@ -43,11 +48,11 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
         if (readyState is PlayerReadinessState.Connected)
         {
             packet.assetItems = PresetBundleHandler.Instance.itemsToLoad;
+            packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
                 packet.buySelection.Add(shopItem, PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId));
-                packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
             }
         }
 

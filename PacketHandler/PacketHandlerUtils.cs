@@ -6,59 +6,22 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Comfort.Common;
 using EFT;
-using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using HarmonyLib;
 
 public static class PacketHandlerUtils
 {
-    // 1. Point this to your new abstraction (e.g. Plugin.Network)
     public static INetworkBackend Network => Plugin.Network;
 
-    // 2. Events that your actual Fika implementation file will trigger 
-    //    when the network spins up or shuts down.
     public static event Action OnNetworkCreated;
     public static event Action OnNetworkDestroyed;
 
     public static void TriggerNetworkCreated() => OnNetworkCreated?.Invoke();
     public static void TriggerNetworkDestroyed() => OnNetworkDestroyed?.Invoke();
 
-    // 3. Mapping peer IDs to Players to support your anti-spoofing logic
-    public static Player GetPlayerByPeerId(int peerId)
-    {
-        // If SP Mode, just return MainPlayer
-        if (Network is LocalSPBackend) return MainPlayer;
-
-        // Otherwise call your Fika specific map logic somewhere else
-        // (e.g. lookup from Fika server state)
-        return FikaNet.GetPeerById(peerId).Player;
-    }
-
-    public static int GetPeerIdByPlayer(Player player)
-    {
-        if (Network is LocalSPBackend) return 0;
-
-        return (player as FikaPlayer).NetId;
-    }
-
     public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
     public static Player MainPlayer => GetMainPlayer();
     public static List<Player> AllPlayers => IsInRaid() ? GetAllPlayers() : new();
 
-    // Fika
-    public static NetPeer NetPeer => Singleton<NetPeer>.Instance;
-    public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
-    public static NetPacketProcessor NetPacketProcessor => GetPacketProcessor();
-    public static NetManager NetManager => GetNetManager();
-
-    public static bool IsHeadless => GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
-    public static bool IsClient => FikaBackendUtils.IsClient;
-    public static bool IsServer => GameWorld is HideoutGameWorld || FikaBackendUtils.IsServer;
-
-    internal static void Log(string msg) { }
+    internal static void Log(string msg) => Plugin.Logger.LogInfo(msg);
     public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
 
@@ -67,7 +30,7 @@ public static class PacketHandlerUtils
     {
         try
         {
-            if (IsHeadless)
+            if (Plugin.Network.IsHeadless)
             {
                 Log("Headless trying to access MainPlayer. This is not supposed to happen.");
                 Log(Environment.StackTrace);
@@ -98,28 +61,6 @@ public static class PacketHandlerUtils
     public static bool IsInRaid()
     {
         return GameWorld != null && GameWorld is not HideoutGameWorld;
-    }
-
-    private static FieldInfo _netPacketProcessorField;
-
-    public static NetPacketProcessor GetPacketProcessor()
-    {
-        if (FikaNet == null) return null;
-
-        _netPacketProcessorField ??= AccessTools.Field(FikaNet.GetType(), "_packetProcessor");
-
-        return _netPacketProcessorField?.GetValue(FikaNet) as NetPacketProcessor;
-    }
-
-    private static FieldInfo _netManagerField;
-
-    public static NetManager GetNetManager()
-    {
-        if (FikaNet == null) return null;
-
-        _netManagerField ??= AccessTools.Field(FikaNet.GetType(), "_netServer");
-
-        return _netManagerField?.GetValue(FikaNet) as NetManager;
     }
 
     private static string _dump(object obj, int depth = 1, bool log = true, [CallerArgumentExpression("obj")] string name = null)

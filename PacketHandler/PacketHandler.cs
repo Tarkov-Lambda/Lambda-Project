@@ -24,10 +24,10 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 {
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
 
-    protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled; 
+    protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled;
 
-    protected virtual bool ShouldLog => true; 
-    protected virtual bool ShouldNotifyAboutRejection => false; 
+    protected virtual bool ShouldLog => true;
+    protected virtual bool ShouldNotifyAboutRejection => false;
 
     protected virtual bool ShouldProcessInstantly => true;
 
@@ -59,7 +59,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     protected void RegisterPacket()
     {
         H.Log($"Registering {typeof(T).Name}");
-        
+
         H.Network.RegisterPacketHandler<T>(WhenReceivedInternal);
         H.Network.RegisterPacketHandler<RejectionPacket<T>>(WhenRejectionReceivedInternal);
     }
@@ -106,7 +106,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     {
         if (!H.IsInRaid() || player.IsAI) return;
 
-        int peerId = H.GetPeerIdByPlayer(player);
+        int peerId = Plugin.Network.GetPeerIdByPlayer(player);
         DispatchPacket(packet, peerId);
     }
 
@@ -124,7 +124,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         }
 #endif
 
-        if (!H.IsHeadless && IsUnauthorized(H.MainPlayer.Id)) return;
+        if (!Plugin.Network.IsHeadless && IsUnauthorized(H.MainPlayer.Id)) return;
 
 #if DEBUG
         if (ShouldLog) H.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
@@ -282,7 +282,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
             }
 
             // We need a way to resolve the peerId back to the player object to verify spoofing
-            Player senderPlayer = H.GetPlayerByPeerId(peerId);
+            Player senderPlayer = Plugin.Network.GetPlayerByPeerId(peerId);
             if (authoredPacket.Player != senderPlayer)
             {
                 rejectionReason = "You can't send packets for other players";

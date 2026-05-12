@@ -1,8 +1,6 @@
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
 using PacketHandler.RateLimiting;
 using MemoryPack;
+using System;
 
 namespace PacketHandler.TimeSync;
 
@@ -10,9 +8,6 @@ namespace PacketHandler.TimeSync;
 public partial struct TimeSynchronizationPacket : IPacket
 {
     public double clientSendLocalSeconds;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<TimeSynchronizationPacket>(reader);
 }
 
 public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>
@@ -24,7 +19,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     public void Send()
     {
-        if (H.IsServer)
+        if (Plugin.Network.IsServer)
             return;
 
         var packet = new TimeSynchronizationPacket
@@ -32,7 +27,11 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
             clientSendLocalSeconds = NetworkTime.LocalNowSeconds
         };
 
-        DispatchPacket(packet);
+        try
+        {
+            DispatchPacket(packet);
+        }
+        catch (NullReferenceException) { } // idrc
     }
 
     protected override void ProcessApprovedPacket(ref TimeSynchronizationPacket packet, int peerId)

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -8,8 +7,6 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Pooling;
 using MemoryPack;
-
-namespace ifp.arena.bep.networking;
 
 public static class TarkovSerializationExtension
 {
@@ -194,18 +191,12 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             return;
         }
 
-        var playerProfileId = (value.GetOwner() as InventoryController)?.Profile?.ProfileId;
-
-        if (playerProfileId == null)
-        {
-            writer.WriteNullCollectionHeader();
-            return;
-        }
+        H.Log((value.GetOwner() as InventoryController)?.Profile?.Nickname);
 
         Player addressPlayerOwner = null;
         foreach (var player in H.AllPlayers)
         {
-            if (player.ProfileId == playerProfileId)
+            if (value.GetOwner() == player.InventoryController)
             {
                 addressPlayerOwner = player;
                 break;
@@ -219,6 +210,7 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         writer.WriteUnmanaged(addressPlayerOwner.Id);
+        H.Log(addressPlayerOwner.Id.ToString());
 
         var descriptor = value.ToDescriptor();
         var eftWriter = WriterPoolManager.GetWriter();
@@ -235,6 +227,7 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
     public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemAddress value)
     {
         int playerId = reader.ReadUnmanaged<int>();
+        H.Log(playerId.ToString());
         Player player = H.GetPlayer(playerId);
 
         int length = reader.ReadUnmanaged<int>();
@@ -251,5 +244,6 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         var descriptor = eftReader.ReadPolymorph<GClass1950>();
 
         value = player.InventoryController.ToItemAddress(descriptor);
+        H.Log((value.GetOwner() as InventoryController)?.Profile?.Nickname);
     }
 }
