@@ -4,70 +4,8 @@ using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Pooling;
 using MemoryPack;
-
-public static class TarkovSerializationExtension
-{
-    public static void PutPlayer(this NetDataWriter writer, Player player)
-    {
-        writer.Put(player.Id);
-    }
-
-    public static Player GetPlayer(this NetDataReader reader)
-    {
-        var playerId = reader.GetInt();
-        return H.GetPlayer(playerId);
-    }
-
-    public static void Put(this NetDataWriter writer, ItemAddress itemAddress)
-    {
-        if (itemAddress == null)
-        {
-            writer.Put(false);
-            return;
-        }
-
-        writer.Put(true);
-        GClass1950 descriptor = itemAddress.ToDescriptor();
-        EFTWriterClass eftWriter = WriterPoolManager.GetWriter();
-        eftWriter.WritePolymorph(descriptor);
-        byte[] _addressDescriptor = eftWriter.ToArray();
-        WriterPoolManager.ReturnWriter(eftWriter);
-        writer.PutByteArray(_addressDescriptor);
-    }
-
-    public static ItemAddress GetItemAddress(this NetDataReader reader, Player player)
-    {
-        if (!reader.GetBool())
-        {
-            return null;
-        }
-
-        byte[] _addressDescriptor = reader.GetByteArray();
-        using var eftReader = PacketToEFTReaderAbstractClass.Get(_addressDescriptor);
-        var descriptor = eftReader.ReadPolymorph<GClass1950>();
-        return player.InventoryController.ToItemAddress(descriptor);
-    }
-
-    public static void PutItemCompressed(this NetDataWriter writer, Item item)
-    {
-        var eftWriter = WriterPoolManager.GetWriter();
-        var descriptor = EFTItemSerializerClass.SerializeItem(item, FikaGlobals.SearchControllerSerializer);
-        eftWriter.WriteEFTItemDescriptor(descriptor);
-        writer.CompressAndPutByteArray(eftWriter.ToArray());
-        WriterPoolManager.ReturnWriter(eftWriter);
-    }
-
-    public static Item GetItemCompressed(this NetDataReader reader)
-    {
-        var bytes = reader.DecompressAndGetByteArray();
-        using var eftReader = PacketToEFTReaderAbstractClass.Get(bytes);
-        return EFTItemSerializerClass.DeserializeItem(eftReader.ReadEFTItemDescriptor(), Singleton<ItemFactoryClass>.Instance, []);
-    }
-}
-
 
 public class PlayerFormatter : MemoryPackFormatter<Player>
 {
@@ -191,8 +129,6 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             return;
         }
 
-        H.Log((value.GetOwner() as InventoryController)?.Profile?.Nickname);
-
         Player addressPlayerOwner = null;
         foreach (var player in H.AllPlayers)
         {
@@ -210,7 +146,6 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         writer.WriteUnmanaged(addressPlayerOwner.Id);
-        H.Log(addressPlayerOwner.Id.ToString());
 
         var descriptor = value.ToDescriptor();
         var eftWriter = WriterPoolManager.GetWriter();
@@ -227,7 +162,6 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
     public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemAddress value)
     {
         int playerId = reader.ReadUnmanaged<int>();
-        H.Log(playerId.ToString());
         Player player = H.GetPlayer(playerId);
 
         int length = reader.ReadUnmanaged<int>();
@@ -244,6 +178,5 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         var descriptor = eftReader.ReadPolymorph<GClass1950>();
 
         value = player.InventoryController.ToItemAddress(descriptor);
-        H.Log((value.GetOwner() as InventoryController)?.Profile?.Nickname);
     }
 }

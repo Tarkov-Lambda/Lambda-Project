@@ -16,6 +16,7 @@ public class FikaBackend : INetworkBackend, IDisposable
     public bool IsServer => FikaBackendUtils.IsServer;
     public bool IsClient => FikaBackendUtils.IsClient;
     public bool IsHeadless => FikaBackendUtils.IsHeadless;
+    public int NetId => GetFikaNet().NetId;
 
     public static NetPeer GetNetPeer() => Singleton<NetPeer>.Instance;
     public static IFikaNetworkManager GetFikaNet() => Singleton<IFikaNetworkManager>.Instance;
@@ -25,6 +26,7 @@ public class FikaBackend : INetworkBackend, IDisposable
     {
         var net = GetFikaNet();
         if (net == null) return null;
+
         _netPacketProcessorField ??= AccessTools.Field(net.GetType(), "_packetProcessor");
         return _netPacketProcessorField?.GetValue(net) as NetPacketProcessor;
     }
@@ -34,6 +36,7 @@ public class FikaBackend : INetworkBackend, IDisposable
     {
         var net = GetFikaNet();
         if (net == null) return null;
+
         _netManagerField ??= AccessTools.Field(net.GetType(), "_netServer");
         return _netManagerField?.GetValue(net) as NetManager;
     }

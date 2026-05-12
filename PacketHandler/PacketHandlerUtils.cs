@@ -9,20 +9,20 @@ using EFT;
 
 public static class PacketHandlerUtils
 {
-    public static INetworkBackend Network => Plugin.Network;
+    public static INetworkBackend Network           => Plugin.Network;
 
     public static event Action OnNetworkCreated;
     public static event Action OnNetworkDestroyed;
 
-    public static void TriggerNetworkCreated() => OnNetworkCreated?.Invoke();
-    public static void TriggerNetworkDestroyed() => OnNetworkDestroyed?.Invoke();
+    public static void TriggerNetworkCreated()      => OnNetworkCreated?.Invoke();
+    public static void TriggerNetworkDestroyed()    => OnNetworkDestroyed?.Invoke();
 
-    public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-    public static Player MainPlayer => GetMainPlayer();
-    public static List<Player> AllPlayers => IsInRaid() ? GetAllPlayers() : new();
+    public static GameWorld GameWorld               => Singleton<GameWorld>.Instance;
+    public static Player MainPlayer                 => GetMainPlayer();
+    public static List<Player> AllPlayers           => IsInRaid() ? GetAllPlayers() : new();
 
-    internal static void Log(string msg) => Plugin.Logger.LogInfo(msg);
-    public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
+    internal static void Log(string msg)            => Plugin.Logger.LogInfo(msg);
+    public static void Notify(object msg)           => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
 
     // bro thinks he's the main character

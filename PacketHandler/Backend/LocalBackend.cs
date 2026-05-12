@@ -23,7 +23,6 @@ public class LocalBackend : INetworkBackend
 
     public void SendData<T>(ref T packet, DeliveryType method, bool broadcast) where T : IPacket
     {
-
         if (_handlers.TryGetValue(typeof(T), out var del))
         {
             var handler = (Action<T, int>)del;
@@ -34,7 +33,6 @@ public class LocalBackend : INetworkBackend
     public void SendDataToPeer<T>(ref T packet, DeliveryType method, int id) where T : IPacket { }
 
     public void DisconnectPeer(int peerId) { }
-
 
     public Player GetPlayerByPeerId(int peerId)
     {
