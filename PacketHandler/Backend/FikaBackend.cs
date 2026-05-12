@@ -38,19 +38,19 @@ public class FikaBackend : INetworkBackend, IDisposable
 
     public void RegisterPacketHandler<T>(Action<T, int> onReceive) where T : IPacket
     {
-        Singleton<IFikaNetworkManager>.Instance.RegisterPacket<FikaPacketWrapper<T>, NetPeer>((wrapper, peer) => onReceive(wrapper.Payload, peer.Id));
+        Singleton<IFikaNetworkManager>.Instance.RegisterPacket<LiteNetLibWrapper<T>, NetPeer>((wrapper, peer) => onReceive(wrapper.Payload, peer.Id));
     }
 
     public void UnregisterPacketHandler<T>() where T : IPacket
     {
-        Singleton<IFikaNetworkManager>.Instance.UnregisterPacket<FikaPacketWrapper<T>>();
+        Singleton<IFikaNetworkManager>.Instance.UnregisterPacket<LiteNetLibWrapper<T>>();
     }
 
     public void DisconnectPeer(int peerId) { }
 
     public void SendData<T>(ref T packet, DeliveryType method, bool broadcast) where T : IPacket
     {
-        FikaPacketWrapper<T> wrapper = new()
+        LiteNetLibWrapper<T> wrapper = new()
         {
             Payload = packet
         };
@@ -60,7 +60,7 @@ public class FikaBackend : INetworkBackend, IDisposable
 
     public void SendDataToPeer<T>(ref T packet, DeliveryType method, int id) where T : IPacket
     {
-        FikaPacketWrapper<T> wrapper = new()
+        LiteNetLibWrapper<T> wrapper = new()
         {
             Payload = packet
         };
