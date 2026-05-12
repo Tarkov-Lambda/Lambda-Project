@@ -66,7 +66,7 @@ internal class Plugin : BaseUnityPlugin
         else
         {
             Network = new LocalBackend();
-            Logger.LogInfo("Fika not found. PacketHandler running in Local SP Mode.");
+            Logger.LogInfo("PacketHandler running in Local Mode.");
         }
 
         RegisterSingleton<TestPacketHandler>();
@@ -77,7 +77,7 @@ internal class Plugin : BaseUnityPlugin
     private void InitFikaBackend()
     {
         Network = new FikaBackend();
-        Logger.LogInfo("Fika detected. PacketHandler running in MP Mode.");
+        Logger.LogInfo("PacketHandler running in MP Mode.");
     }
 
     private void Update() => Ticker.Update();
