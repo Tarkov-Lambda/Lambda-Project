@@ -3,7 +3,7 @@ using System.Buffers;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using MemoryPack;
 
-public struct LiteNetLibWrapper<T> : INetSerializable where T : IPacket
+internal struct LiteNetLibWrapper<T> : INetSerializable where T : IPacket
 {
     [ThreadStatic]
     private static ArrayBufferWriter<byte> _sharedWriter;

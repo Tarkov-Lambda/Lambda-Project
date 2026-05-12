@@ -36,6 +36,5 @@ public class TestPacketHandler : PacketHandler<TestPacket>
     protected override void Apply(TestPacket packet, int peerId)
     {
         H.Log("INSIDE Apply TestPacketHandler");
-
     }
 }
