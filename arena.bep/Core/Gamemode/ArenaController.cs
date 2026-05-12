@@ -169,8 +169,9 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (Session == null || _currentState == null) return;
 
-        // Timer synchronization
-        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTimeSync.NetworkTime);
+        // On Server: Start + Duration - Now ~= Duration (since Start is Now)
+        // On Client: Start + Duration - Now = Remaining Time accurately synced
+        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
         if (H.IsServer)
         {
@@ -196,6 +197,16 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         var previousState = _currentState;
 
+        // Bootstrap the NTP offset from the packet's embedded current-server-time stamp.
+        // This is critical for mid-session joiners who receive the MatchStateSyncPacket
+        // before their first NTP roundtrip has completed (~100ms after joining).
+        // BootstrapFromServerStamp is a no-op when HasSync is already true (no regression
+        // for established players whose periodic NTP has already converged).
+        if (!H.IsServer && packet.serverNowSeconds > 0)
+        {
+            NetworkTime.BootstrapFromServerStamp(packet.serverNowSeconds);
+        }
+
         PhaseDurationSeconds = H.Gamemode.StateTimerConfig[packet.matchState];
         ServerPhaseStartSeconds = packet.Timestamp;
 
@@ -208,7 +219,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         Session.matchState = packet.matchState;
         _currentState = gamemode.CreateState(packet.matchState);
 
-        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTimeSync.NetworkTime);
+        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
 
         if (previousState != null)
         {
@@ -217,7 +228,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
 #if DEBUG
-        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTimeSync.NetworkTime}");
+        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
 #endif
 
         if (_currentState != null)

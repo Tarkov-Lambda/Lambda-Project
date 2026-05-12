@@ -143,7 +143,7 @@ public class PlayerScore
             score.Deaths++;
         }
         score.IsAlive = false;
-        _deathTimestamp = Time.unscaledTime;
+        _deathTimestamp = NetworkTime.ServerNowSeconds;
     }
 
     public void SetHardReset()

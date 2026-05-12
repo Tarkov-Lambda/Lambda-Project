@@ -91,7 +91,7 @@ public class MolotovInstance : MonoBehaviour
 
     private async UniTask SpawnSingleNodeAsync(FireNode node, double packetTimestamp)
     {
-        double elapsed = Time.unscaledTime - packetTimestamp;
+        double elapsed = NetworkTime.LocalNowSeconds - packetTimestamp;
         float delay = node.TimeOffset - (float)elapsed;
 
         if (delay > 0)
@@ -100,7 +100,7 @@ public class MolotovInstance : MonoBehaviour
             if (canceled) return;
         }
 
-        elapsed = Time.unscaledTime - packetTimestamp;
+        elapsed = NetworkTime.ServerNowSeconds - packetTimestamp;
         if (elapsed >= MolotovController.duration) return;
 
         SpawnEffect(node);
@@ -129,7 +129,7 @@ public class MolotovInstance : MonoBehaviour
 
     private async UniTask DestroySelfAfterDurationAsync(double packetTimestamp)
     {
-        double elapsed = NetworkTimeSync.NetworkTime - packetTimestamp;
+        double elapsed = NetworkTime.ServerNowSeconds - packetTimestamp;
         float remainingTime = MolotovController.duration - (float)elapsed;
 
         if (remainingTime > 0)

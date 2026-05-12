@@ -2,18 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
-using Fika.Core;
 using Fika.Core.Main.Players;
 using HarmonyLib;
-using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.networking;
-using UnityEngine;
 using static Fika.Core.Main.ClientClasses.ClientInventoryController;
 
 namespace ifp.arena.bep.Core;

@@ -2,15 +2,10 @@
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
 using Fika.Core;
 using ifp.arena.bep.Core.Dying;
-using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.networking;
-using ifp.arena.shared.Models;
 using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;
 

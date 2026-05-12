@@ -4,10 +4,7 @@ using System.IO;
 using System.Linq;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Main.Utils;
-using ifp.arena.bep.Core.UI;
 using Newtonsoft.Json;
 
 namespace ifp.arena.bep.Core;

@@ -36,7 +36,7 @@ public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
             Player = player,
             state = state,
             position = position,
-            Timestamp = NetworkTimeSync.NetworkTime
+            Timestamp = NetworkTime.ServerNowSeconds
         };
 
         DispatchPacket(packet);
@@ -44,7 +44,7 @@ public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
 
     protected override void MutateApprovedPacket(ref BombStatePacket packet, NetPeer peer)
     {
-        packet.Timestamp = NetworkTimeSync.NetworkTime;
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
     }
 
     protected override void LocalPredictApproved(BombStatePacket packet)

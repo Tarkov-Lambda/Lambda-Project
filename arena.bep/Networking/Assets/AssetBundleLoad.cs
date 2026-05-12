@@ -8,7 +8,6 @@ using EFT.InventoryLogic;
 using EFT;
 using Cysharp.Threading.Tasks;
 using Comfort.Common;
-using System.Linq;
 using System;
 
 namespace ifp.arena.bep.networking;

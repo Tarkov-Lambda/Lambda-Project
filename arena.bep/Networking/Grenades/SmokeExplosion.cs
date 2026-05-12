@@ -35,7 +35,7 @@ public class MolotovExplosionPacketHandler : LambdaPacketHandler<MolotovExplosio
         var packet = new MolotovExplosionPacket
         {
             ID = Guid.NewGuid(),
-            Timestamp = Time.unscaledTime,
+            Timestamp = NetworkTime.ServerNowSeconds,
             explosionPos = explosionPos,
             fireNodes = generatedNodes
         };

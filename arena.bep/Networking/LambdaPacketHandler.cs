@@ -1,6 +1,5 @@
 
 
-using System;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;

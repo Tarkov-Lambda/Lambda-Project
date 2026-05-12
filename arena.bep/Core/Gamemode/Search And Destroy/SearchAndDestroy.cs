@@ -1,15 +1,9 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using EFT;
-using EFT.InventoryLogic;
-using Fika.Core.Main.Utils;
-using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.shared;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core.Gamemode;

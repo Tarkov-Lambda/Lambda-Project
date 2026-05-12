@@ -28,7 +28,7 @@ public class PausePacketHandler : LambdaPacketHandler<PausePacket>
 {
     public void Send()
     {
-        var packet = new PausePacket { Timestamp = NetworkTimeSync.NetworkTime };
+        var packet = new PausePacket { Timestamp = NetworkTime.ServerNowSeconds };
         DispatchPacket(packet);
     }
 
@@ -40,7 +40,7 @@ public class PausePacketHandler : LambdaPacketHandler<PausePacket>
 
     protected override void MutateApprovedPacket(ref PausePacket packet, NetPeer peer)
     {
-        packet.Timestamp = NetworkTimeSync.NetworkTime;
+        packet.Timestamp = NetworkTime.ServerNowSeconds;
     }
 
     protected override void Apply(PausePacket packet, NetPeer peer)

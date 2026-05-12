@@ -32,7 +32,7 @@ public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPac
         var packet = new SmokeExplosionPacket
         {
             ID = Guid.NewGuid(),
-            Timestamp = Time.unscaledTime,
+            Timestamp = NetworkTime.ServerNowSeconds,
             explosionPos = explosionPos,
         };
 

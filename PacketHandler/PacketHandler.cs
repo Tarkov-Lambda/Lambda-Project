@@ -188,7 +188,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected void WhenServerReceivesPacket(T packet, NetPeer peer)
     {
 #if DEBUG
-        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} at {NetworkTimeSync.NetworkTime} from Peer {peer.Id}");
+        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {peer.Id}");
 #endif
 
         if (!TryPassServerRateLimit(packet, peer))
@@ -238,7 +238,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual void WhenClientReceivesPacket(T packet, NetPeer peer)
     {
 #if DEBUG
-        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} at {NetworkTimeSync.NetworkTime} from Server");
+        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
 #endif
 
         ApplyInternal(packet, peer);

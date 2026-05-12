@@ -29,8 +29,8 @@ public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPac
         var packet = new MatchStateSyncPacket
         {
             matchState = matchState,
-            Timestamp = NetworkTimeSync.NetworkTime,           // phase start = right now
-            serverNowSeconds = NetworkTimeSync.NetworkTime,    // same value; both fields identical for new phase starts
+            Timestamp = NetworkTime.ServerNowSeconds,           // phase start = right now
+            serverNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
             roundActionEnd = roundActionEnd
         };
         DispatchPacket(packet);
@@ -45,7 +45,7 @@ public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPac
         {
             matchState = H.Session.matchState,
             Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
-            serverNowSeconds = NetworkTimeSync.NetworkTime,    // current time — used for NTP bootstrap
+            serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
         DispatchPacketToPeer(packet, peer);

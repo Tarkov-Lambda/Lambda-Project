@@ -11,7 +11,6 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
-using UnityEngine;
 
 public static class PacketHandlerUtils
 {

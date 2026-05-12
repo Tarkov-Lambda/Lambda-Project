@@ -2,14 +2,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Comfort.Common;
-using EFT;
-using EFT.UI;
 using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
 using HarmonyLib;
 using ifp.arena.bep.networking;
-using UnityEngine;
 
 namespace ifp.arena.bep.Core;
 

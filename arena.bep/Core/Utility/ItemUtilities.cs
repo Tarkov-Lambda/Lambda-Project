@@ -7,9 +7,7 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using EFT.Interactive;
-using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.UI;
-using Fika.Core.Main.ClientClasses;
 
 namespace ifp.arena.bep.Core;
 

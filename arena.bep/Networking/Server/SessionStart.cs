@@ -102,6 +102,8 @@ public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
             H.Arena.ChangeState(MatchState.Warmup);
         }
 
+        NetworkTime.Reset();
+
         PresetBundleHandler.Instance.AddToCache(packet.asssetBundles);
 
         List<ResourceKey> firstPersonHands = new();
