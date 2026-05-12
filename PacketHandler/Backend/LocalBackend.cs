@@ -34,13 +34,7 @@ public class LocalBackend : INetworkBackend
 
     public void DisconnectPeer(int peerId) { }
 
-    public Player GetPlayerByPeerId(int peerId)
-    {
-        return H.MainPlayer;
-    }
+    public Player GetPlayerByPeerId(int peerId) => H.MainPlayer;
 
-    public int GetPeerIdByPlayer(Player player)
-    {
-        return 0;
-    }
+    public int GetPeerIdByPlayer(Player player) => 0;
 }

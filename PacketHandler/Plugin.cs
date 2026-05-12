@@ -52,10 +52,12 @@ internal class Plugin : BaseUnityPlugin
 
         if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
         {
-            RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> int id
+            // Player -> int id
+            RegisterMemoryPackFormatter(new PlayerFormatter());
             RegisterMemoryPackFormatter(new ItemFormatter());
             RegisterMemoryPackFormatter(new InventoryDescriptorClassFormatter());
             RegisterMemoryPackFormatter(new ItemAddressFormatter());
+            
             InitFikaBackend();
 
             RegisterSingleton<TimeSynchronizationPacketHandler>();
@@ -67,8 +69,8 @@ internal class Plugin : BaseUnityPlugin
             Logger.LogInfo("Fika not found. PacketHandler running in Local SP Mode.");
         }
 
-        // RegisterSingleton<TestPacketHandler>();
-        // Singleton<TestPacketHandler>.Instance.Send();
+        RegisterSingleton<TestPacketHandler>();
+        Singleton<TestPacketHandler>.Instance.Send();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

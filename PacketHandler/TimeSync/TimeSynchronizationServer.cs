@@ -1,5 +1,3 @@
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using MemoryPack;
 
 namespace PacketHandler.TimeSync;
@@ -10,10 +8,6 @@ public partial struct TimeSyncResponsePacket : IPacket
     public int targetPeerId;
     public double clientSendLocalSeconds;
     public double serverSendSeconds;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<TimeSyncResponsePacket>(reader);
 }
 
 public class TimeSyncResponsePacketHandler : PacketHandler<TimeSyncResponsePacket>

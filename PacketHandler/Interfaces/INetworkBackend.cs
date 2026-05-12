@@ -1,7 +1,7 @@
 ﻿using System;
 using EFT;
 
-public enum DeliveryType
+public enum DeliveryType : byte
 {
     Unreliable = 4,
     ReliableUnordered = 0,
