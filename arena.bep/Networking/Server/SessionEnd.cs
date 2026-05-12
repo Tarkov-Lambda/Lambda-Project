@@ -15,7 +15,7 @@ public partial struct SessionStopPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStopPacket>(reader);
 }
 
-public class SessionStopPacketHandler : PacketHandler<SessionStopPacket>
+public class SessionStopPacketHandler : LambdaPacketHandler<SessionStopPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.Admin;
 

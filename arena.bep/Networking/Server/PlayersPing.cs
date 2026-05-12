@@ -23,7 +23,7 @@ public partial struct PlayersPingPacket : INetSerializable
 }
 
 // This runs on interval
-public class PlayersPingPacketHandler : PacketHandler<PlayersPingPacket>
+public class PlayersPingPacketHandler : LambdaPacketHandler<PlayersPingPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

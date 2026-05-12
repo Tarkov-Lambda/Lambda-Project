@@ -24,7 +24,7 @@ public struct AskForMoneyPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AskForMoneyPacket>(reader);
 }
 
-public class AskForMoneyPacketHandler : PacketHandler<AskForMoneyPacket>
+public class AskForMoneyPacketHandler : LambdaPacketHandler<AskForMoneyPacket>
 {
     public Dictionary<Player, string> playerToItem;
 

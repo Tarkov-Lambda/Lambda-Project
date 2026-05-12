@@ -18,7 +18,7 @@ public partial struct ZoneOwnershipPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<ZoneOwnershipPacket>(reader);
 }
 
-public class ZoneOwnershipPacketHandler : PacketHandler<ZoneOwnershipPacket>
+public class ZoneOwnershipPacketHandler : LambdaPacketHandler<ZoneOwnershipPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

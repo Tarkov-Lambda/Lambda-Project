@@ -2,14 +2,13 @@
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler.RateLimiting;
-using ifp.arena.bep.networking.TimeSync;
 using System;
 using System.Diagnostics;
 using static Fika.Core.Modding.FikaEventDispatcher;
 using ifp.arena.bep.networking;
 using EFT;
 using Fika.Core.Main.Players;
-using Coffee.UIEffects;
+using Fika.Core.Networking.Snapshotting;
 
 namespace PacketHandler;
 
@@ -41,8 +40,9 @@ public struct RejectionPacket<T> : INetSerializable where T : INetSerializable, 
 
 public abstract class PacketHandler<T> : IDisposable where T : INetSerializable, new()
 {
-    private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new(); // OPTIONAL
-    protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Default; // OPTIONAl
+    private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
+
+    protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled; // OPTIONAl
 
     protected virtual bool ShouldLog => true; // Debugging
     protected virtual bool ShouldNotifyAboutRejection => false; // Should we surface the rejection reason in the UI?
@@ -50,13 +50,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected virtual bool ShouldProcessInstantly => true;
 
     protected virtual DeliveryMethod DeliveryMethod => DeliveryMethod.ReliableOrdered;
-    protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
-    // Make sure arena is initialized before we apply this packet type
-    // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)
-    // later on it might be better to hook the arena initialization into loading process
-    // however for now it works and should not be touched
-    protected virtual bool ShouldApplyBeforeArenaInitialized => false;
+    // You have to implement Admin authentication yourself
+    protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
     public static event Action<T> BeforePacketApplied;
     public static event Action<T> AfterPacketApplied;
@@ -82,16 +78,13 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected void ManageFikaEvent(FikaEvent fikaEvent)
     {
-#if DEBUG
-        if (this is PlayerKilledPacketHandler) D.Log($"Fika Event: {fikaEvent.GetType().Name}");
-#endif
         if (fikaEvent is FikaNetworkManagerCreatedEvent) RegisterPacket();
         if (fikaEvent is FikaNetworkManagerDestroyedEvent) UnregisterPacket();
     }
 
     protected void RegisterPacket()
     {
-        D.Log($"Registering {typeof(T).Name}");
+        H.Log($"Registering {typeof(T).Name}");
         if (H.IsServer)
         {
             H.FikaNet.RegisterPacket<T, NetPeer>(WhenServerReceivesPacket);
@@ -116,27 +109,12 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
         catch (Exception ex)
         {
-            D.Log($"Packet Unregistration Failed: {ex}");
+            H.Log($"Packet Unregistration Failed: {ex}");
         }
     }
 
     // Admins have the same authority as the server
-    protected bool IsUnauthorized(int id)
-    {
-        if (H.IsServer) return false;
-
-        if (Authority == PacketAuthority.Admin)
-        {
-            PlayerScore score = H.GetPlayerScore(id);
-            return score == null || !score.IsAdmin; // unauthorized only if NOT admin
-        }
-        else if (Authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
-        {
-            return true;
-        }
-
-        return false;
-    }
+    protected virtual bool IsUnauthorized(int id) => false;
 
     // SERVER ONLY
     protected void DispatchPacketToPeer(T packet, NetPeer peer)
@@ -181,7 +159,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
 
 #if DEBUG
-        if (ShouldLog) D.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+        if (ShouldLog) H.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
 #endif
 
         // this function is invoked before any kind of packet mutation
@@ -210,7 +188,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     protected void WhenServerReceivesPacket(T packet, NetPeer peer)
     {
 #if DEBUG
-        if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Peer {peer.Id}");
+        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} at {NetworkTimeSync.NetworkTime} from Peer {peer.Id}");
 #endif
 
         if (!TryPassServerRateLimit(packet, peer))
@@ -259,10 +237,8 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected virtual void WhenClientReceivesPacket(T packet, NetPeer peer)
     {
-        if (!ShouldApplyBeforeArenaInitialized && H.Arena?.Session == null) return;
-
 #if DEBUG
-        if (ShouldLog) D.Log($"Receiving {typeof(T).Name} at {NetworkTime.ServerNowSeconds} from Server");
+        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} at {NetworkTimeSync.NetworkTime} from Server");
 #endif
 
         ApplyInternal(packet, peer);
@@ -276,9 +252,9 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
         }
         catch (Exception e)
         {
-            D.Log($"An error has occured in {GetType().Name}'s subscriber");
-            D.Log(e.Message);
-            D.Log(e.StackTrace);
+            H.Log($"An error has occured in {GetType().Name}'s subscriber");
+            H.Log(e.Message);
+            H.Log(e.StackTrace);
         }
     }
 
@@ -293,16 +269,16 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
     {
         if (ShouldLog)
         {
-            D.Log($"Server Rejected {GetType().Name}");
+            H.Log($"Server Rejected {GetType().Name}");
             if (!string.IsNullOrEmpty(rejectedPacket.rejectionReason))
             {
-                D.Log(rejectedPacket.rejectionReason);
+                H.Log(rejectedPacket.rejectionReason);
             }
         }
 
         if (ShouldNotifyAboutRejection && !string.IsNullOrEmpty(rejectedPacket.rejectionReason))
         {
-            D.Notify(rejectedPacket.rejectionReason);
+            H.Notify(rejectedPacket.rejectionReason);
         }
 
         WhenRejected(rejectedPacket.Payload, peer);
@@ -310,7 +286,7 @@ public abstract class PacketHandler<T> : IDisposable where T : INetSerializable,
 
     protected virtual void OnRateLimited(T packet, NetPeer peer, in RateLimitConfig config)
     {
-        D.Log($"Rate-limiting peer {peer.Id}, Packet {GetType().Name}");
+        H.Log($"Rate-limiting peer {peer.Id}, Packet {GetType().Name}");
     }
 
     protected bool TryPassServerRateLimit(T packet, NetPeer peer)

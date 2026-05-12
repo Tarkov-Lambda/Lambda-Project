@@ -20,7 +20,7 @@ public partial struct RaiseErrorPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<RaiseErrorPacket>(reader);
 }
 
-public class RaiseErrorPacketHandler : PacketHandler<RaiseErrorPacket>
+public class RaiseErrorPacketHandler : LambdaPacketHandler<RaiseErrorPacket>
 {
     public void Send(string error, bool isForAdmin = true)
     {

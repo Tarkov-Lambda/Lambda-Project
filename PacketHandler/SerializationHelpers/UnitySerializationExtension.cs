@@ -1,9 +1,4 @@
-﻿using EFT;
-using EFT.InventoryLogic;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using Fika.Core.Networking.Pooling;
-using ifp.arena.bep.Core;
+﻿using Fika.Core.Networking.LiteNetLib.Utils;
 using UnityEngine;
 
 namespace ifp.arena.bep.networking;

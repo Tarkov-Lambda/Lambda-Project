@@ -38,7 +38,7 @@ public struct BuyItemPacket : INetSerializable, IAuthoredPacket
     }
 }
 
-public class BuyItemPacketHandler : PacketHandler<BuyItemPacket>
+public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
 

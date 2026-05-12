@@ -33,7 +33,7 @@ public struct PlayerAssetBundleLoadState
 // Whilst we are awaiting until everyone says they loaded the assets on the server
 // we are not actually gating the late-joiner from spawning and buying something
 // this is kind of bad but I don't have time to fix it
-public class AssetBundleLoadPacketHandler : PacketHandler<AssetBundleLoadPacket>
+public class AssetBundleLoadPacketHandler : LambdaPacketHandler<AssetBundleLoadPacket>
 {
     public override void Dispose()
     {

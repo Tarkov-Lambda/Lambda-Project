@@ -17,7 +17,7 @@ public partial struct ReplenishPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<ReplenishPacket>(reader);
 }
 
-public class ReplenishPacketHandler : PacketHandler<ReplenishPacket>
+public class ReplenishPacketHandler : LambdaPacketHandler<ReplenishPacket>
 {
     public void Send() => DispatchPacket(new ReplenishPacket { Player = H.MainPlayer, });
 

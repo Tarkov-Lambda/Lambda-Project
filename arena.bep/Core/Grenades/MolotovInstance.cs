@@ -3,9 +3,9 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
 using UnityEngine;
 using DG.Tweening;
+using Fika.Core.Networking.Snapshotting;
 
 namespace ifp.arena.bep.Core;
 
@@ -91,7 +91,7 @@ public class MolotovInstance : MonoBehaviour
 
     private async UniTask SpawnSingleNodeAsync(FireNode node, double packetTimestamp)
     {
-        double elapsed = NetworkTime.LocalNowSeconds - packetTimestamp;
+        double elapsed = Time.unscaledTime - packetTimestamp;
         float delay = node.TimeOffset - (float)elapsed;
 
         if (delay > 0)
@@ -100,7 +100,7 @@ public class MolotovInstance : MonoBehaviour
             if (canceled) return;
         }
 
-        elapsed = NetworkTime.LocalNowSeconds - packetTimestamp;
+        elapsed = Time.unscaledTime - packetTimestamp;
         if (elapsed >= MolotovController.duration) return;
 
         SpawnEffect(node);
@@ -129,7 +129,7 @@ public class MolotovInstance : MonoBehaviour
 
     private async UniTask DestroySelfAfterDurationAsync(double packetTimestamp)
     {
-        double elapsed = NetworkTime.LocalNowSeconds - packetTimestamp;
+        double elapsed = NetworkTimeSync.NetworkTime - packetTimestamp;
         float remainingTime = MolotovController.duration - (float)elapsed;
 
         if (remainingTime > 0)

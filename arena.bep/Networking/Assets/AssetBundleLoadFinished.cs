@@ -25,7 +25,7 @@ public partial struct AssetBundleLoadFinishedPacket : INetSerializable, IAuthore
 }
 
 // Player tells server they are done loading this specific batch of asset bundles
-public class AssetBundleLoadFinishedPacketHandler : PacketHandler<AssetBundleLoadFinishedPacket>
+public class AssetBundleLoadFinishedPacketHandler : LambdaPacketHandler<AssetBundleLoadFinishedPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

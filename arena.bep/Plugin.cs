@@ -11,7 +11,6 @@ using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.bep.Patches;
 using ifp.arena.bep.Patches.Tarkov;
 using ifp.arena.bep.Patches.Tarkov.UI;
@@ -28,7 +27,8 @@ using UnityEngine.LowLevel;
 namespace ifp.arena.bep;
 
 [BepInDependency("com.fika.core")]
-[BepInPlugin("com.ifp.respawn", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency("com.ifp.PacketHandler")]
+[BepInPlugin("com.ifp.lambda", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
     public static new EFTLogger Logger;
@@ -281,8 +281,6 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where admins start the game
         RegisterSingleton<SessionStopPacketHandler>();                              // Stop match prematurely and teleport everyone back to the lobby
         RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
-        RegisterSingleton<TimeSynchronizationPacketHandler>();                      // UTC Time Synchronization
-        RegisterSingleton<TimeSyncResponsePacketHandler>();                         // UTC Time Synchronization
         RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketHandler>();                       // Sync time of day between rounds
 

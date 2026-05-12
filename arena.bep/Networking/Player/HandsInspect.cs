@@ -18,7 +18,7 @@ public partial struct HandsInspectPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<HandsInspectPacket>(reader);
 }
 
-public class HandsInspectPacketHandler : PacketHandler<HandsInspectPacket>
+public class HandsInspectPacketHandler : LambdaPacketHandler<HandsInspectPacket>
 {
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
 

@@ -55,7 +55,7 @@ public struct InventoryResyncPacket : INetSerializable
     }
 }
 
-public class InventoryResyncPacketHandler : PacketHandler<InventoryResyncPacket>
+public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncPacket>
 {
     readonly FieldInfo traderControllerClassItem_0FieldInfo = AccessTools.Field(typeof(TraderControllerClass), "Item_0");
 

@@ -15,7 +15,7 @@ public partial struct GameplayVariablesSyncPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<GameplayVariablesSyncPacket>(reader);
 }
 
-public class GameplayVariablesSyncPacketHandler : PacketHandler<GameplayVariablesSyncPacket>
+public class GameplayVariablesSyncPacketHandler : LambdaPacketHandler<GameplayVariablesSyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.Admin;
 

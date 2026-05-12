@@ -32,7 +32,7 @@ public partial struct AdminAuthPacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AdminAuthPacket>(reader);
 }
 
-public class AdminLoginPacketHandler : PacketHandler<AdminAuthPacket>
+public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
 {
     private readonly Dictionary<Player, string> _pendingChallenges = new();
 

@@ -20,7 +20,7 @@ public partial struct LadderNoisePacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<LadderNoisePacket>(reader);
 }
 
-public class LadderNoisePacketHandler : PacketHandler<LadderNoisePacket>
+public class LadderNoisePacketHandler : LambdaPacketHandler<LadderNoisePacket>
 {
     public void Send(LadderMaterial ladderMaterial)
     {

@@ -3,7 +3,6 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using PacketHandler;
-using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
@@ -22,7 +21,7 @@ public partial struct SmokeExplosionPacket : INetSerializable, IServerTimestampe
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SmokeExplosionPacket>(reader);
 }
 
-public class SmokeExplosionPacketHandler : PacketHandler<SmokeExplosionPacket>
+public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -33,7 +32,7 @@ public class SmokeExplosionPacketHandler : PacketHandler<SmokeExplosionPacket>
         var packet = new SmokeExplosionPacket
         {
             ID = Guid.NewGuid(),
-            Timestamp = NetworkTime.LocalNowSeconds,
+            Timestamp = Time.unscaledTime,
             explosionPos = explosionPos,
         };
 

@@ -4,7 +4,6 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using PacketHandler;
 using MemoryPack;
-using ifp.arena.bep.networking.TimeSync;
 using EFT.InventoryLogic;
 using Cysharp.Threading.Tasks;
 using System;
@@ -29,7 +28,7 @@ public partial struct SessionStartPacket : INetSerializable
 }
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
-public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
+public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.Admin;
 
@@ -102,8 +101,6 @@ public class SessionStartPacketHandler : PacketHandler<SessionStartPacket>
             Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
             H.Arena.ChangeState(MatchState.Warmup);
         }
-
-        NetworkTime.Reset();
 
         PresetBundleHandler.Instance.AddToCache(packet.asssetBundles);
 

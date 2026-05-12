@@ -34,7 +34,7 @@ public struct PopPacket : INetSerializable, IAuthoredPacket
     }
 }
 
-public class ForceRemoveItemPacketHandler : PacketHandler<PopPacket>
+public class ForceRemoveItemPacketHandler : LambdaPacketHandler<PopPacket>
 {
     // protected override RateLimitConfig ServerRateLimit => RateLimitPresets.StrictInteraction;
 

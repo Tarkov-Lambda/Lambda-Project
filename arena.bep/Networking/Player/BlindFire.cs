@@ -19,7 +19,7 @@ public partial struct BlindFirePacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BlindFirePacket>(reader);
 }
 
-public class BlindFirePacketHandler : PacketHandler<BlindFirePacket>
+public class BlindFirePacketHandler : LambdaPacketHandler<BlindFirePacket>
 {
     protected override bool ShouldLog => false;
 

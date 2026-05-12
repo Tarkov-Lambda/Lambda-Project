@@ -17,7 +17,7 @@ public partial struct WeatherAndTimePacket : INetSerializable
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<WeatherAndTimePacket>(reader);
 }
 
-public class WeatherAndTimeSyncPacketHandler : PacketHandler<WeatherAndTimePacket>
+public class WeatherAndTimeSyncPacketHandler : LambdaPacketHandler<WeatherAndTimePacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

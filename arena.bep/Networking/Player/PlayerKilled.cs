@@ -51,7 +51,7 @@ public partial struct PlayerKilledPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerKilledPacket>(reader);
 }
 
-public class PlayerKilledPacketHandler : PacketHandler<PlayerKilledPacket>
+public class PlayerKilledPacketHandler : LambdaPacketHandler<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {

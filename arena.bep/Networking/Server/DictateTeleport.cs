@@ -22,7 +22,7 @@ public partial struct DictateTeleportPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<DictateTeleportPacket>(reader);
 }
 
-public class DictateTeleportPacketHandler : PacketHandler<DictateTeleportPacket>
+public class DictateTeleportPacketHandler : LambdaPacketHandler<DictateTeleportPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

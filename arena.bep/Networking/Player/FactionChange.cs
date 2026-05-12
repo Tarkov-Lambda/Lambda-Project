@@ -24,7 +24,7 @@ public partial struct FactionChangePacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<FactionChangePacket>(reader);
 }
 
-public class FactionChangePacketHandler : PacketHandler<FactionChangePacket>
+public class FactionChangePacketHandler : LambdaPacketHandler<FactionChangePacket>
 {
     public CancellationTokenSource _cts { get; private set; }
 

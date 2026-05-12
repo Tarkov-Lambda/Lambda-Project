@@ -3,8 +3,6 @@ using MemoryPack;
 using System;
 using System.Buffers;
 
-namespace ifp.arena.bep.networking;
-
 public static class MemoryPackWrapper
 {
     [ThreadStatic]

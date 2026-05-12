@@ -3,7 +3,6 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using PacketHandler;
-using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
@@ -25,7 +24,7 @@ public partial struct MolotovExplosionPacket : INetSerializable, IServerTimestam
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<MolotovExplosionPacket>(reader);
 }
 
-public class MolotovExplosionPacketHandler : PacketHandler<MolotovExplosionPacket>
+public class MolotovExplosionPacketHandler : LambdaPacketHandler<MolotovExplosionPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -36,7 +35,7 @@ public class MolotovExplosionPacketHandler : PacketHandler<MolotovExplosionPacke
         var packet = new MolotovExplosionPacket
         {
             ID = Guid.NewGuid(),
-            Timestamp = NetworkTime.LocalNowSeconds,
+            Timestamp = Time.unscaledTime,
             explosionPos = explosionPos,
             fireNodes = generatedNodes
         };

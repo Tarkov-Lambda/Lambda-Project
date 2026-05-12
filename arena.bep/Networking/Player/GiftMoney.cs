@@ -22,7 +22,7 @@ public struct GiveMoneyPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<GiveMoneyPacket>(reader);
 }
 
-public class GiftMoneyPacketHandler : PacketHandler<GiveMoneyPacket>
+public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
 

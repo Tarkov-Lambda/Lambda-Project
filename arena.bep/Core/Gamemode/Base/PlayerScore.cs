@@ -4,11 +4,8 @@ using EFT;
 using EFT.InventoryLogic;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
-using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
-using ifp.arena.shared;
 using ifp.arena.shared.Models;
+using UnityEngine;
 
 public class PlayerScore
 {
@@ -146,7 +143,7 @@ public class PlayerScore
             score.Deaths++;
         }
         score.IsAlive = false;
-        _deathTimestamp = NetworkTime.LocalNowSeconds;
+        _deathTimestamp = Time.unscaledTime;
     }
 
     public void SetHardReset()

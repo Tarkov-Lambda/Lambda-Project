@@ -1,19 +1,17 @@
-﻿using arena.ui.scoreboard;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using Fika.Core.Modding.Events;
+using Fika.Core.Networking.Snapshotting;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.bep.Core.Dying;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.UI;
 using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
 using MemoryPack;
 using System;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
 namespace ifp.arena.bep.Core.Gamemode;
@@ -47,8 +45,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
 
     private IGameState _currentState;
-
-    private TimeSyncTicker _timeSyncTicker;
 
     public event Action OnArenaBeginInitializing;
     public event Action OnArenaInitialized;
@@ -88,7 +84,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
                     BodyPartColliderType = EBodyPartColliderType.RibcageUp
                 };
                 Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, player, player);
-                // Singleton<DictateTeleportHandler>.Instance.SendToPlayer();
             }
         }
     }
@@ -98,9 +93,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         if (!H.IsInRaid()) return;
 
         UnityTicker.OnUpdate += Update;
-
-        _timeSyncTicker = new TimeSyncTicker();
-        UnityTicker.OnUpdate += _timeSyncTicker.Update;
 
         Session = new SessionManager();
 
@@ -131,8 +123,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             PU.OpenEyes();
         }
-
-        NetworkTime.Reset();
     }
 
     void CreateFullBrightHack()
@@ -169,12 +159,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         UnityTicker.OnUpdate -= Update;
 
-        if (_timeSyncTicker != null)
-        {
-            UnityTicker.OnUpdate -= _timeSyncTicker.Update;
-            _timeSyncTicker.Dispose();
-        }
-
         if (_hideoutLight != null)
         {
             GameObject.Destroy(_hideoutLight);
@@ -185,9 +169,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (Session == null || _currentState == null) return;
 
-        // On Server: Start + Duration - Now ~= Duration (since Start is Now)
-        // On Client: Start + Duration - Now = Remaining Time accurately synced
-        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
+        // Timer synchronization
+        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTimeSync.NetworkTime);
 
         if (H.IsServer)
         {
@@ -199,7 +182,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
     }
 
-    // Server sends this
     public async void ChangeState(MatchState newStateType)
     {
         if (H.IsClient) return;
@@ -210,21 +192,9 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Gamemode.StateTimerConfig[newStateType], roundEndData);
     }
 
-    // Everyone runs this when the match state packet is approved
     public void TransitionToState(MatchStateSyncPacket packet)
     {
-        // cache current state
         var previousState = _currentState;
-
-        // Bootstrap the NTP offset from the packet's embedded current-server-time stamp.
-        // This is critical for mid-session joiners who receive the MatchStateSyncPacket
-        // before their first NTP roundtrip has completed (~100ms after joining).
-        // BootstrapFromServerStamp is a no-op when HasSync is already true (no regression
-        // for established players whose periodic NTP has already converged).
-        if (!H.IsServer && packet.serverNowSeconds > 0)
-        {
-            NetworkTime.BootstrapFromServerStamp(packet.serverNowSeconds);
-        }
 
         PhaseDurationSeconds = H.Gamemode.StateTimerConfig[packet.matchState];
         ServerPhaseStartSeconds = packet.Timestamp;
@@ -238,9 +208,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         Session.matchState = packet.matchState;
         _currentState = gamemode.CreateState(packet.matchState);
 
-        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
+        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTimeSync.NetworkTime);
 
-        // Exit the previous state now that _currentState is already advanced.
         if (previousState != null)
         {
             previousState.OnExit();
@@ -248,7 +217,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
 
 #if DEBUG
-        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
+        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTimeSync.NetworkTime}");
 #endif
 
         if (_currentState != null)

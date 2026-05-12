@@ -6,9 +6,9 @@ using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using PacketHandler;
-using ifp.arena.bep.networking.TimeSync;
 using ifp.arena.shared;
 using MemoryPack;
+using Fika.Core.Networking.Snapshotting;
 
 namespace ifp.arena.bep.networking;
 
@@ -24,11 +24,11 @@ public partial struct PausePacket : INetSerializable, IAuthoredPacket, IServerTi
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PausePacket>(reader);
 }
 
-public class PausePacketHandler : PacketHandler<PausePacket>
+public class PausePacketHandler : LambdaPacketHandler<PausePacket>
 {
     public void Send()
     {
-        var packet = new PausePacket { Timestamp = NetworkTime.ServerNowSeconds };
+        var packet = new PausePacket { Timestamp = NetworkTimeSync.NetworkTime };
         DispatchPacket(packet);
     }
 
@@ -40,7 +40,7 @@ public class PausePacketHandler : PacketHandler<PausePacket>
 
     protected override void MutateApprovedPacket(ref PausePacket packet, NetPeer peer)
     {
-        packet.Timestamp = NetworkTime.ServerNowSeconds;
+        packet.Timestamp = NetworkTimeSync.NetworkTime;
     }
 
     protected override void Apply(PausePacket packet, NetPeer peer)

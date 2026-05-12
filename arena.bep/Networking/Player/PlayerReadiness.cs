@@ -38,7 +38,7 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
 }
 
-public class PlayerReadinessPacketHandler : PacketHandler<PlayerReadinessPacket>
+public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessPacket>
 {
     protected override bool ShouldApplyBeforeArenaInitialized => true;
 

@@ -2,8 +2,8 @@
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.Gamemode;
 using PacketHandler;
-using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
+using Fika.Core.Networking.Snapshotting;
 
 namespace ifp.arena.bep.networking;
 
@@ -20,7 +20,7 @@ public partial struct MatchStateSyncPacket : INetSerializable, IServerTimestampe
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<MatchStateSyncPacket>(reader);
 }
 
-public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
+public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -29,8 +29,8 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         var packet = new MatchStateSyncPacket
         {
             matchState = matchState,
-            Timestamp = NetworkTime.ServerNowSeconds,           // phase start = right now
-            serverNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
+            Timestamp = NetworkTimeSync.NetworkTime,           // phase start = right now
+            serverNowSeconds = NetworkTimeSync.NetworkTime,    // same value; both fields identical for new phase starts
             roundActionEnd = roundActionEnd
         };
         DispatchPacket(packet);
@@ -45,7 +45,7 @@ public class MatchStateSyncPacketHandler : PacketHandler<MatchStateSyncPacket>
         {
             matchState = H.Session.matchState,
             Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
-            serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
+            serverNowSeconds = NetworkTimeSync.NetworkTime,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
         DispatchPacketToPeer(packet, peer);

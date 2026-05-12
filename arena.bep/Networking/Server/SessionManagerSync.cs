@@ -26,7 +26,7 @@ public partial struct SessionManagerSyncPacket : INetSerializable
 }
 
 // Runs on MatchState.RoundEnd
-public class SessionManagerSyncPacketHandler : PacketHandler<SessionManagerSyncPacket>
+public class SessionManagerSyncPacketHandler : LambdaPacketHandler<SessionManagerSyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

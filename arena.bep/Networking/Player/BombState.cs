@@ -5,9 +5,9 @@ using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.GameTypes;
 using PacketHandler;
 using ifp.arena.shared;
-using ifp.arena.bep.networking.TimeSync;
 using MemoryPack;
 using UnityEngine;
+using Fika.Core.Networking.Snapshotting;
 
 namespace ifp.arena.bep.networking;
 
@@ -27,7 +27,7 @@ public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServ
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BombStatePacket>(reader);
 }
 
-public class BombStatePacketHandler : PacketHandler<BombStatePacket>
+public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
 {
     public void Send(Player player, BombState state, Vector3 position)
     {
@@ -36,7 +36,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
             Player = player,
             state = state,
             position = position,
-            Timestamp = NetworkTime.ServerNowSeconds
+            Timestamp = NetworkTimeSync.NetworkTime
         };
 
         DispatchPacket(packet);
@@ -44,7 +44,7 @@ public class BombStatePacketHandler : PacketHandler<BombStatePacket>
 
     protected override void MutateApprovedPacket(ref BombStatePacket packet, NetPeer peer)
     {
-        packet.Timestamp = NetworkTime.ServerNowSeconds;
+        packet.Timestamp = NetworkTimeSync.NetworkTime;
     }
 
     protected override void LocalPredictApproved(BombStatePacket packet)

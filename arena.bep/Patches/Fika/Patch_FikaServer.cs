@@ -21,7 +21,6 @@ using Fika.Core.Networking.Pooling;
 using HarmonyLib;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -53,7 +52,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         if (!shooterScore.IsAlive)
         {
-            if (NetworkTime.LocalNowSeconds - shooterScore.DeathTimestamp > 0.05)
+            if (Time.unscaledTime - shooterScore.DeathTimestamp > 0.05)
                 return false;
         }
 

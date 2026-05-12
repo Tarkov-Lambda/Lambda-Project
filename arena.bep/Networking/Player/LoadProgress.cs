@@ -22,7 +22,7 @@ public partial struct LoadProgressPacket : INetSerializable, IAuthoredPacket
     public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<LoadProgressPacket>(reader);
 }
 
-public class LoadProgressPacketHandler : PacketHandler<LoadProgressPacket>
+public class LoadProgressPacketHandler : LambdaPacketHandler<LoadProgressPacket>
 {
     public void Send(float progress)
     {

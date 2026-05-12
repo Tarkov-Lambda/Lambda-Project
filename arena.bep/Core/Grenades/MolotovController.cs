@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using EFT.Interactive;
 using ifp.arena.bep.Core.FX;
 using ifp.arena.bep.networking;
-using ifp.arena.bep.networking.TimeSync;
 using UnityEngine;
 
 namespace ifp.arena.bep.Core;

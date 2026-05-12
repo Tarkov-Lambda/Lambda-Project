@@ -4,14 +4,12 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);SPT_4_0;STEAMAUDIO_ENABLED</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <Product>Lambda</Product>
-    <Version>0.6.15</Version>
-    <Description>Made by ifp and tarkin</Description>
+    <Version>1.0.37</Version>
+    <Description>Made by ifp</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -62,42 +60,17 @@
     <Reference Include="..\deps\libraries\*.dll" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
-
-    <ProjectReference Include="..\arena.ui\arena.ui.csproj" />
-
-    <ProjectReference Include="..\arena.audio\SteamAudioUnity.csproj" />
-
-    <ProjectReference Include="..\PacketHandler\PacketHandler.csproj" />
-
-
-    <ProjectReference Include="..\Tracer\tracer.csproj" Condition="'$(Configuration)' == 'Debug'" />
-  </ItemGroup>
-
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
 
     <ItemGroup>
-      <Dependencies Include="../deps/libraries/audioplugin_phonon.dll" />
-      <Dependencies Include="../deps/libraries/phonon.dll" />
+      <Dependencies Include="$(OutputPath)\MemoryPack.Core.dll" />
+      <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
 
-      <Dependencies Include="$(OutputPath)\Unitask.dll" />
-      <Dependencies Include="$(OutputPath)\Unitask.*.dll" />
-
-      <DebugDependencies Include="../deps/libraries/ScriptEngine.dll"
-        Condition="'$(Configuration)' == 'Debug'" />
-      <DebugDependencies Include="$(OutputPath)\tracer.dll"
-        Condition="'$(Configuration)' == 'Debug'" />
-
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <!-- <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" /> -->
+      <!-- <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" /> -->
 
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
-
-      <Configs Include="../deps/configs/*.cfg" />
-      <Presets Include="../deps/configs/Presets/WeaponBuilds/*.json" />
-      <JSON Include="../deps/configs/*.jsonc" />
     </ItemGroup>
 
 
@@ -105,21 +78,13 @@
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
     <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-
-    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
-    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
-
-    <Copy SourceFiles="@(Presets)"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\"
-      SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-
+    <!-- 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
-      Condition="'$(Configuration)' == 'Debug'" />
-    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      Condition="'$(Configuration)' == 'Release'" />
+      Condition="'$(Configuration)' == 'Debug'" /> -->
+    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
 
-  <Target Name="DeleteConflictingLibraries" AfterTargets="CopyFilesAfterBuild">
+  <!-- <Target Name="DeleteConflictingLibraries" AfterTargets="CopyFilesAfterBuild">
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
       <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).dll" />
       <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).pdb" />
@@ -132,31 +97,5 @@
     </ItemGroup>
 
     <Delete Files="@(DebugConflicts)" Condition="'$(Configuration)' == 'Debug'" />
-  </Target>
-
-  <Target Name="CreateBuild" AfterTargets="DeleteConflictingLibraries"
-    Condition="'$(Configuration)' == 'Release'">
-
-    <PropertyGroup>
-      <ZipOutput>$(SolutionDir)builds\Lambda-$(Version).zip</ZipOutput>
-      <StagingDir>$(BaseIntermediateOutputPath)zip_staging</StagingDir>
-    </PropertyGroup>
-
-    <!-- Clean staging folder -->
-    <RemoveDir Directories="$(StagingDir)" />
-    <MakeDir Directories="$(StagingDir)\BepInEx\plugins\ifp" />
-
-    <!-- Copy plugin output -->
-    <ItemGroup>
-      <PluginFiles Include="$(SPTPath)\BepInEx\plugins\ifp\**\*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(PluginFiles)"
-      DestinationFiles="@(PluginFiles->'$(StagingDir)\BepInEx\plugins\ifp\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <!-- Create zip from staging -->
-    <ZipDirectory SourceDirectory="$(StagingDir)" DestinationFile="$(ZipOutput)" Overwrite="true" />
-
-  </Target>
-
+  </Target> -->
 </Project>
