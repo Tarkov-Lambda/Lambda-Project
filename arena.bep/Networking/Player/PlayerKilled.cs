@@ -1,15 +1,9 @@
-﻿using Comfort.Common;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using EFT;
-using Fika.Core;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.Dying;
-using PacketHandler;
 using MemoryPack;
 using System;
 using UnityEngine;
-using ifp.arena.bep.Core.Gamemode;
 
 namespace ifp.arena.bep.networking;
 

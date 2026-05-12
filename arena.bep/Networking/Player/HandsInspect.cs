@@ -1,7 +1,4 @@
 using EFT;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
 using MemoryPack;
 using static EFT.Player;
 using PacketHandler.RateLimiting;

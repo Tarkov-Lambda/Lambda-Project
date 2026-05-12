@@ -45,9 +45,10 @@ internal class Plugin : BaseUnityPlugin
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
 
-        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
-        RegisterMemoryPackFormatter(new ItemFormatter());                           // Item -> Binary via EFT internals
-        RegisterMemoryPackFormatter(new InventoryDescriptorFormatter());                           // Item -> Binary via EFT internals
+        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> int id
+        RegisterMemoryPackFormatter(new ItemFormatter());
+        RegisterMemoryPackFormatter(new InventoryDescriptorClassFormatter());
+        RegisterMemoryPackFormatter(new ItemAddressFormatter());
     }
 
     // CRITICAL: MethodImplOptions.NoInlining prevents the JIT compiler from 

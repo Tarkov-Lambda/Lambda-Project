@@ -1,7 +1,3 @@
-
-
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 
 public abstract class LambdaPacketHandler<T> : PacketHandler<T> where T : IPacket, new()

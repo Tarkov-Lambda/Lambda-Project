@@ -2,36 +2,25 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
-using PacketHandler.RateLimiting;
 using ifp.arena.bep.Core;
 using System;
-using Comfort.Common;
 using Fika.Core.Main.Players;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
-public struct PopPacket : IPacket, IAuthoredPacket
+[MemoryPackable]
+public partial struct PopPacket : IPacket, IAuthoredPacket
 {
+    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
+
+    [MemoryPackAllowSerialize]
     public Item item;
+
+    [MemoryPackAllowSerialize]
     public ItemAddress itemAddress;
-
-    public void Serialize(NetDataWriter writer)
-    {
-        writer.PutPlayer(Player);
-        writer.PutItem(item);
-        writer.Put(itemAddress);
-    }
-
-    public void Deserialize(NetDataReader reader)
-    {
-        Player = reader.GetPlayer();
-        item = reader.GetItem();
-        itemAddress = reader.GetItemAddress(Player);
-    }
 }
 
 public class ForceRemoveItemPacketHandler : LambdaPacketHandler<PopPacket>

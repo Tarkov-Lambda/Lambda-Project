@@ -1,9 +1,6 @@
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.Economy;
-using PacketHandler;
 using ifp.arena.shared.Models;
 using Comfort.Common;
 using ifp.arena.bep.Core.Gamemode;

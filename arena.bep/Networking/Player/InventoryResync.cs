@@ -1,20 +1,12 @@
-using Comfort.Common;
 using EFT;
 using EFT.InputSystem;
-using EFT.InventoryLogic;
 using EFT.UI;
 using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.Core;
 using MemoryPack;
-using PacketHandler;
 using PacketHandler.RateLimiting;
-using System;
 using System.Reflection;
-using UnityEngine;
 using static EFT.Player;
 
 namespace ifp.arena.bep.networking;
@@ -29,9 +21,6 @@ public partial struct InventoryResyncPacket : IPacket
     public InventoryDescriptorClass inventoryDescriptor;
 
     public bool broadcast;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<InventoryResyncPacket>(reader);
 }
 
 public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncPacket>

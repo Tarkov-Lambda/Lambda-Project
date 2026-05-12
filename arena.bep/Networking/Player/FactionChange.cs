@@ -3,11 +3,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Fika.Core.Main.Utils;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
-using PacketHandler;
-using ifp.arena.shared;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking;

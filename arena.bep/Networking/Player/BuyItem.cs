@@ -1,11 +1,7 @@
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
-using PacketHandler;
 using ifp.arena.shared.Models;
 using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
@@ -29,9 +25,6 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
     
     [MemoryPackAllowSerialize]
     public Item item;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BuyItemPacket>(reader);
 }
 
 public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>

@@ -1,11 +1,4 @@
-﻿using Comfort.Common;
-using EFT;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
-using PacketHandler;
-using ifp.arena.shared;
+﻿using EFT;
 using MemoryPack;
 
 namespace ifp.arena.bep.networking;

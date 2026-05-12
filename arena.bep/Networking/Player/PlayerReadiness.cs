@@ -1,11 +1,5 @@
 ﻿using Comfort.Common;
 using EFT;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
-using PacketHandler;
-using ifp.arena.shared;
 using MemoryPack;
 using EFT.InventoryLogic;
 using ifp.arena.bep.Core.UI;
@@ -14,10 +8,7 @@ using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.shared.Models;
 using ifp.arena.bep.Core.Economy;
-using arena.ui;
-using EFT.UI;
 using ifp.arena.bep.Core;
-using System.Threading.Tasks;
 
 namespace ifp.arena.bep.networking;
 
