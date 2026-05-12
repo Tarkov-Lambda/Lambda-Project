@@ -1,3 +1,4 @@
+using Comfort.Common;
 using EFT;
 using MemoryPack;
 
@@ -24,6 +25,14 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
         }
 
         int id = reader.ReadUnmanaged<int>();
-        value = H.GetPlayer(id);
+
+        foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
+        {
+            if (player.Id == id)
+            {
+                value = player;
+                break;
+            }
+        }
     }
-}
+} 

@@ -8,29 +8,17 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
-public class FikaBackend : INetworkBackend, IDisposable
+public class FikaBackend : INetworkBackend
 {
-    public bool IsServer => FikaBackendUtils.IsServer;
-    public bool IsClient => FikaBackendUtils.IsClient;
+    public bool IsServer   => FikaBackendUtils.IsServer;
+    public bool IsClient   => FikaBackendUtils.IsClient;
     public bool IsHeadless => FikaBackendUtils.IsHeadless;
-    public int NetId => Singleton<IFikaNetworkManager>.Instance.NetId;
-
-    private readonly object OnTriggerNetworkCreated;
-    private readonly object OnTriggerNetworkDestroyed;
+    public int NetId       => Singleton<IFikaNetworkManager>.Instance.NetId;
 
     public FikaBackend()
     {
-        OnTriggerNetworkCreated = new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated);
-        SubscribeEvent((Action<FikaNetworkManagerCreatedEvent>)OnTriggerNetworkCreated);
-
-        OnTriggerNetworkDestroyed = new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed);
-        SubscribeEvent((Action<FikaNetworkManagerDestroyedEvent>)OnTriggerNetworkDestroyed);
-    }
-
-    public virtual void Dispose()
-    {
-        UnsubscribeEvent((Action<FikaNetworkManagerCreatedEvent>)OnTriggerNetworkCreated);
-        UnsubscribeEvent((Action<FikaNetworkManagerDestroyedEvent>)OnTriggerNetworkDestroyed);
+        SubscribeEvent(new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated));
+        SubscribeEvent(new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed));
     }
 
     void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => PacketHandlerUtils.TriggerNetworkCreated();
@@ -55,7 +43,7 @@ public class FikaBackend : INetworkBackend, IDisposable
             Payload = packet
         };
 
-        Singleton<IFikaNetworkManager>.Instance.SendData(ref wrapper, ToDeliveryType(method), broadcast);
+        Singleton<IFikaNetworkManager>.Instance.SendData(ref wrapper, (DeliveryMethod)method, broadcast);
     }
 
     public void SendDataToPeer<T>(ref T packet, DeliveryType method, int id) where T : IPacket
@@ -65,10 +53,8 @@ public class FikaBackend : INetworkBackend, IDisposable
             Payload = packet
         };
 
-        Singleton<IFikaNetworkManager>.Instance.SendDataToPeer(ref wrapper, ToDeliveryType(method), Singleton<IFikaNetworkManager>.Instance.GetPeerById(id));
+        Singleton<IFikaNetworkManager>.Instance.SendDataToPeer(ref wrapper, (DeliveryMethod)method, Singleton<IFikaNetworkManager>.Instance.GetPeerById(id));
     }
-
-    public DeliveryMethod ToDeliveryType(DeliveryType type) => (DeliveryMethod)type;
 
     public Player GetPlayerByPeerId(int peerId) => Singleton<IFikaNetworkManager>.Instance.GetPeerById(peerId).Player;
 

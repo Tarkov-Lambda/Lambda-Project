@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core;
 using PacketHandler;
 using MemoryPack;
@@ -8,15 +9,18 @@ using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
+// TODO: REFACTOR STRUCT
+// currently this is around 1300 bytes per explosion
 [MemoryPackable]
-public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket, ITrackable
+public partial struct MolotovExplosionPacket : IPacket, IServerTimestampedPacket, ITrackable
 {
     public Guid ID { get; set; }
     public double Timestamp { get; set; }
     public Vector3 explosionPos;
+    public List<FireNode> fireNodes;
 }
 
-public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPacket>
+public class MolotovExplosionPacketHandler : LambdaPacketHandler<MolotovExplosionPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -24,18 +28,19 @@ public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPac
     {
         List<FireNode> generatedNodes = MolotovController.GenerateFireSpread(explosionPos);
 
-        var packet = new SmokeExplosionPacket
+        var packet = new MolotovExplosionPacket
         {
             ID = Guid.NewGuid(),
             Timestamp = NetworkTime.ServerNowSeconds,
             explosionPos = explosionPos,
+            fireNodes = generatedNodes
         };
 
         DispatchPacket(packet);
     }
 
-    protected override async void Apply(SmokeExplosionPacket packet, int peerId)
+    protected override async void Apply(MolotovExplosionPacket packet, int peerId)
     {
-        
+        MolotovController.Spawn(packet).Forget();
     }
 }

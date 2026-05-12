@@ -75,7 +75,7 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
         {
             PacketHandlerUtils.Network.SendData(ref packet, DeliveryType, true);
         }
-        else if (peerId != H.FikaNet.NetId)
+        else if (peerId != Network.NetId)
         {
             PacketHandlerUtils.Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }

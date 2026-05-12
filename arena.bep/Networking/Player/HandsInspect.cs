@@ -18,7 +18,7 @@ public class HandsInspectPacketHandler : LambdaPacketHandler<HandsInspectPacket>
 
     protected override bool ShouldLog => false;
 
-    public void Send() => DispatchPacket(new HandsInspectPacket { Player = H.MainPlayer, });
+    public void Send() => DispatchPacket(new HandsInspectPacket { Player = H.MainPlayer });
 
     protected override void Apply(HandsInspectPacket packet, int peerId)
     {

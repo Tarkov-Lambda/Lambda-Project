@@ -14,9 +14,12 @@ namespace ifp.arena.bep.networking;
 public partial struct AssetBundleLoadPacket : IPacket
 {
     public string id;
+    
+    [MemoryPackAllowSerialize]
     public List<Item> items;
 }
 
+// SERVER ONLY
 public struct PlayerAssetBundleLoadState
 {
     public Player player;

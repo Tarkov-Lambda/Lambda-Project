@@ -22,6 +22,8 @@ public partial struct RejectionPacket<T> : IPacket where T : IPacket, new()
 
 public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 {
+    public INetworkBackend Network => Plugin.Network;
+
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
 
     protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled;
@@ -45,7 +47,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         H.OnNetworkCreated += RegisterPacket;
         H.OnNetworkDestroyed += UnregisterPacket;
 
-        if (H.IsInRaid() && H.Network != null) RegisterPacket();
+        if (H.IsInRaid() && Plugin.Network != null) RegisterPacket();
     }
 
     public virtual void Dispose()
@@ -53,15 +55,15 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         H.OnNetworkCreated -= RegisterPacket;
         H.OnNetworkDestroyed -= UnregisterPacket;
 
-        if (H.IsInRaid() && H.Network != null) UnregisterPacket();
+        if (H.IsInRaid() && Plugin.Network != null) UnregisterPacket();
     }
 
     protected void RegisterPacket()
     {
         H.Log($"Registering {typeof(T).Name}");
 
-        H.Network.RegisterPacketHandler<T>(WhenReceivedInternal);
-        H.Network.RegisterPacketHandler<RejectionPacket<T>>(WhenRejectionReceivedInternal);
+        Plugin.Network.RegisterPacketHandler<T>(WhenReceivedInternal);
+        Plugin.Network.RegisterPacketHandler<RejectionPacket<T>>(WhenRejectionReceivedInternal);
     }
 
     protected void UnregisterPacket()
@@ -69,8 +71,8 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         try
         {
             _serverRateLimiter.Clear();
-            H.Network.UnregisterPacketHandler<T>();
-            H.Network.UnregisterPacketHandler<RejectionPacket<T>>();
+            Plugin.Network.UnregisterPacketHandler<T>();
+            Plugin.Network.UnregisterPacketHandler<RejectionPacket<T>>();
         }
         catch (Exception ex)
         {
@@ -80,7 +82,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 
     private void WhenReceivedInternal(T packet, int peerId)
     {
-        if (H.Network.IsServer)
+        if (Plugin.Network.IsServer)
             WhenServerReceivesPacket(packet, peerId);
         else
             WhenClientReceivesPacket(packet, peerId);
@@ -88,7 +90,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 
     private void WhenRejectionReceivedInternal(RejectionPacket<T> packet, int peerId)
     {
-        if (H.Network.IsClient)
+        if (Plugin.Network.IsClient)
             WhenClientReceivesRejection(packet, peerId);
     }
 
@@ -132,9 +134,9 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 
         LocalPredictApproved(packet);
 
-        if (H.Network.IsClient)
+        if (Plugin.Network.IsClient)
         {
-            H.Network.SendData(ref packet, DeliveryType, false);
+            Plugin.Network.SendData(ref packet, DeliveryType, false);
         }
         else if (targetPeerId == null)
         {
@@ -143,7 +145,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         else
         {
             MutateApprovedPacket(ref packet, targetPeerId.Value);
-            H.Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
+            Plugin.Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
         }
     }
 
@@ -180,7 +182,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     protected virtual void ProcessApprovedPacket(ref T packet, int peerId)
     {
         MutateApprovedPacket(ref packet, peerId);
-        H.Network.SendData(ref packet, DeliveryType, true); // Broadcast
+        Plugin.Network.SendData(ref packet, DeliveryType, true); // Broadcast
         ApplyInternal(packet, peerId);
     }
 
@@ -216,7 +218,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     protected void SendRejection(ref T packet, int peerId, string rejectionReason = null)
     {
         var rejected = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
-        H.Network.SendDataToPeer(ref rejected, DeliveryType, peerId);
+        Plugin.Network.SendDataToPeer(ref rejected, DeliveryType, peerId);
     }
 
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, int peerId)
@@ -264,7 +266,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
                 if (canSendReject) SendRejection(ref packet, peerId);
                 return false;
             case RateLimitAction.Disconnect:
-                H.Network.DisconnectPeer(peerId);
+                Plugin.Network.DisconnectPeer(peerId);
                 return false;
             default:
                 return false;
