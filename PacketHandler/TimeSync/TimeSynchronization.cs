@@ -4,10 +4,10 @@ using PacketHandler;
 using PacketHandler.RateLimiting;
 using MemoryPack;
 
-namespace ifp.arena.bep.networking.TimeSync;
+namespace PacketHandler.TimeSync;
 
 [MemoryPackable]
-public partial struct TimeSynchronizationPacket : INetSerializable
+public partial struct TimeSynchronizationPacket : IPacket
 {
     public double clientSendLocalSeconds;
 
@@ -20,7 +20,7 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
     protected override bool ShouldLog => false;
 
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(3, RateLimitAction.Drop);
-    protected override DeliveryMethod DeliveryMethod => DeliveryMethod.Sequenced;
+    protected override DeliveryType DeliveryType => DeliveryType.Sequenced;
 
     public void Send()
     {
@@ -35,22 +35,22 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
         DispatchPacket(packet);
     }
 
-    protected override void ProcessApprovedPacket(ref TimeSynchronizationPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref TimeSynchronizationPacket packet, int peerId)
     {
-        ApplyInternal(packet, peer);
+        ApplyInternal(packet, peerId);
     }
 
-    protected override void Apply(TimeSynchronizationPacket packet, NetPeer peer)
+    protected override void Apply(TimeSynchronizationPacket packet, int peerId)
     {
         if (H.GameWorld is HideoutGameWorld) return;
 
         var response = new TimeSyncResponsePacket
         {
-            targetPeerId = peer.Id,
+            targetPeerId = peerId,
             clientSendLocalSeconds = packet.clientSendLocalSeconds,
             serverSendSeconds = NetworkTime.LocalNowSeconds
         };
 
-        H.FikaNet.SendDataToPeer(ref response, DeliveryMethod.ReliableOrdered, peer);
+        Plugin.Network.SendDataToPeer(ref response, DeliveryType.ReliableOrdered, peerId);
     }
 }

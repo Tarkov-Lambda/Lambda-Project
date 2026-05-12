@@ -11,17 +11,13 @@ using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
-public struct AskForMoneyPacket : INetSerializable, IAuthoredPacket
+public struct AskForMoneyPacket : IPacket, IAuthoredPacket
 {
-    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
     public string ItemBsgId;
     // if true, the player asking for this item
     // if false, the player is saying "I don't want anything at all anymore"
     public bool IsRequesting;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AskForMoneyPacket>(reader);
 }
 
 public class AskForMoneyPacketHandler : LambdaPacketHandler<AskForMoneyPacket>
@@ -71,7 +67,7 @@ public class AskForMoneyPacketHandler : LambdaPacketHandler<AskForMoneyPacket>
         playerToItem[packet.Player] = packet.ItemBsgId;
     }
 
-    protected override async void Apply(AskForMoneyPacket packet, NetPeer peer)
+    protected override async void Apply(AskForMoneyPacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer) return;
 

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Comfort.Common;
 using EFT;
+using Fika.Core.Main.Players;
 using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
@@ -14,6 +15,35 @@ using HarmonyLib;
 
 public static class PacketHandlerUtils
 {
+    // 1. Point this to your new abstraction (e.g. Plugin.Network)
+    public static INetworkBackend Network => Plugin.Network;
+
+    // 2. Events that your actual Fika implementation file will trigger 
+    //    when the network spins up or shuts down.
+    public static event Action OnNetworkCreated;
+    public static event Action OnNetworkDestroyed;
+
+    public static void TriggerNetworkCreated() => OnNetworkCreated?.Invoke();
+    public static void TriggerNetworkDestroyed() => OnNetworkDestroyed?.Invoke();
+
+    // 3. Mapping peer IDs to Players to support your anti-spoofing logic
+    public static Player GetPlayerByPeerId(int peerId)
+    {
+        // If SP Mode, just return MainPlayer
+        if (Network is LocalSPBackend) return MainPlayer;
+
+        // Otherwise call your Fika specific map logic somewhere else
+        // (e.g. lookup from Fika server state)
+        return FikaNet.GetPeerById(peerId).Player;
+    }
+
+    public static int GetPeerIdByPlayer(Player player)
+    {
+        if (Network is LocalSPBackend) return 0;
+
+        return (player as FikaPlayer).NetId;
+    }
+
     public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
     public static Player MainPlayer => GetMainPlayer();
     public static List<Player> AllPlayers => IsInRaid() ? GetAllPlayers() : new();

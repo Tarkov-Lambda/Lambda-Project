@@ -4,7 +4,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using PacketHandler;
 
-public abstract class LambdaPacketHandler<T> : PacketHandler<T> where T : INetSerializable, new()
+public abstract class LambdaPacketHandler<T> : PacketHandler<T> where T : IPacket, new()
 {
     // Make sure arena is initialized before we apply this packet type
     // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)
@@ -12,11 +12,11 @@ public abstract class LambdaPacketHandler<T> : PacketHandler<T> where T : INetSe
     // however for now it works and should not be touched
     protected virtual bool ShouldApplyBeforeArenaInitialized => false;
 
-    protected override void WhenClientReceivesPacket(T packet, NetPeer peer)
+    protected override void WhenClientReceivesPacket(T packet, int peerId)
     {
         if (!ShouldApplyBeforeArenaInitialized && H.Arena?.Session == null) return;
 
-        base.WhenClientReceivesPacket(packet, peer);
+        base.WhenClientReceivesPacket(packet, peerId);
     }
 
     protected override bool IsUnauthorized(int id)

@@ -13,15 +13,12 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct FactionChangePacket : INetSerializable, IAuthoredPacket
+public partial struct FactionChangePacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public Faction faction;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<FactionChangePacket>(reader);
 }
 
 public class FactionChangePacketHandler : LambdaPacketHandler<FactionChangePacket>
@@ -76,7 +73,7 @@ public class FactionChangePacketHandler : LambdaPacketHandler<FactionChangePacke
         }
     }
 
-    protected override bool ValidatePacket(FactionChangePacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(FactionChangePacket packet, int peerId, out string rejectionReason)
     {
         if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction))
         {
@@ -84,10 +81,10 @@ public class FactionChangePacketHandler : LambdaPacketHandler<FactionChangePacke
             return false;
         }
 
-        return base.ValidatePacket(packet, peer, out rejectionReason);
+        return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
-    protected override void Apply(FactionChangePacket packet, NetPeer peer)
+    protected override void Apply(FactionChangePacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer) _cts?.Cancel();
 

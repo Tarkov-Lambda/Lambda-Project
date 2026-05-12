@@ -12,19 +12,17 @@ using System.Collections.Generic;
 using ifp.arena.bep.Core.Gamemode;
 using EFT;
 using ifp.arena.bep.Core;
+using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct SessionStartPacket : INetSerializable
+public partial struct SessionStartPacket : IPacket
 {
     public string level;
     public string gamemode;
     public List<Item> asssetBundles; // this needs to change to ResourceKeys
     public bool isForLateJoiner;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStartPacket>(reader);
 }
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
@@ -67,7 +65,7 @@ public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
     }
 
     // if a player was not present at the start of this session, send them the sitrep
-    public void SendToPeer(NetPeer peer)
+    public void SendToPeer(int peerId)
     {
         if (!H.IsInRaid()) return;
 
@@ -82,15 +80,15 @@ public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
             packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
         }
 
-        DispatchPacketToPeer(packet, peer);
+        DispatchPacketToPeer(packet, peerId);
     }
 
-    protected override void MutateApprovedPacket(ref SessionStartPacket packet, NetPeer peer)
+    protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)
     {
         packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
     }
 
-    protected override async void Apply(SessionStartPacket packet, NetPeer peer)
+    protected override async void Apply(SessionStartPacket packet, int peerId)
     {
         PrepareForStart(packet);
 

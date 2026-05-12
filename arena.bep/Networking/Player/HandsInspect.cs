@@ -9,13 +9,10 @@ using PacketHandler.RateLimiting;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct HandsInspectPacket : INetSerializable, IAuthoredPacket
+public partial struct HandsInspectPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<HandsInspectPacket>(reader);
 }
 
 public class HandsInspectPacketHandler : LambdaPacketHandler<HandsInspectPacket>
@@ -26,7 +23,7 @@ public class HandsInspectPacketHandler : LambdaPacketHandler<HandsInspectPacket>
 
     public void Send() => DispatchPacket(new HandsInspectPacket { Player = H.MainPlayer, });
 
-    protected override void Apply(HandsInspectPacket packet, NetPeer peer)
+    protected override void Apply(HandsInspectPacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer) return;
 

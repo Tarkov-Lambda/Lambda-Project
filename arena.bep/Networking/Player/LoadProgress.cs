@@ -11,15 +11,12 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct LoadProgressPacket : INetSerializable, IAuthoredPacket
+public partial struct LoadProgressPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public float progress;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<LoadProgressPacket>(reader);
 }
 
 public class LoadProgressPacketHandler : LambdaPacketHandler<LoadProgressPacket>
@@ -37,7 +34,7 @@ public class LoadProgressPacketHandler : LambdaPacketHandler<LoadProgressPacket>
         // DispatchPacket(packet);
     }
 
-    protected override void Apply(LoadProgressPacket packet, NetPeer peer)
+    protected override void Apply(LoadProgressPacket packet, int peerId)
     {
         packet.Player.GetScore()?.ChangeProgress(packet.progress);
     }

@@ -1,7 +1,7 @@
 using Comfort.Common;
 using System;
 
-namespace ifp.arena.bep.networking.TimeSync;
+namespace PacketHandler.TimeSync;
 
 public class TimeSyncTicker : IDisposable
 {

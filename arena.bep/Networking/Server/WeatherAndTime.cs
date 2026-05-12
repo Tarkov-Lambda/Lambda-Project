@@ -9,12 +9,9 @@ using EFT.Weather;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct WeatherAndTimePacket : INetSerializable
+public partial struct WeatherAndTimePacket : IPacket
 {
     public double minutesSinceMidnight;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<WeatherAndTimePacket>(reader);
 }
 
 public class WeatherAndTimeSyncPacketHandler : LambdaPacketHandler<WeatherAndTimePacket>
@@ -31,7 +28,7 @@ public class WeatherAndTimeSyncPacketHandler : LambdaPacketHandler<WeatherAndTim
         DispatchPacket(packet);
     }
 
-    protected override void Apply(WeatherAndTimePacket packet, NetPeer peer)
+    protected override void Apply(WeatherAndTimePacket packet, int peerId)
     {
         try
         {

@@ -9,6 +9,7 @@ using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
 using ifp.arena.bep.Core;
+using MemoryPack;
 using PacketHandler;
 using PacketHandler.RateLimiting;
 using System;
@@ -18,41 +19,19 @@ using static EFT.Player;
 
 namespace ifp.arena.bep.networking;
 
-public struct InventoryResyncPacket : INetSerializable
+[MemoryPackable]
+public partial struct InventoryResyncPacket : IPacket
 {
+    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
+
+    [MemoryPackAllowSerialize]
     public InventoryDescriptorClass inventoryDescriptor;
+
     public bool broadcast;
 
-    public void Serialize(NetDataWriter writer)
-    {
-        writer.PutPlayer(Player);
-        if (inventoryDescriptor != null)
-        {
-            writer.Put(true);
-            writer.PutItemDescriptor(inventoryDescriptor);
-        }
-        else
-        {
-            writer.Put(false);
-        }
-
-        writer.Put(broadcast);
-
-        // D.Log(writer.Length.ToString());
-    }
-
-    public void Deserialize(NetDataReader reader)
-    {
-        Player = reader.GetPlayer();
-
-        if (reader.GetBool())
-        {
-            inventoryDescriptor = reader.GetItemDescriptor();
-        }
-
-        broadcast = reader.GetBool();
-    }
+    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
+    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<InventoryResyncPacket>(reader);
 }
 
 public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncPacket>
@@ -72,7 +51,7 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
         DispatchPacket(packet);
     }
 
-    public void SendToPeer(Player player, NetPeer peer)
+    public void SendToPeer(Player player, int peerId)
     {
         var packet = new InventoryResyncPacket
         {
@@ -80,10 +59,10 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
             broadcast = false
         };
 
-        DispatchPacketToPeer(packet, peer);
+        DispatchPacketToPeer(packet, peerId);
     }
 
-    protected override bool ValidatePacket(InventoryResyncPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(InventoryResyncPacket packet, int peerId, out string rejectionReason)
     {
         if (packet.broadcast == true)
         {
@@ -91,34 +70,34 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
             return false;
         }
 
-        return base.ValidatePacket(packet, peer, out rejectionReason);
+        return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
-    protected override void MutateApprovedPacket(ref InventoryResyncPacket packet, NetPeer peer)
+    protected override void MutateApprovedPacket(ref InventoryResyncPacket packet, int peerId)
     {
         packet.inventoryDescriptor = EFTItemSerializerClass.SerializeItem(packet.Player.Inventory.Equipment, FikaGlobals.SearchControllerSerializer);
     }
 
-    protected override void ProcessApprovedPacket(ref InventoryResyncPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref InventoryResyncPacket packet, int peerId)
     {
-        MutateApprovedPacket(ref packet, peer);
+        MutateApprovedPacket(ref packet, peerId);
 
         if (packet.broadcast)
         {
-            H.FikaNet.SendData(ref packet, DeliveryMethod, true);
+            PacketHandlerUtils.Network.SendData(ref packet, DeliveryType, true);
         }
-        else if (peer.Id != H.FikaNet.NetId)
+        else if (peerId != H.FikaNet.NetId)
         {
-            H.FikaNet.SendDataToPeer(ref packet, DeliveryMethod, peer);
+            PacketHandlerUtils.Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
 
         if (packet.Player.IsYourPlayer)
         {
-            ApplyInternal(packet, peer);
+            ApplyInternal(packet, peerId);
         }
     }
 
-    protected override void Apply(InventoryResyncPacket packet, NetPeer peer)
+    protected override void Apply(InventoryResyncPacket packet, int peerId)
     {
         var player = packet.Player;
         if (packet.inventoryDescriptor == null) return;

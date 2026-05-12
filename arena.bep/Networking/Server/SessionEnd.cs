@@ -7,12 +7,9 @@ using ifp.arena.bep.Core.AssetBundleHandling;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct SessionStopPacket : INetSerializable
+public partial struct SessionStopPacket : IPacket
 {
     public bool isItTrue;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionStopPacket>(reader);
 }
 
 public class SessionStopPacketHandler : LambdaPacketHandler<SessionStopPacket>
@@ -28,7 +25,7 @@ public class SessionStopPacketHandler : LambdaPacketHandler<SessionStopPacket>
         DispatchPacket(packet);
     }
 
-    protected override async void Apply(SessionStopPacket packet, NetPeer peer)
+    protected override async void Apply(SessionStopPacket packet, int peerId)
     {
         H.Arena.ChangeState(MatchState.None);
         MapAssetBundleHandler.Instance.UnloadAll();

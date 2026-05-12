@@ -8,18 +8,20 @@ using ifp.arena.shared.Models;
 using Comfort.Common;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.bep.Core.UI;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
-public struct GiveMoneyPacket : INetSerializable, IAuthoredPacket
+[MemoryPackable]
+public partial struct GiveMoneyPacket : IPacket, IAuthoredPacket
 {
+    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
+    
+    [MemoryPackAllowSerialize]
     public Player TargetPlayer { get; set; }
 
     public string ItemBsgId;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<GiveMoneyPacket>(reader);
 }
 
 public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
@@ -50,7 +52,7 @@ public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
         }
     }
 
-    protected override bool ValidatePacket(GiveMoneyPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(GiveMoneyPacket packet, int peerId, out string rejectionReason)
     {
         rejectionReason = null;
 
@@ -71,7 +73,7 @@ public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
         return false;
     }
 
-    protected override async void Apply(GiveMoneyPacket packet, NetPeer peer)
+    protected override async void Apply(GiveMoneyPacket packet, int peerId)
     {
         if (BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData))
         {
@@ -91,13 +93,13 @@ public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
         }
     }
 
-    protected override void WhenRejected(GiveMoneyPacket packet, NetPeer peer)
+    protected override void WhenRejected(GiveMoneyPacket packet, int peerId)
     {
         if (BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData))
         {
             H.MainPlayerScore.AddMoney(itemData.price);
         }
 
-        base.WhenRejected(packet, peer);
+        base.WhenRejected(packet, peerId);
     }
 }

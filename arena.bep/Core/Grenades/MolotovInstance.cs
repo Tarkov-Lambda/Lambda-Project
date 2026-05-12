@@ -6,6 +6,7 @@ using ifp.arena.bep.networking;
 using UnityEngine;
 using DG.Tweening;
 using Fika.Core.Networking.Snapshotting;
+using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.Core;
 

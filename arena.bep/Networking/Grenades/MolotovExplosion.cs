@@ -7,18 +7,16 @@ using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct SmokeExplosionPacket : INetSerializable, IServerTimestampedPacket, ITrackable
+public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket, ITrackable
 {
     public Guid ID { get; set; }
     public double Timestamp { get; set; }
     public Vector3 explosionPos;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SmokeExplosionPacket>(reader);
 }
 
 public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPacket>
@@ -39,7 +37,7 @@ public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPac
         DispatchPacket(packet);
     }
 
-    protected override async void Apply(SmokeExplosionPacket packet, NetPeer peer)
+    protected override async void Apply(SmokeExplosionPacket packet, int peerId)
     {
         
     }

@@ -14,7 +14,7 @@ using ifp.arena.bep.Core.Gamemode;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PlayerKilledPacket : INetSerializable, IAuthoredPacket
+public partial struct PlayerKilledPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; } // Player is the victim
@@ -46,9 +46,6 @@ public partial struct PlayerKilledPacket : INetSerializable, IAuthoredPacket
             };
         }
     }
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerKilledPacket>(reader);
 }
 
 public class PlayerKilledPacketHandler : LambdaPacketHandler<PlayerKilledPacket>
@@ -81,7 +78,7 @@ public class PlayerKilledPacketHandler : LambdaPacketHandler<PlayerKilledPacket>
         HandleKill(packet);
     }
 
-    protected override void Apply(PlayerKilledPacket packet, NetPeer peer)
+    protected override void Apply(PlayerKilledPacket packet, int peerId)
     {
         HandleKill(packet);
     }

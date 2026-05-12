@@ -7,21 +7,19 @@ using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
 // TODO: REFACTOR STRUCT
 // currently this is around 1300 bytes per explosion
 [MemoryPackable]
-public partial struct MolotovExplosionPacket : INetSerializable, IServerTimestampedPacket, ITrackable
+public partial struct MolotovExplosionPacket : IPacket, IServerTimestampedPacket, ITrackable
 {
     public Guid ID { get; set; }
     public double Timestamp { get; set; }
     public Vector3 explosionPos;
     public List<FireNode> fireNodes;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<MolotovExplosionPacket>(reader);
 }
 
 public class MolotovExplosionPacketHandler : LambdaPacketHandler<MolotovExplosionPacket>
@@ -43,7 +41,7 @@ public class MolotovExplosionPacketHandler : LambdaPacketHandler<MolotovExplosio
         DispatchPacket(packet);
     }
 
-    protected override async void Apply(MolotovExplosionPacket packet, NetPeer peer)
+    protected override async void Apply(MolotovExplosionPacket packet, int peerId)
     {
         MolotovController.Spawn(packet).Forget();
     }

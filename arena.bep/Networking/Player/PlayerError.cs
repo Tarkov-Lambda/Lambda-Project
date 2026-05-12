@@ -8,16 +8,13 @@ using MemoryPack;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct RaiseErrorPacket : INetSerializable, IAuthoredPacket
+public partial struct RaiseErrorPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public string error;
     public bool isForAdmin;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<RaiseErrorPacket>(reader);
 }
 
 public class RaiseErrorPacketHandler : LambdaPacketHandler<RaiseErrorPacket>
@@ -38,7 +35,7 @@ public class RaiseErrorPacketHandler : LambdaPacketHandler<RaiseErrorPacket>
         DispatchPacket(packet);
     }
 
-    protected override void Apply(RaiseErrorPacket packet, NetPeer peer)
+    protected override void Apply(RaiseErrorPacket packet, int peerId)
     {
         if (packet.Player == null)
         {

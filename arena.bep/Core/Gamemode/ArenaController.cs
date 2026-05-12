@@ -10,6 +10,7 @@ using ifp.arena.bep.GameTypes;
 using ifp.arena.bep.networking;
 using ifp.arena.shared;
 using MemoryPack;
+using PacketHandler.TimeSync;
 using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;

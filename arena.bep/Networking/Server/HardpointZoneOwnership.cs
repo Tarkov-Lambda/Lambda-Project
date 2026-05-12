@@ -9,13 +9,10 @@ using ifp.arena.bep.Core;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct ZoneOwnershipPacket : INetSerializable
+public partial struct ZoneOwnershipPacket : IPacket
 {
     public int netId;
     public ZoneOwnership ownership;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<ZoneOwnershipPacket>(reader);
 }
 
 public class ZoneOwnershipPacketHandler : LambdaPacketHandler<ZoneOwnershipPacket>
@@ -33,7 +30,7 @@ public class ZoneOwnershipPacketHandler : LambdaPacketHandler<ZoneOwnershipPacke
         DispatchPacket(packet);
     }
 
-    protected override void Apply(ZoneOwnershipPacket packet, NetPeer peer)
+    protected override void Apply(ZoneOwnershipPacket packet, int peerId)
     {
         if (H.IsServer) return;
 

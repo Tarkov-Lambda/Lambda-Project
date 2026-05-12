@@ -4,20 +4,18 @@ using ifp.arena.bep.Core.Gamemode;
 using PacketHandler;
 using MemoryPack;
 using Fika.Core.Networking.Snapshotting;
+using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct MatchStateSyncPacket : INetSerializable, IServerTimestampedPacket
+public partial struct MatchStateSyncPacket : IPacket, IServerTimestampedPacket
 {
     public double Timestamp { get; set; }  // Phase start time (server clock)
     public double serverNowSeconds;        // Current server time at send — used for NTP bootstrap on late joiners
 
     public MatchState matchState;
     public RoundActionPhaseEnd? roundActionEnd;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<MatchStateSyncPacket>(reader);
 }
 
 public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPacket>
@@ -39,7 +37,7 @@ public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPac
     // Send current phase state to a late/mid-session joiner.
     // Timestamp = ServerPhaseStartSeconds (historical) so the client computes correct remaining time.
     // serverNowSeconds = current server time so the client can bootstrap its NTP offset immediately.
-    public void SendToLateJoiner(NetPeer peer)
+    public void SendToLateJoiner(int peerId)
     {
         var packet = new MatchStateSyncPacket
         {
@@ -48,15 +46,15 @@ public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPac
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
-        DispatchPacketToPeer(packet, peer);
+        DispatchPacketToPeer(packet, peerId);
     }
 
-    protected override bool ValidatePacket(MatchStateSyncPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(MatchStateSyncPacket packet, int peerId, out string rejectionReason)
     {
-        return base.ValidatePacket(packet, peer, out rejectionReason);
+        return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
-    protected override void Apply(MatchStateSyncPacket packet, NetPeer peer)
+    protected override void Apply(MatchStateSyncPacket packet, int peerId)
     {
         H.Arena.TransitionToState(packet);
     }

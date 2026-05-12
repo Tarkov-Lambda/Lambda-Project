@@ -102,51 +102,82 @@ public class ItemFormatter : MemoryPackFormatter<Item>
 {
     public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref Item value)
     {
-        // 1. Handle Nulls
         if (value == null)
         {
-            writer.WriteNullObjectHeader();
+            writer.WriteNullCollectionHeader();
             return;
         }
 
-        // We use an object header with 1 member (the byte array)
-        writer.WriteObjectHeader(1);
+        var eftWriter = WriterPoolManager.GetWriter();
+        var descriptor = EFTItemSerializerClass.SerializeItem(value, FikaGlobals.SearchControllerSerializer);
 
-        // 2. Serialize the EFT Item to a byte array using the game's/Fika's logic
-        EFTWriterClass writer2 = WriterPoolManager.GetWriter();
-        InventoryDescriptorClass target = EFTItemSerializerClass.SerializeItem(value, FikaGlobals.SearchControllerSerializer);
-        GClass3695.WriteEFTItemDescriptor(writer2, target);
+        eftWriter.WriteEFTItemDescriptor(descriptor);
+        byte[] itemBytes = eftWriter.ToArray();
+        WriterPoolManager.ReturnWriter(eftWriter);
 
-        byte[] itemBytes = writer2.ToArray();
-        WriterPoolManager.ReturnWriter(writer2);
+        var compressedSpan = NetworkUtils.CompressBytes(itemBytes);
 
-        // 3. Write the byte array payload into the MemoryPack stream
-        writer.WriteValue(itemBytes);
+        writer.WriteUnmanaged(itemBytes.Length);
+        writer.WriteUnmanagedSpan(compressedSpan);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Item value)
     {
-        // 1. Check for null header
-        if (!reader.TryReadObjectHeader(out var count))
+        int originalLength = reader.ReadUnmanaged<int>();
+
+        byte[] compressed = reader.ReadUnmanagedArray<byte>();
+
+        if (compressed == null || compressed.Length == 0)
         {
             value = null;
             return;
         }
 
-        // 2. Read the payload byte array from the MemoryPack stream
-        byte[] itemBytes = reader.ReadValue<byte[]>();
+        byte[] itemBytes = NetworkUtils.DecompressBytes(compressed, originalLength);
 
-        // Failsafe in case of empty/corrupted data
-        if (itemBytes == null || itemBytes.Length == 0)
-        {
-            value = null;
-            return;
-        }
-
-        // 3. Deserialize the byte array back to an EFT Item
-        using GClass1283 reader2 = PacketToEFTReaderAbstractClass.Get(itemBytes);
-        InventoryDescriptorClass descriptor = GClass3695.ReadEFTItemDescriptor(reader2);
+        using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
+        var descriptor = eftReader.ReadEFTItemDescriptor();
 
         value = EFTItemSerializerClass.DeserializeItem(descriptor, Singleton<ItemFactoryClass>.Instance, []);
+    }
+}
+
+public class InventoryDescriptorFormatter : MemoryPackFormatter<InventoryDescriptorClass>
+{
+    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref InventoryDescriptorClass value)
+    {
+        if (value == null)
+        {
+            writer.WriteNullCollectionHeader();
+            return;
+        }
+
+        var eftWriter = WriterPoolManager.GetWriter();
+        eftWriter.WriteEFTItemDescriptor(value);
+
+        byte[] itemBytes = eftWriter.ToArray();
+        WriterPoolManager.ReturnWriter(eftWriter);
+
+        var compressedSpan = NetworkUtils.CompressBytes(itemBytes);
+
+        writer.WriteUnmanaged(itemBytes.Length);
+        writer.WriteUnmanagedSpan(compressedSpan);
+    }
+
+    public override void Deserialize(ref MemoryPackReader reader, scoped ref InventoryDescriptorClass value)
+    {
+        int originalLength = reader.ReadUnmanaged<int>();
+        byte[] compressed = reader.ReadUnmanagedArray<byte>();
+
+        if (compressed == null || compressed.Length == 0)
+        {
+            value = null;
+            return;
+        }
+
+        byte[] itemBytes = NetworkUtils.DecompressBytes(compressed, originalLength);
+
+        using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
+        value = eftReader.ReadEFTItemDescriptor();
     }
 }

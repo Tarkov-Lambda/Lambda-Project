@@ -10,16 +10,13 @@ using Cysharp.Threading.Tasks;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct DictateTeleportPacket : INetSerializable, IAuthoredPacket
+public partial struct DictateTeleportPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public Vector3 position;
     public Quaternion rotation;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<DictateTeleportPacket>(reader);
 }
 
 public class DictateTeleportPacketHandler : LambdaPacketHandler<DictateTeleportPacket>
@@ -35,23 +32,23 @@ public class DictateTeleportPacketHandler : LambdaPacketHandler<DictateTeleportP
             rotation = rotation
         };
 
-        DispatchPacketToPlayer(packet, player);
+        // DispatchPacketToPlayer(packet, player);
     }
 
-    protected override void ProcessApprovedPacket(ref DictateTeleportPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref DictateTeleportPacket packet, int peerId)
     {
-        MutateApprovedPacket(ref packet, peer);
+        MutateApprovedPacket(ref packet, peerId);
         if (!packet.Player.IsAI)
         {
-            H.FikaNet.SendData(ref packet, DeliveryMethod, true);
+            PacketHandlerUtils.Network.SendData(ref packet, DeliveryType, true);
         }
-        ApplyInternal(packet, peer);
+        ApplyInternal(packet, peerId);
     }
 
     // duct tape for now
-    public void Apply(DictateTeleportPacket packet) => Apply(packet, null);
+    public void Apply(DictateTeleportPacket packet) => Apply(packet, -1);
 
-    protected override void Apply(DictateTeleportPacket packet, NetPeer peer)
+    protected override void Apply(DictateTeleportPacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer || (H.IsServer && packet.Player.IsAI))
         {

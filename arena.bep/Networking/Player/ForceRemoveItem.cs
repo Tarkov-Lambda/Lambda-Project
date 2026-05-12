@@ -13,7 +13,7 @@ using Fika.Core.Main.Players;
 
 namespace ifp.arena.bep.networking;
 
-public struct PopPacket : INetSerializable, IAuthoredPacket
+public struct PopPacket : IPacket, IAuthoredPacket
 {
     public Player Player { get; set; }
     public Item item;
@@ -50,7 +50,7 @@ public class ForceRemoveItemPacketHandler : LambdaPacketHandler<PopPacket>
         DispatchPacket(packet);
     }
 
-    protected override async void Apply(PopPacket packet, NetPeer peer)
+    protected override async void Apply(PopPacket packet, int peerId)
     {
         try
         {

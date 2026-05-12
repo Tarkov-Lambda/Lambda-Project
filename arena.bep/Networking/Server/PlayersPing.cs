@@ -14,12 +14,9 @@ public partial struct PlayerPingData
 }
 
 [MemoryPackable]
-public partial struct PlayersPingPacket : INetSerializable
+public partial struct PlayersPingPacket : IPacket
 {
     public PlayerPingData[] scores;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayersPingPacket>(reader);
 }
 
 // This runs on interval
@@ -41,7 +38,7 @@ public class PlayersPingPacketHandler : LambdaPacketHandler<PlayersPingPacket>
         DispatchPacket(packet);
     }
 
-    protected override void Apply(PlayersPingPacket packet, NetPeer peer)
+    protected override void Apply(PlayersPingPacket packet, int peerId)
     {
         foreach (var syncScore in packet.scores)
         {
