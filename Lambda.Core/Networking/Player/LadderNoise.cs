@@ -27,7 +27,7 @@ public class LadderNoisePacketWarden : LambdaPacketWarden<LadderNoisePacket>
         DispatchPacket(packet);
     }
 
-    protected override void LocalPredictApproved(LadderNoisePacket packet)
+    protected override void ApplyOptimistically(LadderNoisePacket packet)
     {
         MakeLadderNoise(H.MainPlayer, packet);
     }

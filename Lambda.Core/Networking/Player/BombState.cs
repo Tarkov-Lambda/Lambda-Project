@@ -40,7 +40,7 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
         packet.Timestamp = NetworkTime.ServerNowSeconds;
     }
 
-    protected override void LocalPredictApproved(BombStatePacket packet)
+    protected override void ApplyOptimistically(BombStatePacket packet)
     {
         // idk how I feel about mutating the state like this locally as a general practice
         // but it shouldn't be an issue here at least

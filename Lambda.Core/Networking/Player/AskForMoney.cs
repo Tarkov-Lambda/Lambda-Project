@@ -58,7 +58,7 @@ public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
         DispatchPacket(packet);
     }
 
-    protected override async void LocalPredictApproved(AskForMoneyPacket packet)
+    protected override async void ApplyOptimistically(AskForMoneyPacket packet)
     {
         playerToItem[packet.Player] = packet.ItemBsgId;
     }

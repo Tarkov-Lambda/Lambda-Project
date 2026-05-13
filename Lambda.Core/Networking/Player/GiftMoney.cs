@@ -41,7 +41,7 @@ public class GiftMoneyPacketWarden : LambdaPacketWarden<GiveMoneyPacket>
         DispatchPacket(packet);
     }
 
-    protected override void LocalPredictApproved(GiveMoneyPacket packet)
+    protected override void ApplyOptimistically(GiveMoneyPacket packet)
     {
         if (BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData))
         {

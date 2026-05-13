@@ -1,6 +1,4 @@
-using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using Lambda.Core.Main;
 using MemoryPack;
 

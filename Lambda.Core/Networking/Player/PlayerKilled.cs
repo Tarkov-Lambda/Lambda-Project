@@ -67,7 +67,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         DispatchPacket(packet);
     }
 
-    protected override void LocalPredictApproved(PlayerKilledPacket packet)
+    protected override void ApplyOptimistically(PlayerKilledPacket packet)
     {
         HandleKill(packet);
     }
