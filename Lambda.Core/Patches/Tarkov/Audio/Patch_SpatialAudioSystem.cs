@@ -5,6 +5,7 @@ using Audio.ReverbSubsystem;
 using UnityEngine;
 using EFT;
 using Audio.SpatialSystem;
+using System.Collections.Generic;
 
 namespace Lambda.Core.Patches;
 
@@ -25,44 +26,59 @@ internal class Patch_SpatialAudioSystem_LateUpdate : ModulePatch
     static bool Prefix() => false;
 }
 
+public class Patch_SpatialAudioSystem_ListenerCurrentRoom : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ListenerCurrentRoom));
 
-// internal class Patch_InDiffEnv : ModulePatch
-// {
-//     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.IsSourceAndListenerInDiffEnvironment));
+    public static PhantomAudioRoom PhantomRoom = new();
 
-//     [PatchPrefix]
-//     static bool Prefix(ISpatialAudioRoom sourceRoom, ref bool __result)
-//     {
-//         var listenerRoom = CustomEnvManager.GetRoomAtPosition(MonoBehaviourSingleton<SpatialAudioSystem>.Instance.Transform_0.position);
-        
-//         // if one is outdoor and the other is indoor, return true
-//         __result = listenerRoom.IsOutdoor != sourceRoom.IsOutdoor;
-//         return false;
-//     }
-// }
+    [PatchPrefix]
+    static bool Prefix(ref ISpatialAudioRoom __result)
+    {
+        __result = PhantomRoom;
+        return false;
+    }
+}
 
-// internal class Patch_GetListenerRoom : ModulePatch
-// {
-//     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ListenerCurrentRoom));
+public class Patch_SpatialAudioSystem_ProcessSourceOcclusion_1 : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() =>
+    AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ProcessSourceOcclusion),
+    new[] { typeof(IPlayer), typeof(BetterSource), typeof(bool) });
 
-//     [PatchPrefix]
-//     static bool Prefix(ref ISpatialAudioRoom __result)
-//     {
-//         var listenerPos = MonoBehaviourSingleton<SpatialAudioSystem>.Instance.Transform_0.position;
-//         __result = CustomEnvManager.GetRoomAtPosition(listenerPos);
-//         return false; // stop Tarkov from looking at its own rooms
-//     }
-// }
+    [PatchPrefix]
+    static bool Prefix(ref int __result)
+    {
+        __result = -1;
+        return false;
+    }
+}
 
-// internal class Patch_UpdateSourceRoom : ModulePatch
-// {
-//     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.method_30));
 
-//     [PatchPrefix]
-//     static bool Prefix(SourceContainerClass sourceContainer)
-//     {
-//         // force the container to use our room check based on its current position
-//         sourceContainer.CurrentAudioRoom = CustomEnvManager.GetRoomAtPosition(sourceContainer.CurrentPosition);
-//         return false;
-//     }
-// }
+public class Patch_SpatialAudioSystem_ProcessSourceOcclusion_2 : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() =>
+    AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ProcessSourceOcclusion),
+    new[] { typeof(GameObject), typeof(BetterSource), typeof(EOcclusionTest), typeof(float), typeof(Vector3), typeof(bool) });
+
+    [PatchPrefix]
+    static bool Prefix(ref int __result)
+    {
+        __result = -1;
+        return false;
+    }
+}
+
+public class Patch_SpatialAudioSystem_ProcessSourceOcclusion_3 : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => 
+    AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ProcessSourceOcclusion),
+    new[] { typeof(BetterSource), typeof(EOcclusionTest), typeof(Vector3) });
+
+    [PatchPrefix]
+    static bool Prefix(ref int __result)
+    {
+        __result = -1;
+        return false;
+    }
+}

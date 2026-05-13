@@ -1,3 +1,4 @@
+using Audio.SpatialSystem.Data;
 using BepInEx;
 using BepInEx.Configuration;
 using Comfort.Common;
@@ -145,6 +146,21 @@ public class Plugin : BaseUnityPlugin
 
             RegisterPatch(new Patch_SpatialAudioSystem_Update());                       // bypass high filter muffling
             RegisterPatch(new Patch_SpatialAudioSystem_LateUpdate());                   // bypass high filter muffling
+
+            RegisterPatch(new Patch_SpatialAudioSystem_ListenerCurrentRoom());          // force audio room to always be Phantom Audio Room
+            RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_1());     // bypass occlusion containers
+            RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_2());     // bypass occlusion containers
+            RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
+
+            var roomChangedEvent = new GClass3573
+            {
+                Room = Patch_SpatialAudioSystem_ListenerCurrentRoom.PhantomRoom,
+                CurrentRoomType = Patch_SpatialAudioSystem_ListenerCurrentRoom.PhantomRoom.Type,
+                CurrentOutdoorRoomID = 0,
+                InteractionState = EPlayerRoomInteractionState.Enter
+            };
+            
+            GlobalEventHandlerClass.Instance.method_0(typeof(GClass3573), roomChangedEvent);
         }
 
         // RegisterPatch(new AudioDiscovery_Play_Patch());
