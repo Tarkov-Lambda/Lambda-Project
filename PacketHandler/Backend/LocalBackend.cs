@@ -4,12 +4,12 @@ using EFT;
 
 public class LocalBackend : INetworkBackend
 {
-    public bool IsServer => true;
-    public bool IsClient => false;
+    public bool IsServer   => true;
+    public bool IsClient   => false;
     public bool IsHeadless => false;    
-    public bool IsOnline => false;
+    public bool IsOnline   => false;
     
-    public int NetId => 0;
+    public int NetId       => 0;
 
     private Dictionary<Type, Delegate> _handlers = new();
 
