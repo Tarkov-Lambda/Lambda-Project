@@ -4,7 +4,7 @@ using EFT.UI.Ragfair;
 using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.Economy;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;

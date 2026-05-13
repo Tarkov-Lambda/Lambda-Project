@@ -1,5 +1,5 @@
 ﻿using EFT.UI;
-using ifp.arena.ui.Nameplate;
+using Lambda.UI.Nameplate;
 using System.Collections.Generic;
 using UnityEngine;
 

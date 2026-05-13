@@ -1,6 +1,6 @@
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.GameTypes;
-using ifp.arena.shared;
+using Lambda.Shared;
 using Lambda.Core.Networking; // Assuming PlayerKilledPacket is here
 using System.Collections.Generic;
 using UnityEngine;

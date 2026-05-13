@@ -4,7 +4,7 @@ using UnityEngine;
 using EFT.UI;
 using DG.Tweening;
 
-using arena.ui;
+using Lambda.UI;
 using Lambda.Core.Networking;
 using Lambda.Core.Main.Gamemode;
 
@@ -18,7 +18,7 @@ namespace Lambda.Core.Main.UI
 
         internal LoadingScreenController(CommonUI commonUI, AssetBundle uiBundle)
         {
-            var prefab = uiBundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/LoadingScreen/LoadingScreen.prefab");
+            var prefab = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.ui/LoadingScreen/LoadingScreen.prefab");
             screen = GameObject.Instantiate(prefab, commonUI.EftBattleUIScreen.transform).GetComponent<LoadingScreen>();
             screen.gameObject.SetActive(false);
 

@@ -1,4 +1,4 @@
-﻿using arena.ui;
+﻿using Lambda.UI;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT.InventoryLogic;
@@ -8,7 +8,7 @@ using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using Lambda.Core.Patches.Tarkov.UI;
-using ifp.arena.shared;
+using Lambda.Shared;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -28,7 +28,7 @@ namespace Lambda.Core.Main.UI
         {
             this.itemInfoProvider = itemInfoProvider;
 
-            GameObject prefabShopUI = uiBundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Shop/Shop.prefab");
+            GameObject prefabShopUI = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.ui/Shop/Shop.prefab");
 
             ItemsPanel itemsPanel = Field_InventoryScreen__itemsPanel.GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
             Transform shopParent = (Field_ItemsPanel__simpleStashPanel.GetValue(itemsPanel) as SimpleStashPanel).transform.parent;

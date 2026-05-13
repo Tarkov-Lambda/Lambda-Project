@@ -1,4 +1,4 @@
-﻿using arena.ui;
+﻿using Lambda.UI;
 using EFT.InputSystem;
 using EFT.UI.Screens;
 using System;

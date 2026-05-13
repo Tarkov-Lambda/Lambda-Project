@@ -4,7 +4,7 @@ using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.Gamemode;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using PacketWarden.TimeSync;
 using UnityEngine;
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using EFT.InventoryLogic;
 
 namespace Lambda.Core.Main.Economy;

@@ -1,6 +1,6 @@
 ﻿using EFT;
 using Lambda.Core.Main.Gamemode;
-using ifp.arena.shared;
+using Lambda.Shared;
 using MemoryPack;
 using UnityEngine;
 using PacketWarden.TimeSync;

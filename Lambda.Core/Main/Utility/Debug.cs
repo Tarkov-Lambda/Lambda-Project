@@ -8,7 +8,7 @@ using Lambda.Core;
 using Cysharp.Threading.Tasks;
 using System.IO;
 
-namespace ifp.arena.shared;
+namespace Lambda.Shared;
 
 // Helper class for singleton refences & helper functions
 public static class Debugging

@@ -1,7 +1,7 @@
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using Comfort.Common;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Main.UI;

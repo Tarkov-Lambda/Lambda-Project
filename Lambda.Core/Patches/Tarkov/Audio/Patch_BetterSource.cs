@@ -2,7 +2,7 @@ using Audio.ReverbSubsystem;
 using Audio.SpatialSystem;
 using EFT;
 using HarmonyLib;
-using ifp.arena.shared;
+using Lambda.Shared;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;

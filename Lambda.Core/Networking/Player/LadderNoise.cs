@@ -1,5 +1,5 @@
 using EFT;
-using ifp.arena.shared;
+using Lambda.Shared;
 using MemoryPack;
 using UnityEngine;
 

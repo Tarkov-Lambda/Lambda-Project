@@ -7,7 +7,7 @@ using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.UI;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using Newtonsoft.Json;
 
 namespace Lambda.Core.Main;

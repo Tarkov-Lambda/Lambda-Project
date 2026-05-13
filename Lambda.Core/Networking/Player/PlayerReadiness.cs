@@ -6,7 +6,7 @@ using Lambda.Core.Main.UI;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Lambda.Core.Main.AssetBundleHandling;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main;
 

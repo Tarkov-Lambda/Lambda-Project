@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
-using ifp.arena.shared;
+using Lambda.Shared;
 using UnityEngine;
 
 namespace Lambda.Core.Main;

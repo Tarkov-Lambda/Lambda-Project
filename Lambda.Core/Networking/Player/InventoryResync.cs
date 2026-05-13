@@ -108,7 +108,10 @@ public class InventoryResyncPacketWarden : LambdaPacketWarden<InventoryResyncPac
         player.InventoryController.ReplaceInventory(newInventory);
 
         newInventory.Equipment.CurrentAddress = player.InventoryController.CreateItemAddress();
-        newInventory.Stash?.CurrentAddress = player.InventoryController.CreateItemAddress();
+        if (newInventory.Stash != null)
+        {
+        newInventory.Stash.CurrentAddress = player.InventoryController.CreateItemAddress();
+        }
 
         player.InventoryController.Item_0 = newInventory.Equipment;
 

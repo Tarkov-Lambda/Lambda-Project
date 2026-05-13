@@ -2,7 +2,7 @@ using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main;
 using Lambda.Core.Main.Economy;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
 using System;

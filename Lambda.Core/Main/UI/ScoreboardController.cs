@@ -1,14 +1,14 @@
-﻿using arena.ui;
+﻿using Lambda.UI;
 using Comfort.Common;
 using EFT;
 using Lambda.Core.Patches.Tarkov;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using System;
 using UnityEngine;
 using System.Linq;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using arena.ui.scoreboard;
+using Lambda.UI.scoreboard;
 using DG.Tweening;
 
 namespace Lambda.Core.Main.UI

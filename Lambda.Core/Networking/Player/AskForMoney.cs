@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using Lambda.Core.Main.Gamemode;
 
 namespace Lambda.Core.Networking;

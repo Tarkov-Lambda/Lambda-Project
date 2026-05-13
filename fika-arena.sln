@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36310.24
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.shared", "arena.shared\arena.shared.csproj", "{792DACF7-6D31-10A2-431B-1A79BA852FA2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.ui", "arena.ui\arena.ui.csproj", "{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "arena.audio\SteamAudioUnity.csproj", "{F2614763-D1AE-332B-D239-2C11361148E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.UI", "Lambda.UI\Lambda.UI.csproj", "{792DACF7-6D31-10A2-431B-1A79BA852FA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketWarden", "PacketWarden\PacketWarden.csproj", "{985BBEAC-25FC-266D-4099-B45F599E2600}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketWarden.FikaIntegration", "PacketWarden.FikaIntegration\PacketWarden.FikaIntegration.csproj", "{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Core", "Lambda.Core\Lambda.Core.csproj", "{D337A5EB-B001-F814-D5CF-A5BA73CB375E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Shared", "Lambda.Shared\Lambda.Shared.csproj", "{DFC2EA4D-4912-BD15-B4C6-42F604BC6531}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "Lambda.Audio\SteamAudioUnity.csproj", "{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,6 @@ Global
 		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2614763-D1AE-332B-D239-2C11361148E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2614763-D1AE-332B-D239-2C11361148E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2614763-D1AE-332B-D239-2C11361148E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2614763-D1AE-332B-D239-2C11361148E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{985BBEAC-25FC-266D-4099-B45F599E2600}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{985BBEAC-25FC-266D-4099-B45F599E2600}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{985BBEAC-25FC-266D-4099-B45F599E2600}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +37,14 @@ Global
 		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFC2EA4D-4912-BD15-B4C6-42F604BC6531}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFC2EA4D-4912-BD15-B4C6-42F604BC6531}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFC2EA4D-4912-BD15-B4C6-42F604BC6531}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFC2EA4D-4912-BD15-B4C6-42F604BC6531}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-using arena.ui;
+using Lambda.UI;
 using Comfort.Common;
 using EFT.UI;
 using Lambda.Core.Main.AssetBundleHandling;
@@ -14,8 +14,8 @@ namespace Lambda.Core.Main.UI;
 public class UIManager : IDisposable
 {
     private const string UI_BUNDLE_NAME       =  "arenaui";
-    private const string MATCH_UI_PREFAB_PATH =  "Packages/com.ifp.arena.ui/ArenaMatchUI.prefab";
-    private const string UI_MATTE_PATH        =  "Packages/com.ifp.arena.ui/UIMatte.mat";
+    private const string MATCH_UI_PREFAB_PATH =  "Packages/com.lambda.ui/ArenaMatchUI.prefab";
+    private const string UI_MATTE_PATH        =  "Packages/com.lambda.ui/UIMatte.mat";
 
     private static string UIAssetBundlePath   => Path.Combine(Plugin.pathToBundles, UI_BUNDLE_NAME);
 

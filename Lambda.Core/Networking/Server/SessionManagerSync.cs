@@ -3,7 +3,7 @@ using System.Linq;
 using MemoryPack;
 using PacketWarden;
 using Lambda.Core.Main.Gamemode;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 
 namespace Lambda.Core.Networking;
 

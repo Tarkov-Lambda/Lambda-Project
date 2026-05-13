@@ -1,9 +1,9 @@
-﻿using arena.ui;
+﻿using Lambda.UI;
 using Comfort.Common;
 using EFT.UI;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using System;
 
 namespace Lambda.Core.Main.UI

@@ -1,0 +1,9 @@
+{
+   "name": "com.lambda.ui",
+   "displayName": "Lambda UI Package",
+   "description": "Contains all UI components",
+   "version": "1.0.37",
+   "author": {
+      "name": "Lambda Project"
+   }
+}

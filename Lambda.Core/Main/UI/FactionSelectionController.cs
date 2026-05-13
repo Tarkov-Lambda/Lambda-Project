@@ -18,7 +18,7 @@ namespace Lambda.Core.Main.UI
             EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
             EventBus.OnEnter += OnMatchStateEnter;
 
-            GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/FactionSelection/FactionSelection.prefab");
+            GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.lambda.ui/FactionSelection/FactionSelection.prefab");
             factionSelectionScreen = GameObject.Instantiate(prefabFactionSelection, commonUI.transform.GetChild(0)).AddComponent<FactionSelectionEftScreen>();
             factionSelectionScreen.transform.SetSiblingIndex(1);
 

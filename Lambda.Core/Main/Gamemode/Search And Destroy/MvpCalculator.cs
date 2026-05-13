@@ -1,7 +1,7 @@
 using EFT;
 using Lambda.Core.Main;
 using Lambda.Core.GameTypes;
-using ifp.arena.shared;
+using Lambda.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;

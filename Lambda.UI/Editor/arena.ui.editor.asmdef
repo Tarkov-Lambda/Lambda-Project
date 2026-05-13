@@ -1,0 +1,21 @@
+{
+    "name": "com.lambda.ui.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:11ca594ff99895e42bdf7359717817b8",
+        "GUID:a8f86226892a84c49a19777790d946e3",
+        "Lambda.Shared"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "iOS"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

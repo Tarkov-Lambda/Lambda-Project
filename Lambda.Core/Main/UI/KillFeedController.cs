@@ -1,5 +1,4 @@
-﻿using arena.ui;
-using arena.ui.killfeed;
+﻿using Lambda.UI;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using System;

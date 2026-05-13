@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.GameTypes;
 using Lambda.Core.Networking;
-using ifp.arena.shared;
+using Lambda.Shared;
 using System;
 using System.Threading;
 using UnityEngine;

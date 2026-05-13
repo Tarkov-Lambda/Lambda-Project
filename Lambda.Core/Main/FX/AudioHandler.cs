@@ -5,7 +5,7 @@ using EFT.UI;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.GameTypes;
-using ifp.arena.shared.FX;
+using Lambda.Shared.FX;
 using System;
 using System.Collections.Generic;
 using System.IO;

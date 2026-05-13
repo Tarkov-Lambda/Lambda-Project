@@ -63,11 +63,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\arena.shared\arena.shared.csproj" />
+    <ProjectReference Include="..\Lambda.UI\Lambda.UI.csproj" />
 
-    <ProjectReference Include="..\arena.ui\arena.ui.csproj" />
+    <ProjectReference Include="..\Lambda.Shared\Lambda.Shared.csproj" />
 
-    <ProjectReference Include="..\arena.audio\SteamAudioUnity.csproj" />
+    <ProjectReference Include="..\Lambda.Audio\SteamAudioUnity.csproj" />
 
     <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>

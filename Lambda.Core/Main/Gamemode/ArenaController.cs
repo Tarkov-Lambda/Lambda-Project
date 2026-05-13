@@ -8,7 +8,7 @@ using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.UI;
 using Lambda.Core.GameTypes;
 using Lambda.Core.Networking;
-using ifp.arena.shared;
+using Lambda.Shared;
 using MemoryPack;
 using PacketWarden.TimeSync;
 using System;

@@ -1,10 +1,7 @@
 
 using System;
 using EFT;
-using Lambda.Core.GameTypes;
-using Lambda.Core.Networking;
-using ifp.arena.shared;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 
 namespace Lambda.Core.Main.Gamemode;
 

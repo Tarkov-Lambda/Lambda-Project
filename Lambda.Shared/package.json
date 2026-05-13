@@ -1,0 +1,9 @@
+{
+   "name": "com.lambda.shared",
+   "displayName": "Lambda Shared Package",
+   "description": "Contains all the models for Lambda.Core and Lambda.UI as well as all the map related MonoBehaviours",
+   "version": "1.0.37",
+   "author": {
+      "name": "Lambda Project"
+   }
+}

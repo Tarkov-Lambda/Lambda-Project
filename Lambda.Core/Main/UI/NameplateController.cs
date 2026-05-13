@@ -1,7 +1,7 @@
 ﻿using EFT.UI;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Patches.Tarkov;
-using ifp.arena.ui.Nameplate;
+using Lambda.UI.Nameplate;
 using System;
 using UnityEngine;
 
@@ -21,7 +21,7 @@ namespace Lambda.Core.Main.UI
             nameplateObject.transform.SetParent(commonUI.EftBattleUIScreen.transform, false);
 
             NameplateRenderer renderer = nameplateObject.GetComponent<NameplateRenderer>();
-            GameObject prefabNameplate = uiBundle.LoadAsset<GameObject>("Packages/com.ifp.arena.ui/Nameplate/Nameplate.prefab");
+            GameObject prefabNameplate = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.ui/Nameplate/Nameplate.prefab");
             renderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
         }
 

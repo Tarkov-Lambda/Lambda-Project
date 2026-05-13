@@ -3,7 +3,7 @@ using Comfort.Common;
 using EFT;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using ifp.arena.shared;
+using Lambda.Shared;
 using UnityEngine;
 
 namespace Lambda.Core.Main;

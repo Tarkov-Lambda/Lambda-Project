@@ -1,7 +1,7 @@
-﻿using arena.ui;
+﻿using Lambda.UI;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using System;
 using System.Linq;
 

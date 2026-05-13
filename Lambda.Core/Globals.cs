@@ -6,7 +6,7 @@ global using PU = Lambda.Core.Main.PlayerUtilities;
 global using AU = Lambda.Core.Main.AddressUtilities;
 
 global using RU = Lambda.Core.Main.ReplenishmentUtilities;
-global using D = ifp.arena.shared.Debugging;
+global using D = Lambda.Shared.Debugging;
 
 
 // Tarkov

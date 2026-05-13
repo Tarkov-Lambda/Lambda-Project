@@ -4,7 +4,7 @@ using EFT.InventoryLogic;
 using Lambda.Core.Main;
 using Lambda.Core.Main.UI;
 using Lambda.Core.GameTypes;
-using ifp.arena.shared.Models;
+using Lambda.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

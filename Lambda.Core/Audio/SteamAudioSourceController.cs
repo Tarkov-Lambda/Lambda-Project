@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Audio.ReverbSubsystem;
 using EFT;
 using HarmonyLib;
-using ifp.arena.shared;
+using Lambda.Audio;
 using SteamAudio;
 using UnityEngine;
 using UnityEngine.Audio;

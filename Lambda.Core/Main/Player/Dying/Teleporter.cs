@@ -1,7 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using Lambda.Core.Networking;
-using ifp.arena.shared;
+using Lambda.Shared;
 using System.Collections.Generic;
 using UnityEngine;
 

@@ -1,6 +1,6 @@
 using DG.Tweening;
 using HarmonyLib;
-using ifp.arena.shared;
+using Lambda.Shared;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
