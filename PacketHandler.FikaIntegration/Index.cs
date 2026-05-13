@@ -1,5 +1,7 @@
 using MemoryPack;
 
+namespace PacketHandler.FikaIntegration;
+
 public static class FikaBootstrap
 {
     public static INetworkBackend Initialize()

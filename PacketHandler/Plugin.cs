@@ -18,6 +18,8 @@ using UnityEngine.LowLevel;
 [BepInPlugin("com.ifp.PacketHandler", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 internal class Plugin : BaseUnityPlugin
 {
+    public static readonly string pathToPacketHandler = Path.Combine(BepInEx.Paths.PluginPath, "ifp");
+
     internal static new ManualLogSource Logger = null;
 
     private readonly List<IDisposable> _disposables = new();
@@ -66,8 +68,7 @@ internal class Plugin : BaseUnityPlugin
     {
         try
         {
-            string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string fikaDllPath = Path.Combine(pluginDir, "PacketHandler.FikaIntegration.dll");
+            string fikaDllPath = Path.Combine(pathToPacketHandler, "PacketHandler.FikaIntegration.dll");
 
             Assembly fikaAssembly = Assembly.LoadFrom(fikaDllPath);
 
@@ -81,6 +82,7 @@ internal class Plugin : BaseUnityPlugin
         catch (Exception ex)
         {
             Logger.LogError($"Failed to load Fika Integration: {ex}");
+            Logger.LogError(ex.StackTrace);
             Network = new LocalBackend();
         }
     }

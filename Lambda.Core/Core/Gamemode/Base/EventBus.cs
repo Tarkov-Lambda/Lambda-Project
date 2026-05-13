@@ -1,0 +1,28 @@
+
+using System;
+using EFT;
+using Lambda.Core.GameTypes;
+using Lambda.Core.Networking;
+using ifp.arena.shared;
+using ifp.arena.shared.Models;
+
+namespace Lambda.Core.Main.Gamemode;
+
+public static class EventBus
+{
+    public static Action<MatchState> OnEnter;
+    // We do not have OnUpdate action because clients don't run the update loop (and also it's kinda stupid)
+    public static Action<MatchState> OnExit;
+    public static Action<BombState> OnBombStateChange;
+    public static Action<RoundActionPhaseEnd> OnRoundActionEnd;
+
+    public static Action<int> OnSelfMoneyChanged;
+    public static Action<ShopItem> OnItemBuy;
+
+    public static Action OnSelfRespawn;
+    public static Action<PlayerReadinessState> OnSelfReadinessChanged;
+    public static Action<Faction> OnSelfFactionChanged;
+
+    public static Action<Player> OnBuyAskStarted;
+    public static Action<Player> OnBuyAskCancelled;
+}

@@ -63,9 +63,6 @@
       <Dependencies Include="$(OutputPath)\MemoryPack.Core.dll" />
       <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
 
-      <!-- <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" /> -->
-      <!-- <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" /> -->
-
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
@@ -74,24 +71,6 @@
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
     <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-    <!-- 
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
-      Condition="'$(Configuration)' == 'Debug'" /> -->
     <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
-
-  <!-- <Target Name="DeleteConflictingLibraries" AfterTargets="CopyFilesAfterBuild">
-    <ItemGroup Condition="'$(Configuration)' == 'Release'">
-      <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).dll" />
-      <ReleaseConflicts Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).pdb" />
-    </ItemGroup>
-
-    <Delete Files="@(ReleaseConflicts)" Condition="'$(Configuration)' == 'Release'" />
-
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-      <DebugConflicts Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).dll" />
-    </ItemGroup>
-
-    <Delete Files="@(DebugConflicts)" Condition="'$(Configuration)' == 'Debug'" />
-  </Target> -->
 </Project>

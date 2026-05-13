@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36310.24
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.bep", "arena.bep\arena.bep.csproj", "{93996562-A998-6A39-0E12-23195C90578C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.shared", "arena.shared\arena.shared.csproj", "{792DACF7-6D31-10A2-431B-1A79BA852FA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.ui", "arena.ui\arena.ui.csproj", "{B74F5465-EA5C-59D2-3DA5-ADFB641F2B08}"
@@ -17,16 +15,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketHandler", "PacketHand
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketHandler.FikaIntegration", "PacketHandler.FikaIntegration\PacketHandler.FikaIntegration.csproj", "{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Core", "Lambda.Core\Lambda.Core.csproj", "{D337A5EB-B001-F814-D5CF-A5BA73CB375E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{93996562-A998-6A39-0E12-23195C90578C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93996562-A998-6A39-0E12-23195C90578C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93996562-A998-6A39-0E12-23195C90578C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93996562-A998-6A39-0E12-23195C90578C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792DACF7-6D31-10A2-431B-1A79BA852FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +47,10 @@ Global
 		{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D337A5EB-B001-F814-D5CF-A5BA73CB375E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
