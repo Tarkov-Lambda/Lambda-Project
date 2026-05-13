@@ -11,7 +11,7 @@ namespace Lambda.UI.scoreboard
         [SerializeField] private RectTransform containerTeams;
         [SerializeField] private FactionColors factionColors;
 
-        private readonly List<TeamBoard> pool = new List<TeamBoard>();
+        private readonly List<TeamBoard> pool = new();
         private readonly Dictionary<Faction, List<PlayerScoreInfo>> buckets = new Dictionary<Faction, List<PlayerScoreInfo>>();
 
         public void SetPlayers(PlayerScoreInfo[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
@@ -46,7 +46,7 @@ namespace Lambda.UI.scoreboard
 
                 teamScores.TryGetValue(kvp.Key, out int score);
                 board.gameObject.SetActive(true);
-                board.Set(kvp.Value, factionColors.Get(kvp.Key), score, mainPlayerFaction);
+                board.Set(kvp.Value, factionColors.Get(kvp.Key), score, mainPlayerFaction, kvp.Key);
                 index++;
             }
 

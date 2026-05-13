@@ -25,7 +25,7 @@ namespace Lambda.Core.Main.UI
 
             internal FactionSelectionEftScreenController(Action<Faction> selectionCallback) : base()
             {
-                this.onSelected = selectionCallback;
+                onSelected = selectionCallback;
             }
 
             internal void SendSelected(Faction faction)
@@ -40,6 +40,7 @@ namespace Lambda.Core.Main.UI
         {
             module = GetComponent<FactionSelection>();
             module.OnFactionSelected += Module_OnFactionSelected;
+            module.OnCancelClicked += Cancel;
         }
 
         public override void Show(FactionSelectionEftScreenController controller)

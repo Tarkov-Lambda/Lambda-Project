@@ -6,12 +6,14 @@ using Lambda.Shared.Models;
 
 namespace Lambda.UI
 {
+    [RequireComponent(typeof(RectTransform))]
+    [RequireComponent(typeof(CanvasGroup))]
     public class TopBar : MonoBehaviour
     {
         [SerializeField] private TopBarTeamScore teamScoreLeft;
         [SerializeField] private TopBarTeamScore teamScoreRight;
 
-        [SerializeField] private TMP_Text textTimer;
+        [field: SerializeField] public TMP_Text TextTimer { get; private set; }
         [SerializeField] private float textTimerMonospacing = 16;
 
         [SerializeField] private FactionColors factionColors;
@@ -20,8 +22,14 @@ namespace Lambda.UI
         [SerializeField] private TeamStatus teamStatusLeft;
         [SerializeField] private TeamStatus teamStatusRight;
 
-        void Start()
+        public RectTransform Rect { get; private set; }
+        public CanvasGroup Canvas { get; private set; }
+
+        void Awake()
         {
+            Rect = GetComponent<RectTransform>();
+            Canvas = GetComponent<CanvasGroup>();
+
             teamScoreLeft.Color = factionColors.Get(Faction.CT);
             teamScoreRight.Color = factionColors.Get(Faction.T);
         }
@@ -34,16 +42,9 @@ namespace Lambda.UI
 
         public void SetTime(float seconds)
         {
-            if (textTimer == null)
+            if (TextTimer == null)
                 return;
-            textTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
-        }
-
-        public void ToggleTimer(bool show)
-        {
-            if (textTimer == null)
-                return;
-            textTimer.alpha = show ? 1f : 0f;
+            TextTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
         }
 
         public void SetTeamStatuses(PlayerScoreInfo[] leftTeam, PlayerScoreInfo[] rightTeam)

@@ -55,8 +55,6 @@ public class Plugin : BaseUnityPlugin
 
     private CancellationTokenSource _cts;
 
-    private Action unregisterCommands;
-
     private UnityTicker _unityTickListner;
 
     private void RegisterPatch(ModulePatch patch)

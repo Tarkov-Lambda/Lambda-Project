@@ -20,8 +20,15 @@ namespace Lambda.UI.scoreboard
         [SerializeField] private Graphic bg;
         [SerializeField] private CanvasGroup canvasGroup;
 
+        Faction _lastFaction;
+
         public void Set(in PlayerScoreInfo stats, bool isTeammate, int index)
         {
+            if (_lastFaction != stats.Faction)
+            {
+                DecideIfToShowStats(stats.Faction);
+            }
+
             textName.text = stats.Name;
 
             iconRouble.gameObject.SetActive(isTeammate);
@@ -40,6 +47,21 @@ namespace Lambda.UI.scoreboard
 
             bool even = index % 2 == 0;
             bg.SetAlpha(even ? 0.8f : 0.6f);
+
+            _lastFaction = stats.Faction;
+        }
+
+        // not triggering for some reason rn chat
+        void DecideIfToShowStats(Faction faction)
+        {
+            var newAlpha = faction is not Faction.Spectator ? 1f : 0f;
+            textMoney.SetAlpha(newAlpha);
+            textKills.SetAlpha(newAlpha);
+            textDeaths.SetAlpha(newAlpha);
+            textAssists.SetAlpha(newAlpha);
+            textPing.SetAlpha(newAlpha);
+            textHeadshotRatio.SetAlpha(newAlpha);
+            textDamage.SetAlpha(newAlpha);
         }
 
         void SetHeadshotRatio(PlayerScoreInfo stats)

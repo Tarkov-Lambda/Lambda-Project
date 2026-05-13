@@ -79,6 +79,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreContainer: {fileID: 5401234700540846931}
   textTeamScore: {fileID: 2894210931541522467}
+  header: {fileID: 1341097306256679145}
   prefabRowPlayer: {fileID: 7971851368980001918, guid: 140335d1194e66f41b4d2148abe9baa8, type: 3}
   containerPlayers: {fileID: 2241844002212523300}
   coloredGraphicsKeepAlpha:

@@ -760,6 +760,7 @@ GameObject:
   - component: {fileID: 5549418501031128324}
   - component: {fileID: 1508627736136866250}
   - component: {fileID: 8562005662020487280}
+  - component: {fileID: 5847377628304909915}
   m_Layer: 5
   m_Name: TopBar
   m_TagString: Untagged
@@ -807,7 +808,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamScoreLeft: {fileID: 7509561810606119603}
   teamScoreRight: {fileID: 8559120117851478156}
-  textTimer: {fileID: 858208009453752689}
+  <TextTimer>k__BackingField: {fileID: 858208009453752689}
   textTimerMonospacing: 16
   factionColors: {fileID: 11400000, guid: e2bd8496c7c1fb044a9ef6ae9f188a92, type: 2}
   teamStatusLeft: {fileID: 6756715724971127552}
@@ -838,6 +839,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!225 &5847377628304909915
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9045445779045745341}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1001 &1630270311237339526
 PrefabInstance:
   m_ObjectHideFlags: 0
