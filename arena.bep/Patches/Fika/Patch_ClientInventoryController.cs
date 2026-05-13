@@ -19,11 +19,7 @@ internal class Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer : M
     {
         if (serverStatus.Status == EOperationStatus.Failed && serverStatus.Error.StartsWith("Could not find item"))
         {
-            InventoryController inventoryController = __instance.Operation.TraderControllerClass as InventoryController;
-            if (inventoryController.Profile != null)
-            {
-                Singleton<InventoryResyncPacketHandler>.Instance.Send(H.GetPlayer(inventoryController.Profile.ProfileId));
-            }
+            Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
         }
     }
 }

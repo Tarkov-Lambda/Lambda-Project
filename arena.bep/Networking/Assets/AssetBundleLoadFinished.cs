@@ -1,6 +1,4 @@
-﻿using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
+﻿using PacketHandler;
 using MemoryPack;
 using EFT;
 using Cysharp.Threading.Tasks;
@@ -10,15 +8,12 @@ using System.Linq;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct AssetBundleLoadFinishedPacket : INetSerializable, IAuthoredPacket
+public partial struct AssetBundleLoadFinishedPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public string id;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AssetBundleLoadFinishedPacket>(reader);
 }
 
 // Player tells server they are done loading this specific batch of asset bundles
@@ -37,13 +32,13 @@ public class AssetBundleLoadFinishedPacketHandler : LambdaPacketHandler<AssetBun
         DispatchPacket(packet);
     }
 
-    protected override void ProcessApprovedPacket(ref AssetBundleLoadFinishedPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref AssetBundleLoadFinishedPacket packet, int peerId)
     {
-        MutateApprovedPacket(ref packet, peer);
-        ApplyInternal(packet, peer);
+        MutateApprovedPacket(ref packet, peerId);
+        ApplyInternal(packet, peerId);
     }
 
-    protected override async void Apply(AssetBundleLoadFinishedPacket packet, NetPeer peer)
+    protected override async void Apply(AssetBundleLoadFinishedPacket packet, int peerId)
     {
         var assetBundleLoadProgressDictionary = Singleton<AssetBundleLoadPacketHandler>.Instance.AssetBundleLoadProgress;
         var assetBundleLoadProgress = assetBundleLoadProgressDictionary[packet.id];

@@ -1,32 +1,33 @@
-﻿using Fika.Core.Networking.LiteNetLib.Utils;
-using MemoryPack;
-using System;
+﻿using System;
 using System.Buffers;
+using Fika.Core.Networking.LiteNetLib.Utils;
+using MemoryPack;
 
-public static class MemoryPackWrapper
+internal struct LiteNetLibWrapper<T> : INetSerializable where T : IPacket
 {
     [ThreadStatic]
     private static ArrayBufferWriter<byte> _sharedWriter;
 
-    public static void Serialize<T>(NetDataWriter writer, T value)
+    public T Payload;
+
+    public readonly void Serialize(NetDataWriter writer)
     {
         _sharedWriter ??= new ArrayBufferWriter<byte>(1024);
         _sharedWriter.Clear();
 
-        MemoryPackSerializer.Serialize(_sharedWriter, value);
+        MemoryPackSerializer.Serialize(_sharedWriter, Payload);
 
         writer.Put(_sharedWriter.WrittenSpan);
-        // D.Log(writer.Length.ToString());
     }
 
-    public static T Deserialize<T>(NetDataReader reader)
+    public void Deserialize(NetDataReader reader)
     {
         ReadOnlySpan<byte> span = reader.GetRemainingBytesSpan();
-        
+
         T value = MemoryPackSerializer.Deserialize<T>(span);
 
         reader.SkipBytes(reader.AvailableBytes);
-        
-        return value;
+
+        Payload = value;
     }
 }

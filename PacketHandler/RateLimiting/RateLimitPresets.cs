@@ -1,5 +1,3 @@
-using System;
-
 namespace PacketHandler.RateLimiting;
 
 public static class RateLimitPresets

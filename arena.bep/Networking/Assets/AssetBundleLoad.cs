@@ -1,6 +1,4 @@
-﻿using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
+﻿using PacketHandler;
 using MemoryPack;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using System.Collections.Generic;
@@ -13,15 +11,15 @@ using System;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct AssetBundleLoadPacket : INetSerializable
+public partial struct AssetBundleLoadPacket : IPacket
 {
     public string id;
+    
+    [MemoryPackAllowSerialize]
     public List<Item> items;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AssetBundleLoadPacket>(reader);
 }
 
+// SERVER ONLY
 public struct PlayerAssetBundleLoadState
 {
     public Player player;
@@ -70,7 +68,7 @@ public class AssetBundleLoadPacketHandler : LambdaPacketHandler<AssetBundleLoadP
         return;
     }
 
-    protected override async void Apply(AssetBundleLoadPacket packet, NetPeer peer)
+    protected override async void Apply(AssetBundleLoadPacket packet, int peerId)
     {
         PresetBundleHandler.Instance.AddToCache(packet.items);
         await PresetBundleHandler.Instance.LoadEverythingInCache();

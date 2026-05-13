@@ -1,8 +1,5 @@
-﻿using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using MemoryPack;
 using PacketHandler;
 using ifp.arena.bep.Core.Gamemode;
@@ -11,7 +8,7 @@ using ifp.arena.shared.Models;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct SessionManagerSyncPacket : INetSerializable
+public partial struct SessionManagerSyncPacket : IPacket
 {
     public MatchState roundState;
     public BombState bombState;
@@ -20,9 +17,6 @@ public partial struct SessionManagerSyncPacket : INetSerializable
 
     public Dictionary<Faction, int> factionWins;
     public Dictionary<int, PlayerScoreInfo> scores;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<SessionManagerSyncPacket>(reader);
 }
 
 // Runs on MatchState.RoundEnd
@@ -53,12 +47,12 @@ public class SessionManagerSyncPacketHandler : LambdaPacketHandler<SessionManage
         DispatchPacket(FormatPacket());
     }
 
-    public async void SendToPeer(NetPeer peer)
+    public async void SendToPeer(int peerId)
     {
-        DispatchPacketToPeer(FormatPacket(), peer);
+        DispatchPacketToPeer(FormatPacket(), peerId);
     }
 
-    protected override void Apply(SessionManagerSyncPacket packet, NetPeer peer)
+    protected override void Apply(SessionManagerSyncPacket packet, int peerId)
     {
         if (H.IsServer) return;
 

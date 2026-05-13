@@ -2,25 +2,31 @@ using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
-public static class LambdaSerializationExtension
+public class ItemPlacementFormatter : MemoryPackFormatter<ItemPlacement>
 {
-    public static void Put(this NetDataWriter writer, ItemPlacement placement)
+    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ItemPlacement value)
     {
-        writer.Put((int)placement.Slot);
-        writer.Put((int)placement.Kind);
-
-        writer.Put(placement.Address);
+        writer.WriteObjectHeader(3);
+        writer.WriteUnmanaged((int)value.Slot);
+        writer.WriteUnmanaged((int)value.Kind);
+        writer.WriteValue(value.Address);
     }
 
-    public static ItemPlacement GetItemPlacement(this NetDataReader reader, Player player)
+    public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemPlacement value)
     {
-        var placementSlot = (EquipmentSlot)reader.GetInt();
-        var placementKind = (PlacementKind)reader.GetInt();
-        ItemAddress address = reader.GetItemAddress(player);
+        if (!reader.TryReadObjectHeader(out var count))
+        {
+            value = default;
+            return;
+        }
 
-        return new ItemPlacement(placementKind, placementSlot, address);
+        var placementSlot = (EquipmentSlot)reader.ReadUnmanaged<int>();
+        var placementKind = (PlacementKind)reader.ReadUnmanaged<int>();
+        var address = reader.ReadValue<ItemAddress>();
+        value = new ItemPlacement(placementKind, placementSlot, address);
     }
 }

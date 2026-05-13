@@ -6,30 +6,23 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Comfort.Common;
 using EFT;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using HarmonyLib;
 
 public static class PacketHandlerUtils
 {
-    public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-    public static Player MainPlayer => GetMainPlayer();
-    public static List<Player> AllPlayers => IsInRaid() ? GetAllPlayers() : new();
+    public static INetworkBackend Network           => Plugin.Network;
 
-    // Fika
-    public static NetPeer NetPeer => Singleton<NetPeer>.Instance;
-    public static IFikaNetworkManager FikaNet => Singleton<IFikaNetworkManager>.Instance;
-    public static NetPacketProcessor NetPacketProcessor => GetPacketProcessor();
-    public static NetManager NetManager => GetNetManager();
+    public static event Action OnNetworkCreated;
+    public static event Action OnNetworkDestroyed;
 
-    public static bool IsHeadless => GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
-    public static bool IsClient => FikaBackendUtils.IsClient;
-    public static bool IsServer => GameWorld is HideoutGameWorld || FikaBackendUtils.IsServer;
+    public static void TriggerNetworkCreated()      => OnNetworkCreated?.Invoke();
+    public static void TriggerNetworkDestroyed()    => OnNetworkDestroyed?.Invoke();
 
-    internal static void Log(string msg) { }
-    public static void Notify(object msg) => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
+    public static GameWorld GameWorld               => Singleton<GameWorld>.Instance;
+    public static Player MainPlayer                 => GetMainPlayer();
+    public static List<Player> AllPlayers           => IsInRaid() ? GetAllPlayers() : new();
+
+    internal static void Log(string msg)            => Plugin.Logger.LogInfo(msg);
+    public static void Notify(object msg)           => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
 
     // bro thinks he's the main character
@@ -37,7 +30,7 @@ public static class PacketHandlerUtils
     {
         try
         {
-            if (IsHeadless)
+            if (Plugin.Network.IsHeadless)
             {
                 Log("Headless trying to access MainPlayer. This is not supposed to happen.");
                 Log(Environment.StackTrace);
@@ -68,28 +61,6 @@ public static class PacketHandlerUtils
     public static bool IsInRaid()
     {
         return GameWorld != null && GameWorld is not HideoutGameWorld;
-    }
-
-    private static FieldInfo _netPacketProcessorField;
-
-    public static NetPacketProcessor GetPacketProcessor()
-    {
-        if (FikaNet == null) return null;
-
-        _netPacketProcessorField ??= AccessTools.Field(FikaNet.GetType(), "_packetProcessor");
-
-        return _netPacketProcessorField?.GetValue(FikaNet) as NetPacketProcessor;
-    }
-
-    private static FieldInfo _netManagerField;
-
-    public static NetManager GetNetManager()
-    {
-        if (FikaNet == null) return null;
-
-        _netManagerField ??= AccessTools.Field(FikaNet.GetType(), "_netServer");
-
-        return _netManagerField?.GetValue(FikaNet) as NetManager;
     }
 
     private static string _dump(object obj, int depth = 1, bool log = true, [CallerArgumentExpression("obj")] string name = null)

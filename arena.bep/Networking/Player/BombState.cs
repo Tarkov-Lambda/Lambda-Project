@@ -1,18 +1,14 @@
 ﻿using EFT;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core.Gamemode;
-using ifp.arena.bep.GameTypes;
-using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
-using Fika.Core.Networking.Snapshotting;
+using PacketHandler.TimeSync;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServerTimestampedPacket
+public partial struct BombStatePacket : IPacket, IAuthoredPacket, IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
@@ -22,9 +18,6 @@ public partial struct BombStatePacket : INetSerializable, IAuthoredPacket, IServ
     public BombState state;
 
     public Vector3 position;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<BombStatePacket>(reader);
 }
 
 public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
@@ -42,7 +35,7 @@ public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
         DispatchPacket(packet);
     }
 
-    protected override void MutateApprovedPacket(ref BombStatePacket packet, NetPeer peer)
+    protected override void MutateApprovedPacket(ref BombStatePacket packet, int peerId)
     {
         packet.Timestamp = NetworkTime.ServerNowSeconds;
     }
@@ -60,7 +53,7 @@ public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
         H.BombHandler.PlayBombAudio(packet);
     }
 
-    protected override void Apply(BombStatePacket packet, NetPeer peer)
+    protected override void Apply(BombStatePacket packet, int peerId)
     {
         H.Session.bombState = packet.state;
 

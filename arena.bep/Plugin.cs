@@ -253,8 +253,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
 
         // Memory Pack Formatters
-        RegisterMemoryPackFormatter(new PlayerFormatter());                         // Player -> Profile ID
-        RegisterMemoryPackFormatter(new ItemFormatter());                           // Item -> Binary via EFT internals
+        RegisterMemoryPackFormatter(new ItemPlacementFormatter());
 
         // Player Related Packets
         RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)

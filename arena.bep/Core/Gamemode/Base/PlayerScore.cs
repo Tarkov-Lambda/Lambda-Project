@@ -5,6 +5,7 @@ using EFT.InventoryLogic;
 using ifp.arena.bep.Core.Economy;
 using ifp.arena.bep.Core.Gamemode;
 using ifp.arena.shared.Models;
+using PacketHandler.TimeSync;
 using UnityEngine;
 
 public class PlayerScore

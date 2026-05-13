@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
 using HarmonyLib;
@@ -52,7 +53,7 @@ public static class HealthUtilities
         }
     }
 
-    public static async Task HealMe()
+    public static async UniTask HealMe()
     {
         if (H.Gamemode is IGMRespawnable)
         {
@@ -64,7 +65,7 @@ public static class HealthUtilities
         healthController.ChangeEnergy(100f);
         healthController.RestoreFullHealth();
 
-        await Task.Delay(500);
+        await UniTask.Delay(500);
 
         foreach (EBodyPart bodyPart in Enum.GetValues(typeof(EBodyPart)))
         {

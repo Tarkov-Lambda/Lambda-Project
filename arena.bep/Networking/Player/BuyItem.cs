@@ -1,11 +1,7 @@
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 using ifp.arena.bep.Core;
 using ifp.arena.bep.Core.Economy;
-using PacketHandler;
 using ifp.arena.shared.Models;
 using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
@@ -14,28 +10,21 @@ using System.Threading;
 using UnityEngine;
 using System.Linq;
 using PacketHandler.RateLimiting;
+using MemoryPack;
 
 namespace ifp.arena.bep.networking;
 
-public struct BuyItemPacket : INetSerializable, IAuthoredPacket
+[MemoryPackable]
+public partial struct BuyItemPacket : IPacket, IAuthoredPacket
 {
+    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
+
+    [MemoryPackAllowSerialize]
     public ItemPlacement placement;
+    
+    [MemoryPackAllowSerialize]
     public Item item;
-
-    public void Serialize(NetDataWriter writer)
-    {
-        writer.PutPlayer(Player);
-        writer.Put(placement);
-        writer.PutItem(item);
-    }
-
-    public void Deserialize(NetDataReader reader)
-    {
-        Player = reader.GetPlayer();
-        placement = reader.GetItemPlacement(Player);
-        item = reader.GetItem();
-    }
 }
 
 public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
@@ -58,7 +47,7 @@ public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool ValidatePacket(BuyItemPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(BuyItemPacket packet, int peerId, out string rejectionReason)
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {
@@ -80,48 +69,48 @@ public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
             }
         }
 
-        return base.ValidatePacket(packet, peer, out rejectionReason);
+        return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
 
     // SERVER: Wait for the host's representation of the player's inventory to settle, then mutate and broadcast.
-    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, int peerId)
     {
         int playerId = packet.Player.Id;
         var localPacket = packet;
 
         PlayerInventoryTimeGate.Enqueue(playerId, () =>
         {
-            MutateApprovedPacket(ref localPacket, peer); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
+            MutateApprovedPacket(ref localPacket, peerId); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
             if (localPacket.placement.Kind == PlacementKind.None)
             {
-                SendRejection(ref localPacket, peer, "Can't find placement for your item");
+                SendRejection(ref localPacket, peerId, "Can't find placement for your item");
                 return;
             }
 
-            H.FikaNet.SendData(ref localPacket, DeliveryMethod, true);
-            ApplyInternal(localPacket, peer);
+            PacketHandlerUtils.Network.SendData(ref localPacket, DeliveryType, true);
+            ApplyInternal(localPacket, peerId);
         });
     }
 
     // CLIENT: Wait for the observing client's representation of the player's inventory to settle, then apply locally.
     // I don't know if this will play nicely, but it's "good enough" for now
-    protected override void WhenClientReceivesPacket(BuyItemPacket packet, NetPeer peer)
+    protected override void WhenClientReceivesPacket(BuyItemPacket packet, int peerId)
     {
         int playerId = packet.Player.Id;
         var localPacket = packet;
 
-        PlayerInventoryTimeGate.Enqueue(playerId, () => base.WhenClientReceivesPacket(localPacket, peer));
+        PlayerInventoryTimeGate.Enqueue(playerId, () => base.WhenClientReceivesPacket(localPacket, peerId));
     }
 
-    protected override void MutateApprovedPacket(ref BuyItemPacket packet, NetPeer peer)
+    protected override void MutateApprovedPacket(ref BuyItemPacket packet, int peerId)
     {
         packet.item = packet.item.CloneItem();
         packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
 
         if (packet.placement.Kind == PlacementKind.None)
         {
-            SendRejection(ref packet, peer, "Can't find placement for your item");
+            SendRejection(ref packet, peerId, "Can't find placement for your item");
             return;
         }
 
@@ -159,7 +148,7 @@ public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
         }
     }
 
-    protected override void Apply(BuyItemPacket packet, NetPeer peer)
+    protected override void Apply(BuyItemPacket packet, int peerId)
     {
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
@@ -176,7 +165,7 @@ public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
         packet.Player.PlaceItem(packet.item, packet.placement);
     }
 
-    protected override void WhenRejected(BuyItemPacket packet, NetPeer peer)
+    protected override void WhenRejected(BuyItemPacket packet, int peerId)
     {
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {

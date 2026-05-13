@@ -1,11 +1,5 @@
 ﻿using Comfort.Common;
 using EFT;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using ifp.arena.bep.GameTypes;
-using PacketHandler;
-using ifp.arena.shared;
 using MemoryPack;
 using EFT.InventoryLogic;
 using ifp.arena.bep.Core.UI;
@@ -14,15 +8,12 @@ using Cysharp.Threading.Tasks;
 using ifp.arena.bep.Core.AssetBundleHandling;
 using ifp.arena.shared.Models;
 using ifp.arena.bep.Core.Economy;
-using arena.ui;
-using EFT.UI;
 using ifp.arena.bep.Core;
-using System.Threading.Tasks;
 
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
+public partial struct PlayerReadinessPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
@@ -30,12 +21,14 @@ public partial struct PlayerReadinessPacket : INetSerializable, IAuthoredPacket
     public PlayerReadinessState readyState;
 
     // presetItems is redundant as it can be derived form buySelection and defaultItems
+    [MemoryPackAllowSerialize]
     public List<Item> assetItems;
-    public Dictionary<ShopItem, Item> buySelection;
-    public Dictionary<EquipmentSlot, Item> defaultItems;
 
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<PlayerReadinessPacket>(reader);
+    [MemoryPackAllowSerialize]
+    public Dictionary<ShopItem, Item> buySelection;
+
+    [MemoryPackAllowSerialize]
+    public Dictionary<EquipmentSlot, Item> defaultItems;
 }
 
 public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessPacket>
@@ -55,11 +48,11 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
         if (readyState is PlayerReadinessState.Connected)
         {
             packet.assetItems = PresetBundleHandler.Instance.itemsToLoad;
+            packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
                 packet.buySelection.Add(shopItem, PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId));
-                packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
             }
         }
 
@@ -76,7 +69,7 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
         DispatchPacket(packet);
     }
 
-    protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, NetPeer peer)
+    protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, int peerId)
     {
         if (packet.assetItems != null)
         {
@@ -91,7 +84,7 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
         }
     }
 
-    protected override void Apply(PlayerReadinessPacket packet, NetPeer peer)
+    protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerScore playerScore = H.GetPlayerScore(packet.Player);
@@ -126,14 +119,14 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
                     Singleton<AssetBundleLoadPacketHandler>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.itemsToLoad).Forget();
 
                     // get the player up to speed
-                    Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peer);
-                    Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peer);
-                    Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peer);
-                    Singleton<GameplayVariablesSyncPacketHandler>.Instance.SendToPeer(peer);
+                    Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peerId);
+                    Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peerId);
+                    Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peerId);
+                    Singleton<GameplayVariablesSyncPacketHandler>.Instance.SendToPeer(peerId);
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {
-                        Singleton<InventoryResyncPacketHandler>.Instance.SendToPeer(player, peer);
+                        Singleton<InventoryResyncPacketHandler>.Instance.SendToPeer(player, peerId);
                     }
                 }
             }

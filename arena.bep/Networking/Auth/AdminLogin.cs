@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using EFT;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
 using PacketHandler.RateLimiting;
 using MemoryPack;
 
@@ -20,16 +17,13 @@ public enum AdminAuthStep
 }
 
 [MemoryPackable]
-public partial struct AdminAuthPacket : INetSerializable
+public partial struct AdminAuthPacket : IPacket
 {
     [MemoryPackAllowSerialize]
     public Player player;
 
     public AdminAuthStep Step;
     public string Payload;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<AdminAuthPacket>(reader);
 }
 
 public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
@@ -58,7 +52,7 @@ public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
         DispatchPacket(packet);
     }
 
-    protected override bool ValidatePacket(AdminAuthPacket packet, NetPeer peer, out string rejectionReason)
+    protected override bool ValidatePacket(AdminAuthPacket packet, int peerId, out string rejectionReason)
     {
         rejectionReason = null;
 
@@ -102,25 +96,25 @@ public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
         return valid;
     }
 
-    protected override void ProcessApprovedPacket(ref AdminAuthPacket packet, NetPeer peer)
+    protected override void ProcessApprovedPacket(ref AdminAuthPacket packet, int peerId)
     {
-        MutateApprovedPacket(ref packet, peer);
+        MutateApprovedPacket(ref packet, peerId);
 
         switch (packet.Step)
         {
             case AdminAuthStep.Request:
-                HandleRequest(ref packet, peer);
+                HandleRequest(ref packet, peerId);
                 break;
 
             case AdminAuthStep.Verify:
-                HandleVerify(ref packet, peer);
+                HandleVerify(ref packet, peerId);
                 break;
         }
 
-        ApplyInternal(packet, peer);
+        ApplyInternal(packet, peerId);
     }
 
-    private void HandleRequest(ref AdminAuthPacket packet, NetPeer peer)
+    private void HandleRequest(ref AdminAuthPacket packet, int peerId)
     {
         string nonce = Guid.NewGuid().ToString("N");
 
@@ -133,10 +127,10 @@ public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
             Payload = nonce
         };
 
-        H.FikaNet.SendDataToPeer(ref challenge, DeliveryMethod, peer);
+        PacketHandlerUtils.Network.SendDataToPeer(ref challenge, DeliveryType, peerId);
     }
 
-    private void HandleVerify(ref AdminAuthPacket packet, NetPeer peer)
+    private void HandleVerify(ref AdminAuthPacket packet, int peerId)
     {
         _pendingChallenges.Remove(packet.player);
 
@@ -147,11 +141,11 @@ public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
             Payload = null
         };
 
-        H.FikaNet.SendDataToPeer(ref success, DeliveryMethod, peer);
+        PacketHandlerUtils.Network.SendDataToPeer(ref success, DeliveryType, peerId);
     }
 
 
-    protected override void Apply(AdminAuthPacket packet, NetPeer peer)
+    protected override void Apply(AdminAuthPacket packet, int peerId)
     {
         switch (packet.Step)
         {

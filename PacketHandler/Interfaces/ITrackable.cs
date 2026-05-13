@@ -1,7 +1,5 @@
 ﻿using System;
 
-namespace ifp.arena.bep.networking;
-
 /// <summary>
 /// Packet can be tracked
 /// </summary>

@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+namespace PacketHandler.TimeSync;
+
 public static class NetworkTime
 {
     private static readonly Stopwatch _stopwatch = Stopwatch.StartNew();

@@ -1,7 +1,7 @@
 using Comfort.Common;
 using System;
 
-namespace ifp.arena.bep.networking.TimeSync;
+namespace PacketHandler.TimeSync;
 
 public class TimeSyncTicker : IDisposable
 {
@@ -16,7 +16,7 @@ public class TimeSyncTicker : IDisposable
 
     public void Update()
     {
-        if (H.IsServer)
+        if (Plugin.Network.IsServer)
             return;
 
         double now = NetworkTime.LocalNowSeconds;

@@ -38,6 +38,20 @@ namespace ifp.arena.bep.Core.UI
             scoreboardUI.gameObject.SetActive(false);
         }
 
+        public void Dispose()
+        {
+            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
+            PlayerReadinessPacketHandler.AfterPacketApplied -= OnPlayerReadiness;
+
+            EventBus.OnEnter -= OnMatchStateEnter;
+            EventBus.OnExit -= OnMatchStateExit;
+
+            Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
+
+            if (inventoryHotkeyListener != null)
+                Component.Destroy(inventoryHotkeyListener);
+        }
+
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
         private void OnPlayerReadiness(PlayerReadinessPacket packet) => Refresh();
 
@@ -125,20 +139,6 @@ namespace ifp.arena.bep.Core.UI
                     if (!show)
                         scoreboardUI.gameObject.SetActive(false);
                 });
-        }
-
-        public void Dispose()
-        {
-            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
-            PlayerReadinessPacketHandler.AfterPacketApplied -= OnPlayerReadiness;
-
-            EventBus.OnEnter -= OnMatchStateEnter;
-            EventBus.OnExit -= OnMatchStateExit;
-
-            Patch_Gameworld_OnGameStarted.OnGameStarted -= AddInventoryHotkeyInterceptor;
-
-            if (inventoryHotkeyListener != null)
-                Component.Destroy(inventoryHotkeyListener);
         }
     }
 }

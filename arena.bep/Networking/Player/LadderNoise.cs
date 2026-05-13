@@ -1,7 +1,4 @@
 using EFT;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using PacketHandler;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
@@ -9,15 +6,12 @@ using UnityEngine;
 namespace ifp.arena.bep.networking;
 
 [MemoryPackable]
-public partial struct LadderNoisePacket : INetSerializable, IAuthoredPacket
+public partial struct LadderNoisePacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
     public LadderMaterial ladderMaterial;
-
-    public void Serialize(NetDataWriter writer) => MemoryPackWrapper.Serialize(writer, this);
-    public void Deserialize(NetDataReader reader) => this = MemoryPackWrapper.Deserialize<LadderNoisePacket>(reader);
 }
 
 public class LadderNoisePacketHandler : LambdaPacketHandler<LadderNoisePacket>
@@ -38,7 +32,7 @@ public class LadderNoisePacketHandler : LambdaPacketHandler<LadderNoisePacket>
         MakeLadderNoise(H.MainPlayer, packet);
     }
 
-    protected override void Apply(LadderNoisePacket packet, NetPeer peer)
+    protected override void Apply(LadderNoisePacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer) return;
 
