@@ -13,6 +13,8 @@ public class FikaBackend : INetworkBackend, IDisposable
     public bool IsServer   => FikaBackendUtils.IsServer;
     public bool IsClient   => FikaBackendUtils.IsClient;
     public bool IsHeadless => FikaBackendUtils.IsHeadless;
+    public bool IsOnline   => true;
+
     public int NetId       => Singleton<IFikaNetworkManager>.Instance.NetId;
 
     private readonly Action<FikaNetworkManagerCreatedEvent> OnNetworkCreated;

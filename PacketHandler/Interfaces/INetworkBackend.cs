@@ -15,6 +15,8 @@ public interface INetworkBackend
     bool IsServer { get; }
     bool IsClient { get; }
     bool IsHeadless { get; }
+    bool IsOnline { get; }
+
     int NetId { get; }
 
     void RegisterPacketHandler<T>(Action<T, int> onReceive) where T : IPacket;
