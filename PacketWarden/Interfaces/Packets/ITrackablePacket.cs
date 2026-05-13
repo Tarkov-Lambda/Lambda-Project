@@ -3,7 +3,7 @@
 /// <summary>
 /// Packet can be tracked
 /// </summary>
-public interface ITrackable
+public interface ITrackablePacket
 {
     public Guid ID { get; set; }
 }

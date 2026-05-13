@@ -12,7 +12,7 @@ namespace Lambda.Core.Networking;
 // TODO: REFACTOR STRUCT
 // currently this is around 1300 bytes per explosion
 [MemoryPackable]
-public partial struct MolotovExplosionPacket : IPacket, IServerTimestampedPacket, ITrackable
+public partial struct MolotovExplosionPacket : IPacket, IServerTimestampedPacket, ITrackablePacket
 {
     public Guid ID { get; set; }
     public double Timestamp { get; set; }

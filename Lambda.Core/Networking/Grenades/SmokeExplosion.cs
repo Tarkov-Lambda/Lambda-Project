@@ -9,7 +9,7 @@ using PacketWarden.TimeSync;
 namespace Lambda.Core.Networking;
 
 [MemoryPackable]
-public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket, ITrackable
+public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket, ITrackablePacket
 {
     public Guid ID { get; set; }
     public double Timestamp { get; set; }
