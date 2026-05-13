@@ -4,7 +4,7 @@ using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using MemoryPack;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 using SPT.Reflection;
 using System;
 using System.Collections.Generic;
@@ -15,10 +15,10 @@ using UnityEngine.LowLevel;
 
 
 [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInPlugin("com.ifp.PacketHandler", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin("com.ifp.PacketWarden", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 internal class Plugin : BaseUnityPlugin
 {
-    public static readonly string pathToPacketHandler = Path.Combine(BepInEx.Paths.PluginPath, "ifp");
+    public static readonly string pathToPacketWarden = Path.Combine(BepInEx.Paths.PluginPath, "ifp");
 
     internal static new ManualLogSource Logger = null;
 
@@ -41,7 +41,7 @@ internal class Plugin : BaseUnityPlugin
     void Start()
     {
         Logger = base.Logger;
-        Logger.LogInfo("PacketHandler is loading");
+        Logger.LogInfo("PacketWarden is loading");
 
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
@@ -49,18 +49,18 @@ internal class Plugin : BaseUnityPlugin
         if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
         {
             InitFikaBackend();
-            RegisterSingleton<TimeSynchronizationPacketHandler>();
+            RegisterSingleton<TimeSynchronizationPacketWarden>();
         }
         else
         {
             Network = new LocalBackend();
-            Logger.LogInfo("PacketHandler running in Local Mode.");
+            Logger.LogInfo("PacketWarden running in Local Mode.");
         }
 
         H.OnNetworkCreated += NetworkTime.Reset;
 
-        RegisterSingleton<TestPacketHandler>();
-        Singleton<TestPacketHandler>.Instance.Send();
+        RegisterSingleton<TestPacketWarden>();
+        Singleton<TestPacketWarden>.Instance.Send();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -68,16 +68,16 @@ internal class Plugin : BaseUnityPlugin
     {
         try
         {
-            string fikaDllPath = Path.Combine(pathToPacketHandler, "PacketHandler.FikaIntegration.dll");
+            string fikaDllPath = Path.Combine(pathToPacketWarden, "PacketWarden.FikaIntegration.dll");
 
             Assembly fikaAssembly = Assembly.LoadFrom(fikaDllPath);
 
-            Type bootstrapType = fikaAssembly.GetType("PacketHandler.FikaIntegration.FikaBootstrap");
+            Type bootstrapType = fikaAssembly.GetType("PacketWarden.FikaIntegration.FikaBootstrap");
             MethodInfo initMethod = bootstrapType.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
 
             Network = (INetworkBackend)initMethod.Invoke(null, null);
 
-            Logger.LogInfo("PacketHandler running in MP Mode.");
+            Logger.LogInfo("PacketWarden running in MP Mode.");
         }
         catch (Exception ex)
         {
@@ -91,7 +91,7 @@ internal class Plugin : BaseUnityPlugin
 
     void OnDestroy()
     {
-        Logger.LogInfo("PacketHandler is unloading");
+        Logger.LogInfo("PacketWarden is unloading");
 
         foreach (var disposable in _disposables)
             disposable.Dispose();

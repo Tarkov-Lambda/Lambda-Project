@@ -157,7 +157,7 @@ public static class ReplenishmentUtilities
                 continue;
             }
 
-            Singleton<BuyItemPacketHandler>.Instance.Send(newItem, placement, player);
+            Singleton<BuyItemPacketWarden>.Instance.Send(newItem, placement, player);
         }
     }
 

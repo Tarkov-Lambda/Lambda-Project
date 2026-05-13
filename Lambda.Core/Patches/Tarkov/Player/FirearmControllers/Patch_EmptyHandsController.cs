@@ -17,7 +17,7 @@ namespace Lambda.Core.Patches.Tarkov;
         {
             if (____player.IsYourPlayer)
             {
-                Singleton<HandsInspectPacketHandler>.Instance.Send();
+                Singleton<HandsInspectPacketWarden>.Instance.Send();
             }
         }
     }

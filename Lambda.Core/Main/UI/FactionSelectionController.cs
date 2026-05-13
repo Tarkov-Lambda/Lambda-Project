@@ -42,7 +42,7 @@ namespace Lambda.Core.Main.UI
 
         public void ShowFactionSelectionEftScreen()
         {
-            FactionSelectionEftScreen.FactionSelectionEftScreenController screenController = new(Singleton<FactionChangePacketHandler>.Instance.Send);
+            FactionSelectionEftScreen.FactionSelectionEftScreenController screenController = new(Singleton<FactionChangePacketWarden>.Instance.Send);
             screenController.ShowScreen(EScreenState.Temporary);
         }
 

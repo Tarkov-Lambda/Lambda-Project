@@ -1,5 +1,5 @@
 using EFT;
-using PacketHandler;
+using PacketWarden;
 using MemoryPack;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -16,7 +16,7 @@ public partial struct DictateTeleportPacket : IPacket, IAuthoredPacket
     public Quaternion rotation;
 }
 
-public class DictateTeleportPacketHandler : LambdaPacketHandler<DictateTeleportPacket>
+public class DictateTeleportPacketWarden : LambdaPacketWarden<DictateTeleportPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -37,7 +37,7 @@ public class DictateTeleportPacketHandler : LambdaPacketHandler<DictateTeleportP
         MutateApprovedPacket(ref packet, peerId);
         if (!packet.Player.IsAI)
         {
-            PacketHandlerUtils.Network.SendData(ref packet, DeliveryType, true);
+            PacketWardenUtils.Network.SendData(ref packet, DeliveryType, true);
         }
         ApplyInternal(packet, peerId);
     }

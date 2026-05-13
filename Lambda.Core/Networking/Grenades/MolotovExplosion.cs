@@ -1,11 +1,11 @@
 using Cysharp.Threading.Tasks;
 using Lambda.Core.Main;
-using PacketHandler;
+using PacketWarden;
 using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -20,7 +20,7 @@ public partial struct MolotovExplosionPacket : IPacket, IServerTimestampedPacket
     public List<FireNode> fireNodes;
 }
 
-public class MolotovExplosionPacketHandler : LambdaPacketHandler<MolotovExplosionPacket>
+public class MolotovExplosionPacketWarden : LambdaPacketWarden<MolotovExplosionPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

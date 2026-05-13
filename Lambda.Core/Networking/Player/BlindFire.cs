@@ -12,7 +12,7 @@ public partial struct BlindFirePacket : IPacket, IAuthoredPacket
     public int value; // -1 = side fire, 0 = none, 1 = over-top
 }
 
-public class BlindFirePacketHandler : LambdaPacketHandler<BlindFirePacket>
+public class BlindFirePacketWarden : LambdaPacketWarden<BlindFirePacket>
 {
     protected override bool ShouldLog => false;
 

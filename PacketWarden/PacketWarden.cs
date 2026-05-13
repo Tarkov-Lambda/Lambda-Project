@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using EFT;
 using MemoryPack;
-using PacketHandler.RateLimiting;
-using PacketHandler.TimeSync;
+using PacketWarden.RateLimiting;
+using PacketWarden.TimeSync;
 
-namespace PacketHandler;
+namespace PacketWarden;
 
 public enum PacketAuthority
 {
@@ -21,7 +21,7 @@ public partial struct RejectionPacket<T> : IPacket where T : IPacket, new()
     public string rejectionReason;
 }
 
-public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
+public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 {
     protected INetworkBackend Network => Plugin.Network;
     public bool IsRegistered { get; private set; } = false;
@@ -39,7 +39,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     public static event Action<T> BeforePacketApplied;
     public static event Action<T> AfterPacketApplied;
 
-    protected PacketHandler() => Initialize();
+    protected PacketWarden() => Initialize();
 
     protected virtual void Initialize()
     {
@@ -61,8 +61,8 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     {
         H.Log($"Registering {typeof(T).Name}");
 
-        Network.RegisterPacketHandler<T>(WhenReceivedInternal);
-        Network.RegisterPacketHandler<RejectionPacket<T>>(WhenRejectionReceivedInternal);
+        Network.RegisterPacketWarden<T>(WhenReceivedInternal);
+        Network.RegisterPacketWarden<RejectionPacket<T>>(WhenRejectionReceivedInternal);
 
         IsRegistered = true;
     }
@@ -72,8 +72,8 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         try
         {
             _serverRateLimiter.Clear();
-            Network.UnregisterPacketHandler<T>();
-            Network.UnregisterPacketHandler<RejectionPacket<T>>();
+            Network.UnregisterPacketWarden<T>();
+            Network.UnregisterPacketWarden<RejectionPacket<T>>();
         }
         catch (Exception ex)
         {

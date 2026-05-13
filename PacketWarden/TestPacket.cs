@@ -1,7 +1,7 @@
-using PacketHandler.RateLimiting;
+using PacketWarden.RateLimiting;
 using MemoryPack;
 
-namespace PacketHandler.TimeSync;
+namespace PacketWarden.TimeSync;
 
 [MemoryPackable]
 public partial struct TestPacket : IPacket
@@ -9,7 +9,7 @@ public partial struct TestPacket : IPacket
     public double clientSendLocalSeconds;
 }
 
-public class TestPacketHandler : PacketHandler<TestPacket>
+public class TestPacketWarden : PacketWarden<TestPacket>
 {
     protected override bool ShouldLog => false;
 
@@ -18,7 +18,7 @@ public class TestPacketHandler : PacketHandler<TestPacket>
 
     public void Send()
     {
-        H.Log("INSIDE Send TestPacketHandler");
+        H.Log("INSIDE Send TestPacketWarden");
 
         var packet = new TestPacket
         {
@@ -35,6 +35,6 @@ public class TestPacketHandler : PacketHandler<TestPacket>
 
     protected override void Apply(TestPacket packet, int peerId)
     {
-        H.Log("INSIDE Apply TestPacketHandler");
+        H.Log("INSIDE Apply TestPacketWarden");
     }
 }

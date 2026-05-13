@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace PacketHandler.TimeSync;
+namespace PacketWarden.TimeSync;
 
 public static class NetworkTime
 {

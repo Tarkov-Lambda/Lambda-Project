@@ -1,6 +1,6 @@
 using System;
 
-namespace PacketHandler.RateLimiting;
+namespace PacketWarden.RateLimiting;
 
 public readonly struct RateLimitConfig
 {

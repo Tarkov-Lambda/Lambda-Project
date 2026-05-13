@@ -5,7 +5,7 @@ using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using UnityEngine;
 using DG.Tweening;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Main;
 

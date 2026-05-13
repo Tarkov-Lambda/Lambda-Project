@@ -9,7 +9,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 using System.Linq;
-using PacketHandler.RateLimiting;
+using PacketWarden.RateLimiting;
 using MemoryPack;
 
 namespace Lambda.Core.Networking;
@@ -27,7 +27,7 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
     public Item item;
 }
 
-public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
+public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
 
@@ -88,7 +88,7 @@ public class BuyItemPacketHandler : LambdaPacketHandler<BuyItemPacket>
                 return;
             }
 
-            PacketHandlerUtils.Network.SendData(ref localPacket, DeliveryType, true);
+            PacketWardenUtils.Network.SendData(ref localPacket, DeliveryType, true);
             ApplyInternal(localPacket, peerId);
         });
     }

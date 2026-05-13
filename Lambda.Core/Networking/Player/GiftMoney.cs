@@ -21,7 +21,7 @@ public partial struct GiveMoneyPacket : IPacket, IAuthoredPacket
     public string ItemBsgId;
 }
 
-public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
+public class GiftMoneyPacketWarden : LambdaPacketWarden<GiveMoneyPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
 
@@ -53,9 +53,9 @@ public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
     {
         rejectionReason = null;
 
-        AskForMoneyPacketHandler askForMoneyPacketHandler = Singleton<AskForMoneyPacketHandler>.Instance;
+        AskForMoneyPacketWarden askForMoneyPacketWarden = Singleton<AskForMoneyPacketWarden>.Instance;
 
-        if (askForMoneyPacketHandler.playerToItem.TryGetValue(packet.TargetPlayer, out string ItemBsgId))
+        if (askForMoneyPacketWarden.playerToItem.TryGetValue(packet.TargetPlayer, out string ItemBsgId))
         {
             if (ItemBsgId != packet.ItemBsgId)
             {
@@ -84,8 +84,8 @@ public class GiftMoneyPacketHandler : LambdaPacketHandler<GiveMoneyPacket>
                 Purchasing.BuyItem(itemData);
             }
 
-            AskForMoneyPacketHandler askForMoneyPacketHandler = Singleton<AskForMoneyPacketHandler>.Instance;
-            askForMoneyPacketHandler.playerToItem.Remove(packet.TargetPlayer);
+            AskForMoneyPacketWarden askForMoneyPacketWarden = Singleton<AskForMoneyPacketWarden>.Instance;
+            askForMoneyPacketWarden.playerToItem.Remove(packet.TargetPlayer);
             EventBus.OnBuyAskCancelled?.Invoke(packet.Player);
         }
     }

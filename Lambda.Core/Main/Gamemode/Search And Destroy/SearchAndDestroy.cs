@@ -27,7 +27,7 @@ public class SND_Cleanup : SharedCleanup
             SNDGamemode snd = H.Gamemode as SNDGamemode;
             int roundIndex = H.Session.GetRoundIndexOfTheCurrentHalf();
             double newTime = TimeOfDayHelper.GetMinutesForRound(roundIndex, snd.MaxRoundsToWin);
-            Singleton<WeatherAndTimeSyncPacketHandler>.Instance.Send(newTime);
+            Singleton<WeatherAndTimeSyncPacketWarden>.Instance.Send(newTime);
         }
 
         base.OnEnter();
@@ -114,7 +114,7 @@ public class SND_Planted : IGameState
         if (H.Arena.StateTimer <= 0)
         {
             H.Arena.Award(Faction.T, RoundWinReason.Objective);
-            Singleton<BombStatePacketHandler>.Instance.Send(H.Arena.LastObjectivePlayer, BombState.Exploded, Vector3.zero);
+            Singleton<BombStatePacketWarden>.Instance.Send(H.Arena.LastObjectivePlayer, BombState.Exploded, Vector3.zero);
             return MatchState.RoundEnd;
         }
 

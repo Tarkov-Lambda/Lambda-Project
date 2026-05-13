@@ -9,9 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.ui", "arena.ui\arena.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "arena.audio\SteamAudioUnity.csproj", "{F2614763-D1AE-332B-D239-2C11361148E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketHandler", "PacketHandler\PacketHandler.csproj", "{985BBEAC-25FC-266D-4099-B45F599E2600}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketWarden", "PacketWarden\PacketWarden.csproj", "{985BBEAC-25FC-266D-4099-B45F599E2600}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketHandler.FikaIntegration", "PacketHandler.FikaIntegration\PacketHandler.FikaIntegration.csproj", "{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketWarden.FikaIntegration", "PacketWarden.FikaIntegration\PacketWarden.FikaIntegration.csproj", "{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Core", "Lambda.Core\Lambda.Core.csproj", "{D337A5EB-B001-F814-D5CF-A5BA73CB375E}"
 EndProject

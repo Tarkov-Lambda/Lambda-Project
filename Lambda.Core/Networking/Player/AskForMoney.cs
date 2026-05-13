@@ -16,11 +16,11 @@ public struct AskForMoneyPacket : IPacket, IAuthoredPacket
     public bool IsRequesting;
 }
 
-public class AskForMoneyPacketHandler : LambdaPacketHandler<AskForMoneyPacket>
+public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
 {
     public Dictionary<Player, string> playerToItem;
 
-    public AskForMoneyPacketHandler()
+    public AskForMoneyPacketWarden()
     {
         playerToItem = [];
 

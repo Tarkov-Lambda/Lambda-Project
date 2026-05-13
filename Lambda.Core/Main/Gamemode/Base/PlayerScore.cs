@@ -5,7 +5,7 @@ using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.Gamemode;
 using ifp.arena.shared.Models;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 using UnityEngine;
 
 public class PlayerScore

@@ -38,7 +38,7 @@ public class Patch_Grenade_InvokeBlowUpEvent : ModulePatch
     {
         if (H.IsServer && __instance.WeaponSource.StringTemplateId is Hardcode.MOLOTOV_GRENADE)
         {
-            Singleton<MolotovExplosionPacketHandler>.Instance.Send(__instance.transform.position);
+            Singleton<MolotovExplosionPacketWarden>.Instance.Send(__instance.transform.position);
         }
     }
 }

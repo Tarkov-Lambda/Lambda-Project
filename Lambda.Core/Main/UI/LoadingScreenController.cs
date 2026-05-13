@@ -22,7 +22,7 @@ namespace Lambda.Core.Main.UI
             screen = GameObject.Instantiate(prefab, commonUI.EftBattleUIScreen.transform).GetComponent<LoadingScreen>();
             screen.gameObject.SetActive(false);
 
-            PlayerReadinessPacketHandler.AfterPacketApplied += ReceivePlayerReadinessPacket;
+            PlayerReadinessPacketWarden.AfterPacketApplied += ReceivePlayerReadinessPacket;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
             MapLoadEvent.OnBeginLoad += OnBeginLoad;
@@ -31,7 +31,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerReadinessPacketHandler.AfterPacketApplied -= ReceivePlayerReadinessPacket;
+            PlayerReadinessPacketWarden.AfterPacketApplied -= ReceivePlayerReadinessPacket;
             EventBus.OnEnter -= OnMatchStateEnter;
             MapLoadEvent.OnBeginLoad -= OnBeginLoad;
             MapLoadEvent.OnSuccessfulLoad -= OnSuccessfulMapLoad;

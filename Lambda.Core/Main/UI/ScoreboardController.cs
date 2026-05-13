@@ -25,8 +25,8 @@ namespace Lambda.Core.Main.UI
         {
             this.scoreboardUI = scoreboardUI;
 
-            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
-            PlayerReadinessPacketHandler.AfterPacketApplied += OnPlayerReadiness;
+            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
+            PlayerReadinessPacketWarden.AfterPacketApplied += OnPlayerReadiness;
 
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
@@ -40,8 +40,8 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
-            PlayerReadinessPacketHandler.AfterPacketApplied -= OnPlayerReadiness;
+            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
+            PlayerReadinessPacketWarden.AfterPacketApplied -= OnPlayerReadiness;
 
             EventBus.OnEnter -= OnMatchStateEnter;
             EventBus.OnExit -= OnMatchStateExit;

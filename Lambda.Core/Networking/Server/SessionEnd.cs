@@ -1,4 +1,4 @@
-﻿using PacketHandler;
+﻿using PacketWarden;
 using MemoryPack;
 using Lambda.Core.Main.AssetBundleHandling;
 
@@ -10,7 +10,7 @@ public partial struct SessionStopPacket : IPacket
     public bool isItTrue;
 }
 
-public class SessionStopPacketHandler : LambdaPacketHandler<SessionStopPacket>
+public class SessionStopPacketWarden : LambdaPacketWarden<SessionStopPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.Admin;
 

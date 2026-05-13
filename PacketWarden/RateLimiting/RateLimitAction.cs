@@ -1,4 +1,4 @@
-namespace PacketHandler.RateLimiting;
+namespace PacketWarden.RateLimiting;
 
 public enum RateLimitAction
 {

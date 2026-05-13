@@ -1,4 +1,4 @@
-﻿using PacketHandler;
+﻿using PacketWarden;
 using MemoryPack;
 using System;
 using UnityEngine;
@@ -12,7 +12,7 @@ public partial struct WeatherAndTimePacket : IPacket
     public double minutesSinceMidnight;
 }
 
-public class WeatherAndTimeSyncPacketHandler : LambdaPacketHandler<WeatherAndTimePacket>
+public class WeatherAndTimeSyncPacketWarden : LambdaPacketWarden<WeatherAndTimePacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

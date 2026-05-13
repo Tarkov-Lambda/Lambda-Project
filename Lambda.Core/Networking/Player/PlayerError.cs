@@ -13,7 +13,7 @@ public partial struct RaiseErrorPacket : IPacket, IAuthoredPacket
     public bool isForAdmin;
 }
 
-public class RaiseErrorPacketHandler : LambdaPacketHandler<RaiseErrorPacket>
+public class RaiseErrorPacketWarden : LambdaPacketWarden<RaiseErrorPacket>
 {
     public void Send(string error, bool isForAdmin = true)
     {

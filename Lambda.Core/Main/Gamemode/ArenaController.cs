@@ -10,7 +10,7 @@ using Lambda.Core.GameTypes;
 using Lambda.Core.Networking;
 using ifp.arena.shared;
 using MemoryPack;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
@@ -78,13 +78,13 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Player player = peerDisconnectedEvent.Peer.Player;
             if (player != null)
             {
-                Singleton<PlayerReadinessPacketHandler>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
+                Singleton<PlayerReadinessPacketWarden>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
                 var damageInfo = new DamageInfoStruct
                 {
                     Damage = 1f,
                     BodyPartColliderType = EBodyPartColliderType.RibcageUp
                 };
-                Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, player, player);
+                Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
             }
         }
     }
@@ -120,7 +120,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             H.Session.scoreboard[H.MainPlayer.Id] = new PlayerScore(H.MainPlayer.Id);
             H.MainPlayerScore.Spawn();
 
-            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Connected);
+            Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Connected);
 
             PU.OpenEyes();
         }
@@ -191,7 +191,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
-        Singleton<MatchStateSyncPacketHandler>.Instance.Send(newStateType, H.Gamemode.StateTimerConfig[newStateType], roundEndData);
+        Singleton<MatchStateSyncPacketWarden>.Instance.Send(newStateType, H.Gamemode.StateTimerConfig[newStateType], roundEndData);
     }
 
     public void TransitionToState(MatchStateSyncPacket packet)
@@ -240,7 +240,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
     }
 
-    public void OnRoundEnd() => Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
+    public void OnRoundEnd() => Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
 }
 
 public class UnityTicker : MonoBehaviour

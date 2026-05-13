@@ -1,8 +1,8 @@
-using PacketHandler.RateLimiting;
+using PacketWarden.RateLimiting;
 using MemoryPack;
 using System;
 
-namespace PacketHandler.TimeSync;
+namespace PacketWarden.TimeSync;
 
 [MemoryPackable]
 public partial struct TimeSynchronizationPacket : IPacket
@@ -11,7 +11,7 @@ public partial struct TimeSynchronizationPacket : IPacket
     public double serverSendSeconds;
 }
 
-public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>
+public class TimeSynchronizationPacketWarden : PacketWarden<TimeSynchronizationPacket>
 {
     protected override bool ShouldLog => false;
 

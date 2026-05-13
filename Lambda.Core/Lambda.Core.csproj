@@ -69,7 +69,7 @@
 
     <ProjectReference Include="..\arena.audio\SteamAudioUnity.csproj" />
 
-    <ProjectReference Include="..\PacketHandler\PacketHandler.csproj" />
+    <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

@@ -1,4 +1,4 @@
-﻿using PacketHandler;
+﻿using PacketWarden;
 using MemoryPack;
 using EFT;
 using Cysharp.Threading.Tasks;
@@ -17,7 +17,7 @@ public partial struct AssetBundleLoadFinishedPacket : IPacket, IAuthoredPacket
 }
 
 // Player tells server they are done loading this specific batch of asset bundles
-public class AssetBundleLoadFinishedPacketHandler : LambdaPacketHandler<AssetBundleLoadFinishedPacket>
+public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundleLoadFinishedPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -40,7 +40,7 @@ public class AssetBundleLoadFinishedPacketHandler : LambdaPacketHandler<AssetBun
 
     protected override async void Apply(AssetBundleLoadFinishedPacket packet, int peerId)
     {
-        var assetBundleLoadProgressDictionary = Singleton<AssetBundleLoadPacketHandler>.Instance.AssetBundleLoadProgress;
+        var assetBundleLoadProgressDictionary = Singleton<AssetBundleLoadPacketWarden>.Instance.AssetBundleLoadProgress;
         var assetBundleLoadProgress = assetBundleLoadProgressDictionary[packet.id];
 
         if (assetBundleLoadProgress != null)

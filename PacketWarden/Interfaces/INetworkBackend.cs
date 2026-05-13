@@ -19,8 +19,8 @@ public interface INetworkBackend
 
     int NetId { get; }
 
-    void RegisterPacketHandler<T>(Action<T, int> onReceive) where T : IPacket;
-    void UnregisterPacketHandler<T>() where T : IPacket;
+    void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket;
+    void UnregisterPacketWarden<T>() where T : IPacket;
 
     void SendData<T>(ref T packet, DeliveryType method, bool broadcast) where T : IPacket;
     void SendDataToPeer<T>(ref T packet, DeliveryType method, int peerId) where T : IPacket;

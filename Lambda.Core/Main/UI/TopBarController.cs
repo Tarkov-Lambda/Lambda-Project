@@ -15,8 +15,8 @@ namespace Lambda.Core.Main.UI
         {
             this.topBar = topBar;
 
-            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
-            PlayerReadinessPacketHandler.AfterPacketApplied += OnPlayerReadiness;
+            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
+            PlayerReadinessPacketWarden.AfterPacketApplied += OnPlayerReadiness;
             EventBus.OnEnter += OnMatchStateEnter;
             UnityTicker.OnUpdate += OnUpdate;
 
@@ -65,8 +65,8 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
-            PlayerReadinessPacketHandler.AfterPacketApplied -= OnPlayerReadiness;
+            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
+            PlayerReadinessPacketWarden.AfterPacketApplied -= OnPlayerReadiness;
             EventBus.OnEnter -= OnMatchStateEnter;
             UnityTicker.OnUpdate -= OnUpdate;
         }

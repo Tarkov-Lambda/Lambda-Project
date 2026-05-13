@@ -1,4 +1,4 @@
-﻿using PacketHandler;
+﻿using PacketWarden;
 using MemoryPack;
 using Comfort.Common;
 using Lambda.Core.Main;
@@ -12,7 +12,7 @@ public partial struct ZoneOwnershipPacket : IPacket
     public ZoneOwnership ownership;
 }
 
-public class ZoneOwnershipPacketHandler : LambdaPacketHandler<ZoneOwnershipPacket>
+public class ZoneOwnershipPacketWarden : LambdaPacketWarden<ZoneOwnershipPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

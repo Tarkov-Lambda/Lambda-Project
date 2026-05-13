@@ -49,7 +49,7 @@ public class EconomyManager : IDisposable
         _lossCounters[Faction.T] = 1;
 
         // Subscribe to events
-        PlayerKilledPacketHandler.AfterPacketApplied += HandleKillReward;
+        PlayerKilledPacketWarden.AfterPacketApplied += HandleKillReward;
         EventBus.OnBombStateChange += HandleObjectiveReward;
         EventBus.OnRoundActionEnd += HandleRoundEndEconomy;
 
@@ -58,7 +58,7 @@ public class EconomyManager : IDisposable
 
     public void Dispose()
     {
-        PlayerKilledPacketHandler.AfterPacketApplied -= HandleKillReward;
+        PlayerKilledPacketWarden.AfterPacketApplied -= HandleKillReward;
         EventBus.OnBombStateChange -= HandleObjectiveReward;
         EventBus.OnRoundActionEnd -= HandleRoundEndEconomy;
         EventBus.OnEnter -= OnEnter;

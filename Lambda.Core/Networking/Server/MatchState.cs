@@ -1,7 +1,7 @@
 ﻿using Lambda.Core.Main.Gamemode;
-using PacketHandler;
+using PacketWarden;
 using MemoryPack;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -15,7 +15,7 @@ public partial struct MatchStateSyncPacket : IPacket, IServerTimestampedPacket
     public RoundActionPhaseEnd? roundActionEnd;
 }
 
-public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPacket>
+public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

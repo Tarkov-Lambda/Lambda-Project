@@ -7,7 +7,7 @@ using System.Text;
 using Comfort.Common;
 using EFT;
 
-public static class PacketHandlerUtils
+public static class PacketWardenUtils
 {
     public static INetworkBackend Network           => Plugin.Network;
 

@@ -13,12 +13,12 @@ public class LocalBackend : INetworkBackend
 
     private Dictionary<Type, Delegate> _handlers = new();
 
-    public void RegisterPacketHandler<T>(Action<T, int> onReceive) where T : IPacket
+    public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket
     {
         _handlers[typeof(T)] = onReceive;
     }
 
-    public void UnregisterPacketHandler<T>() where T : IPacket
+    public void UnregisterPacketWarden<T>() where T : IPacket
     {
         _handlers.Remove(typeof(T));
     }

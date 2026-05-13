@@ -16,7 +16,7 @@ public partial struct FactionChangePacket : IPacket, IAuthoredPacket
     public Faction faction;
 }
 
-public class FactionChangePacketHandler : LambdaPacketHandler<FactionChangePacket>
+public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 {
     public CancellationTokenSource _cts { get; private set; }
 

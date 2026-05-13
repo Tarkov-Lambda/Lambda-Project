@@ -19,7 +19,7 @@ internal class Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer : M
     {
         if (serverStatus.Status == EOperationStatus.Failed && serverStatus.Error.StartsWith("Could not find item"))
         {
-            Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
+            Singleton<InventoryResyncPacketWarden>.Instance.Send(H.MainPlayer);
         }
     }
 }

@@ -1,7 +1,7 @@
 using EFT;
 using MemoryPack;
 using static EFT.Player;
-using PacketHandler.RateLimiting;
+using PacketWarden.RateLimiting;
 
 namespace Lambda.Core.Networking;
 
@@ -12,7 +12,7 @@ public partial struct HandsInspectPacket : IPacket, IAuthoredPacket
     public Player Player { get; set; }
 }
 
-public class HandsInspectPacketHandler : LambdaPacketHandler<HandsInspectPacket>
+public class HandsInspectPacketWarden : LambdaPacketWarden<HandsInspectPacket>
 {
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
 

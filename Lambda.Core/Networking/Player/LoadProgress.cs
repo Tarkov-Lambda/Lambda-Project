@@ -12,7 +12,7 @@ public partial struct LoadProgressPacket : IPacket, IAuthoredPacket
     public float progress;
 }
 
-public class LoadProgressPacketHandler : LambdaPacketHandler<LoadProgressPacket>
+public class LoadProgressPacketWarden : LambdaPacketWarden<LoadProgressPacket>
 {
     public void Send(float progress)
     {

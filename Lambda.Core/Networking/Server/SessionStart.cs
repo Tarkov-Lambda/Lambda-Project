@@ -1,6 +1,6 @@
 ﻿using Comfort.Common;
 using Lambda.Core.Main.AssetBundleHandling;
-using PacketHandler;
+using PacketWarden;
 using MemoryPack;
 using EFT.InventoryLogic;
 using Cysharp.Threading.Tasks;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using Lambda.Core.Main.Gamemode;
 using EFT;
 using Lambda.Core.Main;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -22,7 +22,7 @@ public partial struct SessionStartPacket : IPacket
 }
 
 // Either when game mode has finished, or admin requests it. scoreboard is fresh.
-public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
+public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.Admin;
 
@@ -92,7 +92,7 @@ public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
 
         if (!H.IsClient)
         {
-            Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
+            Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
             H.Arena.ChangeState(MatchState.Warmup);
         }
 
@@ -118,7 +118,7 @@ public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
         if (!H.IsHeadless)
         {
             // we're ready chat
-            Singleton<PlayerReadinessPacketHandler>.Instance.Send(PlayerReadinessState.Ready);
+            Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Ready);
         }
     }
 

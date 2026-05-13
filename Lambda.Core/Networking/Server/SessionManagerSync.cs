@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using MemoryPack;
-using PacketHandler;
+using PacketWarden;
 using Lambda.Core.Main.Gamemode;
 using ifp.arena.shared.Models;
 
@@ -20,7 +20,7 @@ public partial struct SessionManagerSyncPacket : IPacket
 }
 
 // Runs on MatchState.RoundEnd
-public class SessionManagerSyncPacketHandler : LambdaPacketHandler<SessionManagerSyncPacket>
+public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerSyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

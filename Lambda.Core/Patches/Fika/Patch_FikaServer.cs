@@ -17,7 +17,7 @@ using Fika.Core.Networking.Pooling;
 using HarmonyLib;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -234,7 +234,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         {
             Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damagePacket.ProfileId);
 
-            Singleton<PlayerKilledPacketHandler>.Instance.Send(damageInfo, victim, shooter); // Client dies
+            Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, victim, shooter); // Client dies
         }
 
         float current2 = healthController.GetBodyPartHealth(EBodyPart.Common, false).Current;

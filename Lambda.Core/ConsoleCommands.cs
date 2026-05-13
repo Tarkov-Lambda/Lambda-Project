@@ -26,13 +26,13 @@ internal class LambdaConsoleCommands
     [ConsoleCommand("setpassword", "", null, "set admin password")]
     internal static void ChangeAdminPassword([ConsoleArgument("", "Adming password")] string password)
     {
-        Singleton<AdminLoginPacketHandler>.Instance.Send();
+        Singleton<AdminLoginPacketWarden>.Instance.Send();
     }
 
     [ConsoleCommand("login", "", null, "Admin login")]
     internal static void AdminLogin()
     {
-        Singleton<AdminLoginPacketHandler>.Instance.Send();
+        Singleton<AdminLoginPacketWarden>.Instance.Send();
     }
 
     [ConsoleCommand("changelevel", "", null, "Admin only: Change server's map")]
@@ -65,7 +65,7 @@ internal class LambdaConsoleCommands
         var isSet = GameplayVariables.SetFieldValue(variableName, value);
         if (isSet)
         {
-            Singleton<GameplayVariablesSyncPacketHandler>.Instance.Send();
+            Singleton<GameplayVariablesSyncPacketWarden>.Instance.Send();
         }
     }
 
@@ -83,12 +83,12 @@ internal class LambdaConsoleCommands
     [ConsoleCommand("startsession", "", null, "Admin only: Start session")]
     internal static void StartSession()
     {
-        Singleton<SessionStartPacketHandler>.Instance.Send();
+        Singleton<SessionStartPacketWarden>.Instance.Send();
     }
 
     [ConsoleCommand("endsession", "", null, "Admin only: End session")]
     internal static void StopSession()
     {
-        Singleton<SessionStopPacketHandler>.Instance.Send();
+        Singleton<SessionStopPacketWarden>.Instance.Send();
     }
 }

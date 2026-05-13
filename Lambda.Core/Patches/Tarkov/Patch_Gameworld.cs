@@ -1,6 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;

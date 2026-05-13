@@ -23,7 +23,7 @@ public partial struct PopPacket : IPacket, IAuthoredPacket
     public ItemAddress itemAddress;
 }
 
-public class ForceRemoveItemPacketHandler : LambdaPacketHandler<PopPacket>
+public class ForceRemoveItemPacketWarden : LambdaPacketWarden<PopPacket>
 {
     // protected override RateLimitConfig ServerRateLimit => RateLimitPresets.StrictInteraction;
 

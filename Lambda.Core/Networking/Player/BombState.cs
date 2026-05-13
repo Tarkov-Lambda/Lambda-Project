@@ -3,7 +3,7 @@ using Lambda.Core.Main.Gamemode;
 using ifp.arena.shared;
 using MemoryPack;
 using UnityEngine;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -20,7 +20,7 @@ public partial struct BombStatePacket : IPacket, IAuthoredPacket, IServerTimesta
     public Vector3 position;
 }
 
-public class BombStatePacketHandler : LambdaPacketHandler<BombStatePacket>
+public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
 {
     public void Send(Player player, BombState state, Vector3 position)
     {

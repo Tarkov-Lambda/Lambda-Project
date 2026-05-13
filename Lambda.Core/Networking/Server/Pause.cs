@@ -1,6 +1,6 @@
 ﻿using EFT;
 using MemoryPack;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -13,7 +13,7 @@ public partial struct PausePacket : IPacket, IAuthoredPacket, IServerTimestamped
     public double Timestamp { get; set; }
 }
 
-public class PausePacketHandler : LambdaPacketHandler<PausePacket>
+public class PausePacketWarden : LambdaPacketWarden<PausePacket>
 {
     public void Send()
     {

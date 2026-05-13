@@ -14,7 +14,7 @@ public partial struct LadderNoisePacket : IPacket, IAuthoredPacket
     public LadderMaterial ladderMaterial;
 }
 
-public class LadderNoisePacketHandler : LambdaPacketHandler<LadderNoisePacket>
+public class LadderNoisePacketWarden : LambdaPacketWarden<LadderNoisePacket>
 {
     public void Send(LadderMaterial ladderMaterial)
     {

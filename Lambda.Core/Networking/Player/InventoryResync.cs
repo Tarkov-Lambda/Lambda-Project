@@ -5,7 +5,7 @@ using Fika.Core.Main.Utils;
 using HarmonyLib;
 using Lambda.Core.Main;
 using MemoryPack;
-using PacketHandler.RateLimiting;
+using PacketWarden.RateLimiting;
 using System.Reflection;
 using static EFT.Player;
 
@@ -23,7 +23,7 @@ public partial struct InventoryResyncPacket : IPacket
     public bool broadcast;
 }
 
-public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncPacket>
+public class InventoryResyncPacketWarden : LambdaPacketWarden<InventoryResyncPacket>
 {
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(5);
 
@@ -71,11 +71,11 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
 
         if (packet.broadcast)
         {
-            PacketHandlerUtils.Network.SendData(ref packet, DeliveryType, true);
+            PacketWardenUtils.Network.SendData(ref packet, DeliveryType, true);
         }
         else if (peerId != Network.NetId)
         {
-            PacketHandlerUtils.Network.SendDataToPeer(ref packet, DeliveryType, peerId);
+            PacketWardenUtils.Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
 
         if (packet.Player.IsYourPlayer)

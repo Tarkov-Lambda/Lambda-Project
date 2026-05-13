@@ -26,7 +26,7 @@ using UnityEngine.LowLevel;
 namespace Lambda.Core;
 
 [BepInDependency("com.fika.core")]
-[BepInDependency("com.ifp.PacketHandler")]
+[BepInDependency("com.ifp.PacketWarden")]
 [BepInPlugin("com.ifp.lambda", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
@@ -255,35 +255,35 @@ public class Plugin : BaseUnityPlugin
         RegisterMemoryPackFormatter(new ItemPlacementFormatter());
 
         // Player Related Packets
-        RegisterSingleton<PlayerKilledPacketHandler>();                             // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
-        RegisterSingleton<FactionChangePacketHandler>();                            // Player swaps factions
-        RegisterSingleton<BuyItemPacketHandler>();                                  // Player asks to spawn an item
-        RegisterSingleton<HandsInspectPacketHandler>();                             // Hands Examination Packet
-        RegisterSingleton<BlindFirePacketHandler>();                                // Procedural blindfire state synchronization
-        RegisterSingleton<ReplenishPacketHandler>();                                // Player announcens a replenishment
-        RegisterSingleton<SmokeExplosionPacketHandler>();                           // Smoke Bloom Broadcast
-        RegisterSingleton<MolotovExplosionPacketHandler>();                         // Molotov BFS Explosion Broadcast
-        RegisterSingleton<LadderNoisePacketHandler>();                              // Player plays a ladder noise
-        RegisterSingleton<ForceRemoveItemPacketHandler>();                          // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
-        RegisterSingleton<AskForMoneyPacketHandler>();                              // Ask teammates for money to buy a specific item
-        RegisterSingleton<GiftMoneyPacketHandler>();                                // Gift teammate money for a specific item (Beggar auto buys the item)
-        RegisterSingleton<InventoryResyncPacketHandler>();                          // Resynchronize Inventory Controller
-        RegisterSingleton<DictateTeleportPacketHandler>();                          // Tell the player to teleport somewhere
+        RegisterSingleton<PlayerKilledPacketWarden>();                              // Server/Client sends this if a Player dies (Server handles everyone's death to a bullet, client handles death to explosions, fall, etc)
+        RegisterSingleton<FactionChangePacketWarden>();                             // Player swaps factions
+        RegisterSingleton<BuyItemPacketWarden>();                                   // Player asks to spawn an item
+        RegisterSingleton<HandsInspectPacketWarden>();                              // Hands Examination Packet
+        RegisterSingleton<BlindFirePacketWarden>();                                 // Procedural blindfire state synchronization
+        RegisterSingleton<ReplenishPacketWarden>();                                 // Player announcens a replenishment
+        RegisterSingleton<SmokeExplosionPacketWarden>();                            // Smoke Bloom Broadcast
+        RegisterSingleton<MolotovExplosionPacketWarden>();                          // Molotov BFS Explosion Broadcast
+        RegisterSingleton<LadderNoisePacketWarden>();                               // Player plays a ladder noise
+        RegisterSingleton<ForceRemoveItemPacketWarden>();                           // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
+        RegisterSingleton<AskForMoneyPacketWarden>();                               // Ask teammates for money to buy a specific item
+        RegisterSingleton<GiftMoneyPacketWarden>();                                 // Gift teammate money for a specific item (Beggar auto buys the item)
+        RegisterSingleton<InventoryResyncPacketWarden>();                           // Resynchronize Inventory Controller
+        RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
 
         // Session Related Packets
-        RegisterSingleton<PlayerReadinessPacketHandler>();                          // Reporting whether the player is disconnected, connected, or ready to play on the map
-        RegisterSingleton<LoadProgressPacketHandler>();                             // Reporting map loading progress
-        RegisterSingleton<SessionManagerSyncPacketHandler>();                       // Server sends a snapshot of the entire session info (start of the match / on round end)
-        RegisterSingleton<BombStatePacketHandler>();                                // Synchronization of bomb states (planting, planted, defusing, etc)
-        RegisterSingleton<MatchStateSyncPacketHandler>();                           // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
-        RegisterSingleton<SessionStartPacketHandler>();                             // ENTRY POINT. This is where admins start the game
-        RegisterSingleton<SessionStopPacketHandler>();                              // Stop match prematurely and teleport everyone back to the lobby
-        RegisterSingleton<AdminLoginPacketHandler>();                               // Allow clients to elevate their priviledges
-        RegisterSingleton<PausePacketHandler>();                                    // Create a timeout
-        RegisterSingleton<WeatherAndTimeSyncPacketHandler>();                       // Sync time of day between rounds
+        RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map
+        RegisterSingleton<LoadProgressPacketWarden>();                              // Reporting map loading progress
+        RegisterSingleton<SessionManagerSyncPacketWarden>();                        // Server sends a snapshot of the entire session info (start of the match / on round end)
+        RegisterSingleton<BombStatePacketWarden>();                                 // Synchronization of bomb states (planting, planted, defusing, etc)
+        RegisterSingleton<MatchStateSyncPacketWarden>();                            // Server changes match state (Warmup, Warmup End, Round Prepare, etc)
+        RegisterSingleton<SessionStartPacketWarden>();                              // ENTRY POINT. This is where admins start the game
+        RegisterSingleton<SessionStopPacketWarden>();                               // Stop match prematurely and teleport everyone back to the lobby
+        RegisterSingleton<AdminLoginPacketWarden>();                                // Allow clients to elevate their priviledges
+        RegisterSingleton<PausePacketWarden>();                                     // Create a timeout
+        RegisterSingleton<WeatherAndTimeSyncPacketWarden>();                        // Sync time of day between rounds
 
-        RegisterSingleton<AssetBundleLoadPacketHandler>();                          // Server broadcasts a batch of asset bundles to load
-        RegisterSingleton<AssetBundleLoadFinishedPacketHandler>();                  // Player responds back saying they loaded a specific batch of asset bundles
+        RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
+        RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
 
         // Internal Classses (order matters)
         RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)
@@ -338,7 +338,7 @@ public class Plugin : BaseUnityPlugin
     {
         if (RestartKey.Value.IsDown())
         {
-            Singleton<SessionStartPacketHandler>.Instance.Send();
+            Singleton<SessionStartPacketWarden>.Instance.Send();
         }
 
         if (DeathKey.Value.IsDown())
@@ -351,7 +351,7 @@ public class Plugin : BaseUnityPlugin
         {
             PU.OpenEyes();
             H.MainPlayer.UnfuckHands();
-            Singleton<InventoryResyncPacketHandler>.Instance.Send(H.MainPlayer);
+            Singleton<InventoryResyncPacketWarden>.Instance.Send(H.MainPlayer);
         }
     }
 

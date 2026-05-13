@@ -57,7 +57,7 @@ public static class HealthUtilities
     {
         if (H.Gamemode is IGMRespawnable)
         {
-            Singleton<ReplenishPacketHandler>.Instance.Send();
+            Singleton<ReplenishPacketWarden>.Instance.Send();
         }
 
         var healthController = H.MainPlayer.ActiveHealthController;

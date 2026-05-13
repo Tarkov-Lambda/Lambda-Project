@@ -35,15 +35,15 @@ public class FikaBackend : INetworkBackend, IDisposable
         UnsubscribeEvent(OnNetworkDestroyed);
     }
 
-    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => PacketHandlerUtils.TriggerNetworkCreated();
-    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => PacketHandlerUtils.TriggerNetworkDestroyed();
+    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => PacketWardenUtils.TriggerNetworkCreated();
+    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => PacketWardenUtils.TriggerNetworkDestroyed();
 
-    public void RegisterPacketHandler<T>(Action<T, int> onReceive) where T : IPacket
+    public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket
     {
         Singleton<IFikaNetworkManager>.Instance.RegisterPacket<LiteNetLibWrapper<T>, NetPeer>((wrapper, peer) => onReceive(wrapper.Payload, peer.Id));
     }
 
-    public void UnregisterPacketHandler<T>() where T : IPacket
+    public void UnregisterPacketWarden<T>() where T : IPacket
     {
         Singleton<IFikaNetworkManager>.Instance.UnregisterPacket<LiteNetLibWrapper<T>>();
     }

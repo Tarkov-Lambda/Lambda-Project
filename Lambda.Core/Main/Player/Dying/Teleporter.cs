@@ -50,7 +50,7 @@ public class Teleporter
             rotation = nextPlayerPosition.rotation
         };
 
-        Singleton<DictateTeleportPacketHandler>.Instance.Apply(tpPacket);
+        Singleton<DictateTeleportPacketWarden>.Instance.Apply(tpPacket);
     }
 
     public static bool TryGetNewPosition(string sceneName, Faction faction, int pair, out Transform newPos)

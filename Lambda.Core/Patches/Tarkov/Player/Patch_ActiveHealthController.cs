@@ -130,7 +130,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
                     killer = __instance.Player;
             }
 
-            Singleton<PlayerKilledPacketHandler>.Instance.Send(lastDamage, victim, killer);
+            Singleton<PlayerKilledPacketWarden>.Instance.Send(lastDamage, victim, killer);
 
             // for the memes
             if (H.Session.matchState == MatchState.None)

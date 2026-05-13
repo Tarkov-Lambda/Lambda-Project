@@ -12,7 +12,7 @@ using Lambda.Core.Main.UI;
 namespace Lambda.Core.Main;
 
 // 1. ClientRequestGiveItem client checks it can make room, then sends SpawnItemPacket
-// 2. SpawnItemPacketHandler server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
+// 2. SpawnItemPacketWarden server approves, broadcasts to all clients, loads bundles, executes WhenApprovedGiveItem
 // 3. WhenApprovedGiveItem every client places the item in the correct slot/address (for each player on the server)
 public static class ItemUtilities
 {
@@ -113,7 +113,7 @@ public static class ItemUtilities
 
             StripArmorPlatesIfNeeded(clonedItem);
 
-            Singleton<BuyItemPacketHandler>.Instance.Send(clonedItem, placement, H.MainPlayer);
+            Singleton<BuyItemPacketWarden>.Instance.Send(clonedItem, placement, H.MainPlayer);
             return true;
         }
         finally
@@ -147,7 +147,7 @@ public static class ItemUtilities
 
         if (clonedItem is BackpackItemClass)
         {
-            Singleton<ForceRemoveItemPacketHandler>.Instance.Send(slot.ContainedItem);
+            Singleton<ForceRemoveItemPacketWarden>.Instance.Send(slot.ContainedItem);
             return true;
         }
 

@@ -1,4 +1,4 @@
-﻿using PacketHandler;
+﻿using PacketWarden;
 using MemoryPack;
 
 namespace Lambda.Core.Networking;
@@ -9,7 +9,7 @@ public partial struct GameplayVariablesSyncPacket : IPacket
     public GameplayVariablesStruct variables;
 }
 
-public class GameplayVariablesSyncPacketHandler : LambdaPacketHandler<GameplayVariablesSyncPacket>
+public class GameplayVariablesSyncPacketWarden : LambdaPacketWarden<GameplayVariablesSyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.Admin;
 

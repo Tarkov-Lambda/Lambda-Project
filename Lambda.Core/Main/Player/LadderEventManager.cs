@@ -50,7 +50,7 @@ public class LadderManager : Singleton<LadderManager>, IDisposable
         // Reset the audio accumulator when we grab the ladder
         _ladderDistanceAccumulator = 0f;
         _currentLader = ladderEvent.ladder;
-        Singleton<LadderNoisePacketHandler>.Instance.Send(_currentLader.ladderMaterial);
+        Singleton<LadderNoisePacketWarden>.Instance.Send(_currentLader.ladderMaterial);
     }
 
     private void OnTriggerExit(LadderEventPayload ladderEvent)
@@ -119,7 +119,7 @@ public class LadderManager : Singleton<LadderManager>, IDisposable
                 if (_ladderDistanceAccumulator >= _ladderStepDistanceThreshold)
                 {
                     _ladderDistanceAccumulator %= _ladderStepDistanceThreshold;
-                    Singleton<LadderNoisePacketHandler>.Instance.Send(_currentLader.ladderMaterial);
+                    Singleton<LadderNoisePacketWarden>.Instance.Send(_currentLader.ladderMaterial);
                 }
             }
         }

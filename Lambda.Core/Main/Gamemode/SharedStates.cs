@@ -149,7 +149,7 @@ public class SharedCleanup : IGameState
         {
             foreach (var player in H.AllPlayingPlayers)
             {
-                Singleton<InventoryResyncPacketHandler>.Instance.Send(player, true);
+                Singleton<InventoryResyncPacketWarden>.Instance.Send(player, true);
             }
         }
 
@@ -295,7 +295,7 @@ public class SharedSideSwap : IGameState
                 playerScore.ChangeFaction(swappedFaction);
             }
             (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
-            Singleton<SessionManagerSyncPacketHandler>.Instance.Send();
+            Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
         }
     }
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;

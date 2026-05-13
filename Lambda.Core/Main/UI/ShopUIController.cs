@@ -40,7 +40,7 @@ namespace Lambda.Core.Main.UI
             H.OnGameStarted += SetInteractable;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
-            PlayerKilledPacketHandler.AfterPacketApplied += OnPlayerKill;
+            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
 
             shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
         }
@@ -94,7 +94,7 @@ namespace Lambda.Core.Main.UI
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
             H.OnGameStarted -= SetInteractable;
             EventBus.OnEnter -= OnMatchStateEnter;
-            PlayerKilledPacketHandler.AfterPacketApplied -= OnPlayerKill;
+            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);

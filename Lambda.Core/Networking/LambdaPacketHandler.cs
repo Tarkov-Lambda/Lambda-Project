@@ -1,6 +1,6 @@
-using PacketHandler;
+using PacketWarden;
 
-public abstract class LambdaPacketHandler<T> : PacketHandler<T> where T : IPacket, new()
+public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket, new()
 {
     // Make sure arena is initialized before we apply this packet type
     // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)

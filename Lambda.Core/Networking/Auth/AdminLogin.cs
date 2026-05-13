@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using EFT;
-using PacketHandler.RateLimiting;
+using PacketWarden.RateLimiting;
 using MemoryPack;
 
 namespace Lambda.Core.Networking;
@@ -26,7 +26,7 @@ public partial struct AdminAuthPacket : IPacket
     public string Payload;
 }
 
-public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
+public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 {
     private readonly Dictionary<Player, string> _pendingChallenges = new();
 
@@ -127,7 +127,7 @@ public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
             Payload = nonce
         };
 
-        PacketHandlerUtils.Network.SendDataToPeer(ref challenge, DeliveryType, peerId);
+        PacketWardenUtils.Network.SendDataToPeer(ref challenge, DeliveryType, peerId);
     }
 
     private void HandleVerify(ref AdminAuthPacket packet, int peerId)
@@ -141,7 +141,7 @@ public class AdminLoginPacketHandler : LambdaPacketHandler<AdminAuthPacket>
             Payload = null
         };
 
-        PacketHandlerUtils.Network.SendDataToPeer(ref success, DeliveryType, peerId);
+        PacketWardenUtils.Network.SendDataToPeer(ref success, DeliveryType, peerId);
     }
 
 

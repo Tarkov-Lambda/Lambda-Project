@@ -1,4 +1,4 @@
-using PacketHandler;
+using PacketWarden;
 using MemoryPack;
 using System.Linq;
 
@@ -18,7 +18,7 @@ public partial struct PlayersPingPacket : IPacket
 }
 
 // This runs on interval
-public class PlayersPingPacketHandler : LambdaPacketHandler<PlayersPingPacket>
+public class PlayersPingPacketWarden : LambdaPacketWarden<PlayersPingPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

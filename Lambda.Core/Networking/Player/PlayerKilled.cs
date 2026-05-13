@@ -42,7 +42,7 @@ public partial struct PlayerKilledPacket : IPacket, IAuthoredPacket
     }
 }
 
-public class PlayerKilledPacketHandler : LambdaPacketHandler<PlayerKilledPacket>
+public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 {
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
@@ -147,7 +147,7 @@ public class PlayerKilledPacketHandler : LambdaPacketHandler<PlayerKilledPacket>
 
         // Do local cleanup
         HU.HealMe().Forget();
-        // Singleton<ReplenishPacketHandler>.Instance.Send();
+        // Singleton<ReplenishPacketWarden>.Instance.Send();
         packet.Player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
         _ = PU.CloseEyes(true, true);
         H.MainPlayer.SetEmptyHands(delegate { });

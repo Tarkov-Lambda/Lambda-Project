@@ -1,10 +1,10 @@
 using Lambda.Core.Main;
-using PacketHandler;
+using PacketWarden;
 using MemoryPack;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using PacketHandler.TimeSync;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -16,7 +16,7 @@ public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket, 
     public Vector3 explosionPos;
 }
 
-public class SmokeExplosionPacketHandler : LambdaPacketHandler<SmokeExplosionPacket>
+public class SmokeExplosionPacketWarden : LambdaPacketWarden<SmokeExplosionPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

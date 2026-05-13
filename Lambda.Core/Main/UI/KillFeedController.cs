@@ -16,7 +16,7 @@ namespace Lambda.Core.Main.UI
             this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
-            PlayerKilledPacketHandler.BeforePacketApplied += OnPlayerKill;
+            PlayerKilledPacketWarden.BeforePacketApplied += OnPlayerKill;
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet)
@@ -46,7 +46,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerKilledPacketHandler.BeforePacketApplied -= OnPlayerKill;
+            PlayerKilledPacketWarden.BeforePacketApplied -= OnPlayerKill;
         }
     }
 }

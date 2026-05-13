@@ -31,7 +31,7 @@ public partial struct PlayerReadinessPacket : IPacket, IAuthoredPacket
     public Dictionary<EquipmentSlot, Item> defaultItems;
 }
 
-public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessPacket>
+public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPacket>
 {
     protected override bool ShouldApplyBeforeArenaInitialized => true;
 
@@ -116,17 +116,17 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
                     // Broadcast updated itemsToLoad list
                     // whilst this is ridiculously wasteful, I know for a fact that it will work
                     // We should not forget about this, but for now it's fine
-                    Singleton<AssetBundleLoadPacketHandler>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.itemsToLoad).Forget();
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.itemsToLoad).Forget();
 
                     // get the player up to speed
-                    Singleton<SessionStartPacketHandler>.Instance.SendToPeer(peerId);
-                    Singleton<SessionManagerSyncPacketHandler>.Instance.SendToPeer(peerId);
-                    Singleton<MatchStateSyncPacketHandler>.Instance.SendToLateJoiner(peerId);
-                    Singleton<GameplayVariablesSyncPacketHandler>.Instance.SendToPeer(peerId);
+                    Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
+                    Singleton<SessionManagerSyncPacketWarden>.Instance.SendToPeer(peerId);
+                    Singleton<MatchStateSyncPacketWarden>.Instance.SendToLateJoiner(peerId);
+                    Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {
-                        Singleton<InventoryResyncPacketHandler>.Instance.SendToPeer(player, peerId);
+                        Singleton<InventoryResyncPacketWarden>.Instance.SendToPeer(player, peerId);
                     }
                 }
             }
@@ -134,7 +134,7 @@ public class PlayerReadinessPacketHandler : LambdaPacketHandler<PlayerReadinessP
 
         if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
         {
-            Singleton<AdminLoginPacketHandler>.Instance.Send();
+            Singleton<AdminLoginPacketWarden>.Instance.Send();
         }
     }
 }

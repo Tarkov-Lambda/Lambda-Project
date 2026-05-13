@@ -183,7 +183,7 @@ class BundleLoadingProgressReport : IProgress<float>
         if (D.TryEnterThrottle("BundleLoadingProgressReport", 7500))
         {
             D.Notify($"Loading Progress: {value * 100}%");
-            Singleton<LoadProgressPacketHandler>.Instance.Send(value);
+            Singleton<LoadProgressPacketWarden>.Instance.Send(value);
         }
     }
 }

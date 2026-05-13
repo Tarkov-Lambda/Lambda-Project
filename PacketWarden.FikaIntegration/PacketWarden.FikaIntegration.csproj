@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PacketHandler\PacketHandler.csproj" />
+    <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
   <ItemGroup>

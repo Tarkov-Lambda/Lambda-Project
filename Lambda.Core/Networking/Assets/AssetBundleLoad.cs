@@ -1,4 +1,4 @@
-﻿using PacketHandler;
+﻿using PacketWarden;
 using MemoryPack;
 using Lambda.Core.Main.AssetBundleHandling;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ public struct PlayerAssetBundleLoadState
 // Whilst we are awaiting until everyone says they loaded the assets on the server
 // we are not actually gating the late-joiner from spawning and buying something
 // this is kind of bad but I don't have time to fix it
-public class AssetBundleLoadPacketHandler : LambdaPacketHandler<AssetBundleLoadPacket>
+public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPacket>
 {
     public override void Dispose()
     {
@@ -75,7 +75,7 @@ public class AssetBundleLoadPacketHandler : LambdaPacketHandler<AssetBundleLoadP
 
         if (!H.IsHeadless)
         {
-            Singleton<AssetBundleLoadFinishedPacketHandler>.Instance.Send(packet.id);
+            Singleton<AssetBundleLoadFinishedPacketWarden>.Instance.Send(packet.id);
         }
     }
 }

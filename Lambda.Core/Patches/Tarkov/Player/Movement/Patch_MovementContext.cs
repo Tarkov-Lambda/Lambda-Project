@@ -94,7 +94,7 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
 
             if (player.IsYourPlayer && lastSentState != b)
             {
-                Singleton<BlindFirePacketHandler>.Instance?.Send(b);
+                Singleton<BlindFirePacketWarden>.Instance?.Send(b);
                 lastSentState = b;
             }
 

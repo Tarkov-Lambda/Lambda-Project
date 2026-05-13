@@ -1,6 +1,6 @@
 using Comfort.Common;
 
-namespace PacketHandler.TimeSync;
+namespace PacketWarden.TimeSync;
 
 public class TimeSyncTicker
 {
@@ -24,9 +24,9 @@ public class TimeSyncTicker
 
         _nextSendLocalSeconds = now + IntervalSeconds;
 
-        if (!Singleton<TimeSynchronizationPacketHandler>.Instance.IsRegistered)
+        if (!Singleton<TimeSynchronizationPacketWarden>.Instance.IsRegistered)
             return;
 
-        Singleton<TimeSynchronizationPacketHandler>.Instance.Send();
+        Singleton<TimeSynchronizationPacketWarden>.Instance.Send();
     }
 }

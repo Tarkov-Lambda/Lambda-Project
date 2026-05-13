@@ -1,6 +1,6 @@
 using MemoryPack;
 
-namespace PacketHandler.FikaIntegration;
+namespace PacketWarden.FikaIntegration;
 
 public static class FikaBootstrap
 {

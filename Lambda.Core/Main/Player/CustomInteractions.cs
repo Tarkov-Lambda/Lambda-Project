@@ -91,7 +91,7 @@ internal static class CustomInteractions
         {
             Vector3 pos = H.BombHandler.BombPlantedPosition;
 
-            Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Defusing, pos);
+            Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Defusing, pos);
 
             owner.ShowObjectivesPanel("Defusing {0:F1}", time);
 
@@ -101,11 +101,11 @@ internal static class CustomInteractions
 
                 if (!success)
                 {
-                    Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planted, pos);
+                    Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Planted, pos);
                     return;
                 }
 
-                Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Defused, pos);
+                Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Defused, pos);
                 owner.ClearInteractionState();
             });
         }
@@ -121,7 +121,7 @@ internal static class CustomInteractions
         {
             Vector3 pos = GetBombPlantPosition(player);
 
-            Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planting, pos);
+            Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Planting, pos);
 
             owner.ShowObjectivesPanel("Planting {0:F1}", time);
 
@@ -131,11 +131,11 @@ internal static class CustomInteractions
 
                 if (!success)
                 {
-                    Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.None, pos);
+                    Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.None, pos);
                     return;
                 }
 
-                Singleton<BombStatePacketHandler>.Instance.Send(player, BombState.Planted, pos);
+                Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Planted, pos);
                 player.TryPopContainedItem(EquipmentSlot.Backpack, false).Forget();
 
                 owner.ClearInteractionState();
