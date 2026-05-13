@@ -5,8 +5,6 @@ using UnityEngine;
 using EFT.CameraControl;
 using System.Collections.Generic;
 using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
-using ifp.arena.shared;
 using System.Linq;
 using Lambda.Core.Networking;
 using Lambda.Core.Main.Dying;

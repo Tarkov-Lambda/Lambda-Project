@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
-using Lambda.Core.Main.AssetBundleHandling;
-using Lambda.Core.Main.Gamemode;
-using Lambda.Core.Networking;
 using ifp.arena.shared;
 using UnityEngine;
 

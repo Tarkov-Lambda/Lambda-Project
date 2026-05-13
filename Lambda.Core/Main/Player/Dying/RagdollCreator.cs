@@ -3,17 +3,11 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.AssetsManager;
 using EFT.CameraControl;
-using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
-using Lambda.Core.Networking;
-using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 
 using CorpseRagdoll = RagdollClass;
 

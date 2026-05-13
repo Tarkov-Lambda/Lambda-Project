@@ -6,7 +6,6 @@ side swap ui
 buy menu gift ui
 buy menu locking
 screen space objective ui (hardpoint)
-finish and polish quick access
 
 core:
 inventory resetter modular per gamemode

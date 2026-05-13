@@ -10,133 +10,132 @@ using UnityEngine;
 using UnityEngine.Audio;
 using EasyAssetsExtensions = GClass1857;
 
-namespace Lambda.Core.Main.Dying
+namespace Lambda.Core.Main.Dying;
+
+public class FakeCorpse : Corpse
 {
-    public class FakeCorpse : Corpse
+    PlayerBones bones;
+
+    public Player OwnerPlayer { get; private set; }
+
+    FakeDroppedItem itemInHands;
+
+    BetterSource speaker;
+
+    Camera attachedCamera;
+    Vector3 attacthedCameraLocalPos;
+    Quaternion attacthedCameraLocalRot;
+
+    RigidbodySpawner[] _preInitRbSpawners;
+    CharacterJointSpawner[] _preInitJointSpawners;
+    List<PlayerRigidbodySleepHierarchy> _preInitSleepHierarchy;
+
+    public void PreInitRagdollData(
+        RigidbodySpawner[] rigidbodySpawners,
+        CharacterJointSpawner[] jointSpawners,
+        List<PlayerRigidbodySleepHierarchy> sleepHierarchy)
     {
-        PlayerBones bones;
+        _preInitRbSpawners = rigidbodySpawners;
+        _preInitJointSpawners = jointSpawners;
+        _preInitSleepHierarchy = sleepHierarchy;
+    }
 
-        public Player OwnerPlayer { get; private set; }
+    public new void Awake()
+    {
+        AccessTools.Field(typeof(Corpse), "rigidbodySpawner_0").SetValue(this, _preInitRbSpawners);
+        AccessTools.Field(typeof(Corpse), "characterJointSpawner_0").SetValue(this, _preInitJointSpawners);
+        AccessTools.Field(typeof(Corpse), "list_0").SetValue(this, _preInitSleepHierarchy);
+    }
 
-        FakeDroppedItem itemInHands;
+    public void SetOwnerPlayer(Player player)
+    {
+        OwnerPlayer = player;
+    }
 
-        BetterSource speaker;
+    public void SetItemInHands(FakeDroppedItem item)
+    {
+        itemInHands = item;
+    }
 
-        Camera attachedCamera;
-        Vector3 attacthedCameraLocalPos;
-        Quaternion attacthedCameraLocalRot;
+    public void SetBones(PlayerBones bones)
+    {
+        this.bones = bones;
+    }
 
-        RigidbodySpawner[] _preInitRbSpawners;
-        CharacterJointSpawner[] _preInitJointSpawners;
-        List<PlayerRigidbodySleepHierarchy> _preInitSleepHierarchy;
+    public void VocalizeDeath(Player player)
+    {
+        EPhraseTrigger trigger = EPhraseTrigger.OnDeath;
+        ETagStatus tags = ETagStatus.BadlyInjured;
 
-        public void PreInitRagdollData(
-            RigidbodySpawner[] rigidbodySpawners,
-            CharacterJointSpawner[] jointSpawners,
-            List<PlayerRigidbodySleepHierarchy> sleepHierarchy)
+        Transform head = bones.HeadCameraCollider.transform;
+
+        string key = ResourceKeyManagerAbstractClass.TakePhrasePath(player.Speaker.PlayerVoice);
+        if (!EasyAssetsExtensions.TryGetAsset<Voice>(H.IEasyAssets, out var asset, key))
         {
-            _preInitRbSpawners = rigidbodySpawners;
-            _preInitJointSpawners = jointSpawners;
-            _preInitSleepHierarchy = sleepHierarchy;
+            return;
         }
 
-        public new void Awake()
+        TagBank tagBank = null;
+        TagBank[] banks = asset.Banks;
+        foreach (TagBank tagBank2 in banks)
         {
-            AccessTools.Field(typeof(Corpse), "rigidbodySpawner_0").SetValue(this, _preInitRbSpawners);
-            AccessTools.Field(typeof(Corpse), "characterJointSpawner_0").SetValue(this, _preInitJointSpawners);
-            AccessTools.Field(typeof(Corpse), "list_0").SetValue(this, _preInitSleepHierarchy);
-        }
-
-        public void SetOwnerPlayer(Player player)
-        {
-            OwnerPlayer = player;
-        }
-
-        public void SetItemInHands(FakeDroppedItem item)
-        {
-            itemInHands = item;
-        }
-
-        public void SetBones(PlayerBones bones)
-        {
-            this.bones = bones;
-        }
-
-        public void VocalizeDeath(Player player)
-        {
-            EPhraseTrigger trigger = EPhraseTrigger.OnDeath;
-            ETagStatus tags = ETagStatus.BadlyInjured;
-
-            Transform head = bones.HeadCameraCollider.transform;
-
-            string key = ResourceKeyManagerAbstractClass.TakePhrasePath(player.Speaker.PlayerVoice);
-            if (!EasyAssetsExtensions.TryGetAsset<Voice>(H.IEasyAssets, out var asset, key))
+            if (tagBank2.Trigger == trigger)
             {
-                return;
-            }
-
-            TagBank tagBank = null;
-            TagBank[] banks = asset.Banks;
-            foreach (TagBank tagBank2 in banks)
-            {
-                if (tagBank2.Trigger == trigger)
-                {
-                    tagBank = tagBank2;
-                    break;
-                }
-            }
-
-            if (tagBank == null)
-            {
-                return;
-            }
-
-            int? importance = tagBank.Importance;
-            tags |= ETagStatus.Solo;
-            TaggedClip taggedClip = tagBank.Match((int)tags);
-            if (taggedClip == null)
-            {
-                return;
-            }
-
-            BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Speech, true);
-            speaker.StartTrackingPosition(head);
-            AudioMixerGroup targetMixerGroup = player.IsYourPlayer ? H.BetterAudio.ClientPlayerSpeechMixer : H.BetterAudio.ObservedPlayerSpeechMixer;
-            speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
-            speaker.Play(taggedClip.Clip, null, 1f);
-
-            // player.Speaker.Play(EPhraseTrigger.OnDeath, ETagStatus.Dying);
-        }
-
-        public void SetAttachedCamera(Camera cam)
-        {
-            attachedCamera = cam;
-        }
-
-        void LateUpdate()
-        {
-            if (attachedCamera != null)
-            {
-                Matrix4x4 parentMatrix = bones.HeadCameraCollider.transform.localToWorldMatrix;
-                Matrix4x4 localMatrix = Matrix4x4.TRS(attacthedCameraLocalPos, attacthedCameraLocalRot, Vector3.one);
-                Matrix4x4 worldMatrix = parentMatrix * localMatrix;
-
-                attachedCamera.transform.position = worldMatrix.GetColumn(3);
-                attachedCamera.transform.rotation = worldMatrix.rotation;
+                tagBank = tagBank2;
+                break;
             }
         }
 
-        public void OnRigidbodyStopped()
+        if (tagBank == null)
         {
+            return;
         }
 
-        void OnDestroy()
+        int? importance = tagBank.Importance;
+        tags |= ETagStatus.Solo;
+        TaggedClip taggedClip = tagBank.Match((int)tags);
+        if (taggedClip == null)
         {
-            if (itemInHands != null)
-                Destroy(itemInHands.gameObject);
-
-            if (speaker != null)
-                speaker.Release();
+            return;
         }
+
+        BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Speech, true);
+        speaker.StartTrackingPosition(head);
+        AudioMixerGroup targetMixerGroup = player.IsYourPlayer ? H.BetterAudio.ClientPlayerSpeechMixer : H.BetterAudio.ObservedPlayerSpeechMixer;
+        speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
+        speaker.Play(taggedClip.Clip, null, 1f);
+
+        // player.Speaker.Play(EPhraseTrigger.OnDeath, ETagStatus.Dying);
+    }
+
+    public void SetAttachedCamera(Camera cam)
+    {
+        attachedCamera = cam;
+    }
+
+    void LateUpdate()
+    {
+        if (attachedCamera != null)
+        {
+            Matrix4x4 parentMatrix = bones.HeadCameraCollider.transform.localToWorldMatrix;
+            Matrix4x4 localMatrix = Matrix4x4.TRS(attacthedCameraLocalPos, attacthedCameraLocalRot, Vector3.one);
+            Matrix4x4 worldMatrix = parentMatrix * localMatrix;
+
+            attachedCamera.transform.position = worldMatrix.GetColumn(3);
+            attachedCamera.transform.rotation = worldMatrix.rotation;
+        }
+    }
+
+    public void OnRigidbodyStopped()
+    {
+    }
+
+    void OnDestroy()
+    {
+        if (itemInHands != null)
+            Destroy(itemInHands.gameObject);
+
+        if (speaker != null)
+            speaker.Release();
     }
 }

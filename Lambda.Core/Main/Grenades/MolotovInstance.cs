@@ -5,7 +5,6 @@ using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using UnityEngine;
 using DG.Tweening;
-using Fika.Core.Networking.Snapshotting;
 using PacketHandler.TimeSync;
 
 namespace Lambda.Core.Main;

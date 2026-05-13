@@ -1,16 +1,9 @@
 ﻿using Comfort.Common;
 using EFT;
-using HarmonyLib;
-using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
 using Lambda.Core.Networking;
 using ifp.arena.shared;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Lambda.Core.Main.Dying;
 

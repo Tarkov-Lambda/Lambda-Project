@@ -1,8 +1,5 @@
 using System.Collections.Generic;
-using System.Threading;
 using Cysharp.Threading.Tasks;
-using EFT.Interactive;
-using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using UnityEngine;
 
