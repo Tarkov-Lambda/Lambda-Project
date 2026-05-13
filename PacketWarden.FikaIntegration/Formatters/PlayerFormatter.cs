@@ -26,6 +26,12 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
 
         int id = reader.ReadUnmanaged<int>();
 
+        if (!Singleton<GameWorld>.Instantiated)
+        {
+            value = null;
+            return;
+        }
+        
         foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
         {
             if (player.Id == id)
@@ -35,4 +41,4 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
             }
         }
     }
-} 
+}

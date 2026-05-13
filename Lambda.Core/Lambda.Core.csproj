@@ -67,7 +67,7 @@
 
     <ProjectReference Include="..\Lambda.Shared\Lambda.Shared.csproj" />
 
-    <ProjectReference Include="..\Lambda.Audio\Lambda.Audio.csproj" />
+    <ProjectReference Include="..\Lambda.Audio\SteamAudioUnity.csproj" />
 
     <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>

@@ -1423,9 +1423,8 @@ namespace SteamAudio
                         {
                             if (IsActiveInHierarchy(mesh.gameObject.transform))
                             {
-                                // --- ADDED CHECK ---
-                                // Skip if the mesh or any of its parents have the SteamAudioIgnore script
-                                if (mesh.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || mesh.gameObject.layer == 18)
+                                // Skip if the mesh or any of its parents have the SteamAudioIgnore script or is on LowPollyCollider Layer
+                                if (mesh.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || mesh.gameObject.layer != 18)
                                 {
                                     gameObjects.Add(mesh.gameObject);
                                 }
@@ -1440,9 +1439,8 @@ namespace SteamAudio
                         {
                             if (IsActiveInHierarchy(terrain.gameObject.transform))
                             {
-                                // --- ADDED CHECK ---
-                                // Skip if the terrain or any of its parents have the SteamAudioIgnore script
-                                if (terrain.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || terrain.gameObject.layer == 18)
+                                // Skip if the mesh or any of its parents have the SteamAudioIgnore script or is on LowPollyCollider Layer
+                                if (terrain.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || terrain.gameObject.layer != 18)
                                 {
                                     gameObjects.Add(terrain.gameObject);
                                 }

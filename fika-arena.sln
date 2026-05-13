@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Core", "Lambda.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Shared", "Lambda.Shared\Lambda.Shared.csproj", "{DFC2EA4D-4912-BD15-B4C6-42F604BC6531}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Audio", "Lambda.Audio\Lambda.Audio.csproj", "{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "Lambda.Audio\SteamAudioUnity.csproj", "{42FFADAE-3043-8ED4-EA7B-6FAF790BEC64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

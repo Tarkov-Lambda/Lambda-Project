@@ -49,7 +49,7 @@ public static class SteamAudioSourceController
         SteamAudioSource steamAudio = data.steam;
 
         steamAudio.occlusion = true;
-        steamAudio.transmission = true;
+        steamAudio.transmission = false;
 
         steamAudio.distanceAttenuation = true;
         steamAudio.distanceAttenuationInput = DistanceAttenuationInput.PhysicsBased;
@@ -65,9 +65,13 @@ public static class SteamAudioSourceController
         steamAudio.transmissionType = TransmissionType.FrequencyDependent;
         steamAudio.transmissionInput = TransmissionInput.UserDefined;
 
-        steamAudio.transmissionHigh = GameplayVariables.vars.transmissionHigh;
-        steamAudio.transmissionMid = GameplayVariables.vars.transmissionMid;
-        steamAudio.transmissionLow = GameplayVariables.vars.transmissionLow;
+        // steamAudio.transmissionHigh = GameplayVariables.vars.transmissionHigh;
+        // steamAudio.transmissionMid = GameplayVariables.vars.transmissionMid;
+        // steamAudio.transmissionLow = GameplayVariables.vars.transmissionLow;
+
+        steamAudio.transmissionHigh = 0f;
+        steamAudio.transmissionMid = 0f;
+        steamAudio.transmissionLow = 0f;
 
         audioSource.spatialize = initialSpatialize;
         audioSource.spatialBlend = initialBlend;

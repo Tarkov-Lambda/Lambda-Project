@@ -71,37 +71,20 @@ public static class SteamAudioInitializer
 
     private static void EnsureSettings()
     {
-        if (SteamAudioSettings.Singleton != null)
-        {
-            var existing = SteamAudioSettings.Singleton;
+        var settings = SteamAudioSettings.Singleton;
 
-            if (existing.SOFAFiles == null)
-            {
-                existing.SOFAFiles = Array.Empty<SOFAFile>();
-                Debug.Log("[SteamAudio] Patched null SOFAFiles on existing SteamAudioSettings.");
-            }
-
-            if (existing.defaultMaterial == null)
-            {
-                existing.defaultMaterial = ScriptableObject.CreateInstance<SteamAudioMaterial>();
-                Debug.Log("[SteamAudio] Patched null defaultMaterial on existing SteamAudioSettings.");
-            }
-
-            Debug.Log("[SteamAudio] SteamAudioSettings already exists.");
-            return;
-        }
-
-        var settings = ScriptableObject.CreateInstance<SteamAudioSettings>();
-
-        // Audio engine
         settings.audioEngine = AudioEngineType.Unity;
         settings.sceneType = SceneType.Default;
         settings.reflectionEffectType = ReflectionEffectType.Convolution;
-
-        // HRTF
         settings.hrtfVolumeGainDB = 0f;
         settings.hrtfNormalizationType = HRTFNormType.None;
-        settings.SOFAFiles = Array.Empty<SOFAFile>();
+
+        settings.SOFAFiles ??= Array.Empty<SOFAFile>();
+
+        if (settings.defaultMaterial == null)
+        {
+            settings.defaultMaterial = ScriptableObject.CreateInstance<SteamAudioMaterial>();
+        }
 
         settings.realTimeRays = 1024;
         settings.realTimeBounces = 2;
@@ -109,22 +92,9 @@ public static class SteamAudioInitializer
         settings.realTimeAmbisonicOrder = 1;
         settings.realTimeMaxSources = 32;
         settings.realTimeCPUCoresPercentage = 25;
-
         settings.maxOcclusionSamples = 16;
 
-        var mat = ScriptableObject.CreateInstance<SteamAudioMaterial>();
-        settings.defaultMaterial = mat;
-
-        settings.layerMask = LayerMask.GetMask("Default");
-
-        // Inject into the private static singleton field via reflection
-        var field = typeof(SteamAudioSettings).GetField("sSingleton", BindingFlags.NonPublic | BindingFlags.Static);
-
-        if (field != null)
-        {
-            field.SetValue(null, settings);
-            Debug.Log("[SteamAudio] SteamAudioSettings created at runtime.");
-        }
+        settings.layerMask = LayerMask.GetMask("Default", "HighPolyCollider");
     }
 
     private static void EnsureManager()
