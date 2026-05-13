@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>SteamAudioUnity</RootNamespace>
     <DefineConstants>$(DefineConstants);EFT_RUNTIME;UNITY_2020_2_OR_NEWER;STEAMAUDIO_ENABLED</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -18,46 +18,13 @@
     <Compile Remove="SteamAudio/Scripts/Editor/**/*.cs" />
   </ItemGroup>
 
-
-  <ItemGroup>
-    <Reference Include="$(SPTPath)\BepInEx\core\0Harmony.dll">
-      <Private>False</Private>
+  <ItemDefinitionGroup>
+    <Reference>
+      <Private>false</Private>
     </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\core\BepInEx.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll">
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="$(SPTPath)\EscapeFromTarkov_Data\Managed\*.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="..\Dependencies\libraries\*.dll">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Lambda.UI\Lambda.UI.csproj">
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemGroup>
+  </ItemDefinitionGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-    <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-
     <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <!-- <Copy SourceFiles="$(OutputPath)SteamAudioUnity.dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Dependencies" /> -->
   </Target>
 </Project>

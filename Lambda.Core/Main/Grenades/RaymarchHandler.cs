@@ -82,10 +82,10 @@ namespace Lambda.Core.Main;
 //         Raymarcher = cameraGO.AddComponent<Raymarcher>();
 //         Raymarcher.compositeMaterial =
 //             new Material(fxbundle.LoadAsset<Shader>(
-//                 "Packages/com.Lambda.Shared/FX/Smokes/Shaders/CompositeEffects.shader"));
+//                 "Packages/com.lambda.shared/FX/Smokes/Shaders/CompositeEffects.shader"));
 //         Raymarcher.raymarchCompute =
 //             fxbundle.LoadAsset<ComputeShader>(
-//                 "Packages/com.Lambda.Shared/FX/Smokes/Resources/RenderSmoke.compute");
+//                 "Packages/com.lambda.shared/FX/Smokes/Resources/RenderSmoke.compute");
 //         Raymarcher.enabled = false;
 
 
@@ -104,7 +104,7 @@ namespace Lambda.Core.Main;
 //         {
 //             localVoxelizer.voxelizeCompute =
 //                 fxbundle.LoadAsset<ComputeShader>(
-//                     "Packages/com.Lambda.Shared/FX/Smokes/Resources/Voxelize.compute");
+//                     "Packages/com.lambda.shared/FX/Smokes/Resources/Voxelize.compute");
 
 //             // localVoxelizer.cam = CameraClass.Instance.Camera;
 

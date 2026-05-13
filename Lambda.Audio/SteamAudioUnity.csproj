@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>ifp.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);EFT_RUNTIME;UNITY_2020_2_OR_NEWER;STEAMAUDIO_ENABLED</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -14,39 +14,18 @@
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="SteamAudio/Scripts/Editor/**/*.cs" />
+  </ItemGroup>
+
   <ItemDefinitionGroup>
     <Reference>
       <Private>false</Private>
     </Reference>
   </ItemDefinitionGroup>
 
-  <ItemGroup>
-    <Compile Remove="SteamAudio/Scripts/Editor/**/*.cs" />
-  </ItemGroup>
-
-  <!-- <ItemGroup>
-    <ProjectReference Include="..\Lambda.UI\Lambda.UI.csproj" />
-  </ItemGroup> -->
-
-  <ItemGroup>
-    <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
-    <Reference Include="$(BepInExPath)\core\BepInEx.dll" />
-    <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
-    <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
-    <Reference Include="$(ManagedPath)\*.dll" />
-
-    <Reference Include="..\Dependencies\libraries\*.dll" />
-  </ItemGroup>
-
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-    <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)\*.dll" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      SkipUnchangedFiles="true" />
-
-    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" />
   </Target>
 </Project>

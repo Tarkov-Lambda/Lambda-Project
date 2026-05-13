@@ -21,17 +21,8 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <!-- BepInEx / SPT -->
-    <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
-    <Reference Include="$(BepInExPath)\core\BepInEx.dll" />
-    <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
-    <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
-
     <Reference Include="$(ManagedPath)\*.dll" Exclude="$(ManagedPath)\mscorlib.dll;$(ManagedPath)\netstandard.dll" />
-
-    <!-- <Reference Include="..\Dependencies\libraries\*.dll" /> -->
-    <!-- <Reference Include="..\Dependencies\libraries\UniTask.dll" />
-    <Reference Include="..\Dependencies\libraries\UniTask*.dll" /> -->
+    <Reference Include="..\Dependencies\libraries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
@@ -39,7 +30,6 @@
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
   </Target>
 </Project>
