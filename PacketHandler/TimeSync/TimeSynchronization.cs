@@ -8,6 +8,7 @@ namespace PacketHandler.TimeSync;
 public partial struct TimeSynchronizationPacket : IPacket
 {
     public double clientSendLocalSeconds;
+    public double serverSendSeconds;
 }
 
 public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizationPacket>
@@ -19,9 +20,6 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     public void Send()
     {
-        if (Plugin.Network.IsServer)
-            return;
-
         var packet = new TimeSynchronizationPacket
         {
             clientSendLocalSeconds = NetworkTime.LocalNowSeconds
@@ -36,20 +34,12 @@ public class TimeSynchronizationPacketHandler : PacketHandler<TimeSynchronizatio
 
     protected override void ProcessApprovedPacket(ref TimeSynchronizationPacket packet, int peerId)
     {
-        ApplyInternal(packet, peerId);
+        packet.serverSendSeconds = NetworkTime.LocalNowSeconds;
+        Network.SendDataToPeer(ref packet, DeliveryType, peerId);
     }
 
     protected override void Apply(TimeSynchronizationPacket packet, int peerId)
     {
-        if (H.GameWorld is HideoutGameWorld) return;
-
-        var response = new TimeSyncResponsePacket
-        {
-            targetPeerId = peerId,
-            clientSendLocalSeconds = packet.clientSendLocalSeconds,
-            serverSendSeconds = NetworkTime.LocalNowSeconds
-        };
-
-        Plugin.Network.SendDataToPeer(ref response, DeliveryType.ReliableOrdered, peerId);
+        NetworkTime.ApplySample(packet.clientSendLocalSeconds, NetworkTime.LocalNowSeconds, packet.serverSendSeconds);
     }
 }

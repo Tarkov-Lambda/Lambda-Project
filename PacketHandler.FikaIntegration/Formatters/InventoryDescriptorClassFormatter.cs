@@ -7,7 +7,7 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
     {
         if (value == null)
         {
-            writer.WriteNullCollectionHeader();
+            writer.WriteNullObjectHeader();
             return;
         }
 
@@ -18,7 +18,7 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
         byte[] itemBytes = eftWriter.ToArray();
         WriterPoolManager.ReturnWriter(eftWriter);
 
-        writer.WriteUnmanagedSpan(itemBytes);
+        writer.WriteUnmanagedArray(itemBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref InventoryDescriptorClass value)

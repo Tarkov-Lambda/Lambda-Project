@@ -3,6 +3,7 @@ using System.Diagnostics;
 using EFT;
 using MemoryPack;
 using PacketHandler.RateLimiting;
+using PacketHandler.TimeSync;
 
 namespace PacketHandler;
 
@@ -22,19 +23,17 @@ public partial struct RejectionPacket<T> : IPacket where T : IPacket, new()
 
 public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 {
-    public INetworkBackend Network => Plugin.Network;
+    protected INetworkBackend Network => Plugin.Network;
+    public bool IsRegistered { get; private set; } = false;
 
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
-
     protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled;
 
     protected virtual bool ShouldLog => true;
     protected virtual bool ShouldNotifyAboutRejection => false;
 
     protected virtual bool ShouldProcessInstantly => true;
-
     protected virtual DeliveryType DeliveryType => DeliveryType.ReliableOrdered;
-
     protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
     public static event Action<T> BeforePacketApplied;
@@ -47,7 +46,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         H.OnNetworkCreated += RegisterPacket;
         H.OnNetworkDestroyed += UnregisterPacket;
 
-        if (H.IsInRaid() && Plugin.Network != null) RegisterPacket();
+        if (H.IsInRaid() && Network != null) RegisterPacket();
     }
 
     public virtual void Dispose()
@@ -55,15 +54,17 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         H.OnNetworkCreated -= RegisterPacket;
         H.OnNetworkDestroyed -= UnregisterPacket;
 
-        if (H.IsInRaid() && Plugin.Network != null) UnregisterPacket();
+        if (H.IsInRaid() && Network != null) UnregisterPacket();
     }
 
     protected void RegisterPacket()
     {
         H.Log($"Registering {typeof(T).Name}");
 
-        Plugin.Network.RegisterPacketHandler<T>(WhenReceivedInternal);
-        Plugin.Network.RegisterPacketHandler<RejectionPacket<T>>(WhenRejectionReceivedInternal);
+        Network.RegisterPacketHandler<T>(WhenReceivedInternal);
+        Network.RegisterPacketHandler<RejectionPacket<T>>(WhenRejectionReceivedInternal);
+
+        IsRegistered = true;
     }
 
     protected void UnregisterPacket()
@@ -71,18 +72,22 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         try
         {
             _serverRateLimiter.Clear();
-            Plugin.Network.UnregisterPacketHandler<T>();
-            Plugin.Network.UnregisterPacketHandler<RejectionPacket<T>>();
+            Network.UnregisterPacketHandler<T>();
+            Network.UnregisterPacketHandler<RejectionPacket<T>>();
         }
         catch (Exception ex)
         {
             H.Log($"Packet Unregistration Failed: {ex}");
         }
+        finally
+        {
+            IsRegistered = false;
+        }
     }
 
     private void WhenReceivedInternal(T packet, int peerId)
     {
-        if (Plugin.Network.IsServer)
+        if (Network.IsServer)
             WhenServerReceivesPacket(packet, peerId);
         else
             WhenClientReceivesPacket(packet, peerId);
@@ -90,27 +95,11 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 
     private void WhenRejectionReceivedInternal(RejectionPacket<T> packet, int peerId)
     {
-        if (Plugin.Network.IsClient)
+        if (Network.IsClient)
             WhenClientReceivesRejection(packet, peerId);
     }
 
     protected virtual bool IsUnauthorized(int id) => false;
-
-    // SERVER ONLY
-    protected void DispatchPacketToPeer(T packet, int peerId)
-    {
-        if (!H.IsInRaid()) return;
-        DispatchPacket(packet, peerId);
-    }
-
-    // SERVER ONLY
-    protected void DispatchPacketToPlayer(T packet, Player player)
-    {
-        if (!H.IsInRaid() || player.IsAI) return;
-
-        int peerId = Plugin.Network.GetPeerIdByPlayer(player);
-        DispatchPacket(packet, peerId);
-    }
 
     // ENTRY POINT
     protected void DispatchPacket(T packet, int? targetPeerId = null)
@@ -126,7 +115,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
         }
 #endif
 
-        if (!Plugin.Network.IsHeadless && IsUnauthorized(H.MainPlayer.Id)) return;
+        if (!Network.IsHeadless && IsUnauthorized(H.MainPlayer.Id)) return;
 
 #if DEBUG
         if (ShouldLog) H.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
@@ -134,18 +123,20 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
 
         LocalPredictApproved(packet);
 
-        if (Plugin.Network.IsClient)
+        if (Network.IsClient)
         {
-            Plugin.Network.SendData(ref packet, DeliveryType, false);
+            Network.SendData(ref packet, DeliveryType, false);
+            return;
         }
-        else if (targetPeerId == null)
+
+        if (targetPeerId == null)
         {
-            ProcessApprovedPacket(ref packet, 0); // Server generated
+            ProcessApprovedPacket(ref packet, 0);
         }
         else
         {
             MutateApprovedPacket(ref packet, targetPeerId.Value);
-            Plugin.Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
+            Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
         }
     }
 
@@ -182,7 +173,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     protected virtual void ProcessApprovedPacket(ref T packet, int peerId)
     {
         MutateApprovedPacket(ref packet, peerId);
-        Plugin.Network.SendData(ref packet, DeliveryType, true); // Broadcast
+        Network.SendData(ref packet, DeliveryType, true); // Broadcast
         ApplyInternal(packet, peerId);
     }
 
@@ -191,8 +182,17 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     protected void ApplyInternal(T packet, int peerId)
     {
         TryInvokeAction(BeforePacketApplied, packet);
+        OptionalBoostrap(packet);
         Apply(packet, peerId);
         TryInvokeAction(AfterPacketApplied, packet);
+    }
+
+    void OptionalBoostrap(T packet)
+    {
+        if (!NetworkTime.HasSync && Network.IsClient && packet is IServerTimestampedPacket stamped)
+        {
+            NetworkTime.BootstrapFromServerStamp(stamped.Timestamp);
+        }
     }
 
     protected virtual void WhenClientReceivesPacket(T packet, int peerId)
@@ -218,7 +218,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
     protected void SendRejection(ref T packet, int peerId, string rejectionReason = null)
     {
         var rejected = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
-        Plugin.Network.SendDataToPeer(ref rejected, DeliveryType, peerId);
+        Network.SendDataToPeer(ref rejected, DeliveryType, peerId);
     }
 
     protected void WhenClientReceivesRejection(RejectionPacket<T> rejectedPacket, int peerId)
@@ -266,7 +266,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
                 if (canSendReject) SendRejection(ref packet, peerId);
                 return false;
             case RateLimitAction.Disconnect:
-                Plugin.Network.DisconnectPeer(peerId);
+                Network.DisconnectPeer(peerId);
                 return false;
             default:
                 return false;
@@ -284,7 +284,7 @@ public abstract class PacketHandler<T> : IDisposable where T : IPacket, new()
             }
 
             // We need a way to resolve the peerId back to the player object to verify spoofing
-            Player senderPlayer = Plugin.Network.GetPlayerByPeerId(peerId);
+            Player senderPlayer = Network.GetPlayerByPeerId(peerId);
             if (authoredPacket.Player != senderPlayer)
             {
                 rejectionReason = "You can't send packets for other players";

@@ -43,7 +43,7 @@ public class MatchStateSyncPacketHandler : LambdaPacketHandler<MatchStateSyncPac
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
-        DispatchPacketToPeer(packet, peerId);
+        DispatchPacket(packet, peerId);
     }
 
     protected override bool ValidatePacket(MatchStateSyncPacket packet, int peerId, out string rejectionReason)

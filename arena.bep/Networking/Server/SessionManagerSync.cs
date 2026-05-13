@@ -47,9 +47,9 @@ public class SessionManagerSyncPacketHandler : LambdaPacketHandler<SessionManage
         DispatchPacket(FormatPacket());
     }
 
-    public async void SendToPeer(int peerId)
+    public void SendToPeer(int peerId)
     {
-        DispatchPacketToPeer(FormatPacket(), peerId);
+        DispatchPacket(FormatPacket(), peerId);
     }
 
     protected override void Apply(SessionManagerSyncPacket packet, int peerId)

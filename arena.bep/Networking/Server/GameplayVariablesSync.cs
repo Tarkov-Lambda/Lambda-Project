@@ -30,7 +30,7 @@ public class GameplayVariablesSyncPacketHandler : LambdaPacketHandler<GameplayVa
             variables = GameplayVariables.vars
         };
         
-        DispatchPacketToPeer(packet, peerId);
+        DispatchPacket(packet, peerId);
     }
 
     protected override void Apply(GameplayVariablesSyncPacket packet, int peerId)

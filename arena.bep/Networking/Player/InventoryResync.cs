@@ -46,7 +46,7 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
             broadcast = false
         };
 
-        DispatchPacketToPeer(packet, peerId);
+        DispatchPacket(packet, peerId);
     }
 
     protected override bool ValidatePacket(InventoryResyncPacket packet, int peerId, out string rejectionReason)

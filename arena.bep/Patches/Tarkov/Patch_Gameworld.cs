@@ -20,8 +20,6 @@ internal class Patch_Gameworld_OnGameStarted : ModulePatch
 #else
         if (__instance is HideoutGameWorld) return;
 #endif
-
-        NetworkTime.Reset();
         OnGameStarted?.Invoke();
     }
 }
@@ -39,8 +37,6 @@ internal class Patch_Gameworld_OnDispose : ModulePatch
 #else
         if (__instance is HideoutGameWorld) return;
 #endif
-
-        NetworkTime.Reset();
         OnDispose?.Invoke();
     }
 }

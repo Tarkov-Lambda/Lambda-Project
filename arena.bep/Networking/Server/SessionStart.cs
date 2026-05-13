@@ -76,7 +76,7 @@ public class SessionStartPacketHandler : LambdaPacketHandler<SessionStartPacket>
             packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
         }
 
-        DispatchPacketToPeer(packet, peerId);
+        DispatchPacket(packet, peerId);
     }
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)

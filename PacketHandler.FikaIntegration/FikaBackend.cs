@@ -8,17 +8,29 @@ using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
-public class FikaBackend : INetworkBackend
+public class FikaBackend : INetworkBackend, IDisposable
 {
     public bool IsServer   => FikaBackendUtils.IsServer;
     public bool IsClient   => FikaBackendUtils.IsClient;
     public bool IsHeadless => FikaBackendUtils.IsHeadless;
     public int NetId       => Singleton<IFikaNetworkManager>.Instance.NetId;
 
+    private readonly Action<FikaNetworkManagerCreatedEvent> OnNetworkCreated;
+    private readonly Action<FikaNetworkManagerDestroyedEvent> OnNetworkDestroyed;
+
     public FikaBackend()
     {
-        SubscribeEvent(new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated));
-        SubscribeEvent(new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed));
+        OnNetworkCreated = new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated);
+        SubscribeEvent(OnNetworkCreated);
+
+        OnNetworkDestroyed = new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed);
+        SubscribeEvent(OnNetworkDestroyed);
+    }
+
+    public void Dispose()
+    {
+        UnsubscribeEvent(OnNetworkCreated);
+        UnsubscribeEvent(OnNetworkDestroyed);
     }
 
     void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => PacketHandlerUtils.TriggerNetworkCreated();

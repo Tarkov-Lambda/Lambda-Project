@@ -8,6 +8,8 @@ using PacketHandler.TimeSync;
 using SPT.Reflection;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine.LowLevel;
 
@@ -25,14 +27,6 @@ internal class Plugin : BaseUnityPlugin
 
     public readonly TimeSyncTicker Ticker = new();
 
-    private void RegisterMemoryPackFormatter<T>(IMemoryPackFormatter<T> formatter)
-    {
-        if (!MemoryPackFormatterProvider.IsRegistered<T>())
-        {
-            MemoryPackFormatterProvider.Register<T>(formatter as MemoryPackFormatter<T>);
-        }
-    }
-
     private void RegisterSingleton<T>() where T : class, IDisposable, new()
     {
         Logger.LogInfo($"Registering {typeof(T).Name}");
@@ -45,29 +39,23 @@ internal class Plugin : BaseUnityPlugin
     void Start()
     {
         Logger = base.Logger;
-
         Logger.LogInfo("PacketHandler is loading");
+
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
 
         if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
         {
-            // Player -> int id
-            RegisterMemoryPackFormatter(new PlayerFormatter());
-            RegisterMemoryPackFormatter(new ItemFormatter());
-            RegisterMemoryPackFormatter(new InventoryDescriptorClassFormatter());
-            RegisterMemoryPackFormatter(new ItemAddressFormatter());
-            
             InitFikaBackend();
-
             RegisterSingleton<TimeSynchronizationPacketHandler>();
-            RegisterSingleton<TimeSyncResponsePacketHandler>();
         }
         else
         {
             Network = new LocalBackend();
             Logger.LogInfo("PacketHandler running in Local Mode.");
         }
+
+        H.OnNetworkCreated += NetworkTime.Reset;
 
         RegisterSingleton<TestPacketHandler>();
         Singleton<TestPacketHandler>.Instance.Send();
@@ -76,8 +64,25 @@ internal class Plugin : BaseUnityPlugin
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void InitFikaBackend()
     {
-        Network = new FikaBackend();
-        Logger.LogInfo("PacketHandler running in MP Mode.");
+        try
+        {
+            string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string fikaDllPath = Path.Combine(pluginDir, "PacketHandler.FikaIntegration.dll");
+
+            Assembly fikaAssembly = Assembly.LoadFrom(fikaDllPath);
+
+            Type bootstrapType = fikaAssembly.GetType("PacketHandler.FikaIntegration.FikaBootstrap");
+            MethodInfo initMethod = bootstrapType.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
+
+            Network = (INetworkBackend)initMethod.Invoke(null, null);
+
+            Logger.LogInfo("PacketHandler running in MP Mode.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to load Fika Integration: {ex}");
+            Network = new LocalBackend();
+        }
     }
 
     private void Update() => Ticker.Update();
@@ -85,8 +90,6 @@ internal class Plugin : BaseUnityPlugin
     void OnDestroy()
     {
         Logger.LogInfo("PacketHandler is unloading");
-
-        Ticker.Dispose();
 
         foreach (var disposable in _disposables)
             disposable.Dispose();
@@ -97,5 +100,7 @@ internal class Plugin : BaseUnityPlugin
             release();
 
         _releases.Clear();
+
+        H.OnNetworkCreated -= NetworkTime.Reset;
     }
 }

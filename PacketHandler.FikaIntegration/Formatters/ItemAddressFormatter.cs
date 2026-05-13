@@ -1,4 +1,5 @@
 using System;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Networking.Pooling;
@@ -11,12 +12,12 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
     {
         if (value == null)
         {
-            writer.WriteNullCollectionHeader();
+            writer.WriteNullObjectHeader();
             return;
         }
 
         Player addressPlayerOwner = null;
-        foreach (var player in H.AllPlayers)
+        foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
         {
             if (value.GetOwner().RootItem == player.InventoryController.RootItem)
             {
@@ -27,30 +28,49 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
 
         if (addressPlayerOwner == null)
         {
-            writer.WriteNullCollectionHeader();
+            writer.WriteNullObjectHeader();
             return;
         }
+
+        writer.WriteObjectHeader(2);
 
         writer.WriteUnmanaged(addressPlayerOwner.Id);
 
         var descriptor = value.ToDescriptor();
         var eftWriter = WriterPoolManager.GetWriter();
-
         eftWriter.WritePolymorph(descriptor);
         byte[] addressBytes = eftWriter.ToArray();
-
         WriterPoolManager.ReturnWriter(eftWriter);
 
-        writer.WriteUnmanaged(addressBytes.Length);
-        writer.WriteUnmanagedSpan((ReadOnlySpan<byte>)addressBytes);
+        writer.WriteUnmanagedArray(addressBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemAddress value)
     {
-        int playerId = reader.ReadUnmanaged<int>();
-        Player player = H.GetPlayer(playerId);
+        if (!reader.TryReadObjectHeader(out var count))
+        {
+            value = null;
+            return;
+        }
 
-        int length = reader.ReadUnmanaged<int>();
+        int playerId = reader.ReadUnmanaged<int>();
+
+        Player player = null;
+        foreach (Player alivePlayer in Singleton<GameWorld>.Instance.AllAlivePlayersList)
+        {
+            if (alivePlayer.Id == playerId)
+            {
+                player = alivePlayer;
+                break;
+            }
+        }
+
+        if (player == null)
+        {
+            value = null;
+            return;
+        }
+
         byte[] addressBytes = reader.ReadUnmanagedArray<byte>();
 
         if (addressBytes == null || addressBytes.Length == 0 || player == null)
@@ -60,9 +80,7 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         using var eftReader = PacketToEFTReaderAbstractClass.Get(addressBytes);
-
         var descriptor = eftReader.ReadPolymorph<GClass1950>();
-
         value = player.InventoryController.ToItemAddress(descriptor);
     }
 }

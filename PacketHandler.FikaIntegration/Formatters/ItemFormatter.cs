@@ -10,10 +10,10 @@ public class ItemFormatter : MemoryPackFormatter<Item>
     {
         if (value == null)
         {
-            writer.WriteNullCollectionHeader();
+            writer.WriteNullObjectHeader();
             return;
         }
-        
+
         writer.WriteObjectHeader(1);
         var eftWriter = WriterPoolManager.GetWriter();
         var descriptor = EFTItemSerializerClass.SerializeItem(value, FikaGlobals.SearchControllerSerializer);
@@ -22,7 +22,7 @@ public class ItemFormatter : MemoryPackFormatter<Item>
         byte[] itemBytes = eftWriter.ToArray();
         WriterPoolManager.ReturnWriter(eftWriter);
 
-        writer.WriteUnmanagedSpan(itemBytes);
+        writer.WriteUnmanagedArray(itemBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Item value)

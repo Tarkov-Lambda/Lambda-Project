@@ -1,9 +1,8 @@
 using Comfort.Common;
-using System;
 
 namespace PacketHandler.TimeSync;
 
-public class TimeSyncTicker : IDisposable
+public class TimeSyncTicker
 {
     private double _nextSendLocalSeconds;
 
@@ -25,17 +24,9 @@ public class TimeSyncTicker : IDisposable
 
         _nextSendLocalSeconds = now + IntervalSeconds;
 
-        if (!Singleton<TimeSynchronizationPacketHandler>.Instantiated)
-            return;
-
-        if (H.GameWorld == null)
+        if (!Singleton<TimeSynchronizationPacketHandler>.Instance.IsRegistered)
             return;
 
         Singleton<TimeSynchronizationPacketHandler>.Instance.Send();
-    }
-
-    public void Dispose()
-    {
-        NetworkTime.Reset();
     }
 }
