@@ -1,7 +1,6 @@
 using Comfort.Common;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
-using Fika.Core.Networking;
 using Fika.Core.Networking.Pooling;
 using MemoryPack;
 
@@ -14,7 +13,8 @@ public class ItemFormatter : MemoryPackFormatter<Item>
             writer.WriteNullCollectionHeader();
             return;
         }
-
+        
+        writer.WriteObjectHeader(1);
         var eftWriter = WriterPoolManager.GetWriter();
         var descriptor = EFTItemSerializerClass.SerializeItem(value, FikaGlobals.SearchControllerSerializer);
 
@@ -22,25 +22,18 @@ public class ItemFormatter : MemoryPackFormatter<Item>
         byte[] itemBytes = eftWriter.ToArray();
         WriterPoolManager.ReturnWriter(eftWriter);
 
-        var compressedSpan = NetworkUtils.CompressBytes(itemBytes);
-
-        writer.WriteUnmanaged(itemBytes.Length);
-        writer.WriteUnmanagedSpan(compressedSpan);
+        writer.WriteUnmanagedSpan(itemBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Item value)
     {
-        int originalLength = reader.ReadUnmanaged<int>();
-
-        byte[] compressed = reader.ReadUnmanagedArray<byte>();
-
-        if (compressed == null || compressed.Length == 0)
+        if (!reader.TryReadObjectHeader(out var count))
         {
             value = null;
             return;
         }
 
-        byte[] itemBytes = NetworkUtils.DecompressBytes(compressed, originalLength);
+        byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
 
         using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
         var descriptor = eftReader.ReadEFTItemDescriptor();

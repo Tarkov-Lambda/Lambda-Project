@@ -80,7 +80,10 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
             PacketHandlerUtils.Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
 
-        ApplyInternal(packet, peerId);
+        if (packet.Player.IsYourPlayer)
+        {
+            ApplyInternal(packet, peerId);
+        }
     }
 
     protected override void Apply(InventoryResyncPacket packet, int peerId)

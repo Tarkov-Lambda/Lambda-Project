@@ -18,7 +18,7 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         Player addressPlayerOwner = null;
         foreach (var player in H.AllPlayers)
         {
-            if (value.GetOwner() == player.InventoryController)
+            if (value.GetOwner().RootItem == player.InventoryController.RootItem)
             {
                 addressPlayerOwner = player;
                 break;
