@@ -1,3 +1,4 @@
+using System;
 using Comfort.Common;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Utils;
@@ -35,9 +36,13 @@ public class ItemFormatter : MemoryPackFormatter<Item>
 
         byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
 
-        using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
-        var descriptor = eftReader.ReadEFTItemDescriptor();
+        try
+        {
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
+            var descriptor = eftReader.ReadEFTItemDescriptor();
 
-        value = EFTItemSerializerClass.DeserializeItem(descriptor, Singleton<ItemFactoryClass>.Instance, []);
+            value = EFTItemSerializerClass.DeserializeItem(descriptor, Singleton<ItemFactoryClass>.Instance, []);
+        }
+        catch (Exception) { }
     }
 }

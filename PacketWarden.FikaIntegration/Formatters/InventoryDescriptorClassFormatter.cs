@@ -1,3 +1,4 @@
+using System;
 using Fika.Core.Networking.Pooling;
 using MemoryPack;
 
@@ -31,7 +32,11 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
 
         byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
 
-        using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
-        value = eftReader.ReadEFTItemDescriptor();
+        try
+        {
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
+            value = eftReader.ReadEFTItemDescriptor();
+        }
+        catch (Exception) { }
     }
 }

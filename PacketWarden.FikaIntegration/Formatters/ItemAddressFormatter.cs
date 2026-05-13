@@ -54,6 +54,13 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         int playerId = reader.ReadUnmanaged<int>();
+        byte[] addressBytes = reader.ReadUnmanagedArray<byte>();
+
+        if (!Singleton<GameWorld>.Instantiated)
+        {
+            value = null;
+            return;
+        }
 
         Player player = null;
         foreach (Player alivePlayer in Singleton<GameWorld>.Instance.AllAlivePlayersList)
@@ -65,22 +72,18 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             }
         }
 
-        if (player == null)
-        {
-            value = null;
-            return;
-        }
-
-        byte[] addressBytes = reader.ReadUnmanagedArray<byte>();
-
         if (addressBytes == null || addressBytes.Length == 0 || player == null)
         {
             value = null;
             return;
         }
 
-        using var eftReader = PacketToEFTReaderAbstractClass.Get(addressBytes);
-        var descriptor = eftReader.ReadPolymorph<GClass1950>();
-        value = player.InventoryController.ToItemAddress(descriptor);
+        try
+        {
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(addressBytes);
+            var descriptor = eftReader.ReadPolymorph<GClass1950>();
+            value = player.InventoryController.ToItemAddress(descriptor);
+        }
+        catch (Exception) { }
     }
 }
