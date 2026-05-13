@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.ui", "arena.ui\arena.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "arena.audio\SteamAudioUnity.csproj", "{F2614763-D1AE-332B-D239-2C11361148E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "arena.server.maps", "arena.server.maps\arena.server.maps.csproj", "{92A50E67-1EE8-D3FD-43D2-767C0D0B68B6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketHandler", "PacketHandler\PacketHandler.csproj", "{985BBEAC-25FC-266D-4099-B45F599E2600}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketHandler.FikaIntegration", "PacketHandler.FikaIntegration\PacketHandler.FikaIntegration.csproj", "{00E9870B-6BF8-4C88-E1C5-2E1D9ED0049F}"
@@ -35,10 +33,6 @@ Global
 		{F2614763-D1AE-332B-D239-2C11361148E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2614763-D1AE-332B-D239-2C11361148E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2614763-D1AE-332B-D239-2C11361148E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{92A50E67-1EE8-D3FD-43D2-767C0D0B68B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{92A50E67-1EE8-D3FD-43D2-767C0D0B68B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{92A50E67-1EE8-D3FD-43D2-767C0D0B68B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{92A50E67-1EE8-D3FD-43D2-767C0D0B68B6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{985BBEAC-25FC-266D-4099-B45F599E2600}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{985BBEAC-25FC-266D-4099-B45F599E2600}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{985BBEAC-25FC-266D-4099-B45F599E2600}.Release|Any CPU.ActiveCfg = Release|Any CPU
