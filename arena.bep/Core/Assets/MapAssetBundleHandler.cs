@@ -54,6 +54,20 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         {
             if (!SceneManager.GetSceneByPath(scenePath).isLoaded)
             {
+                // типо наверное надо авайт загрузить перед тем как ебашить аддитив ремувал?
+                // в любом случае в будущем это будет ебашиться на заднем плане во время загрузки
+                if (mapName == "lobby")
+                {
+                    bool isBunkerAlreadyLoaded = SceneManager.GetSceneByBuildIndex(131).isLoaded;
+                    if (!isBunkerAlreadyLoaded)
+                    {
+                        UniTask reserveBunkerLoadTask = SceneManager.LoadSceneAsync(131, LoadSceneMode.Additive).ToUniTask();
+                        // loadTasks.Add(reserveBunkerLoadTask);
+
+                        await reserveBunkerLoadTask;
+                    }
+                }
+
                 UniTask sceneLoadTask = SceneManager.LoadSceneAsync(scenePath, LoadSceneMode.Additive).ToUniTask(progressReportScene);
 
                 loadTasks.Add(sceneLoadTask);
