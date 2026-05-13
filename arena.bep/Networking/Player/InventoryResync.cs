@@ -25,8 +25,6 @@ public partial struct InventoryResyncPacket : IPacket
 
 public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncPacket>
 {
-    readonly FieldInfo traderControllerClassItem_0FieldInfo = AccessTools.Field(typeof(TraderControllerClass), "Item_0");
-
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(5);
 
     public void Send(Player player, bool broadcast = false)
@@ -112,7 +110,7 @@ public class InventoryResyncPacketHandler : LambdaPacketHandler<InventoryResyncP
         newInventory.Equipment.CurrentAddress = player.InventoryController.CreateItemAddress();
         newInventory.Stash?.CurrentAddress = player.InventoryController.CreateItemAddress();
 
-        traderControllerClassItem_0FieldInfo.SetValue(player.InventoryController, newInventory.Equipment);
+        player.InventoryController.Item_0 = newInventory.Equipment;
 
         player.UpdateVisuals(newInventory.Equipment);
 
