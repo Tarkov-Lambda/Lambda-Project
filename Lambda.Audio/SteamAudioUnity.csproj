@@ -35,7 +35,7 @@
     <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
     <Reference Include="$(ManagedPath)\*.dll" />
 
-    <Reference Include="..\deps\libraries\*.dll" />
+    <Reference Include="..\Dependencies\libraries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

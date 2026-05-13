@@ -29,9 +29,9 @@
 
     <Reference Include="$(ManagedPath)\*.dll" Exclude="$(ManagedPath)\mscorlib.dll;$(ManagedPath)\netstandard.dll" />
 
-    <!-- <Reference Include="..\deps\libraries\*.dll" /> -->
-    <!-- <Reference Include="..\deps\libraries\UniTask.dll" />
-    <Reference Include="..\deps\libraries\UniTask*.dll" /> -->
+    <!-- <Reference Include="..\Dependencies\libraries\*.dll" /> -->
+    <!-- <Reference Include="..\Dependencies\libraries\UniTask.dll" />
+    <Reference Include="..\Dependencies\libraries\UniTask*.dll" /> -->
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

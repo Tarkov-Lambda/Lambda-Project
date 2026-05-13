@@ -33,7 +33,7 @@ public class Plugin : BaseUnityPlugin
 
     public static readonly string pathToBundles = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
     public static readonly string pathToMaps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "maps");
-    public static readonly string pathToDeps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "deps");
+    public static readonly string pathToDependencies = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Dependencies");
     public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json");
     public static readonly string pathToLogs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "logs");
 

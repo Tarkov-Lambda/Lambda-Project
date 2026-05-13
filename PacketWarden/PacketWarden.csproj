@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".\deps\libraries*">
+    <None Include=".\Dependencies\libraries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <Reference Include="$(ManagedPath)\DOTween.dll" />
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
 
-    <Reference Include="..\deps\libraries\*.dll" />
+    <Reference Include="..\Dependencies\libraries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
@@ -67,7 +67,7 @@
     </ItemGroup>
 
 
-    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps"
+    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Dependencies"
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
     <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />

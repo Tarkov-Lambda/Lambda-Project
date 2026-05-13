@@ -1456,7 +1456,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 404288d3cbcfb2f4dad61b2194a92c81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathJsonAssortment: C:\repos\fika-arena\deps\configs\Economy.json
+  pathJsonAssortment: C:\repos\fika-arena\Dependencies\configs\Economy.json
   dummySprite: {fileID: 21300000, guid: 9a7f70a1966987840ab885e2d4cb7cbf, type: 3}
 --- !u!1 &398138482
 GameObject:

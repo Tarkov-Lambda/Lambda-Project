@@ -39,7 +39,7 @@
     <Reference Include="$(SPTPath)\BepInEx\plugins\UnityToolkit\*.dll">
       <Private>False</Private>
     </Reference>
-    <Reference Include="..\deps\libraries\*.dll">
+    <Reference Include="..\Dependencies\libraries\*.dll">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -58,6 +58,6 @@
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
 
     <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <!-- <Copy SourceFiles="$(OutputPath)SteamAudioUnity.dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\deps" /> -->
+    <!-- <Copy SourceFiles="$(OutputPath)SteamAudioUnity.dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Dependencies" /> -->
   </Target>
 </Project>
