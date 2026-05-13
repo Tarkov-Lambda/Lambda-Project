@@ -1,8 +1,6 @@
 using System;
 using Comfort.Common;
 using EFT.InventoryLogic;
-using Fika.Core.Main.Utils;
-using Fika.Core.Networking.Pooling;
 using MemoryPack;
 
 public class ItemFormatter : MemoryPackFormatter<Item>
@@ -16,11 +14,15 @@ public class ItemFormatter : MemoryPackFormatter<Item>
         }
 
         writer.WriteObjectHeader(1);
+        
+        var descriptor = EFTItemSerializerClass.SerializeItem(value, GClass2240.Instance);
+
         var eftWriter = WriterPoolManager.GetWriter();
-        var descriptor = EFTItemSerializerClass.SerializeItem(value, FikaGlobals.SearchControllerSerializer);
 
         eftWriter.WriteEFTItemDescriptor(descriptor);
+
         byte[] itemBytes = eftWriter.ToArray();
+        
         WriterPoolManager.ReturnWriter(eftWriter);
 
         writer.WriteUnmanagedArray(itemBytes);
@@ -35,6 +37,12 @@ public class ItemFormatter : MemoryPackFormatter<Item>
         }
 
         byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
+
+        if (itemBytes == null || itemBytes.Length == 0)
+        {
+            value = null;
+            return;
+        }
 
         try
         {

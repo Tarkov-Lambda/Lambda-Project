@@ -1,5 +1,4 @@
 using System;
-using Fika.Core.Networking.Pooling;
 using MemoryPack;
 
 public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDescriptorClass>
@@ -13,10 +12,13 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
         }
 
         writer.WriteObjectHeader(1);
+
         var eftWriter = WriterPoolManager.GetWriter();
+        
         eftWriter.WriteEFTItemDescriptor(value);
 
         byte[] itemBytes = eftWriter.ToArray();
+        
         WriterPoolManager.ReturnWriter(eftWriter);
 
         writer.WriteUnmanagedArray(itemBytes);
@@ -31,6 +33,12 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
         }
 
         byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
+
+        if (itemBytes == null || itemBytes.Length == 0)
+        {
+            value = null;
+            return;
+        }
 
         try
         {

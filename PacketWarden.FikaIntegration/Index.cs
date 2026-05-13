@@ -1,16 +1,6 @@
-using MemoryPack;
-
 namespace PacketWarden.FikaIntegration;
 
 public static class FikaBootstrap
 {
-    public static INetworkBackend Initialize()
-    {
-        MemoryPackFormatterProvider.Register(new PlayerFormatter());
-        MemoryPackFormatterProvider.Register(new ItemFormatter());
-        MemoryPackFormatterProvider.Register(new InventoryDescriptorClassFormatter());
-        MemoryPackFormatterProvider.Register(new ItemAddressFormatter());
-
-        return new FikaBackend();
-    }
+    public static INetworkBackend Initialize() => new FikaBackend();
 }

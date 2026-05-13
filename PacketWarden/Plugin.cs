@@ -46,6 +46,11 @@ internal class Plugin : BaseUnityPlugin
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
 
+        MemoryPackFormatterProvider.Register(new PlayerFormatter());
+        MemoryPackFormatterProvider.Register(new ItemFormatter());
+        MemoryPackFormatterProvider.Register(new InventoryDescriptorClassFormatter());
+        MemoryPackFormatterProvider.Register(new ItemAddressFormatter());
+
         if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
         {
             InitFikaBackend();

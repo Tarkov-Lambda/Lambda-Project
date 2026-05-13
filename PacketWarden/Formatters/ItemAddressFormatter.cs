@@ -2,7 +2,6 @@ using System;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking.Pooling;
 using MemoryPack;
 
 // TODO: Make this work for all IItemOwner and not just InventoryController subtype
@@ -33,13 +32,16 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         writer.WriteObjectHeader(2);
-
         writer.WriteUnmanaged(addressPlayerOwner.Id);
 
         var descriptor = value.ToDescriptor();
+        
         var eftWriter = WriterPoolManager.GetWriter();
+
         eftWriter.WritePolymorph(descriptor);
+
         byte[] addressBytes = eftWriter.ToArray();
+        
         WriterPoolManager.ReturnWriter(eftWriter);
 
         writer.WriteUnmanagedArray(addressBytes);
