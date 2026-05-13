@@ -1,8 +1,6 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Lambda.Core.Main;
-
 public static class SmokeGrenadeExtensions
 {
     public static async UniTaskVoid StartVelocityGateAsync(this SmokeGrenade grenade)

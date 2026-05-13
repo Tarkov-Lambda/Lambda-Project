@@ -4,7 +4,6 @@ using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using Lambda.Core.Main;
 using UnityEngine;
 using static EFT.Player;
 using static EFT.PlayerAnimator;

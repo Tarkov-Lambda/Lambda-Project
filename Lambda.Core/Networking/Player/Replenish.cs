@@ -1,8 +1,6 @@
 using EFT;
 using MemoryPack;
 
-namespace Lambda.Core.Networking;
-
 [MemoryPackable]
 public partial struct ReplenishPacket : IPacket, IAuthoredPacket
 {

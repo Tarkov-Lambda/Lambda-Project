@@ -13,7 +13,6 @@ using Lambda.Core.Networking;
 using Lambda.Core.Patches;
 using Lambda.Core.Patches.Tarkov;
 using Lambda.Core.Patches.Tarkov.UI;
-using ifp.arena.shared;
 using MemoryPack;
 using SPT.Reflection.Patching;
 using System;
@@ -38,15 +37,14 @@ public class Plugin : BaseUnityPlugin
     public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json");
     public static readonly string pathToLogs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "logs");
 
-    internal static ConfigEntry<string> gamemode;
-    internal static ConfigEntry<Faction> PrefferedFaction;
-    internal static ConfigEntry<string> level;
+    internal static ConfigEntry<string> Gamemode;
+    internal static ConfigEntry<string> Level;
     internal static ConfigEntry<string> Password;
 
     internal static ConfigEntry<bool> DisplayLogAsNotificationInGame;
 
+    private ConfigEntry<KeyboardShortcut> StartKey;
     private ConfigEntry<KeyboardShortcut> DeathKey;
-    private ConfigEntry<KeyboardShortcut> RestartKey;
     private ConfigEntry<KeyboardShortcut> UnfuckKey;
 
     private readonly List<ModulePatch> _patches = new();
@@ -88,7 +86,6 @@ public class Plugin : BaseUnityPlugin
         try
         {
             await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
-            // await UniTask.WaitUntil(() => H.IsInRaid());
         }
         catch (OperationCanceledException)
         {
@@ -285,16 +282,16 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
 
-        // Internal Classses (order matters)
-        RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)
-        RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
-        RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
-        RegisterSingleton<PresetItemsCache>();                                      // Caching gun presets
-        RegisterSingleton<WeaponPresetManager>();                                   // Initializes/Saves/Loads what gun preset is selected for in raid spawning
-        RegisterSingleton<DefaultEquipmentManager>();                               // Collects
-
         try
         {
+            // Internal Classses (order matters)
+            RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)
+            RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
+            RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
+            RegisterSingleton<PresetItemsCache>();                                      // Caching gun presets
+            RegisterSingleton<WeaponPresetManager>();                                   // Initializes/Saves/Loads what gun preset is selected for in raid spawning
+            RegisterSingleton<DefaultEquipmentManager>();                               // Collects
+
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
             RegisterSingleton<MusicHandler>();                                      // Listens to ArenaController and plays music when necessary
@@ -312,31 +309,24 @@ public class Plugin : BaseUnityPlugin
             D.Dump(ex);
             D.Log(ex.StackTrace);
         }
-
-#if DEBUG
-        // _disposables.Add(new DynamicClassTracer(typeof(BetterAudio)));
-#endif
-
     }
 
     private void InitConfiguration()
     {
-        PrefferedFaction = Config.Bind("", "Preffered Faction", Faction.None, "Faction swaps only happen after the round end");
-
-        level = Config.Bind("Admin", "Map Name", "", "");
-        gamemode = Config.Bind("Admin", "Gamemode", "SNDGamemode", "");
+        Level = Config.Bind("Admin", "Map Name", "", "");
+        Gamemode = Config.Bind("Admin", "Gamemode", "SNDGamemode", "");
         Password = Config.Bind("Admin", "Password", "", "");
 
         DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", false);
 
+        StartKey = Config.Bind("Debug", "Start key", new KeyboardShortcut(KeyCode.F1));
         DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
-        RestartKey = Config.Bind("Debug", "RestartKey", new KeyboardShortcut(KeyCode.F1));
         UnfuckKey = Config.Bind("Debug", "Unfuck Key", new KeyboardShortcut(KeyCode.F4), "Use this key to unfuck yourself");
     }
 
     private void Update()
     {
-        if (RestartKey.Value.IsDown())
+        if (StartKey.Value.IsDown())
         {
             Singleton<SessionStartPacketWarden>.Instance.Send();
         }

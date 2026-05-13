@@ -1,8 +1,4 @@
-﻿using BepInEx.Configuration;
-using Fika.Core;
-using Fika.Core.Main.Components;
-using Fika.Core.Main.Players;
-using Fika.Core.Main.Utils;
+﻿using Fika.Core.Main.Utils;
 using Fika.Core.Networking.Packets.Player;
 using Fika.Core.Networking.Snapshotting;
 using HarmonyLib;

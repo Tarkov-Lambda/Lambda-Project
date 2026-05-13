@@ -1,19 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Comfort.Common;
-using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
-using Lambda.Core.Main.Economy;
-using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Main.UI;
-using ifp.arena.shared.Models;
-using UnityEngine;
-
-namespace Lambda.Core.Main;
 
 public static class InventoryGetterExtensions
 {

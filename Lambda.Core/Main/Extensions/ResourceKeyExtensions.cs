@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EFT;
 
-namespace Lambda.Core.Main;
-
 public static class ResourceKeyExtensions
 {
     public static bool IsReadyNow(this ResourceKey key)

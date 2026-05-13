@@ -114,6 +114,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             return;
         }
 
+        // this logic needs to be relocated
         if (packet.item is Weapon weapon)
         {
             if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData) && itemData.maxMagSize != 0)

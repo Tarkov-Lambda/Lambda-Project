@@ -3,14 +3,9 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Networking;
-using Lambda.Core.Patches.Tarkov;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Lambda.Core.Main.AssetBundleHandling;
 

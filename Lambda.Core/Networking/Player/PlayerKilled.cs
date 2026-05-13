@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using Lambda.Core.Main.Dying;
 using MemoryPack;

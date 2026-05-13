@@ -1,4 +1,3 @@
-using Comfort.Common;
 using SteamAudio;
 using System;
 using System.IO;
@@ -6,8 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using Lambda.Core;
-
-namespace ifp.arena.shared;
 
 public static class SteamAudioInitializer
 {
@@ -94,7 +91,6 @@ public static class SteamAudioInitializer
             return;
         }
 
-        // Create a minimal settings object with sensible Phase-1 defaults.
         var settings = ScriptableObject.CreateInstance<SteamAudioSettings>();
 
         // Audio engine
@@ -119,7 +115,6 @@ public static class SteamAudioInitializer
         var mat = ScriptableObject.CreateInstance<SteamAudioMaterial>();
         settings.defaultMaterial = mat;
 
-        // Physics layer mask: use "Default" layer for Steam Audio raycasts
         settings.layerMask = LayerMask.GetMask("Default");
 
         // Inject into the private static singleton field via reflection
@@ -130,37 +125,18 @@ public static class SteamAudioInitializer
             field.SetValue(null, settings);
             Debug.Log("[SteamAudio] SteamAudioSettings created at runtime.");
         }
-        else
-        {
-            Debug.LogError("[SteamAudio] Could not find SteamAudioSettings.sSingleton field – " +
-                          "check SteamAudio.dll version.");
-        }
     }
 
     private static void EnsureManager()
     {
         if (SteamAudioManager.Singleton == null)
         {
-            // This creates the "Steam Audio Manager" DontDestroyOnLoad GameObject and starts the
-            // simulation threaDebug.  Equivalent to [RuntimeInitializeOnLoadMethod] AutoInitialize().
             SteamAudioManager.Initialize(ManagerInitReason.Playing);
             Debug.Log("[SteamAudio] SteamAudioManager.Initialize() calleDebug.");
         }
         else
         {
             Debug.Log("[SteamAudio] SteamAudioManager already running.");
-        }
-
-        // Attach the scene tracker to the SteamAudioManager GameObject so it can bridge
-        // MapAssetBundleHandler load/unload events → Phase 1 / Phase 2 transitions.
-        if (SteamAudioManager.Singleton != null)
-        {
-            SteamAudioSceneTracker.Register(SteamAudioManager.Singleton.gameObject);
-        }
-        else
-        {
-            Debug.LogError("[SteamAudio] SteamAudioManager.Singleton is still null after Initialize() – " +
-                          "SteamAudioSceneTracker will not be registereDebug. Occlusion/reflections disableDebug.");
         }
     }
 
@@ -175,7 +151,7 @@ public static class SteamAudioInitializer
 
         if (listenerTransform == null)
         {
-            Debug.LogWarning("[SteamAudio] ListenerTransform is null – SteamAudioListener not attached yet.");
+            Debug.LogWarning("[SteamAudio] ListenerTransform is null - SteamAudioListener not attached yet.");
             return;
         }
 

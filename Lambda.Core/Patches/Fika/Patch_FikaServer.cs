@@ -1,7 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
-using EFT.Interactive;
 using Fika.Core.Main.Components;
 using Fika.Core.Main.GameMode;
 using Fika.Core.Main.ObservedClasses;
@@ -15,7 +14,6 @@ using Fika.Core.Networking.Packets.Player.Common;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
 using Fika.Core.Networking.Pooling;
 using HarmonyLib;
-using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using PacketWarden.TimeSync;
 using SPT.Reflection.Patching;
@@ -25,7 +23,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Lambda.Core.Patches;
@@ -381,10 +378,7 @@ internal class Patch_FikaServer_OnDestroy : ModulePatch
 // for some reason it errors
 public class Patch_HostGameController_GetHostLootItems : ModulePatch
 {
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(HostGameController), nameof(HostGameController.GetHostLootItems));
-    }
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(HostGameController), nameof(HostGameController.GetHostLootItems));
 
     [PatchPrefix]
     private static bool Prefix(ref byte[] __result)

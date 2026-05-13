@@ -1,9 +1,7 @@
 using System.Reflection;
 using Comfort.Common;
 using EFT;
-using EFT.InventoryLogic;
 using Fika.Core.Main.ClientClasses;
-using Fika.Core.Main.HostClasses;
 using HarmonyLib;
 using Lambda.Core.Networking;
 using SPT.Reflection.Patching;

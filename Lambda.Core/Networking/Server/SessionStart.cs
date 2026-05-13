@@ -47,8 +47,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         var packet = new SessionStartPacket
         {
-            level = Plugin.level.Value,
-            gamemode = Plugin.gamemode.Value,
+            level = Plugin.Level.Value,
+            gamemode = Plugin.Gamemode.Value,
         };
 
         // send manifest of all item assets that need to be loaded before starting

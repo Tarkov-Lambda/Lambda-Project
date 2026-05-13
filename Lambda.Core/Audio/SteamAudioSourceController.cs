@@ -68,12 +68,6 @@ public static class SteamAudioSourceController
         steamAudio.transmissionHigh = GameplayVariables.vars.transmissionHigh;
         steamAudio.transmissionMid = GameplayVariables.vars.transmissionMid;
         steamAudio.transmissionLow = GameplayVariables.vars.transmissionLow;
-        
-        // steamAudio.transmissionHigh = 0.4f;
-        // steamAudio.transmissionMid = 0.65f;
-        // steamAudio.transmissionLow = 0.75f;
-
-        // steamAudio.reflections = false;
 
         audioSource.spatialize = initialSpatialize;
         audioSource.spatialBlend = initialBlend;

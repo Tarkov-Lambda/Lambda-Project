@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using EFT;
-using Lambda.Core.Main;
 using ifp.arena.shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;

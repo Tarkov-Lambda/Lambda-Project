@@ -202,9 +202,19 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         observedPlayer = player;
         PU.OpenEyes();
 
-        var observedPlayerHandsKnown = observedPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID observedPlayerHandsId);
-        H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID mainPlayerHandsId);
+        SetHandsSkin(observedPlayer);
 
+        UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
+        ChangeCameraPOV(observedPlayer);
+
+        ChangeBattleUIPOV(observedPlayer);
+
+        OnSelfStartSpectating?.Invoke(observedPlayer);
+    }
+
+    public void SetHandsSkin(Player player)
+    {
+        var observedPlayerHandsKnown = observedPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID observedPlayerHandsId);
         ResourceKey selectedHandsBundle = null;
 
         if (observedPlayerHandsKnown)
@@ -216,20 +226,15 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
             }
         }
 
+        // Fallback to Main Player Hands
         if (selectedHandsBundle == null)
         {
+            H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID mainPlayerHandsId);
             selectedHandsBundle = H.CustomizationSolverClass.GetBundle(mainPlayerHandsId);
         }
 
         var handsKvp = new KeyValuePair<EBodyModelPart, ResourceKey>(EBodyModelPart.Hands, selectedHandsBundle);
         observedPlayer.PlayerBody.SetSkin(handsKvp, observedPlayer.PlayerBody.SkeletonHands);
-
-        UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
-        ChangeCameraPOV(observedPlayer);
-
-        ChangeBattleUIPOV(observedPlayer);
-
-        OnSelfStartSpectating?.Invoke(observedPlayer);
     }
 
     public void StopSpectating()
