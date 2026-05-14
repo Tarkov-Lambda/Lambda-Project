@@ -49,6 +49,9 @@ namespace Lambda.UI
 
         public void SetWeaponSprite(Sprite sprite)
         {
+            if (!gameObject.activeSelf)
+                return;
+
             imageWeapon.sprite = sprite;
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
         }

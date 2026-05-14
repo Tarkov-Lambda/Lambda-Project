@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ShopTester : MonoBehaviour
@@ -13,6 +14,7 @@ public class ShopTester : MonoBehaviour
     [SerializeField] private string pathJsonAssortment;
 
     [SerializeField] private Sprite dummySprite;
+    [SerializeField] private Faction faction;
 
     public List<BuyCategory> buyCategories;
 
@@ -34,6 +36,15 @@ public class ShopTester : MonoBehaviour
 
                 string json = System.IO.File.ReadAllText(pathJsonAssortment);
                 buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
+                foreach (var category in buyCategories)
+                {
+                    List<ShopItem> filteredItems = new List<ShopItem>();
+                    foreach (var item in category.items.ToList())
+                    {
+                        if (item.faction != faction && item.faction != Faction.None)
+                            category.items.Remove(item);
+                    }
+                }
 
                 instance.SetAssortment(buyCategories, new DummyItemInfoProvider(dummySprite), BuyRequest);
             }
