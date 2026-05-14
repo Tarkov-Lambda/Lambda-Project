@@ -21,5 +21,7 @@ namespace Lambda.UI
                 default: return none;
             }
         }
+
+        public string GetHtmlString(Faction faction) => ColorUtility.ToHtmlStringRGB(Get(faction));
     }
 }

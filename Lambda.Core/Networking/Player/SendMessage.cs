@@ -1,7 +1,9 @@
 using EFT;
+using Lambda.Shared.Models;
 using MemoryPack;
 
 namespace Lambda.Core.Networking;
+
 
 [MemoryPackable]
 public partial struct SendMessagePacket : IPacket, IAuthoredPacket
@@ -9,17 +11,19 @@ public partial struct SendMessagePacket : IPacket, IAuthoredPacket
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
+    public ChatMessageScope scope;
     public string msg;
 }
 
 public class SendMessagePacketWarden : LambdaPacketWarden<SendMessagePacket>
 {
-    public void Send(string msg)
+    public void Send(ChatMessageScope scope, string msg)
     {
         var packet = new SendMessagePacket
         {
             Player = H.MainPlayer,
-            msg  = msg
+            scope = scope,
+            msg = msg
         };
         DispatchPacket(packet);
     }
