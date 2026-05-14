@@ -1,17 +1,23 @@
+using System;
+using System.Text;
+using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 using Lambda.Shared.Models;
-using System.Text;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 
 namespace Lambda.UI
 {
     public class Chat : MonoBehaviour
     {
+        private class ChatMessageData
+        {
+            public TextMeshProUGUI TextComponent;
+            public float TimeRemaining;
+        }
+
         [SerializeField] private ScrollRect scrollRectMessages;
         [SerializeField] private TextMeshProUGUI prefabMessage;
 
@@ -22,25 +28,34 @@ namespace Lambda.UI
         [SerializeField] private FactionColors factionColors;
 
         [SerializeField] private float timeMessageVisible = 12f;
+        [SerializeField] private int maxMessages = 50;
 
         [SerializeField] private KeyCode keybindCycleScope = KeyCode.Tab;
+        
+        private Queue<ChatMessageData> messages = new Queue<ChatMessageData>();
 
-        private Dictionary<TextMeshProUGUI, float> messages = new Dictionary<TextMeshProUGUI, float>();
-
-        private bool _isFocused;
+        public bool IsFocused { get; private set; }
         private ChatMessageScope _scope;
 
         public event Action<ChatMessageScope, string> OnSubmit;
 
         void Start()
         {
-            inputField.onSubmit.AddListener((message) => OnSubmit?.Invoke(_scope, message));
+            inputField.SetTextWithoutNotify(string.Empty);
+
+            inputField.onSubmit.AddListener((inputText) => { 
+                inputField.SetTextWithoutNotify(string.Empty);
+                OnSubmit?.Invoke(_scope, inputText);
+                });
+
             SetCurrentScope(_scope);
+
+            FocusInput(false);
         }
 
         public void FocusInput(bool focus)
         {
-            _isFocused = focus;
+            IsFocused = focus;
 
             foreach (var go in gameObjectsWhenFocused)
             {
@@ -53,7 +68,7 @@ namespace Lambda.UI
             else
                 inputField.DeactivateInputField();
 
-            scrollRectMessages.verticalScrollbar.gameObject.SetActive(focus);
+            scrollRectMessages.verticalScrollbar.transform.GetChild(0).gameObject.SetActive(focus);
         }
 
         void SetCurrentScope(ChatMessageScope scope)
@@ -74,14 +89,17 @@ namespace Lambda.UI
                 messageRichText.Append(">");
             }
 
+            messageRichText.Append("[");
             messageRichText.Append(scope.ToString().ToUpperInvariant());
-            messageRichText.Append(" ");
+            messageRichText.Append("] ");
 
             messageRichText.Append("<color=#");
             messageRichText.Append(factionColors.GetHtmlString(senderFaction));
             messageRichText.Append(">");
+
             messageRichText.Append(senderName);
             messageRichText.Append(": ");
+
             messageRichText.Append("</color>");
 
             messageRichText.Append(msg);
@@ -90,8 +108,21 @@ namespace Lambda.UI
                 messageRichText.Append("</color>");
 
             TextMeshProUGUI newMessageObject = Instantiate(prefabMessage.gameObject, scrollRectMessages.content).GetComponent<TextMeshProUGUI>();
-            messages.Add(newMessageObject, timeMessageVisible);
+            newMessageObject.text = messageRichText.ToString();
 
+            messages.Enqueue(new ChatMessageData
+            {
+                TextComponent = newMessageObject,
+                TimeRemaining = timeMessageVisible
+            });
+
+            while (messages.Count > maxMessages)
+            {
+                ChatMessageData oldestMessage = messages.Dequeue();
+                Destroy(oldestMessage.TextComponent.gameObject);
+            }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRectMessages.content);
             scrollRectMessages.normalizedPosition = Vector2.zero;
         }
 
@@ -105,25 +136,31 @@ namespace Lambda.UI
                     SetCurrentScope(ChatMessageScope.All);
             }
 
-            foreach (var item in messages.Keys)
+            foreach (var msg in messages)
             {
-                float timeVisibleLeft = messages[item];
+                msg.TimeRemaining -= Time.deltaTime;
 
                 float alpha = 1f;
-                if (!_isFocused && timeVisibleLeft < 1f)
-                    alpha = Mathf.InverseLerp(timeMessageVisible, timeMessageVisible - 1f, timeVisibleLeft);
 
-                messages[item] -= Time.deltaTime;
+                if (!IsFocused)
+                {
+                    alpha = Mathf.Clamp01(msg.TimeRemaining);
+                }
+
+                msg.TextComponent.alpha = alpha;
             }
         }
 
         public void Clear()
         {
-            foreach (var item in messages.Keys.ToList())
+            while (messages.Count > 0)
             {
-                Destroy(item.gameObject);
+                ChatMessageData msg = messages.Dequeue();
+                if (msg.TextComponent != null)
+                {
+                    Destroy(msg.TextComponent.gameObject);
+                }
             }
-            messages.Clear();
         }
     }
 }
