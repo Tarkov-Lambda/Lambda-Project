@@ -765,7 +765,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: player_dead
+  m_text: HUESOS
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 342a80346916dea469005d580b2b7dbd, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 6716dd3537a7f94488eef48e2c042549, type: 2}

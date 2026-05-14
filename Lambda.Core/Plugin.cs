@@ -280,6 +280,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<GiftMoneyPacketWarden>();                                 // Gift teammate money for a specific item (Beggar auto buys the item)
         RegisterSingleton<InventoryResyncPacketWarden>();                           // Resynchronize Inventory Controller
         RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
+        RegisterSingleton<SendMessagePacketWarden>();                               // Player sends a message
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -292,6 +293,9 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<AdminLoginPacketWarden>();                                // Allow clients to elevate their priviledges
         RegisterSingleton<PausePacketWarden>();                                     // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketWarden>();                        // Sync time of day between rounds
+
+        RegisterSingleton<AnnouncementPacketWarden>();                              // Server sends an announcement message
+
 
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
