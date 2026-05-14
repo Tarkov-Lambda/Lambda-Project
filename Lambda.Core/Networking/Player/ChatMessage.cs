@@ -4,9 +4,8 @@ using MemoryPack;
 
 namespace Lambda.Core.Networking;
 
-
 [MemoryPackable]
-public partial struct SendMessagePacket : IPacket, IAuthoredPacket
+public partial struct ChatMessagePacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
@@ -15,11 +14,11 @@ public partial struct SendMessagePacket : IPacket, IAuthoredPacket
     public string msg;
 }
 
-public class SendMessagePacketWarden : LambdaPacketWarden<SendMessagePacket>
+public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 {
     public void Send(ChatMessageScope scope, string msg)
     {
-        var packet = new SendMessagePacket
+        var packet = new ChatMessagePacket
         {
             Player = H.MainPlayer,
             scope = scope,
@@ -28,12 +27,12 @@ public class SendMessagePacketWarden : LambdaPacketWarden<SendMessagePacket>
         DispatchPacket(packet);
     }
 
-    protected override void ApplyOptimistically(SendMessagePacket packet)
+    protected override void ApplyOptimistically(ChatMessagePacket packet)
     {
         
     }
 
-    protected override void Apply(SendMessagePacket packet, int peerId)
+    protected override void Apply(ChatMessagePacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer) return;
 

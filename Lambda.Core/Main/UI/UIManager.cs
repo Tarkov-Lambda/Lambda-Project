@@ -85,6 +85,7 @@ public class UIManager : IDisposable
             disposables.Add(new MatchResultController(matchUI.PopupMatchEnd));
             disposables.Add(new SelfDeathController(matchUI.DeathInfo));
             disposables.Add(new SpectatorController(matchUI.Spectator));
+            disposables.Add(new ChatController(matchUI.Chat));
 
             disposables.Add(new ShopUIController(commonUI, UIBundle, itemInfoProvider));
             disposables.Add(new NameplateController(commonUI, UIBundle));

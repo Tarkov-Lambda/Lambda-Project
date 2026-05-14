@@ -280,7 +280,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<GiftMoneyPacketWarden>();                                 // Gift teammate money for a specific item (Beggar auto buys the item)
         RegisterSingleton<InventoryResyncPacketWarden>();                           // Resynchronize Inventory Controller
         RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
-        RegisterSingleton<SendMessagePacketWarden>();                               // Player sends a message
+        RegisterSingleton<ChatMessagePacketWarden>();                               // Player sends a message
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map

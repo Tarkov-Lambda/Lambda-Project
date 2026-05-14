@@ -11,5 +11,6 @@ namespace Lambda.UI
         [field: SerializeField] public PopupMatchEnd PopupMatchEnd { get; private set; }
         [field: SerializeField] public DeathInfo DeathInfo { get; private set; }
         [field: SerializeField] public Spectator Spectator { get; private set; }
+        [field: SerializeField] public Chat Chat { get; private set; }
     }
 }

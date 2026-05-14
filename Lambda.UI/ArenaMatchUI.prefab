@@ -134,6 +134,7 @@ MonoBehaviour:
   <PopupMatchEnd>k__BackingField: {fileID: 5959843194012900253}
   <DeathInfo>k__BackingField: {fileID: 4218952310020578686}
   <Spectator>k__BackingField: {fileID: 2997305593592893946}
+  <Chat>k__BackingField: {fileID: 8011897216771846636, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
 --- !u!222 &2879903786698279541
 CanvasRenderer:
   m_ObjectHideFlags: 0
