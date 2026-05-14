@@ -24,9 +24,8 @@ namespace Lambda.Core.Main.UI
         internal ScoreboardController(Scoreboard scoreboardUI)
         {
             this.scoreboardUI = scoreboardUI;
-
-            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
-            PlayerReadinessPacketWarden.AfterPacketApplied += OnPlayerReadiness;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied += OnPlayerReadiness;
 
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
@@ -40,8 +39,8 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
-            PlayerReadinessPacketWarden.AfterPacketApplied -= OnPlayerReadiness;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied -= OnPlayerReadiness;
 
             EventBus.OnEnter -= OnMatchStateEnter;
             EventBus.OnExit -= OnMatchStateExit;

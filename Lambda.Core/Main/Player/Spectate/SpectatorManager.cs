@@ -29,7 +29,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         UnityTicker.OnLateUpdate += onUpdate;
         EventBus.OnEnter += OnEnter;
         EventBus.OnSelfFactionChanged += OnFactionChanged;
-        PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKilled;
+        Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKilled;
     }
 
     public void Dispose()
@@ -37,7 +37,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         UnityTicker.OnLateUpdate -= onUpdate;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
-        PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKilled;
+        Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKilled;
         StopSpectating();
         Release(this);
     }

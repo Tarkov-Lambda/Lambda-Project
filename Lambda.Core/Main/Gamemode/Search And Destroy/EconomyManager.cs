@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using EFT.InventoryLogic;
 using System;
+using Comfort.Common;
 
 namespace Lambda.Core.Main.Economy;
 
@@ -49,7 +50,7 @@ public class EconomyManager : IDisposable
         _lossCounters[Faction.T] = 1;
 
         // Subscribe to events
-        PlayerKilledPacketWarden.AfterPacketApplied += HandleKillReward;
+        Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += HandleKillReward;
         EventBus.OnBombStateChange += HandleObjectiveReward;
         EventBus.OnRoundActionEnd += HandleRoundEndEconomy;
 
@@ -58,7 +59,7 @@ public class EconomyManager : IDisposable
 
     public void Dispose()
     {
-        PlayerKilledPacketWarden.AfterPacketApplied -= HandleKillReward;
+        Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= HandleKillReward;
         EventBus.OnBombStateChange -= HandleObjectiveReward;
         EventBus.OnRoundActionEnd -= HandleRoundEndEconomy;
         EventBus.OnEnter -= OnEnter;

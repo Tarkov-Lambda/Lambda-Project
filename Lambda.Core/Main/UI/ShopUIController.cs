@@ -40,9 +40,21 @@ namespace Lambda.Core.Main.UI
             H.OnGameStarted += SetInteractable;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
-            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
 
             shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
+        }
+
+        public void Dispose()
+        {
+            Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
+            EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
+            H.OnGameStarted -= SetInteractable;
+            EventBus.OnEnter -= OnMatchStateEnter;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
+
+            if (shop != null)
+                GameObject.Destroy(shop.gameObject);
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet)
@@ -88,16 +100,6 @@ namespace Lambda.Core.Main.UI
             shop.gameObject.SetActive(containerLooting == null);
         }
 
-        public void Dispose()
-        {
-            Patch_ItemsTabController_Show.OnShow -= OnInventoryScreenOpen;
-            EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
-            H.OnGameStarted -= SetInteractable;
-            EventBus.OnEnter -= OnMatchStateEnter;
-            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
 
-            if (shop != null)
-                GameObject.Destroy(shop.gameObject);
-        }
     }
 }

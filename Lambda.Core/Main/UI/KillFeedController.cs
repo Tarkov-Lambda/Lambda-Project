@@ -2,6 +2,7 @@
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using System;
+using Comfort.Common;
 
 namespace Lambda.Core.Main.UI
 {
@@ -15,7 +16,7 @@ namespace Lambda.Core.Main.UI
             this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
-            PlayerKilledPacketWarden.BeforePacketApplied += OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet)
@@ -45,7 +46,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerKilledPacketWarden.BeforePacketApplied -= OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
         }
     }
 }

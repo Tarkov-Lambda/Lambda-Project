@@ -67,17 +67,11 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// <summary>The security authority level required to send this packet.</summary>
     protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
-    /// <summary>Fired immediately before <see cref="ApplyOptimistically"/> is executed.</summary>
-    public static event Action<T> BeforePacketAppliedOptimistically;
-
     /// <summary>Fired immediately after <see cref="ApplyOptimistically"/> is executed.</summary>
-    public static event Action<T> AfterPacketAppliedOptimistically;
-
-    /// <summary>Fired immediately before <see cref="Apply"/> is executed.</summary>
-    public static event Action<T> BeforePacketApplied;
+    public event Action<T> AfterPacketAppliedOptimistically;
 
     /// <summary>Fired immediately after <see cref="Apply"/> is executed.</summary>
-    public static event Action<T> AfterPacketApplied;
+    public event Action<T> AfterPacketApplied;
 
     protected PacketWarden() => Initialize();
 
@@ -366,7 +360,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
             case RateLimitAction.Drop:
                 return false;
             case RateLimitAction.Reject:
-                if (canSendReject) SendRejection(ref packet, peerId);
+                if (canSendReject) SendRejection(ref packet, peerId, "You've been rate limited.");
                 return false;
             case RateLimitAction.Disconnect:
                 Network.DisconnectPeer(peerId);

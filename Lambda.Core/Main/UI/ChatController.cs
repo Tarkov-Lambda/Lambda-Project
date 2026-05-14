@@ -16,12 +16,12 @@ namespace Lambda.Core.Main.UI
 
             chat.OnSubmit += OnSubmit;
 
-            ChatMessagePacketWarden.AfterPacketApplied += OnMessageReceived;
+            Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied += OnMessageReceived;
         }
 
         public void Dispose()
         {
-            ChatMessagePacketWarden.AfterPacketApplied -= OnMessageReceived;
+            Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied -= OnMessageReceived;
         }
 
         private void OnSubmit(ChatMessageScope scope, string msg)

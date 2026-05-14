@@ -7,6 +7,7 @@ using DG.Tweening;
 using Lambda.UI;
 using Lambda.Core.Networking;
 using Lambda.Core.Main.Gamemode;
+using Comfort.Common;
 
 namespace Lambda.Core.Main.UI
 {
@@ -22,7 +23,7 @@ namespace Lambda.Core.Main.UI
             screen = GameObject.Instantiate(prefab, commonUI.EftBattleUIScreen.transform).GetComponent<LoadingScreen>();
             screen.gameObject.SetActive(false);
 
-            PlayerReadinessPacketWarden.AfterPacketApplied += ReceivePlayerReadinessPacket;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied += ReceivePlayerReadinessPacket;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
             MapLoadEvent.OnBeginLoad += OnBeginLoad;
@@ -31,7 +32,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerReadinessPacketWarden.AfterPacketApplied -= ReceivePlayerReadinessPacket;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied -= ReceivePlayerReadinessPacket;
             EventBus.OnEnter -= OnMatchStateEnter;
             MapLoadEvent.OnBeginLoad -= OnBeginLoad;
             MapLoadEvent.OnSuccessfulLoad -= OnSuccessfulMapLoad;

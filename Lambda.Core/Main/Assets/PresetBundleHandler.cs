@@ -21,14 +21,12 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
         H.OnGameDispose += ResetCache;
 
         if (H.IsInRaid()) Initialize();
-        // SessionStartPacketWarden.BeforePacketApplied += ResetCache;
     }
 
     public void Dispose()
     {
         H.OnGameStarted -= Initialize;
         H.OnGameDispose -= ResetCache;
-        // SessionStartPacketWarden.BeforePacketApplied -= ResetCache;
         Release(this);
     }
 

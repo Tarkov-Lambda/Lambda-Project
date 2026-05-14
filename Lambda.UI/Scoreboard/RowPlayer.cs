@@ -22,7 +22,7 @@ namespace Lambda.UI.scoreboard
 
         Faction _lastFaction;
 
-        public void Set(in PlayerScoreInfo stats, bool isTeammate, int index)
+        public void Set(PlayerScoreInfo stats, bool isTeammate, int index)
         {
             if (_lastFaction != stats.Faction)
             {

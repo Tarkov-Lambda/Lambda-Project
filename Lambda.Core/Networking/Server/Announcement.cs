@@ -13,7 +13,7 @@ public partial struct AnnouncementPacket : IPacket
 
 public class AnnouncementPacketWarden : LambdaPacketWarden<AnnouncementPacket>
 {
-    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
+    protected override PacketAuthority Authority => PacketAuthority.Admin;
 
     public void Send(string msg)
     {

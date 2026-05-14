@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 using DG.Tweening;
+using Comfort.Common;
 
 namespace Lambda.Core.Main.UI
 {
@@ -26,16 +27,16 @@ namespace Lambda.Core.Main.UI
         {
             this.topBar = topBar;
 
-            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
-            PlayerReadinessPacketWarden.AfterPacketApplied += OnPlayerReadiness;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied += OnPlayerReadiness;
             EventBus.OnEnter += OnMatchStateEnter;
             UnityTicker.OnUpdate += OnUpdate;
         }
 
         public void Dispose()
         {
-            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
-            PlayerReadinessPacketWarden.AfterPacketApplied -= OnPlayerReadiness;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied -= OnPlayerReadiness;
             EventBus.OnEnter -= OnMatchStateEnter;
             UnityTicker.OnUpdate -= OnUpdate;
 

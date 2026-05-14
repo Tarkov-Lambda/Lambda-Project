@@ -16,7 +16,7 @@ namespace Lambda.Core.Main.UI
         {
             this.deathInfo = deathInfo;
 
-            PlayerKilledPacketWarden.AfterPacketApplied += OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
             EventBus.OnSelfRespawn += OnSelfRespawn;
         }
 
@@ -52,7 +52,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            PlayerKilledPacketWarden.AfterPacketApplied -= OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
             EventBus.OnSelfRespawn -= OnSelfRespawn;
         }
     }
