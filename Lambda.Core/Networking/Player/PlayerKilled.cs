@@ -4,6 +4,7 @@ using EFT;
 using Lambda.Core.Main.Dying;
 using MemoryPack;
 using System;
+using System.Threading;
 using UnityEngine;
 
 namespace Lambda.Core.Networking;
@@ -146,9 +147,8 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
     {
         H.RagdollCreator.CreateLocalPlayerRagdoll();
 
-        // Do local cleanup
         HU.HealMe().Forget();
-        // Singleton<ReplenishPacketWarden>.Instance.Send();
+
         packet.Player.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
         _ = PU.CloseEyes(true, true);
         H.MainPlayer.SetEmptyHands(delegate { });
@@ -169,22 +169,19 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         }
     }
 
+    // TODO: THIS NEEDS A CTS
     private async UniTaskVoid HoldPlayerOut(Player victim, Vector3 targetPos, float duration)
     {
         float elapsed = 0f;
 
-        // Force position immediately before loop starts
         ForcePlayerPosition(victim, targetPos);
 
         while (elapsed < duration && victim != null && !victim.Destroyed)
         {
-            // PostLateUpdate ensures we override AFTER EFT's networking and IK calculates
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
 
             if (victim == null || victim.Destroyed) break;
 
-            // If the player has been respawned (e.g. RoundPrepare fired mid-death sequence),
-            // stop fighting the respawn teleport and release control immediately.
             var score = H.GetPlayerScore(victim.Id);
             if (score != null && score.IsAlive) break;
 

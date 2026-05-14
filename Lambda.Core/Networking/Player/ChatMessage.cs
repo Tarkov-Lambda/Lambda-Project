@@ -1,6 +1,7 @@
 using EFT;
 using Lambda.Shared.Models;
 using MemoryPack;
+using PacketWarden.RateLimiting;
 
 namespace Lambda.Core.Networking;
 
@@ -16,6 +17,10 @@ public partial struct ChatMessagePacket : IPacket, IAuthoredPacket
 
 public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 {
+    protected override bool ShouldNotifyAboutRejection => true;
+
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.25, RateLimitAction.Drop);
+
     public void Send(ChatMessageScope scope, string msg)
     {
         var packet = new ChatMessagePacket
@@ -27,15 +32,21 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         DispatchPacket(packet);
     }
 
-    protected override void ApplyOptimistically(ChatMessagePacket packet)
+    protected override bool ValidatePacket(ChatMessagePacket packet, int peerId, out string rejectionReason)
     {
-        
+        rejectionReason = null;
+
+        if (packet.msg.Length > 256)
+        {
+            rejectionReason = "Character Limit Exceeded";
+            return false;
+        }
+
+        return true;
     }
 
     protected override void Apply(ChatMessagePacket packet, int peerId)
     {
-        if (packet.Player.IsYourPlayer) return;
-
-           
+        
     }
 }
