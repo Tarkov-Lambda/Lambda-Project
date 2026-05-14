@@ -34,15 +34,13 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override bool ValidatePacket(ChatMessagePacket packet, int peerId, out string rejectionReason)
     {
-        rejectionReason = null;
-
         if (packet.msg.Length > 256)
         {
             rejectionReason = "Character Limit Exceeded";
             return false;
         }
 
-        return true;
+        return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
     protected override void Apply(ChatMessagePacket packet, int peerId)

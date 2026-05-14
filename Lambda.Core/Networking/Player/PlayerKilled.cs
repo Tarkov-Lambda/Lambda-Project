@@ -52,7 +52,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         {
             Player = victim,
             killer = killer,
-            assist = null,
+            assist = H.GetPlayerScore(victim.Id)?.GetTopAssist(killer),
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
@@ -92,6 +92,12 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         if (killerScore != null && killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
+        }
+
+        PlayerScore assistScore = H.GetPlayerScore(packet.assist);
+        if (assistScore != null && assistScore != victimScore && assistScore.Faction != victimScore.Faction)
+        {
+            assistScore.AddAssist();
         }
 
         // needs to go elsewhere

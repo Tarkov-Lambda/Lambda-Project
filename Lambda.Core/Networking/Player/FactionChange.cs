@@ -34,7 +34,7 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 
         if (faction == Faction.Spectator) return true;
 
-        if (H.Session.matchState < MatchState.RoundAction) return true;
+        if (H.Session.matchState < MatchState.RoundPrepare) return true;
 
         return false;
     }

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.Gamemode;
+using Lambda.Core.Networking;
 using Lambda.Shared.Models;
 using PacketWarden.TimeSync;
 using UnityEngine;
@@ -49,6 +51,7 @@ public class PlayerScore
 
     // Serverside
     private double _deathTimestamp;
+    private Dictionary<int, float> _damageContributors = new();
 
     public double DeathTimestamp => _deathTimestamp;
 
@@ -66,6 +69,41 @@ public class PlayerScore
         {
             score.IsAdmin = true;
         }
+    }
+
+
+    public void RecordDamageTaken(Player attacker, float damage)
+    {
+        if (attacker == null || attacker == player) return;
+
+        if (!_damageContributors.ContainsKey(attacker.Id))
+            _damageContributors[attacker.Id] = 0f;
+
+        _damageContributors[attacker.Id] += damage;
+    }
+
+    public Player GetTopAssist(Player killer)
+    {
+        int topAssistId = -1;
+        float maxDamage = 0f;
+
+        foreach (var kvp in _damageContributors)
+        {
+            if (killer != null && kvp.Key == killer.Id) continue;
+
+            if (kvp.Value > maxDamage && kvp.Value >= 25f)
+            {
+                maxDamage = kvp.Value;
+                topAssistId = kvp.Key;
+            }
+        }
+
+        return topAssistId != -1 ? H.GetPlayer(topAssistId) : null;
+    }
+
+    public void AddAssist()
+    {
+        score.Assists++;
     }
 
     public void Apply(PlayerScoreInfo info)
@@ -111,7 +149,12 @@ public class PlayerScore
         {
             if (faction == Faction.Spectator)
             {
-                player.ActiveHealthController.Kill(EDamageType.HotGases);
+                var damageInfo = new DamageInfoStruct
+                {
+                    Damage = 1f,
+                    BodyPartColliderType = EBodyPartColliderType.RibcageUp
+                };
+                Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
             }
             EventBus.OnSelfFactionChanged?.Invoke(faction);
         }
@@ -157,6 +200,7 @@ public class PlayerScore
         score.IsAlive = true;
         _deathTimestamp = -1;
         score.ShouldHardReset = false;
+        _damageContributors.Clear(); // <--- ADD THIS LINE
 
         if (!H.IsHeadless && player == H.MainPlayer)
             EventBus.OnSelfRespawn?.Invoke();

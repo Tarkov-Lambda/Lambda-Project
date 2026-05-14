@@ -56,18 +56,6 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     [PatchPostfix]
     private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
     {
-        // D.Log($"{peer.Id} sent {packet.GetType()} {packet.Type}");
-        // if (packet.Type is ECommonSubPacketType.HealthSync)
-        // {
-        // HealthSyncPacket subPacket = packet.SubPacket as HealthSyncPacket;
-        // if (subPacket.Packet.SyncType is NetworkHealthSyncPacketStruct.ESyncType.BodyHealth)
-        // {
-        //     D.Log(packet.NetId.ToString());
-        //     D.Log(packet.Type.GetType().ToString());
-        //     D.Dump(packet.SubPacket);
-        // }
-        // }
-
         if (packet.Type != ECommonSubPacketType.Damage) return;
         if (packet.SubPacket is not DamagePacket damage) return;
 
@@ -75,12 +63,9 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return;
 
-        // D.Log(peer.Id.ToString());
-        // D.Log(damage.ProfileId);
         Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
 
-        // D.Log(shooter.Profile.Nickname);
-        // D.Log(damagePlayer.Id.ToString());
+        H.GetPlayerScore(victim.Id)?.RecordDamageTaken(shooter, damage.Damage);
 
         // we handle the server owner player natively through ActiveHealthController
         if (victim.IsYourPlayer) return;
@@ -103,8 +88,6 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         // I can't vouch as per how accurate this is going to be
         // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
         Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
-
-        // victim.HandleDamagePacket(damage); // is this even supposed to be here? I'm in postfix lol
 
         H.GetPlayerScore(shooter).AddDamage((int)Math.Round(damageInfo.Damage));
     }

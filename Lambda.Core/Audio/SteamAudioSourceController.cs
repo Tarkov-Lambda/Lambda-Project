@@ -21,7 +21,7 @@ public static class SteamAudioSourceController
     public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceAFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceA");
     public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceBFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
 
-    // Selection of mixers we do not route through steam audio (it's non-spatial anyways)
+    // Selection of mixers we do not route through steam audio
     private static readonly Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
 
     public static readonly Dictionary<AudioSource, SteamSourceData> cache = new();
