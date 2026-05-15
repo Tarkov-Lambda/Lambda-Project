@@ -41,7 +41,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             Player = player,
             item = item, // this item is only a template, the server clones it before application
-            placement = placement,
+            // placement = placement,
         };
 
         DispatchPacket(packet);
