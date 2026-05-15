@@ -1,5 +1,4 @@
 ﻿using Lambda.UI;
-using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using System;
 using Comfort.Common;
@@ -21,16 +20,18 @@ namespace Lambda.Core.Main.UI
 
         private void OnPlayerKill(PlayerKilledPacket packet)
         {
-            PlayerScore victimScore = H.GetPlayerScore(packet.Player);
-            if (!victimScore.IsAlive) return;
+            PlayerScore victim = H.GetPlayerScore(packet.Player);
+            if (!victim.IsAlive) return;
 
-            PlayerScore killerScore = H.GetPlayerScore(packet.killer);
+            PlayerScore killer = H.GetPlayerScore(packet.killer);
 
-            string leftName = killerScore?.player.Profile.Nickname;
-            string rightName = victimScore?.player.Profile.Nickname;
+            PlayerScore assist = H.GetPlayerScore(packet.assist);
 
-            Faction leftFaction = killerScore == null ? Faction.None : killerScore.Faction;
-            Faction rightFaction = victimScore == null ? Faction.None : victimScore.Faction;
+            string leftName = BuildLeftName(killer, assist);
+            string rightName = FormatPlayer(victim);
+
+            Faction leftFaction = killer == null ? Faction.None : killer.Faction;
+            Faction rightFaction = victim == null ? Faction.None : victim.Faction;
 
             var pop =
                 killFeed.Pop(
@@ -42,6 +43,31 @@ namespace Lambda.Core.Main.UI
             {
                 pop.SetWeaponSprite(weaponSprite);
             });
+        }
+
+        private static string FormatPlayer(PlayerScore player)
+        {
+            if (player == null)
+                return string.Empty;
+
+            string name = player.player.Profile.Nickname;
+
+            return player.player.IsYourPlayer ? $"<b>{name}</b>" : name;
+        }
+
+        private static string BuildLeftName(PlayerScore killer, PlayerScore assist)
+        {
+            if (killer == null)
+                return string.Empty;
+
+            string result = FormatPlayer(killer);
+
+            if (assist != null)
+            {
+                result += $" + {FormatPlayer(assist)}";
+            }
+
+            return result;
         }
 
         public void Dispose()

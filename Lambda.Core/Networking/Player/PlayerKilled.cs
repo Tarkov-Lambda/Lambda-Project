@@ -80,7 +80,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
     }
 
 
-    // this logic needs to be abstracted elsewhere
+    // TODO: move logic outta here
     private void HandleKill(PlayerKilledPacket packet)
     {
         PlayerScore victimScore = H.GetPlayerScore(packet.Player);

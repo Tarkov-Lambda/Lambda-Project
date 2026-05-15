@@ -403,7 +403,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ifp
+  m_text: <b>ifp</b> + gandon
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 342a80346916dea469005d580b2b7dbd, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 6716dd3537a7f94488eef48e2c042549, type: 2}
@@ -822,7 +822,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: HUESOS
+  m_text: huesos
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 342a80346916dea469005d580b2b7dbd, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 6716dd3537a7f94488eef48e2c042549, type: 2}
@@ -1459,7 +1459,7 @@ GameObject:
   - component: {fileID: 4974763141041863241}
   - component: {fileID: 2954377768588319476}
   m_Layer: 0
-  m_Name: middle
+  m_Name: Middle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
