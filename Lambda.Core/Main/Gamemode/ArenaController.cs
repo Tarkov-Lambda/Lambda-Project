@@ -123,6 +123,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Connected);
 
             PU.OpenEyes();
+
+            LambdaAudioRoomController.Instance.TriggerChange();
         }
     }
 

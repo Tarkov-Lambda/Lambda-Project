@@ -67,8 +67,14 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// <summary>The security authority level required to send this packet.</summary>
     protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
+    /// <summary>Fired immediately before <see cref="ApplyOptimistically"/> is executed.</summary>
+    public event Action<T> BeforePacketAppliedOptimistically;
+
     /// <summary>Fired immediately after <see cref="ApplyOptimistically"/> is executed.</summary>
     public event Action<T> AfterPacketAppliedOptimistically;
+
+    /// <summary>Fired immediately before <see cref="Apply"/> is executed.</summary>
+    public event Action<T> BeforePacketApplied;
 
     /// <summary>Fired immediately after <see cref="Apply"/> is executed.</summary>
     public event Action<T> AfterPacketApplied;
@@ -185,7 +191,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 
         if (targetPeerId == null)
         {
-            ProcessApprovedPacket(ref packet, 0);
+            ProcessApprovedPacket(ref packet, Network.NetId);
         }
         else
         {

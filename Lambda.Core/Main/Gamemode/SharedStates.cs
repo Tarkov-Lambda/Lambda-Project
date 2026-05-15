@@ -103,6 +103,11 @@ public class SharedCleanup : IGameState
     public MatchState StateType => MatchState.Cleanup;
     public virtual void OnEnter()
     {
+        if (!H.IsHeadless)
+        {
+            H.MainPlayer.SetEmptyHands(delegate { });
+        }
+
         IU.GarbageCollectWorldLoot();
 
         int totalRounds = H.Session.factionWins.Values.Sum();
@@ -149,7 +154,7 @@ public class SharedCleanup : IGameState
         {
             foreach (var player in H.AllPlayingPlayers)
             {
-                Singleton<InventoryResyncPacketWarden>.Instance.Send(player, true);
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(player, true);
             }
         }
 
@@ -168,9 +173,7 @@ public class SharedCleanup : IGameState
                 }
 
                 H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
-                
                 await UniTask.Delay(750);
-
                 Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
             });
         }
@@ -207,6 +210,8 @@ public class SharedPrepare : IGameState
             PU.OpenEyes();
 
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 0.5f);
+
+            H.MainPlayer.SetFirstAvailableItem((result) => { });
         }
 
         foreach (var player in H.AllPlayingPlayers)

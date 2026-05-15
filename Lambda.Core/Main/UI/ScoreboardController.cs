@@ -10,6 +10,7 @@ using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using Lambda.UI.scoreboard;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
 
 namespace Lambda.Core.Main.UI
 {
@@ -108,7 +109,6 @@ namespace Lambda.Core.Main.UI
             PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values
                 .Select(p => p.Score)
                 .ToArray();
-
             scoreboardUI.SetPlayers(
                 allPlayerStats,
                 H.Session.factionWins,

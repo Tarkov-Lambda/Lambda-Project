@@ -18,7 +18,7 @@ internal class Patch_ClientPlayer_method_1 : ModulePatch
             InventoryController inventoryController = __instance.operation.TraderControllerClass as InventoryController;
             if (inventoryController.Profile != null)
             {
-                Singleton<InventoryResyncPacketWarden>.Instance.Send(H.GetPlayer(inventoryController.Profile.ProfileId));
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.GetPlayer(inventoryController.Profile.ProfileId));
             }
         }
     }

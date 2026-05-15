@@ -1,7 +1,7 @@
 {
   // Movement
   "LeanSpeed": 1.3,
-  "AimSpeedPenaltyReduction": 0.15,
+  "AimSpeedPenaltyReduction": 1.2,
 
   // Procedural Weapon Animations
   "PistolADSMotionScale": 0.1,

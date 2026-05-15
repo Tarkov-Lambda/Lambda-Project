@@ -94,16 +94,20 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
             killerScore.AddFrag(packet.IsHeadshot);
         }
 
-        PlayerScore assistScore = H.GetPlayerScore(packet.assist);
-        if (assistScore != null && assistScore != victimScore && assistScore.Faction != victimScore.Faction)
+        if (packet.assist != null)
         {
-            assistScore.AddAssist();
+            PlayerScore assistScore = H.GetPlayerScore(packet.assist);
+            if (assistScore != null && assistScore != victimScore && assistScore.Faction != victimScore.Faction)
+            {
+                assistScore.AddAssist();
+            }
         }
+
 
         // needs to go elsewhere
         if (H.Gamemode is not IGMRespawnable)
         {
-            if (H.Session.matchState is MatchState.RoundAction or MatchState.RoundPlanted)
+            if (H.Session.matchState is not MatchState.RoundEnd)
             {
                 victimScore.SetHardReset();
             }

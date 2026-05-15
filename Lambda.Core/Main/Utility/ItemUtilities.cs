@@ -212,6 +212,25 @@ public static class ItemUtilities
         }
     }
 
+    public static void AddArmbandIfNeeded(Player player)
+    {
+        if (H.Gamemode is IGMTeam)
+        {
+            string selectedArmband = player.GetScore().Faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
+
+            ArmBandItemClass armband = PresetItemsCache.Instance.GetPresetItem(selectedArmband).CloneItem() as ArmBandItemClass;
+
+            var armbandSlot = player.Equipment.GetSlot(EquipmentSlot.ArmBand);
+
+            if (armbandSlot.ContainedItem != null)
+            {
+                armbandSlot.ContainedItem.CurrentAddress.RemoveWithoutRestrictions(armbandSlot.ContainedItem);
+            }
+
+            armbandSlot.CreateItemAddress().AddWithoutRestrictions(armband);
+        }
+    }
+
     public static void GarbageCollectWorldLoot()
     {
         ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);

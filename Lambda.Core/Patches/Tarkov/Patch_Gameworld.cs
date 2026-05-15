@@ -1,8 +1,10 @@
 ﻿using EFT;
+using EFT.Interactive;
 using HarmonyLib;
 using PacketWarden.TimeSync;
 using SPT.Reflection.Patching;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
@@ -38,5 +40,19 @@ internal class Patch_Gameworld_OnDispose : ModulePatch
         if (__instance is HideoutGameWorld) return;
 #endif
         OnDispose?.Invoke();
+    }
+}
+
+internal class Patch_Gameworld_RegisterLoot : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => typeof(GameWorld).GetMethod("RegisterLoot").MakeGenericMethod(typeof(LootItem));
+    
+    [PatchPrefix]
+    static void Prefix(object loot)
+    {
+        if (loot is LootItem lootItem)
+        {
+            D.Log(lootItem.name);
+        }
     }
 }

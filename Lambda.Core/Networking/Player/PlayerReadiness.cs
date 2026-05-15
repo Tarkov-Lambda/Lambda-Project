@@ -126,7 +126,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {
-                        Singleton<InventoryResyncPacketWarden>.Instance.SendToPeer(player, peerId);
+                        Singleton<EquipmentResyncPacketWarden>.Instance.SendToPeer(player, peerId);
                     }
                 }
             }

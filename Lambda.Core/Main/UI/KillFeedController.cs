@@ -15,7 +15,8 @@ namespace Lambda.Core.Main.UI
             this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
-            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketAppliedOptimistically += OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketApplied += OnPlayerKill;
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet)
@@ -72,7 +73,8 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketAppliedOptimistically -= OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketApplied -= OnPlayerKill;
         }
     }
 }

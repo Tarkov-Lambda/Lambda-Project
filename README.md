@@ -44,30 +44,34 @@
 
 ## For Nerds
 
-- Unity Spatializer Engine bypass *(Steam Audio DSP bridge)*  
-- Custom LiteNetLib Packet Handler
+- Unity Spatializer Engine bypass
+- PacketWarden
+  - Network Agnostic
+  - Time Synchronization
   - MemoryPack Automatic De/Serialization
-  - MemoryPack Formatters For EFT Classes (Player)
-  - Approval / Rejection System (With rejection reason)
-  - Local Approval Prediction Handling
-  - Timestamped Packet Interface (For Time Dependant Packets)
+  - MemoryPack Formatters For EFT Classes
+  - Approval / Rejection System
+  - Optimistic Approval (Client-prediction)
+  - Server-Timestamped Packet Interface
   - Authored Packet Interface (For Anti-Spoofing)
   - Server-Side Packet-Specific Validation
   - Packet Authority (Anyone, Admin, Server Only)
   - Admin Authentication
   - Rate limiting
-- Unity Tracer  
+- Unity Tracer
   - Class-wide method observation via Harmony postfixing  
 
 ## Modules
 
-| Project          | Description                                                      |
-|------------------|------------------------------------------------------------------|
-| **arena.bep**    | Core framework and base systems                                  |
-| **arena.shared** | Shared classes, types, and data structures *(Unity Package)*     |
-| **arena.ui**     | All UI components and interfaces *(Unity Package)*               |
-| **arena.audio**  | Steam Audio / SFX integration *(Unity Package)*                  |
-| **tracer**       | Class-wide method observation via Harmony postfixing             |
+| Project                           | Description                                                      |
+|-----------------------------------|------------------------------------------------------------------|
+| **Lambda.Core**                   | Core framework and base systems                                  |
+| **Lambda.Shared**                 | Shared classes, types, and data structures *(Unity Package)*     |
+| **Lambda.UI**                     | All UI components and interfaces *(Unity Package)*               |
+| **Lambda.Audio**                  | Steam Audio / SFX integration *(Unity Package)*                  |
+| **PacketWarden**                  | Custom network framework for all transactions                    |
+| **PacketWarden.FikaIntegration**  | Fika/LiteNetLib Integration for PacketWarden                     |
+
 
 ## Licenses
 

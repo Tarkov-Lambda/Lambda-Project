@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Coffee.UIEffects;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -73,13 +74,27 @@ public static class InventoryResetter
         itemList.AddRange(itemCollection);
     }
 
-
     public static void SoftReset(this Player player)
     {
         List<Item> itemsToRemove = [];
 
-        var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon);
-        AddItem(ref itemsToRemove, secondPrimaryWeapon);
+        var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
+
+        var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
+
+        if (secondPrimaryWeapon != null)
+        {
+            if (firstPrimaryWeapon != null)
+            {
+                AddItem(ref itemsToRemove, secondPrimaryWeapon);
+            }
+            else
+            {
+                secondPrimaryWeapon.CurrentAddress.RemoveWithoutRestrictions(secondPrimaryWeapon);
+                player.Equipment.GetSlot(EquipmentSlot.FirstPrimaryWeapon).AddWithoutRestrictions(secondPrimaryWeapon);
+                firstPrimaryWeapon = secondPrimaryWeapon;
+            }
+        }
 
         var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
         AddItem(ref itemsToRemove, backpack);
@@ -91,10 +106,10 @@ public static class InventoryResetter
             itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
         }
 
-        var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
         if (firstPrimaryWeapon != null)
         {
             RU.SetupWeaponImmediate(firstPrimaryWeapon, player);
+            firstPrimaryWeapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
         }
 
         var pistol = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
@@ -127,6 +142,10 @@ public static class InventoryResetter
                 placement.Address.AddWithoutRestrictions(NVGStrap);
             }
         }
+
+        pistol.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
+
+        IU.AddArmbandIfNeeded(player);
     }
 
     public static async void HardReset(this Player player)
@@ -135,12 +154,7 @@ public static class InventoryResetter
 
         foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
         {
-            if (slot
-            is EquipmentSlot.ArmBand
-            or EquipmentSlot.Dogtag
-            or EquipmentSlot.Scabbard
-            or EquipmentSlot.SecuredContainer
-            or EquipmentSlot.Pockets) continue;
+            if (slot is EquipmentSlot.Pockets or EquipmentSlot.Dogtag) continue;
 
             var currentItem = player.GetSlotItem(slot);
             AddItem(ref itemsToRemove, currentItem);
@@ -186,5 +200,7 @@ public static class InventoryResetter
         var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
         pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
         RU.SetupWeaponImmediate(defaultPistol, player);
+
+        IU.AddArmbandIfNeeded(player);
     }
 }

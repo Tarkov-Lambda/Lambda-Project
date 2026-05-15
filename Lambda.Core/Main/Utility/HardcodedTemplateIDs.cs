@@ -13,4 +13,7 @@ internal static class Hardcode
 
     public const string TRG             = "673cab3e03c6a20581028bc1";
     public const string DEAGLE          = "669fa39b48fc9f8db6035a0c";
+
+    public const string ARMBAND_CT      = "5b3f3af486f774679e752c1f";
+    public const string ARMBAND_T       = "619bddc6c9546643a67df6ee";
 }

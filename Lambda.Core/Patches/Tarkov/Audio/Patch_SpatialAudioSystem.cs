@@ -30,12 +30,10 @@ public class Patch_SpatialAudioSystem_ListenerCurrentRoom : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ListenerCurrentRoom));
 
-    public static PhantomAudioRoom PhantomRoom = new();
-
     [PatchPrefix]
     static bool Prefix(ref ISpatialAudioRoom __result)
     {
-        __result = PhantomRoom;
+        __result = LambdaAudioRoomController.Instance.audioRoom;
         return false;
     }
 }

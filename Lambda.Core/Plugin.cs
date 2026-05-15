@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Dying;
@@ -149,16 +150,6 @@ public class Plugin : BaseUnityPlugin
             RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_1());     // bypass occlusion containers
             RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_2());     // bypass occlusion containers
             RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
-
-            var roomChangedEvent = new GClass3573
-            {
-                Room = Patch_SpatialAudioSystem_ListenerCurrentRoom.PhantomRoom,
-                CurrentRoomType = Patch_SpatialAudioSystem_ListenerCurrentRoom.PhantomRoom.Type,
-                CurrentOutdoorRoomID = 0,
-                InteractionState = EPlayerRoomInteractionState.Enter
-            };
-            
-            GlobalEventHandlerClass.Instance.method_0(typeof(GClass3573), roomChangedEvent);
         }
 
         // RegisterPatch(new AudioDiscovery_Play_Patch());
@@ -166,6 +157,8 @@ public class Plugin : BaseUnityPlugin
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
         RegisterPatch(new Patch_Gameworld_OnDispose());                             // Hooks
+        // RegisterPatch(new Patch_Gameworld_RegisterLoot());                       // Hooks
+        // RegisterPatch(new Patch_LootItem_Init());                                // Creating Corpse doesn't create dogtag
 
         RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Cache last damage packet, multiply flame damage, negate blacked out limbs damage
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
@@ -235,6 +228,7 @@ public class Plugin : BaseUnityPlugin
         // UI Patches
         UIPatches.Enable();
         RegisterPatch(new Patch_LoginUI_Awake());                                   // Are we logging in for the first time?
+        RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
@@ -278,7 +272,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<ForceRemoveItemPacketWarden>();                           // Announces removal of an item (if it's an armor plate, also recalculate the plate carrier)
         RegisterSingleton<AskForMoneyPacketWarden>();                               // Ask teammates for money to buy a specific item
         RegisterSingleton<GiftMoneyPacketWarden>();                                 // Gift teammate money for a specific item (Beggar auto buys the item)
-        RegisterSingleton<InventoryResyncPacketWarden>();                           // Resynchronize Inventory Controller
+        RegisterSingleton<EquipmentResyncPacketWarden>();                           // Resynchronize Inventory Controller
         RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
         RegisterSingleton<ChatMessagePacketWarden>();                               // Player sends a message
 
@@ -293,8 +287,8 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<AdminLoginPacketWarden>();                                // Allow clients to elevate their priviledges
         RegisterSingleton<PausePacketWarden>();                                     // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketWarden>();                        // Sync time of day between rounds
-
         RegisterSingleton<AnnouncementPacketWarden>();                              // Server sends an announcement message
+        RegisterSingleton<ShutdownAnnouncementPacketWarden>();                      // Server announces imminent shutdown
 
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
@@ -302,12 +296,12 @@ public class Plugin : BaseUnityPlugin
         try
         {
             // Internal Classses (order matters)
-            RegisterSingleton<PresetBundleHandler>();                                   // Handler of preset item loading (stuff in the buy menu)
-            RegisterSingleton<MapAssetBundleHandler>();                                 // Handler of map asset loading
-            RegisterSingleton<RagdollCreator>();                                        // Fake Corpse Creation
-            RegisterSingleton<PresetItemsCache>();                                      // Caching gun presets
-            RegisterSingleton<WeaponPresetManager>();                                   // Initializes/Saves/Loads what gun preset is selected for in raid spawning
-            RegisterSingleton<DefaultEquipmentManager>();                               // Collects
+            RegisterSingleton<PresetBundleHandler>();                               // Handler of preset item loading (stuff in the buy menu)
+            RegisterSingleton<MapAssetBundleHandler>();                             // Handler of map asset loading
+            RegisterSingleton<RagdollCreator>();                                    // Fake Corpse Creation
+            RegisterSingleton<PresetItemsCache>();                                  // Caching gun presets
+            RegisterSingleton<WeaponPresetManager>();                               // Initializes/Saves/Loads what gun preset is selected for in raid spawning
+            RegisterSingleton<DefaultEquipmentManager>();                           // Collects
 
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
@@ -320,6 +314,7 @@ public class Plugin : BaseUnityPlugin
             RegisterSingletonInRaid<LadderManager>().Forget();                    // Overwrites Player Controller on Ladder Collision and moves them.
             RegisterSingletonInRaid<BombHandler>().Forget();                      // Handler for the entirety of Bomb's lifecycle
             RegisterSingletonInRaid<HardpointZoneManager>().Forget();             // Manages Hardpoint zones and synchronization
+            RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();        // We invoke all audio room changes manually
         }
         catch (Exception ex)
         {
@@ -358,7 +353,7 @@ public class Plugin : BaseUnityPlugin
         {
             PU.OpenEyes();
             H.MainPlayer.UnfuckHands();
-            Singleton<InventoryResyncPacketWarden>.Instance.Send(H.MainPlayer);
+            Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
         }
     }
 
