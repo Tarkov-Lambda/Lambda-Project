@@ -9,7 +9,7 @@ public static class MolotovController
 {
     public static float duration = 7f;
     
-    // NEW: Maximum absolute distance from the origin the fire is allowed to travel
+    // maximum absolute distance from the origin the fire is allowed to travel
     public static float maxSpreadDistance = 6.0f; 
 
     public static async UniTask Spawn(MolotovExplosionPacket packet)
@@ -25,12 +25,12 @@ public static class MolotovController
 
     // 6 directions for hexagonal packing
     private static readonly Vector3[] ExpansionDirections = {
-        new Vector3(1, 0, 0),
-        new Vector3(0.5f, 0, 0.866f),
-        new Vector3(-0.5f, 0, 0.866f),
-        new Vector3(-1, 0, 0),
-        new Vector3(-0.5f, 0, -0.866f),
-        new Vector3(0.5f, 0, -0.866f)
+        new(1, 0, 0),
+        new(0.5f, 0, 0.866f),
+        new(-0.5f, 0, 0.866f),
+        new(-1, 0, 0),
+        new(-0.5f, 0, -0.866f),
+        new(0.5f, 0, -0.866f)
     };
 
     public static List<FireNode> GenerateFireSpread(Vector3 origin)
@@ -64,21 +64,21 @@ public static class MolotovController
             {
                 if (resultNodes.Count + queue.Count >= GameplayVariables.vars.MaxNodes) break;
 
-                // FIX 1: Dynamic Ceiling Check. Prevent raycast from starting inside or above a ceiling.
+                // dynamic ceiling check, prevent raycast from starting inside or above a ceiling.
                 float desiredUpOffset = GameplayVariables.vars.MaxStepHeight + 0.1f;
                 float safeUpOffset = desiredUpOffset;
 
-                // Cast up from slightly above current position to see if we have headroom
+                // cast up from slightly above current position to see if we have headroom
                 if (Physics.Raycast(current.pos + Vector3.up * 0.05f, Vector3.up, out RaycastHit ceilHit, desiredUpOffset, 1 << 18))
                 {
-                    // Clamp the upward step to keep it strictly beneath the low ceiling/prop
+                    // clamp the upward step to keep it strictly beneath the low ceiling/prop
                     safeUpOffset = Mathf.Max(0.01f, ceilHit.distance - 0.05f);
                 }
 
                 Vector3 rayStart = current.pos + Vector3.up * safeUpOffset;
                 Vector3 horizontalOffset = dir * GameplayVariables.vars.SpreadRadius;
 
-                // Horizontal line of sight check
+                // horizontal line of sight check
                 if (Physics.Raycast(rayStart, dir, out RaycastHit wallHit, GameplayVariables.vars.SpreadRadius, 1 << 18)) 
                     continue;
 
@@ -89,7 +89,7 @@ public static class MolotovController
                 {
                     Vector3 newPos = groundHit.point;
                     
-                    // FIX 2: Distance Cap. Stop the BFS from spreading endlessly in a straight line.
+                    // distance cap
                     if (Vector3.Distance(startPos, newPos) > maxSpreadDistance) 
                         continue;
 
@@ -114,7 +114,7 @@ public static class MolotovController
     {
         float safeUpOffset = 0.5f;
 
-        // Prevent the initial drop-raycast from starting inside geometry if thrown under cars/low overhangs
+        // prevent the initial drop-raycast from starting inside geometry if thrown under cars/low overhangs
         if (Physics.Raycast(origin + Vector3.up * 0.05f, Vector3.up, out RaycastHit ceilHit, 0.5f, 1 << 18))
         {
             safeUpOffset = Mathf.Max(0f, ceilHit.distance - 0.05f);

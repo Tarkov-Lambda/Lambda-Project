@@ -2,18 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Comfort.Common;
-using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core;
 using Lambda.Core.Networking;
 
 namespace Lambda.Core.Main;
 
 public static class ReplenishmentUtilities
 {
-    // FIKA DOES NOT SYNC DURABILITY REPAIRS
-    // Though I think it does sync equipment changes from client automatically (player still has to manually invoke RaiseEvents)
     public static void Replenish(Player player, bool shouldReloadGun = true)
     {
         foreach (var slot in player.Equipment.AllSlots)
@@ -89,6 +85,7 @@ public static class ReplenishmentUtilities
     public static void SwitchFullAutoIfNeeded(this Weapon weapon)
     {
         var firemode = weapon.Components.Find(c => c is FireModeComponent) as FireModeComponent;
+
         if (firemode != null && firemode.AvailableEFireModes.Contains(Weapon.EFireMode.fullauto))
         {
             firemode.FireMode = Weapon.EFireMode.fullauto;

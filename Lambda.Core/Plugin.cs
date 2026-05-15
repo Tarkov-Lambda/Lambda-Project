@@ -296,7 +296,6 @@ public class Plugin : BaseUnityPlugin
 
         RegisterSingleton<AnnouncementPacketWarden>();                              // Server sends an announcement message
 
-
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
 

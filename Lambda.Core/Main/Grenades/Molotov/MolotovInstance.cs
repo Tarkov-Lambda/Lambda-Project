@@ -132,6 +132,8 @@ public class MolotovInstance : MonoBehaviour
             main.startSizeMultiplier *= Random.Range(0.8f, 1.2f);
             main.startDelayMultiplier += Random.Range(0f, 0.1f);
         }
+
+        var PhysicsTrigger = fireEffect.AddComponent<MolotovPhysicsTrigger>();
     }
 
     private async UniTask DestroySelfAfterDurationAsync(double packetTimestamp)

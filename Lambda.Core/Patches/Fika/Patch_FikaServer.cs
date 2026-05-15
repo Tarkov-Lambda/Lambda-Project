@@ -12,7 +12,6 @@ using Fika.Core.Networking.LiteNetLib.Utils;
 using Fika.Core.Networking.Packets.Backend;
 using Fika.Core.Networking.Packets.Player.Common;
 using Fika.Core.Networking.Packets.Player.Common.SubPackets;
-using Fika.Core.Networking.Pooling;
 using HarmonyLib;
 using Lambda.Core.Networking;
 using PacketWarden.TimeSync;
@@ -41,7 +40,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
 
-        Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
+        Player shooter = H.GetPlayer(damage.ProfileId);
         PlayerScore shooterScore = shooter.GetScore();
 
         if (!shooterScore.IsAlive)
@@ -63,9 +62,9 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return;
 
-        Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damage.ProfileId);
+        Player shooter = H.GetPlayer(damage.ProfileId);
 
-        H.GetPlayerScore(victim.Id)?.RecordDamageTaken(shooter, damage.Damage);
+        victim.GetScore()?.RecordDamageTaken(shooter, damage.Damage);
 
         // we handle the server owner player natively through ActiveHealthController
         if (victim.IsYourPlayer) return;
@@ -84,17 +83,13 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
             ArmorDamage = damage.ArmorDamage,
         };
 
-        // Instead of waiting for healthsync, we apply a damage packet directly on the server on a player that's not ours.
-        // I can't vouch as per how accurate this is going to be
-        // but in theory this should be just fine, and if the client heals, they will send a healthsync packet later
+        // Instead of waiting for healthsync from the client, we apply a damage packet directly on the server on a player that's not ours.
+        // to see if the damage is lethal and broadcast death before the client does
         Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
 
-        H.GetPlayerScore(shooter).AddDamage((int)Math.Round(damageInfo.Damage));
+        shooter.GetScore().AddDamage((int)Math.Round(damageInfo.Damage));
     }
 
-    // This is fucking retarded but the alternative is to create activehealthcontroller for each player and that's even more retarded
-    // Intended to be a lightweight damage simulation so that killing still feels quite responsive
-    // Hopefully this does not cause too much desync server side (at the end of the day we are still fully healing the player after death)
     public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo, DamagePacket damagePacket)
     {
         if (!H.GetPlayerScore(victim.Id).IsAlive) return 0f;
@@ -212,7 +207,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         if (headHP.AtMinimum || chestHP.AtMinimum || bodyPartHealth.AtMinimum)
         {
-            Player shooter = H.AllPlayers.FirstOrDefault(p => p.ProfileId == damagePacket.ProfileId);
+            Player shooter = H.GetPlayer(damagePacket.ProfileId);
 
             Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, victim, shooter); // Client dies
         }

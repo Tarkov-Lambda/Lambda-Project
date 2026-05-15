@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using Fika.Core.Main.ObservedClasses;
 using Fika.Core.Main.Players;
 using HarmonyLib;
-using Lambda.Core.Networking;
 
 namespace Lambda.Core.Main;
 

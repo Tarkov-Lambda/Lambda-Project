@@ -168,6 +168,10 @@ public class SharedCleanup : IGameState
                 }
 
                 H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
+                
+                await UniTask.Delay(750);
+
+                Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
             });
         }
     }
