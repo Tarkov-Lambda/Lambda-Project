@@ -21,12 +21,14 @@ namespace Lambda.Core.Main.UI
 
             chat.OnSubmit += OnSubmit;
 
+            Singleton<AnnouncementPacketWarden>.Instance.AfterPacketApplied += OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied += OnMessageReceived;
             UnityTicker.OnUpdate += Update;
         }
 
         public void Dispose()
         {
+            Singleton<AnnouncementPacketWarden>.Instance.AfterPacketApplied -= OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied -= OnMessageReceived;
             UnityTicker.OnUpdate -= Update;
         }
@@ -72,15 +74,20 @@ namespace Lambda.Core.Main.UI
             Singleton<ChatMessagePacketWarden>.Instance.Send(scope, msg);
         }
 
-        private void OnMessageReceived(ChatMessagePacket chatMessage)
+        private void OnAnnouncementReceived(AnnouncementPacket announcementPacket)
         {
-            PlayerScore playerScore = H.GetPlayerScore(chatMessage.Player);
+            _chat.PopAnnouncementMessage(announcementPacket.msg);
+        }
+
+        private void OnMessageReceived(ChatMessagePacket chatPacket)
+        {
+            PlayerScore playerScore = H.GetPlayerScore(chatPacket.Player);
 
             _chat.PopMessage(
-                chatMessage.scope, 
-                playerScore.Faction, 
-                chatMessage.Player.Profile.Nickname, 
-                chatMessage.msg);
+                chatPacket.scope,
+                playerScore.Faction,
+                chatPacket.Player.Profile.Nickname,
+                chatPacket.msg);
         }
     }
 }

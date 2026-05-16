@@ -535,11 +535,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1954608040986630568, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 217
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1954608040986630568, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -426.4
       objectReference: {fileID: 0}
     - target: {fileID: 1954608040986630568, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -616,6 +616,18 @@ PrefabInstance:
     - target: {fileID: 6502361433964103658, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
       propertyPath: m_Name
       value: Chat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8011897216771846636, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
+      propertyPath: announcementColor.b
+      value: 0.2559185
+      objectReference: {fileID: 0}
+    - target: {fileID: 8011897216771846636, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
+      propertyPath: announcementColor.g
+      value: 0.764151
+      objectReference: {fileID: 0}
+    - target: {fileID: 8011897216771846636, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
+      propertyPath: announcementColor.r
+      value: 0.41669202
       objectReference: {fileID: 0}
     - target: {fileID: 9097631796247820122, guid: 71a6ecc6d3590644aa43692cdeffae52, type: 3}
       propertyPath: m_AnchorMax.x

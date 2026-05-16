@@ -26,12 +26,13 @@ namespace Lambda.UI
         [SerializeField] private TMP_InputField inputField;
 
         [SerializeField] private FactionColors factionColors;
+        [SerializeField] private Color announcementColor = Color.green;
 
         [SerializeField] private float timeMessageVisible = 12f;
         [SerializeField] private int maxMessages = 50;
 
         [SerializeField] private KeyCode keybindCycleScope = KeyCode.Tab;
-        
+
         private Queue<ChatMessageData> messages = new Queue<ChatMessageData>();
 
         public bool IsFocused { get; private set; }
@@ -43,10 +44,11 @@ namespace Lambda.UI
         {
             inputField.SetTextWithoutNotify(string.Empty);
 
-            inputField.onSubmit.AddListener((inputText) => { 
+            inputField.onSubmit.AddListener((inputText) =>
+            {
                 inputField.SetTextWithoutNotify(string.Empty);
                 OnSubmit?.Invoke(_scope, inputText);
-                });
+            });
 
             SetCurrentScope(_scope);
 
@@ -84,6 +86,37 @@ namespace Lambda.UI
             _scope = scope;
 
             textCurrentScope.text = $"[{scope.ToString().ToUpperInvariant()}]";
+        }
+
+        public void PopAnnouncementMessage(string message)
+        {
+            StringBuilder messageRichText = new();
+
+            messageRichText.Append("<color=#");
+            messageRichText.Append(ColorUtility.ToHtmlStringRGB(announcementColor));
+            messageRichText.Append(">");
+
+            messageRichText.Append(message);
+
+            messageRichText.Append("</color>");
+
+            TextMeshProUGUI newMessageObject = Instantiate(prefabMessage.gameObject, scrollRectMessages.content).GetComponent<TextMeshProUGUI>();
+            newMessageObject.text = messageRichText.ToString();
+
+            messages.Enqueue(new ChatMessageData
+            {
+                TextComponent = newMessageObject,
+                TimeRemaining = timeMessageVisible
+            });
+
+            while (messages.Count > maxMessages)
+            {
+                ChatMessageData oldestMessage = messages.Dequeue();
+                Destroy(oldestMessage.TextComponent.gameObject);
+            }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRectMessages.content);
+            scrollRectMessages.normalizedPosition = Vector2.zero;
         }
 
         public void PopMessage(ChatMessageScope scope, Faction senderFaction, string senderName, string msg)

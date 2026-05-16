@@ -43,8 +43,6 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
-    protected override void Apply(ChatMessagePacket packet, int peerId)
-    {
-        
-    }
+    // Handled in ChatController
+    protected override void Apply(ChatMessagePacket packet, int peerId) { }
 }

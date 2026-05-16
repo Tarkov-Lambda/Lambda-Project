@@ -23,8 +23,8 @@
     "defaultBsgId": "66b5f6985891c84aab75ca76",
     "isRequired": true
   },
-  // "Scabbard": {
-  //   "defaultBsgId": "5bffdd7e0db834001b734a1a",
-  //   "isRequired": true
-  // }
+  "Scabbard": {
+    "defaultBsgId": "5bffdd7e0db834001b734a1a",
+    "isRequired": true
+  }
 }

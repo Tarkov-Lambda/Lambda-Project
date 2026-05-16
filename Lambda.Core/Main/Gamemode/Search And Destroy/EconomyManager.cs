@@ -1,7 +1,5 @@
 using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
-using Lambda.Shared;
-using Lambda.Core.Networking; // Assuming PlayerKilledPacket is here
+using Lambda.Core.Networking;
 using System.Collections.Generic;
 using UnityEngine;
 using EFT.InventoryLogic;
@@ -42,19 +40,16 @@ public static class EconomyConstants
 
 public class EconomyManager : IDisposable
 {
-    private Dictionary<Faction, int> _lossCounters = new Dictionary<Faction, int>();
+    private Dictionary<Faction, int> _lossCounters = new();
 
     public EconomyManager()
     {
         _lossCounters[Faction.CT] = 1;
         _lossCounters[Faction.T] = 1;
 
-        // Subscribe to events
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += HandleKillReward;
         EventBus.OnBombStateChange += HandleObjectiveReward;
         EventBus.OnRoundActionEnd += HandleRoundEndEconomy;
-
-        EventBus.OnEnter += OnEnter;
     }
 
     public void Dispose()
@@ -62,16 +57,6 @@ public class EconomyManager : IDisposable
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= HandleKillReward;
         EventBus.OnBombStateChange -= HandleObjectiveReward;
         EventBus.OnRoundActionEnd -= HandleRoundEndEconomy;
-        EventBus.OnEnter -= OnEnter;
-    }
-
-    // this is bad and needs to be managed by ArenaController or SND
-    private void OnEnter(MatchState state)
-    {
-        if (state == MatchState.WarmupEnd || state == MatchState.SideSwap)
-        {
-            // ResetEconomy();
-        }
     }
 
     public void ResetEconomy()
@@ -99,33 +84,33 @@ public class EconomyManager : IDisposable
             reward = -300;
         }
 
-        AddMoney(killerScore, reward);
+        killerScore.AddMoney(reward);
     }
 
     private int GetWeaponReward(Item weapon)
     {
         if (weapon is KnifeItemClass) return 1500;
-        if (weapon is SniperRifleItemClass) return 100; // For TRG
+        if (weapon is SniperRifleItemClass) return 100;
         if (weapon is ShotgunItemClass) return 900;
-        if (weapon is SmgItemClass) return 600; // SMGs
+        if (weapon is SmgItemClass) return 600;
 
-        return EconomyConstants.KILL_DEFAULT; // Rifles, Pistols, etc.
+        return EconomyConstants.KILL_DEFAULT;
     }
 
     private void HandleObjectiveReward(BombState state)
     {
         if (H.Arena.LastObjectivePlayer == null) return;
-        
+
         var score = H.Arena.LastObjectivePlayer.GetScore();
         if (score == null) return;
 
         if (state == BombState.Planted)
         {
-            AddMoney(score, EconomyConstants.OBJ_PLANT);
+            score.AddMoney(EconomyConstants.OBJ_PLANT);
         }
         else if (state == BombState.Defused)
         {
-            AddMoney(score, EconomyConstants.OBJ_DEFUSE);
+            score.AddMoney(EconomyConstants.OBJ_DEFUSE);
         }
     }
 
@@ -151,7 +136,7 @@ public class EconomyManager : IDisposable
             if (p.Faction == winner)
             {
                 // Winner always gets paid
-                AddMoney(p, winReward);
+                p.AddMoney(winReward);
             }
             else
             {
@@ -170,7 +155,7 @@ public class EconomyManager : IDisposable
                 }
                 else
                 {
-                    AddMoney(p, lossReward);
+                    p.AddMoney(lossReward);
                 }
             }
         }
@@ -201,11 +186,5 @@ public class EconomyManager : IDisposable
         }
 
         return reward;
-    }
-
-    // Helper to cap money
-    private void AddMoney(PlayerScore p, int amount)
-    {
-        p.AddMoney(amount);
     }
 }

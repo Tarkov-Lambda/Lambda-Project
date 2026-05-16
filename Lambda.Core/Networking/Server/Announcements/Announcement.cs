@@ -35,11 +35,9 @@ public class AnnouncementPacketWarden : LambdaPacketWarden<AnnouncementPacket>
         };
 
         FikaPlayer fikaPlayer = player as FikaPlayer;
-
         DispatchPacket(packet, fikaPlayer.NetId);
     }
 
-    protected override void Apply(AnnouncementPacket packet, int peerId)
-    {
-    }
+    // Handled in ChatController
+    protected override void Apply(AnnouncementPacket packet, int peerId) { }
 }
