@@ -16,7 +16,7 @@
   "transmissionLow": 0.4,
 
   // Mollies
-  "MaxNodes": 35,
+  "MaxNodes": 1000,
   "SpreadRadius": 0.8,
   "FireRadius": 1.0,
   "TimeBetweenNodes": 0.15,

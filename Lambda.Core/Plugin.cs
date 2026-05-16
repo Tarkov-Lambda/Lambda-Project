@@ -47,6 +47,7 @@ public class Plugin : BaseUnityPlugin
 
     private ConfigEntry<KeyboardShortcut> StartKey;
     private ConfigEntry<KeyboardShortcut> DeathKey;
+    private ConfigEntry<KeyboardShortcut> MapReloadKey;
     private ConfigEntry<KeyboardShortcut> UnfuckKey;
 
     private readonly List<ModulePatch> _patches = new();
@@ -178,6 +179,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());      // Override Blindfire Animation
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
+        RegisterPatch(new Patch_GamePlayerOwner_TranslateCommand());                // Prevent Resetting Freelook from cancelling BetterPlantStateClass
+
 
 
         // RegisterPatch(new Patch_Class1396_method_3());                           // In edge cases where the hands controller gets bugged out - we hard reset it
@@ -228,7 +231,10 @@ public class Plugin : BaseUnityPlugin
         // UI Patches
         UIPatches.Enable();
         RegisterPatch(new Patch_LoginUI_Awake());                                   // Are we logging in for the first time?
-        RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot
+        RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot in raid
+        RegisterPatch(new Patch_Class1841_method_0());                              // FOV and Headbobbing slider overwrites
+        RegisterPatch(new Patch_Class1841_method_1());                              // FOV and Headbobbing slider overwrites
+        RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV and Headbobbing slider overwrites
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
@@ -321,6 +327,13 @@ public class Plugin : BaseUnityPlugin
             D.Dump(ex);
             D.Log(ex.StackTrace);
         }
+
+        // if (H.IsInRaid())
+        // {
+        //     H.MainPlayer.MovementContext.PlantState = H.MainPlayer.MovementContext.GetNewState(EPlayerState.Plant, false);
+        //     H.MainPlayer.MovementContext.PlantState.Name = EPlayerState.Plant;
+        //     H.MainPlayer.MovementContext.PlantState.AnimatorStateHash = -1;
+        // }
     }
 
     private void InitConfiguration()
@@ -332,8 +345,9 @@ public class Plugin : BaseUnityPlugin
         DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", false);
 
         StartKey = Config.Bind("Debug", "Start key", new KeyboardShortcut(KeyCode.F1));
-        DeathKey = Config.Bind("Debug", "Death Key", new KeyboardShortcut(KeyCode.F2));
-        UnfuckKey = Config.Bind("Debug", "Unfuck Key", new KeyboardShortcut(KeyCode.F4), "Use this key to unfuck yourself");
+        DeathKey = Config.Bind("Debug", "Suicide Key", new KeyboardShortcut(KeyCode.F2));
+        MapReloadKey = Config.Bind("Debug", "Map Hot-Reload Key", new KeyboardShortcut(KeyCode.F3));
+        UnfuckKey = Config.Bind("Debug", "Hands Unfucking Key", new KeyboardShortcut(KeyCode.F4));
     }
 
     private void Update()
@@ -347,6 +361,11 @@ public class Plugin : BaseUnityPlugin
         {
             EDamageType type = EDamageType.Fall;
             H.MainPlayer.ActiveHealthController.Kill(type);
+        }
+
+        if (MapReloadKey.Value.IsDown())
+        {
+            MapAssetBundleHandler.Instance.ReloadMap(H.Session.level).Forget();
         }
 
         if (UnfuckKey.Value.IsDown())

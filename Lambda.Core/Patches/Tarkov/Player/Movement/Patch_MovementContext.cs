@@ -175,6 +175,11 @@ public class Patch_MovementContext_GetNewState : ModulePatch
             __result = new UnstaggeredRunState(__instance);
             return false;
         }
+        else if (name == EPlayerState.Plant && !isAI)
+        {
+            __result = new BetterPlantStateClass(__instance);
+            return false;
+        }
 
         return true;
     }

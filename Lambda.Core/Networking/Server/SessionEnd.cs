@@ -1,6 +1,7 @@
 ﻿using PacketWarden;
 using MemoryPack;
 using Lambda.Core.Main.AssetBundleHandling;
+using Cysharp.Threading.Tasks;
 
 namespace Lambda.Core.Networking;
 
@@ -26,6 +27,6 @@ public class SessionStopPacketWarden : LambdaPacketWarden<SessionStopPacket>
     protected override async void Apply(SessionStopPacket packet, int peerId)
     {
         H.Arena.ChangeState(MatchState.None);
-        MapAssetBundleHandler.Instance.UnloadAll();
+        MapAssetBundleHandler.Instance.UnloadMap(H.Session.level).Forget();
     }
 }

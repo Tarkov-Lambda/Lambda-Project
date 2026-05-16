@@ -43,6 +43,23 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
+    protected override void ProcessApprovedPacket(ref ChatMessagePacket packet, int peerId)
+    {
+        if (packet.msg.StartsWith("!") && packet.Player.GetScore().IsAdmin)
+        {
+            HandleCommandMessage(packet);
+        }
+        else
+        {
+            base.ProcessApprovedPacket(ref packet, peerId);
+        }
+    }
+
     // Handled in ChatController
     protected override void Apply(ChatMessagePacket packet, int peerId) { }
+
+    private void HandleCommandMessage(ChatMessagePacket msg)
+    {
+        
+    }
 }

@@ -12,11 +12,51 @@ namespace Lambda.Core.Main.AssetBundleHandling;
 
 public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposable
 {
-    private readonly Dictionary<string, AssetBundle> loadedAssetBundles = [];
+    private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new();
 
     public MapAssetBundleHandler()
     {
         Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;
+    }
+
+    public async UniTask ReloadMap(string mapName)
+    {
+        D.Log($"[AssetBundleHandler] Hot Reloading Map: {mapName}");
+
+        Vector3 originalPlayerPos = H.MainPlayer.Position;
+
+        await UnloadMap(mapName);
+        await LoadMap(mapName);
+
+        H.MainPlayer.Teleport(originalPlayerPos + new Vector3(0f, 0.5f, 0f));
+    }
+
+    public async UniTask UnloadMap(string mapName)
+    {
+        string fullPath = Path.Combine(Plugin.pathToMaps, mapName);
+
+        if (loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) && bundle != null)
+        {
+            var unloadTasks = new List<UniTask>();
+
+            // Unload all active scenes tied to this bundle
+            foreach (var scenePath in bundle.GetAllScenePaths())
+            {
+                if (SceneManager.GetSceneByPath(scenePath).isLoaded)
+                {
+                    unloadTasks.Add(SceneManager.UnloadSceneAsync(scenePath).ToUniTask());
+                }
+            }
+
+            if (unloadTasks.Count > 0)
+            {
+                await UniTask.WhenAll(unloadTasks);
+            }
+
+            bundle.Unload(true);
+        }
+
+        loadedAssetBundles.Remove(fullPath);
     }
 
     public async UniTask LoadMap(string mapName)
@@ -28,48 +68,30 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
         if (bundle == null) return;
 
         string[] scenePaths = bundle.GetAllScenePaths();
-        if (scenePaths.Length == 0) D.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
-
-        BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
-
-        // Unloading in case it's already loaded (essentially to refresh for dev)
-        // also making sure it's not the lobby, because it's a persistent player safety place
-        if (scenePaths[0] != "lobby")
+        if (scenePaths.Length == 0)
         {
-            var unloadTasks = new List<UniTask>();
-
-            foreach (var scenePath in scenePaths)
-            {
-                if (SceneManager.GetSceneByPath(scenePath).isLoaded)
-                {
-                    unloadTasks.Add(SceneManager.UnloadSceneAsync(scenePath).ToUniTask());
-                }
-            }
-
-            await UniTask.WhenAll(unloadTasks);
+            D.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
+            return;
         }
 
+        BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
         var loadTasks = new List<UniTask>();
+
         foreach (var scenePath in scenePaths)
         {
             if (!SceneManager.GetSceneByPath(scenePath).isLoaded)
             {
-                // типо наверное надо авайт загрузить перед тем как ебашить аддитив ремувал?
-                // в любом случае в будущем это будет ебашиться на заднем плане во время загрузки
                 if (mapName == "lobby")
                 {
                     bool isBunkerAlreadyLoaded = SceneManager.GetSceneByBuildIndex(131).isLoaded;
                     if (!isBunkerAlreadyLoaded)
                     {
                         UniTask reserveBunkerLoadTask = SceneManager.LoadSceneAsync(131, LoadSceneMode.Additive).ToUniTask();
-                        // loadTasks.Add(reserveBunkerLoadTask);
-
                         await reserveBunkerLoadTask;
                     }
                 }
 
                 UniTask sceneLoadTask = SceneManager.LoadSceneAsync(scenePath, LoadSceneMode.Additive).ToUniTask(progressReportScene);
-
                 loadTasks.Add(sceneLoadTask);
             }
         }
@@ -140,6 +162,9 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
     public void UnloadAll(bool includingLobby = false)
     {
         MapLoadEvent.OnBeginUnload?.Invoke();
+
+        List<string> keysToRemove = new();
+
         foreach (var kvp in loadedAssetBundles)
         {
             AssetBundle bundle = kvp.Value;
@@ -156,18 +181,24 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
                     }
                 }
 
-                kvp.Value.Unload(true);
+                bundle.Unload(true);
+                keysToRemove.Add(kvp.Key);
             }
         }
 
-        loadedAssetBundles.Clear();
+        // Fix: Only remove what we actually unloaded so the Lobby isn't orphaned in native memory
+        foreach (string key in keysToRemove)
+        {
+            loadedAssetBundles.Remove(key);
+        }
+
         MapLoadEvent.OnUnload?.Invoke();
     }
 
     public void Dispose()
     {
         Patch_Gameworld_OnDispose.OnDispose -= UnloadEverythingOnGameWorldDispose;
-        UnloadAll();
+        UnloadAll(true);
         Release(this);
     }
 }

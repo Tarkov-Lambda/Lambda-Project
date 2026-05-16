@@ -1,10 +1,12 @@
 using EFT;
+using EFT.AssetsManager;
 using EFT.InputSystem;
 using EFT.InventoryLogic;
 using EFT.UI;
 using Fika.Core.Main.Utils;
 using MemoryPack;
 using PacketWarden.RateLimiting;
+using System;
 using System.Collections.Generic;
 using static EFT.Player;
 
@@ -118,39 +120,75 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
     protected override void Apply(EquipmentResyncPacket packet, int peerId)
     {
+        Player player = packet.Player;
+
+        if (player.HandsController != null)
+        {
+            try
+            {
+                player.ProcessStatus = EProcessStatus.None;
+                player.AbstractProcess_0?.AbortAfterCompletion();
+                player.AbstractProcess_0 = null;
+
+                player.FastForwardCurrentOperations();
+                player.DestroyController();
+            }
+            catch (Exception ex)
+            {
+                D.LogError($"[EquipmentResync] Error safely destroying HandsController for {player.Profile.Nickname}: {ex}");
+                
+                // Fallback ensures no floating weapons are left on the map
+                if (player.HandsController != null)
+                {
+                    if (player.HandsController.ControllerGameObject != null)
+                    {
+                        AssetPoolObject.ReturnToPool(player.HandsController.ControllerGameObject, true);
+                    }
+                    UnityEngine.Object.Destroy(player.HandsController);
+                    player.HandsController = null;
+                }
+            }
+        }
+
+        player.RemoveLeftHandItem(1f);
+        player.ProceduralWeaponAnimation?.ClearPreviousWeapon();
+        
+        player.MovementContext?.SetBlindFire(0);
+
         foreach (var slotType in resyncableSlots)
         {
-            Slot slot = packet.Player.Equipment.GetSlot(slotType);
+            Slot slot = player.Equipment.GetSlot(slotType);
 
             if (slot.ContainedItem != null)
             {
                 var cachedItem = slot.ContainedItem;
                 slot.RemoveItemWithoutRestrictions();
                 var address = slot.CreateItemAddress();
-                address.RaiseForceRemove(cachedItem, packet.Player);
-            }
-
-            if (!H.IsHeadless)
-            {
-                H.MainPlayer.SetEmptyHands(delegate { });
+                address.RaiseForceRemove(cachedItem, player);
             }
 
             if (packet.Equipment.TryGetValue(slotType, out var itemAndAddress))
             {
                 slot.AddWithoutRestrictions(itemAndAddress.item);
-                itemAndAddress.address.RaiseForceAdd(itemAndAddress.item, packet.Player);
-                H.MainPlayer.AutoExamineAndSearch(itemAndAddress.item);
+                itemAndAddress.address.RaiseForceAdd(itemAndAddress.item, player);
+                if (player.IsYourPlayer)
+                {
+                    player.AutoExamineAndSearch(itemAndAddress.item);
+                }
             }
-
         }
 
         if (!H.IsHeadless)
         {
-            if (packet.Player.IsYourPlayer)
+            player.ProcessStatus = EProcessStatus.None;
+            player.SetFirstAvailableItem((result) => 
             {
-                // packet.Player.ProcessStatus = EProcessStatus.None;
-                packet.Player.SetFirstAvailableItem((result) => { });
-            }
+                if (result.Failed)
+                {
+                    D.LogError($"[EquipmentResync] Failed to equip item: {result.Error}");
+                    player.SetEmptyHands(delegate { });
+                }
+            });
         }
     }
 }
