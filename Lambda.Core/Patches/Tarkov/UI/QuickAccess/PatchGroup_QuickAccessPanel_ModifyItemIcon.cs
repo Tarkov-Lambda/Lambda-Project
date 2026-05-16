@@ -36,10 +36,12 @@ internal class PatchGroup_QuickAccessPanel_ModifyItemIcon : PatchGroup
 
     private class Patch_QuickSlotItemView_Create : ModulePatch
     {
+        private static readonly FieldInfo Field_ItemView_MainImage = AccessTools.Field(typeof(ItemView), "MainImage");
+
         protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.Create));
 
         [PatchPostfix]
-        private static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage) => ModifyItemIcon(__instance, ___MainImage);
+        private static void PatchPostfix(QuickSlotItemView __result) => ModifyItemIcon(__result, Field_ItemView_MainImage.GetValue(__result) as Image);
     }
 
     private static void ModifyItemIcon(QuickSlotItemView __instance, Image ___MainImage)
