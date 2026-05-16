@@ -23,9 +23,15 @@ public class InventoryHotkeyListener : MonoBehaviour
     public event Action OnHoldBegin;
     public event Action OnHoldEnd;
 
+    KeyGroup invKeyGroup;
+
     void Awake()
     {
         playerOwner = GetComponent<EftGamePlayerOwner>();
+
+        var settings = Singleton<SharedGameSettingsClass>.Instance.Control.Settings;
+        var keyBindings = settings.UserKeyBindings.Value;
+        invKeyGroup = keyBindings.FirstOrDefault(x => x.keyName == EGameKey.Inventory);
     }
 
     void Update()
@@ -99,11 +105,10 @@ public class InventoryHotkeyListener : MonoBehaviour
 
     private bool CheckInventoryKeysDown()
     {
-        var settings = Singleton<SharedGameSettingsClass>.Instance?.Control?.Settings;
-        var keyBindings = settings.UserKeyBindings?.Value;
-        var invGroup = keyBindings.FirstOrDefault(x => x.keyName == EGameKey.Inventory);
+        if (GamePlayerOwner.IgnoreInputWithKeepResetLook)
+            return false;
 
-        foreach (var variant in invGroup.variants)
+        foreach (var variant in invKeyGroup.variants)
         {
             if (variant.IsEmpty || variant.keyCode == null || variant.keyCode.Count == 0) continue;
 

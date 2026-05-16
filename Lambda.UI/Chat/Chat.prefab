@@ -1680,11 +1680,11 @@ RectTransform:
   - {fileID: 4430007028013772815}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -272.43536, y: 423.13217}
-  m_SizeDelta: {x: 500.4734, y: 301.8216}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 272, y: -29}
+  m_SizeDelta: {x: 500.4734, y: 301.82153}
+  m_Pivot: {x: 0, y: 1}
 --- !u!222 &9113592561817035131
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1868,7 +1868,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displacementMap: {fileID: 2800000, guid: bb06fc015329f2244b13c0d45712e5c8, type: 3}
   scaleWithRectTransform: 1
-  displacementStrength: {x: 0, y: -0.04999998}
+  displacementStrength: {x: 0, y: -0.03}
   displacementScale: {x: 1, y: 1}
   _shader: {fileID: 4800000, guid: 1fd085147a18cea42871ca0b2f5584d9, type: 3}
 --- !u!1 &7223442953076377459

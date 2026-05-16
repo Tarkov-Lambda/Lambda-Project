@@ -48,12 +48,16 @@ namespace Lambda.Core.Main.UI
 
         private void OnUpdate()
         {
-#if DEBUG
-            if (Input.GetKeyDown(KeyCode.M) && H.IsInRaid())
+            if (!H.IsInRaid())
+                return;
+
+            if (UIEventSystem.Instance.EventSystem_0.IsActive())
+                return;
+
+            if (Input.GetKeyDown(KeyCode.M))
             {
                 ShowFactionSelectionEftScreen();
             }
-#endif
         }
 
         public void Dispose()

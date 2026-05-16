@@ -71,6 +71,14 @@ namespace Lambda.UI
             scrollRectMessages.verticalScrollbar.transform.GetChild(0).gameObject.SetActive(focus);
         }
 
+        public void CycleScope()
+        {
+            if (_scope == ChatMessageScope.All)
+                SetCurrentScope(ChatMessageScope.Team);
+            else
+                SetCurrentScope(ChatMessageScope.All);
+        }
+
         void SetCurrentScope(ChatMessageScope scope)
         {
             _scope = scope;
@@ -128,14 +136,6 @@ namespace Lambda.UI
 
         void Update()
         {
-            if (Input.GetKeyDown(keybindCycleScope))
-            {
-                if (_scope == ChatMessageScope.All)
-                    SetCurrentScope(ChatMessageScope.Team);
-                else
-                    SetCurrentScope(ChatMessageScope.All);
-            }
-
             foreach (var msg in messages)
             {
                 msg.TimeRemaining -= Time.deltaTime;
