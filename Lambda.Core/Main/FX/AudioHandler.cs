@@ -17,8 +17,8 @@ namespace Lambda.Core.Main.FX;
 public class AudioHandler : Singleton<AudioHandler>, IDisposable
 {
     private const string AUDIO_BUNDLE_NAME = "audio";
-    private const string PREFAB_SOUNDS_PATH = "Assets/Sounds/SoundData.asset";
-    private const string MUSIC_KIT_SOUNDS_PATH = "Assets/Sounds/MusicKitSoundData.asset";
+    private const string PREFAB_SOUNDS_PATH = "Assets/Audio/SoundData.asset";
+    private const string MUSIC_KIT_SOUNDS_PATH = "Assets/Audio/MusicKitSoundData.asset";
 
     private static string AudioBundlePath => Path.Combine(Plugin.pathToBundles, AUDIO_BUNDLE_NAME);
 

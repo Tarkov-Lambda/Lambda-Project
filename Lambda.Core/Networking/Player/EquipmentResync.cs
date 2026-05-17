@@ -129,8 +129,6 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                 player.ProcessStatus = EProcessStatus.None;
                 player.AbstractProcess_0?.AbortAfterCompletion();
                 player.AbstractProcess_0 = null;
-
-                player.FastForwardCurrentOperations();
                 player.DestroyController();
             }
             catch (Exception ex)
@@ -151,7 +149,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         }
 
         player.RemoveLeftHandItem(1f);
-        player.ProceduralWeaponAnimation?.ClearPreviousWeapon();
+        // player.ProceduralWeaponAnimation?.ClearPreviousWeapon();
         
         player.MovementContext?.SetBlindFire(0);
 
