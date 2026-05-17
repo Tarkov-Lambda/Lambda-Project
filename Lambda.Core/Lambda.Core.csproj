@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <Product>Lambda</Product>
-    <Version>0.6.15</Version>
+    <Version>0.6.84</Version>
     <Description>Made by ifp and tarkin</Description>
   </PropertyGroup>
 
@@ -58,6 +58,8 @@
     <Reference Include="$(ManagedPath)\Unity.Postprocessing.Runtime.dll" />
     <Reference Include="$(ManagedPath)\DOTween.dll" />
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
+    <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
+
 
     <Reference Include="..\Dependencies\libraries\*.dll" />
   </ItemGroup>

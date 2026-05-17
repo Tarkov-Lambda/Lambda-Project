@@ -114,6 +114,9 @@ public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposab
             }
         }
 
+        await UniTask.DelayFrame(1);
+        AmbientLight.RuntimeOptimizePrepare();
+
         if (mapName != "lobby")
             MapLoadEvent.OnSuccessfulLoad?.Invoke();
     }

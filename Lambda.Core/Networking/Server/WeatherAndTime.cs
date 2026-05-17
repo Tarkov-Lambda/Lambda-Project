@@ -42,15 +42,13 @@ public class WeatherAndTimeSyncPacketWarden : LambdaPacketWarden<WeatherAndTimeP
                 todSky.CurrentTime.GameDateTime.TimeFactor = 0f;
             }
 
-            var weatherController = GameObject.Find("Weather").GetComponent<WeatherController>();
-
-            weatherController.WeatherDebug.Enabled = true;
-            weatherController.WeatherDebug.CloudDensity = 0f;
-            weatherController.WeatherDebug.Fog = 0f;
-            weatherController.WeatherDebug.LightningThunderProbability = 0f;
-            weatherController.WeatherDebug.Rain = 0f;
-            weatherController.WeatherDebug.WindDirection = WeatherDebug.Direction.NW;
-            weatherController.WeatherDebug.WindMagnitude = 0f;
+            WeatherController.Instance.WeatherDebug.Enabled = true;
+            WeatherController.Instance.WeatherDebug.CloudDensity = 0.1f;
+            WeatherController.Instance.WeatherDebug.Fog = 0f;
+            WeatherController.Instance.WeatherDebug.LightningThunderProbability = 100f;
+            WeatherController.Instance.WeatherDebug.Rain = 0f;
+            WeatherController.Instance.WeatherDebug.WindDirection = WeatherDebug.Direction.NW;
+            WeatherController.Instance.WeatherDebug.WindMagnitude = 0f;
         }
         catch (Exception ex)
         {

@@ -1,15 +1,17 @@
-﻿using System;
-using EFT;
+﻿using EFT;
 using UnityEngine;
 
 public class BetterPlantStateClass : PlantStateClass
 {
-    private readonly GClass777 _animatorStepper;
+    private readonly GClass777 Gclass777_0;
 
     public BetterPlantStateClass(MovementContext movementContext) : base(movementContext)
     {
-        _animatorStepper = new GClass777();
-        _animatorStepper.Init(movementContext);
+        if (!MovementContext.IsAI)
+        {
+            Gclass777_0 = new GClass777();
+            Gclass777_0.Init(movementContext);
+        }
     }
 
     public override void Enter(bool isFromSameState)
@@ -18,7 +20,12 @@ public class BetterPlantStateClass : PlantStateClass
 
         MovementContext.SetRotationLimit(Player.PlayerMovementConstantsClass.FULL_YAW_RANGE, Player.PlayerMovementConstantsClass.STAND_POSE_ROTATION_PITCH_RANGE);
 
-        _animatorStepper?.Enter();
+        GClass777 gclass777_ = Gclass777_0;
+        if (gclass777_ == null)
+        {
+            return;
+        }
+        gclass777_.Enter();
     }
 
     public override void SetStep(int step)
@@ -26,22 +33,19 @@ public class BetterPlantStateClass : PlantStateClass
         if (Mathf.Abs(step) > 0)
         {
             Vector3 vector = new(MovementContext.TransformForwardVector.z, 0f, -MovementContext.TransformForwardVector.x);
-
             if (MovementContext.OverlapOrHasNoGround(0.3f, new Vector3?(vector * Mathf.Sign((float)step)), 0.2f, 3f, 0f))
             {
                 MovementContext.Step = 0;
                 return;
             }
         }
-
         MovementContext.Step = step;
     }
 
     public override void ManualAnimatorMoveUpdate(float deltaTime)
     {
         base.ManualAnimatorMoveUpdate(deltaTime);
-
-        _animatorStepper?.ProcessAnimatorStep(deltaTime, Type);
+        Gclass777_0?.ProcessAnimatorStep(deltaTime, Type);
     }
 
     public override void Cancel()
@@ -56,5 +60,10 @@ public class BetterPlantStateClass : PlantStateClass
         MovementContext.PlantAction(false);
         MovementContext.PlantAction = null;
         MovementContext.ExitOverridenState();
+    }
+
+    public override void BlendMotion(ref Vector3 motion, float deltaTime)
+    {
+        motion = Vector3.Lerp(motion, MovementContext.LastBlendMotionDelta * deltaTime, EFTHardSettings.Instance.IdleStateMotionPreservation);
     }
 }

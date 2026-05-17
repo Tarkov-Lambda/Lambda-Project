@@ -2076,8 +2076,10 @@ namespace SteamAudio
             var fileName = "";
 
 #if UNITY_EDITOR
-            fileName = EditorUtility.SaveFilePanelInProject("Export Scene to OBJ", scene.name, "obj",
-                "Select a file to export this scene's data to.");
+            // Get directory of the scene, fallback to "Assets" if unsaved/empty
+            var scenePath = scene.path;
+            var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+            fileName = directory + "/" + scene.name + ".obj";
 #endif
 
             return fileName;
@@ -2088,8 +2090,9 @@ namespace SteamAudio
             var fileName = "";
 
 #if UNITY_EDITOR
-            fileName = EditorUtility.SaveFilePanelInProject("Export Dynamic Object to OBJ", dynamicObject.name, "obj",
-                "Select a file to export this dynamic object's data to.");
+            var scenePath = dynamicObject.gameObject.scene.path;
+            var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+            fileName = directory + "/" + dynamicObject.name + ".obj";
 #endif
 
             return fileName;
@@ -2120,7 +2123,17 @@ namespace SteamAudio
 
             if (steamAudioStaticMesh.asset == null)
             {
+#if UNITY_EDITOR
+                // Automatically create the asset next to the scene without file dialog
+                var scenePath = scene.path;
+                var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+                var assetPath = directory + "/" + scene.name + ".asset";
+
+                steamAudioStaticMesh.asset = ScriptableObject.CreateInstance<SerializedData>();
+                AssetDatabase.CreateAsset(steamAudioStaticMesh.asset, AssetDatabase.GenerateUniqueAssetPath(assetPath));
+#else
                 steamAudioStaticMesh.asset = SerializedData.PromptForNewAsset(scene.name);
+#endif
                 steamAudioStaticMesh.sceneNameWhenExported = scene.name;
             }
 
@@ -2129,6 +2142,19 @@ namespace SteamAudio
 
         static SerializedData GetDataAsset(SteamAudioDynamicObject dynamicObject)
         {
+            // Automatically assign and create an asset next to the scene for Dynamic Objects
+            if (dynamicObject.asset == null)
+            {
+#if UNITY_EDITOR
+                var scenePath = dynamicObject.gameObject.scene.path;
+                var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+                var assetPath = directory + "/" + dynamicObject.name + ".asset";
+
+                dynamicObject.asset = ScriptableObject.CreateInstance<SerializedData>();
+                AssetDatabase.CreateAsset(dynamicObject.asset, AssetDatabase.GenerateUniqueAssetPath(assetPath));
+                EditorUtility.SetDirty(dynamicObject);
+#endif
+            }
             return dynamicObject.asset;
         }
 #endif
