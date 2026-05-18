@@ -304,14 +304,14 @@ namespace SteamAudio
                 // Single Raycast Occlusion Mode
                 UnityEngine.Vector3 direction = sourcePos - listenerPos;
                 bool isOccluded = Physics.Raycast(listenerPos, direction.normalized, direction.magnitude);
-                
+
                 Gizmos.color = isOccluded ? Color.red : Color.green;
                 Gizmos.DrawLine(listenerPos, sourcePos);
             }
             else if (occlusionType == OcclusionType.Volumetric)
             {
                 // Volumetric Occlusion Mode
-                
+
                 // 1. Draw the volumetric boundary radius
                 Gizmos.color = new Color(0f, 1f, 1f, 0.4f); // Cyan
                 Gizmos.DrawWireSphere(sourcePos, occlusionRadius);
@@ -324,11 +324,11 @@ namespace SteamAudio
                 for (int i = 0; i < samples; i++)
                 {
                     float y = 1f;
-                    if (samples > 1) 
+                    if (samples > 1)
                     {
                         y = 1f - (i / (float)(samples - 1)) * 2f; // y maps from 1 to -1
                     }
-                    
+
                     float radiusAtY = Mathf.Sqrt(1 - y * y);
                     float theta = phi * i;
 
@@ -579,7 +579,7 @@ namespace SteamAudio
         [MonoPInvokeCallback(typeof(DistanceAttenuationCallback))]
         public static float EvaluateDistanceCurve(float distance, IntPtr userData)
         {
-            var target = (SteamAudioSource) GCHandle.FromIntPtr(userData).Target;
+            var target = (SteamAudioSource)GCHandle.FromIntPtr(userData).Target;
 
             var rMin = target.mAttenuationData.minDistance;
             var rMax = target.mAttenuationData.maxDistance;

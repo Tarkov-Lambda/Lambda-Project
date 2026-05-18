@@ -32,8 +32,8 @@ MonoBehaviour:
   realTimeMaxSources: 32
   realTimeCPUCoresPercentage: 5
   realTimeIrradianceMinDistance: 1
-  bakeConvolution: 1
-  bakeParametric: 0
+  bakeConvolution: 0
+  bakeParametric: 1
   bakingRays: 16384
   bakingBounces: 16
   bakingDuration: 1
@@ -47,7 +47,7 @@ MonoBehaviour:
   bakingPathRange: 1000
   bakedPathingCPUCoresPercentage: 50
   simulationUpdateInterval: 0.1
-  reflectionEffectType: 0
+  reflectionEffectType: 1
   hybridReverbTransitionTime: 1
   hybridReverbOverlapPercent: 25
   deviceType: 2

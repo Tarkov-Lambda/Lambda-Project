@@ -77,7 +77,7 @@ public class UIManager : IDisposable
 
         try
         {
-            disposables.Add(new LoadingScreenController(commonUI, UIBundle));
+            // disposables.Add(new LoadingScreenController(commonUI, UIBundle));
 
             disposables.Add(new ScoreboardController(matchUI.Scoreboard));
             disposables.Add(new TopBarController(matchUI.TopBar));

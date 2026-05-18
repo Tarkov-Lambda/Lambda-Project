@@ -75,7 +75,7 @@ public static class SteamAudioInitializer
 
         settings.audioEngine = AudioEngineType.Unity;
         settings.sceneType = SceneType.Default;
-        settings.reflectionEffectType = ReflectionEffectType.Convolution;
+        settings.reflectionEffectType = ReflectionEffectType.Parametric;
         settings.hrtfVolumeGainDB = 0f;
         settings.hrtfNormalizationType = HRTFNormType.None;
 

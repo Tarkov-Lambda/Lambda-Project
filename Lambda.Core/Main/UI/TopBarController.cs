@@ -78,11 +78,8 @@ namespace Lambda.Core.Main.UI
 
             topBar.SetScores(scoreCT, scoreT);
 
-            PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Score).ToArray();
             PlayerContextInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Context).ToArray();
 
-            PlayerScoreInfo[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
-            PlayerScoreInfo[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
             PlayerContextInfo[] teamT = allPlayerStats.Where(p => p.Faction == Faction.T).ToArray();
             PlayerContextInfo[] teamCT = allPlayerStats.Where(p => p.Faction == Faction.CT).ToArray();
 

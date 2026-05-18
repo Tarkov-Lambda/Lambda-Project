@@ -4,6 +4,7 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.Weather;
 using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.AssetBundleHandling;
@@ -49,6 +50,7 @@ public class Plugin : BaseUnityPlugin
     private ConfigEntry<KeyboardShortcut> DeathKey;
     private ConfigEntry<KeyboardShortcut> MapReloadKey;
     private ConfigEntry<KeyboardShortcut> UnfuckKey;
+    private ConfigEntry<KeyboardShortcut> NoclipKey;
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
@@ -328,12 +330,14 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        // if (H.IsInRaid())
-        // {
-        //     H.MainPlayer.MovementContext.PlantState = H.MainPlayer.MovementContext.GetNewState(EPlayerState.Plant, false);
-        //     H.MainPlayer.MovementContext.PlantState.Name = EPlayerState.Plant;
-        //     H.MainPlayer.MovementContext.PlantState.AnimatorStateHash = -1;
-        // }
+        if (H.IsInRaid())
+        {
+            H.MainPlayer.MovementContext.PlantState = H.MainPlayer.MovementContext.GetNewState(EPlayerState.Plant, false);
+            H.MainPlayer.MovementContext.PlantState.Name = EPlayerState.Plant;
+            H.MainPlayer.MovementContext.PlantState.AnimatorStateHash = -1;
+
+            // LambdaAudioRoomController.Instance.TriggerChange();
+        }
     }
 
     private void InitConfiguration()
@@ -348,7 +352,9 @@ public class Plugin : BaseUnityPlugin
         DeathKey = Config.Bind("Debug", "Suicide Key", new KeyboardShortcut(KeyCode.F2));
         MapReloadKey = Config.Bind("Debug", "Map Hot-Reload Key", new KeyboardShortcut(KeyCode.F3));
         UnfuckKey = Config.Bind("Debug", "Hands Unfucking Key", new KeyboardShortcut(KeyCode.F4));
+        NoclipKey = Config.Bind("Noclip", "", new KeyboardShortcut(KeyCode.CapsLock));
     }
+
 
     private void Update()
     {
@@ -373,6 +379,22 @@ public class Plugin : BaseUnityPlugin
             PU.OpenEyes();
             H.MainPlayer.UnfuckHands();
             Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
+        }
+
+        // TODO: This needs to get the fuck out of here
+        if (NoclipKey.Value.IsDown() && H.IsInRaid() && H.MainPlayerScore?.IsAdmin != false)
+        {
+            Noclip.ToggleNoclip();
+
+            if (!Noclip.IsEnabled)
+            {
+                H.MainPlayer.MovementContext.ResetFlying();
+            }
+        }
+
+        if (Noclip.IsEnabled && H.IsInRaid() && H.MainPlayerScore?.IsAdmin != false)
+        {
+            Noclip.ProcessNoclipFrame();
         }
     }
 
@@ -412,7 +434,6 @@ public class Plugin : BaseUnityPlugin
             release();
 
         _releases.Clear();
-
 
         BepInEx.Logging.Logger.Sources.Remove(Logger);
         Logger = null;

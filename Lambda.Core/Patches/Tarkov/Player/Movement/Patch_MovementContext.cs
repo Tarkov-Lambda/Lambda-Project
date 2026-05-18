@@ -9,8 +9,6 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using static EFT.MovementContext;
-using System.Linq;
-using EFT.InputSystem;
 
 namespace Lambda.Core.Patches.Tarkov;
 
@@ -30,6 +28,7 @@ public class Patch_MovementContext_CanWalk : ModulePatch
             __result = false;
         }
 
+
         if (____player.IsYourPlayer)
         {
             if (LadderManager.isOnLadder)
@@ -42,6 +41,10 @@ public class Patch_MovementContext_CanWalk : ModulePatch
                 wasOnLadder = false;
                 __result = false;
             }
+            else if (Noclip.IsEnabled)
+            {
+                __result = false;
+            }
         }
 
     }
@@ -52,12 +55,20 @@ public class Patch_MovementContext_CanJump : ModulePatch
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
 
     [PatchPostfix]
-    static void Postfix(MovementContext __instance, ref bool __result)
+    static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
         if (!H.IsInRaid()) return;
         if (H.MainPlayerScore.IsControllerPartiallyLocked())
         {
             __result = false;
+        }
+
+        if (____player.IsYourPlayer)
+        {
+            if (Noclip.IsEnabled)
+            {
+                __result = false;
+            }
         }
     }
 }

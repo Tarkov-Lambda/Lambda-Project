@@ -58,7 +58,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
-            // return;
+            return;
 #if DEBUG        
         if (!H.IsHeadless && H.MainPlayer?.Profile.Nickname == "notifp")
         {

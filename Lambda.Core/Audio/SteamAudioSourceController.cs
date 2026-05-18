@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Reflection;
 using Audio.ReverbSubsystem;
+using Cysharp.Threading.Tasks;
 using EFT;
 using HarmonyLib;
 using Lambda.Audio;
@@ -75,6 +77,7 @@ public static class SteamAudioSourceController
         return data;
     }
 
+    // it works idgaf
     private static bool IsMixerBypassed(AudioMixerGroup mixer)
     {
         if (mixer == null) return false;
@@ -176,7 +179,6 @@ public static class SteamAudioSourceController
 
                 src.spatialize = currentNativeSpatialize;
                 src.spatialBlend = currentNativeBlend;
-
             }
         }
     }
