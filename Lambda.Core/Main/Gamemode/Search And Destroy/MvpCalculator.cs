@@ -23,7 +23,7 @@ public static class MvpCalculator
 
         if (winners.Count == 0) return (-1, null);
 
-        bool HasAnyStats(PlayerScore p) => p.Kills != 0 || p.Assists != 0 || p.Deaths != 0;
+        bool HasAnyStats(PlayerContext p) => p.Kills != 0 || p.Assists != 0 || p.Deaths != 0;
 
         // No-action edge case: time ran out, no objective, and the winning team recorded zero stats.
         if (winReason == RoundWinReason.Timeout
@@ -64,7 +64,7 @@ public static class MvpCalculator
         return BreakTies(winners.Where(p => p.RoundKills == bestKills).ToList(), rng);
     }
 
-    private static (int mvpId, string mvpReason) BreakTies(List<PlayerScore> tiedOnKills, System.Random rng)
+    private static (int mvpId, string mvpReason) BreakTies(List<PlayerContext> tiedOnKills, System.Random rng)
     {
         if (tiedOnKills == null || tiedOnKills.Count == 0) return (-1, null);
         if (tiedOnKills.Count == 1) return (tiedOnKills[0].player?.Id ?? -1, "most kills this round");

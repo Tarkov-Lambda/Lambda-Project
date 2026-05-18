@@ -41,7 +41,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
 
         Player shooter = H.GetPlayer(damage.ProfileId);
-        PlayerScore shooterScore = shooter.GetScore();
+        PlayerContext shooterScore = shooter.GetScore();
 
         if (!shooterScore.IsAlive)
         {

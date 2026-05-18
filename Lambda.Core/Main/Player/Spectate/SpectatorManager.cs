@@ -131,7 +131,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         if (H.IsHeadless) return;
 
-        List<PlayerScore> validPlayersToSpectate = new List<PlayerScore>();
+        List<PlayerContext> validPlayersToSpectate = new List<PlayerContext>();
 
         // Case 1: You are a dedicated Spectator
         if (H.MainPlayerScore.Faction == Faction.Spectator)

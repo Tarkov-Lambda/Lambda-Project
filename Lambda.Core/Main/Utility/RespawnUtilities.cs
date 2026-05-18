@@ -9,7 +9,7 @@ public static class RespawnUtilities
 {
     private const int LOS_LAYER_MASK = 18;
 
-    public static Vector3 GetBestSpawnPoint(this PlayerScore respawningPlayer)
+    public static Vector3 GetBestSpawnPoint(this PlayerContext respawningPlayer)
     {
         TryGetAllSpawnPointClusters(H.Session.level, respawningPlayer.Faction, 0, out List<SpawnPointCluster> availableSpawnClusters);
 
@@ -40,7 +40,7 @@ public static class RespawnUtilities
         return bestSpawnPoint;
     }
 
-    public static float RateSpawnPoint(Vector3 spawnPoint, PlayerScore respawningPlayer, IEnumerable<Vector3> enemyPositions, IRespawnWeights weights)
+    public static float RateSpawnPoint(Vector3 spawnPoint, PlayerContext respawningPlayer, IEnumerable<Vector3> enemyPositions, IRespawnWeights weights)
     {
         float totalScore = 0f;
 
@@ -115,9 +115,9 @@ public static class RespawnUtilities
         return Mathf.Clamp01(score);
     }
 
-    public static float RateTeamCohesion(Vector3 spawnPoint, PlayerScore respawningPlayer)
+    public static float RateTeamCohesion(Vector3 spawnPoint, PlayerContext respawningPlayer)
     {
-        List<PlayerScore> teammates = H.Session.GetPlayerScoresFromFaction(respawningPlayer.Faction);
+        List<PlayerContext> teammates = H.Session.GetPlayerScoresFromFaction(respawningPlayer.Faction);
         if (teammates.Count == 0) return 0.5f;
 
         float averageDist = 0f;

@@ -87,7 +87,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
-        PlayerScore playerScore = H.GetPlayerScore(packet.Player);
+        PlayerContext playerScore = H.GetPlayerScore(packet.Player);
 
         if (packet.Player.TryGetHandsResourceKey(out ResourceKey handsBundle))
         {

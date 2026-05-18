@@ -6,31 +6,35 @@ namespace Lambda.Shared.Models
     [MemoryPackable]
     public partial struct PlayerScoreInfo
     {
-        public string Name;
-        public Faction Faction;
+        public PlayerIdentity Identity;
+        // public PlayerLoadingStatus Status;
+        public PlayerCombat Combat;
+        public PlayerEconomyData Economy;
 
-        public PlayerReadinessState ReadyState;
-        public float loadingProgress;
-        public int Ping;
-        public bool IsAdmin;
-        public bool ShouldHardReset;
+        // tech debt :C
+        public readonly string Name                     => Identity.Name;
+        public readonly Faction Faction                 => Identity.Faction;
+        public readonly bool IsAdmin                    => Identity.IsAdmin;
+        public readonly PlayerReadinessState ReadyState => Identity.ReadyState;
+        public readonly int Ping                        => Identity.Ping;
+        public readonly float LoadingProgress           => Identity.LoadingProgress;
 
-        public int Kills;
-        public int Damage;
-        public int Headshots;
-        public int Assists;
-        public int Deaths;
-        public int Mvps;
+        public readonly bool IsAlive                    => Combat.IsAlive;
 
-        public int RoundDamage;
-        public int RoundKills;
-        public int RoundHeadshots;
-        public bool IsAlive;
-        public int Money;
+        public readonly int Kills                       => Combat.Kills;
+        public readonly int Damage                      => Combat.Damage;
+        public readonly int Headshots                   => Combat.Headshots;
+        public readonly int Assists                     => Combat.Assists;
+        public readonly int Deaths                      => Combat.Deaths;
 
-        public string[] VkusiChipsov; // VkusiChipsov
-        public int SkolkoChipsovOstalos; // SkolkoChipsovOstalos
-        public float TimestampSinceAteChipsi; // TimestampSinceAteChipsi
+        public readonly int RoundDamage                 => Combat.RoundDamage;
+        public readonly int RoundKills                  => Combat.RoundKills;
+        public readonly int RoundHeadshots              => Combat.RoundHeadshots;
+
+        public readonly int Mvps                        => Combat.Mvps;
+
+        public readonly int Money                       => Economy.Money;
+        public readonly bool ShouldHardReset            => Economy.ShouldHardReset;
     }
 
     [System.Serializable]
@@ -40,6 +44,10 @@ namespace Lambda.Shared.Models
         public string Name;
         public Faction Faction;
         public bool IsAdmin;
+        
+        public PlayerReadinessState ReadyState;
+        public int Ping;
+        public float LoadingProgress;
     }
 
     [System.Serializable]
@@ -63,10 +71,9 @@ namespace Lambda.Shared.Models
 
     [System.Serializable]
     [MemoryPackable]
-    public partial struct PlayerLoadingStatus
+    public partial struct PlayerEconomyData
     {
-        public PlayerReadinessState ReadyState;
-        public float LoadingProgress;
-        public int Ping;
+        public int Money;
+        public bool ShouldHardReset;
     }
 }

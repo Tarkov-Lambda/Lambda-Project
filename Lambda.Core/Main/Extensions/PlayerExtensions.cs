@@ -11,7 +11,7 @@ using static EFT.PlayerAnimator;
 // class full of bruteforce player manipulations 
 public static class PlayerExtensions
 {
-    public static PlayerScore GetScore(this Player player)
+    public static PlayerContext GetScore(this Player player)
     {
         return H.GetPlayerScore(player);
     }

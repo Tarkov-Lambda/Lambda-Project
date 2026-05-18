@@ -15,7 +15,7 @@ public static class InventoryResetter
 {
     public static bool IsResetting { get; private set; }
 
-    public static PistolItemClass GetDefaultPistol(this PlayerScore playerScore)
+    public static PistolItemClass GetDefaultPistol(this PlayerContext playerScore)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -36,7 +36,7 @@ public static class InventoryResetter
         return null;
     }
 
-    public static SniperRifleItemClass GetFirstSniperRifleItem(this PlayerScore playerScore)
+    public static SniperRifleItemClass GetFirstSniperRifleItem(this PlayerContext playerScore)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {

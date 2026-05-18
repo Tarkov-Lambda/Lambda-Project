@@ -37,7 +37,7 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
         base.Dispose();
     }
 
-    bool CanChangeFaction(PlayerScore playerScore, Faction faction)
+    bool CanChangeFaction(PlayerContext playerScore, Faction faction)
     {
         if (!playerScore.IsAlive) return true;
 

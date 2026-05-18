@@ -9,7 +9,7 @@ namespace Lambda.Core.GameTypes;
 public class SessionManager
 {
     public MatchState matchState = MatchState.None;
-    public Dictionary<int, PlayerScore> scoreboard = new();
+    public Dictionary<int, PlayerContext> scoreboard = new();
     public Dictionary<Faction, int> factionWins = new();
     public BombState bombState = BombState.None;
 
@@ -34,7 +34,7 @@ public class SessionManager
                 if (p == null) continue;
                 if (!scoreboard.ContainsKey(p.Id))
                 {
-                    scoreboard[p.Id] = new PlayerScore(p.Id);
+                    scoreboard[p.Id] = new PlayerContext(p.Id);
                 }
             }
         }
@@ -101,11 +101,11 @@ public class SessionManager
         return result;
     }
 
-    public List<PlayerScore> GetPlayerScoresFromFaction(Faction faction)
+    public List<PlayerContext> GetPlayerScoresFromFaction(Faction faction)
     {
         if (!H.IsInRaid()) return [];
 
-        var result = new List<PlayerScore>();
+        var result = new List<PlayerContext>();
 
         foreach (var s in scoreboard.Values)
         {

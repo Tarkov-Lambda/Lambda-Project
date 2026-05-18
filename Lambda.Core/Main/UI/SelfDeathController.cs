@@ -24,7 +24,7 @@ namespace Lambda.Core.Main.UI
         {
             if (killPacket.Player == H.MainPlayer)
             {
-                PlayerScore killerScore = H.GetPlayerScore(killPacket.killer);
+                PlayerContext killerScore = H.GetPlayerScore(killPacket.killer);
                 OnSelfDeath(killerScore.Score);
             }
         }

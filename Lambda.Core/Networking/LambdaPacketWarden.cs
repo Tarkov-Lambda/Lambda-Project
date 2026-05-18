@@ -21,7 +21,7 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
         
         if (Authority == PacketAuthority.Admin)
         {
-            PlayerScore score = H.GetPlayerScore(id);
+            PlayerContext score = H.GetPlayerScore(id);
             return score == null || !score.IsAdmin; // unauthorized only if NOT admin
         }
         else if (Authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)

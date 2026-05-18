@@ -65,10 +65,10 @@ public static class Helpers
     public static LambdaGamemode Gamemode                               => Arena.gamemode;
     public static bool IsNightTime                                      => Gamemode is IGMWithNightMode nm && nm.IsNightTime;
 
-    public static Dictionary<int, PlayerScore> Scoreboard               => Singleton<ArenaController>.Instance.Session.scoreboard;
-    public static PlayerScore MainPlayerScore                           => GetMainPlayerScore();
+    public static Dictionary<int, PlayerContext> Scoreboard               => Singleton<ArenaController>.Instance.Session.scoreboard;
+    public static PlayerContext MainPlayerScore                           => GetMainPlayerScore();
     public static List<Player> AllTeammates                             => Session.GetPlayersFromFaction(H.MainPlayerScore.Faction);
-    public static List<PlayerScore> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
+    public static List<PlayerContext> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
     public static List<Player> AllPlayers                               => IsInRaid() ? GetAllPlayers() : new();
     public static List<Player> AllPlayingPlayers                        => IsInRaid() ? GetAllPlayingPlayers() : new();
 
@@ -143,20 +143,20 @@ public static class Helpers
         return AllPlayers.FirstOrDefault(p => p.ProfileId == profileId);
     }
 
-    public static PlayerScore GetPlayerScore(Player player) => GetPlayerScore(player.Id);
+    public static PlayerContext GetPlayerScore(Player player) => GetPlayerScore(player.Id);
 
-    public static PlayerScore GetPlayerScore(int playerId)
+    public static PlayerContext GetPlayerScore(int playerId)
     {
         if (!IsInRaid()) return null;
         if (!Scoreboard.TryGetValue(playerId, out var playerScore))
         {
-            playerScore = new PlayerScore(playerId);
+            playerScore = new PlayerContext(playerId);
             Scoreboard[playerId] = playerScore;
         }
         return playerScore;
     }
 
-    public static PlayerScore GetMainPlayerScore()
+    public static PlayerContext GetMainPlayerScore()
     {
         if (!IsInRaid()) return null;
         Scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);

@@ -21,12 +21,12 @@ namespace Lambda.Core.Main.UI
 
         private void OnPlayerKill(PlayerKilledPacket packet)
         {
-            PlayerScore victim = H.GetPlayerScore(packet.Player);
+            PlayerContext victim = H.GetPlayerScore(packet.Player);
             if (!victim.IsAlive) return;
 
-            PlayerScore killer = H.GetPlayerScore(packet.killer);
+            PlayerContext killer = H.GetPlayerScore(packet.killer);
 
-            PlayerScore assist = H.GetPlayerScore(packet.assist);
+            PlayerContext assist = H.GetPlayerScore(packet.assist);
 
             string leftName = BuildLeftName(killer, assist);
             string rightName = FormatPlayer(victim);
@@ -46,7 +46,7 @@ namespace Lambda.Core.Main.UI
             });
         }
 
-        private static string FormatPlayer(PlayerScore player)
+        private static string FormatPlayer(PlayerContext player)
         {
             if (player == null)
                 return string.Empty;
@@ -56,7 +56,7 @@ namespace Lambda.Core.Main.UI
             return player.player.IsYourPlayer ? $"<b>{name}</b>" : name;
         }
 
-        private static string BuildLeftName(PlayerScore killer, PlayerScore assist)
+        private static string BuildLeftName(PlayerContext killer, PlayerContext assist)
         {
             if (killer == null)
                 return string.Empty;

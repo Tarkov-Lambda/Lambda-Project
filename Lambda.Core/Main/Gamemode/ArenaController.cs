@@ -117,7 +117,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             }
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
-            H.Session.scoreboard[H.MainPlayer.Id] = new PlayerScore(H.MainPlayer.Id);
+            H.Session.scoreboard[H.MainPlayer.Id] = new PlayerContext(H.MainPlayer.Id);
             H.MainPlayerScore.Spawn();
 
             Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Connected);
