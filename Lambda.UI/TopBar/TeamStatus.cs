@@ -25,7 +25,7 @@ namespace Lambda.UI
             }
         }
 
-        public void Set(PlayerScoreInfo[] players)
+        public void Set(PlayerContextInfo[] players)
         {
             Init();
             if (players == null) return;

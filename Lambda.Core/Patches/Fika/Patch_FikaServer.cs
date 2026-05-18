@@ -41,7 +41,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
 
         Player shooter = H.GetPlayer(damage.ProfileId);
-        PlayerContext shooterScore = shooter.GetScore();
+        PlayerContext shooterScore = shooter.GetContext();
 
         if (!shooterScore.IsAlive)
         {
@@ -64,7 +64,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         Player shooter = H.GetPlayer(damage.ProfileId);
 
-        victim.GetScore()?.RecordDamageTaken(shooter, damage.Damage);
+        victim.GetContext()?.RecordDamageTaken(shooter, damage.Damage);
 
         // we handle the server owner player natively through ActiveHealthController
         if (victim.IsYourPlayer) return;
@@ -87,7 +87,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         // to see if the damage is lethal and broadcast death before the client does
         Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
 
-        shooter.GetScore().AddDamage((int)Math.Round(damageInfo.Damage));
+        shooter.GetContext().AddDamage((int)Math.Round(damageInfo.Damage));
     }
 
     public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo, DamagePacket damagePacket)

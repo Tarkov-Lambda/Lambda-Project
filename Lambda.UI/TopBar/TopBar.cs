@@ -47,7 +47,7 @@ namespace Lambda.UI
             TextTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
         }
 
-        public void SetTeamStatuses(PlayerScoreInfo[] leftTeam, PlayerScoreInfo[] rightTeam)
+        public void SetTeamStatuses(PlayerContextInfo[] leftTeam, PlayerContextInfo[] rightTeam)
         {
             teamStatusLeft?.Set(leftTeam);
             teamStatusRight?.Set(rightTeam);

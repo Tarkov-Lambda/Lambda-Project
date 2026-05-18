@@ -4,7 +4,7 @@ namespace Lambda.Shared.Models
 {
     [System.Serializable]
     [MemoryPackable]
-    public partial struct PlayerScoreInfo
+    public partial struct PlayerContextInfo
     {
         public PlayerIdentity Identity;
         // public PlayerLoadingStatus Status;

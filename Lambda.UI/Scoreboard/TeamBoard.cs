@@ -19,7 +19,7 @@ namespace Lambda.UI.scoreboard
 
         private readonly List<RowPlayer> pool = new List<RowPlayer>();
 
-        public void Set(List<PlayerScoreInfo> players, Color teamColor, int score, Faction mainPlayerFaction, Faction teamBoardFaction)
+        public void Set(List<PlayerContextInfo> players, Color teamColor, int score, Faction mainPlayerFaction, Faction teamBoardFaction)
         {
             header.SetActive(teamBoardFaction is not Faction.Spectator);
             scoreContainer.SetActive(score >= 0 && teamBoardFaction is Faction.CT or Faction.T);

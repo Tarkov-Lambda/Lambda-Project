@@ -21,7 +21,7 @@ namespace Lambda.Core.Main.UI
         private void OnStartSpectating(Player player)
         {
             PlayerContext playerScore = H.GetPlayerScore(player);
-            spectator.SetSpectatingPlayer(playerScore.Score);
+            spectator.SetSpectatingPlayer(playerScore.Context);
             spectator.gameObject.SetActive(true);
         }
 

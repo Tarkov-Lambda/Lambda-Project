@@ -51,12 +51,6 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
             gamemode = Plugin.Gamemode.Value,
         };
 
-        // send manifest of all item assets that need to be loaded before starting
-        if (H.IsServer)
-        {
-            packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
-        }
-
         DispatchPacket(packet);
     }
 

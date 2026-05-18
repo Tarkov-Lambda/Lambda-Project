@@ -171,7 +171,7 @@ public static class Helpers
     private static List<Player> GetAllPlayingPlayers()
     {
         if (!IsInRaid()) return null;
-        return GameWorld.AllAlivePlayersList.Where(player => player.GetScore().ReadyState != PlayerReadinessState.Disconnected && player.GetScore().Faction != Faction.Spectator).ToList();
+        return GameWorld.AllAlivePlayersList.Where(player => player.GetContext().ReadyState != PlayerReadinessState.Disconnected && player.GetContext().Faction != Faction.Spectator).ToList();
     }
 
     public static bool HasMainMenuLoaded()

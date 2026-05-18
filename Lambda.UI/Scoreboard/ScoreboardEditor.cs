@@ -66,7 +66,7 @@ namespace Lambda.UI.scoreboard.Editor
                 "Papa", "Quebec", "Romeo", "Sierra", "Tango"
             };
 
-            PlayerScoreInfo[] players = new PlayerScoreInfo[playerCount];
+            PlayerContextInfo[] players = new PlayerContextInfo[playerCount];
             Dictionary<Faction, int> teamScores = new Dictionary<Faction, int>();
 
             foreach (Faction f in activeFactions)
@@ -78,14 +78,20 @@ namespace Lambda.UI.scoreboard.Editor
             {
                 Faction faction = activeFactions[i % activeFactions.Count];
 
-                players[i] = new PlayerScoreInfo
+                players[i] = new PlayerContextInfo
                 {
-                    Faction = faction,
-                    Name = names[i % names.Length],
-                    Kills = Random.Range(0, 30),
-                    Deaths = Random.Range(0, 20),
-                    Assists = Random.Range(0, 15),
-                    Ping = Random.Range(10, 200)
+                    Identity = new PlayerIdentity
+                    {
+                        Faction = faction,
+                        Name = names[i % names.Length],
+                        Ping = Random.Range(10, 200)
+                    },
+                    Combat = new PlayerCombat
+                    {
+                        Kills = Random.Range(0, 30),
+                        Deaths = Random.Range(0, 20),
+                        Assists = Random.Range(0, 15),
+                    },
                 };
             }
 
@@ -108,7 +114,7 @@ namespace Lambda.UI.scoreboard.Editor
         private void ClearScoreboard()
         {
             Scoreboard scoreboard = (Scoreboard)target;
-            scoreboard.SetPlayers(new PlayerScoreInfo[0], new Dictionary<Faction, int>(), Faction.None);
+            scoreboard.SetPlayers(new PlayerContextInfo[0], new Dictionary<Faction, int>(), Faction.None);
             Debug.Log("[ScoreboardEditor] Scoreboard cleared.");
         }
     }

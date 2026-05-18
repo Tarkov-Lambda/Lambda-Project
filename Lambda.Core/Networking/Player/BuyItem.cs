@@ -53,7 +53,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
-                var playerScore = packet.Player.GetScore();
+                var playerScore = packet.Player.GetContext();
 
                 if (playerScore.Money < itemData.price)
                 {
@@ -155,7 +155,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
 
-            packet.Player.GetScore().AddItemQuantity(itemData);
+            packet.Player.GetContext().AddItemQuantity(itemData);
         }
 
         if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)

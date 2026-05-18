@@ -106,8 +106,8 @@ namespace Lambda.Core.Main.UI
 
         void Refresh()
         {
-            PlayerScoreInfo[] allPlayerStats = H.Scoreboard.Values
-                .Select(p => p.Score)
+            PlayerContextInfo[] allPlayerStats = H.Scoreboard.Values
+                .Select(p => p.Context)
                 .ToArray();
             scoreboardUI.SetPlayers(
                 allPlayerStats,

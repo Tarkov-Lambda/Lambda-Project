@@ -8,7 +8,7 @@ namespace Lambda.UI
     {
         [SerializeField] private TMP_Text textPlayerName;
 
-        public void SetSpectatingPlayer(PlayerScoreInfo player)
+        public void SetSpectatingPlayer(PlayerContextInfo player)
         {
             textPlayerName.text = player.Name;
         }

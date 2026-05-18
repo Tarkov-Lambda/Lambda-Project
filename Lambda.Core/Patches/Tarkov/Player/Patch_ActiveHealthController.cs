@@ -45,7 +45,7 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
         if (!H.IsInRaid()) return false; // mid raid connect protection
         if (H.Arena?.Session == null) return false;
 
-        var playerScore = __instance.Player.GetScore();
+        var playerScore = __instance.Player.GetContext();
         if (playerScore == null) return false;
 
         // blacked out legs don't cause damage
@@ -97,7 +97,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
         if (!H.IsInRaid()) return false; // mid raid connect protection
-        if (__instance.Player == null || __instance.Player.GetScore() == null) return false; // mid raid connect protection
+        if (__instance.Player == null || __instance.Player.GetContext() == null) return false; // mid raid connect protection
 
         long now = Stopwatch.GetTimestamp();
         long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;

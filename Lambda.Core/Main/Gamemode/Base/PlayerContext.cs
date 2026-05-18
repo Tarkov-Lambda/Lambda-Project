@@ -8,44 +8,43 @@ using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using Lambda.Shared.Models;
 using PacketWarden.TimeSync;
-using UnityEngine;
 
 public class PlayerContext
 {
     public readonly Player player;
 
-    private PlayerScoreInfo score;
+    private PlayerContextInfo context;
 
-    public PlayerScoreInfo Score => score;
+    public PlayerContextInfo Context => context;
 
     // server only data about the player for resets/buying
     public Dictionary<ShopItem, Item> BuySelection { get; private set; }
     public Dictionary<EquipmentSlot, Item> DefaultEquipment { get; private set; }
     public Dictionary<ShopItem, int> ItemQuantityBoughtInRound { get; private set; }
 
-    public string Name                     => score.Name;
-    public Faction Faction                 => score.Faction;
-    public bool IsAdmin                    => score.IsAdmin;
-    public PlayerReadinessState ReadyState => score.ReadyState;
-    public int Ping                        => score.Ping;
-    public float LoadingProgress           => score.LoadingProgress;
+    public string Name                     => context.Name;
+    public Faction Faction                 => context.Faction;
+    public bool IsAdmin                    => context.IsAdmin;
+    public PlayerReadinessState ReadyState => context.ReadyState;
+    public int Ping                        => context.Ping;
+    public float LoadingProgress           => context.LoadingProgress;
 
-    public bool IsAlive                    => score.IsAlive;
+    public bool IsAlive                    => context.IsAlive;
     
-    public int Kills                       => score.Kills;
-    public int Damage                      => score.Damage;
-    public int Headshots                   => score.Headshots;
-    public int Assists                     => score.Assists;
-    public int Deaths                      => score.Deaths;
+    public int Kills                       => context.Kills;
+    public int Damage                      => context.Damage;
+    public int Headshots                   => context.Headshots;
+    public int Assists                     => context.Assists;
+    public int Deaths                      => context.Deaths;
     
-    public int RoundDamage                 => score.RoundDamage;
-    public int RoundKills                  => score.RoundKills;
-    public int RoundHeadshots              => score.RoundHeadshots;
+    public int RoundDamage                 => context.RoundDamage;
+    public int RoundKills                  => context.RoundKills;
+    public int RoundHeadshots              => context.RoundHeadshots;
     
-    public int Mvps                        => score.Mvps;
+    public int Mvps                        => context.Mvps;
     
-    public int Money                       => score.Money;
-    public bool ShouldHardReset            => score.ShouldHardReset;
+    public int Money                       => context.Money;
+    public bool ShouldHardReset            => context.ShouldHardReset;
 
     // Serverside
     private double _deathTimestamp;
@@ -57,18 +56,17 @@ public class PlayerContext
     {
         player = H.GetPlayer(id);
 
-        score.Identity.Name = player.Profile.Nickname;
-        score.Economy.Money = EconomyConstants.MAX_MONEY;
+        context.Identity.Name = player.Profile.Nickname;
+        context.Economy.Money = EconomyConstants.MAX_MONEY;
 
         ItemQuantityBoughtInRound = [];
 
         if (H.IsHeadless) return;
         if (H.IsServer && H.MainPlayer.Id == id)
         {
-            score.Identity.IsAdmin = true;
+            context.Identity.IsAdmin = true;
         }
     }
-
 
     public void RecordDamageTaken(Player attacker, float damage)
     {
@@ -101,30 +99,30 @@ public class PlayerContext
 
     public void AddAssist()
     {
-        score.Combat.Assists++;
+        context.Combat.Assists++;
     }
 
-    public void Apply(PlayerScoreInfo info)
+    public void Apply(PlayerContextInfo info)
     {
-        score = info;
+        context = info;
     }
 
     public void AddFrag(bool isHeadshot)
     {
-        score.Combat.Kills++;
-        score.Combat.RoundKills++;
+        context.Combat.Kills++;
+        context.Combat.RoundKills++;
         if (isHeadshot)
         {
-            score.Combat.Headshots++;
-            score.Combat.RoundHeadshots++;
+            context.Combat.Headshots++;
+            context.Combat.RoundHeadshots++;
         }
     }
 
     public void ChangeReadiness(PlayerReadinessState readyState)
     {
-        if (score.Identity.ReadyState != readyState)
+        if (context.Identity.ReadyState != readyState)
         {
-            score.Identity.ReadyState = readyState;
+            context.Identity.ReadyState = readyState;
 
             if (H.IsHeadless) return;
             if (player == H.MainPlayer)
@@ -135,12 +133,12 @@ public class PlayerContext
 
     public void ChangeProgress(float loadingProgress)
     {
-        score.Identity.LoadingProgress = loadingProgress;
+        context.Identity.LoadingProgress = loadingProgress;
     }
 
     public void ChangeFaction(Faction faction)
     {
-        score.Identity.Faction = faction;
+        context.Identity.Faction = faction;
 
         if (H.IsHeadless) return;
         if (player == H.MainPlayer)
@@ -160,7 +158,7 @@ public class PlayerContext
 
     public void SetAdmin(bool isAdmin)
     {
-        score.Identity.IsAdmin = isAdmin;
+        context.Identity.IsAdmin = isAdmin;
     }
 
     public void SetBuySelection(Dictionary<ShopItem, Item> buySelection)
@@ -175,29 +173,29 @@ public class PlayerContext
 
     public void AddDamage(int newDamage)
     {
-        score.Combat.RoundDamage += newDamage;
+        context.Combat.RoundDamage += newDamage;
     }
 
     public void Kill()
     {
         if (H.Session.matchState is MatchState.RoundAction or MatchState.RoundPlanted)
         {
-            score.Combat.Deaths++;
+            context.Combat.Deaths++;
         }
-        score.Combat.IsAlive = false;
+        context.Combat.IsAlive = false;
         _deathTimestamp = NetworkTime.ServerNowSeconds;
     }
 
     public void SetHardReset()
     {
-        score.Economy.ShouldHardReset = true;
+        context.Economy.ShouldHardReset = true;
     }
 
     public void Spawn()
     {
-        score.Combat.IsAlive = true;
+        context.Combat.IsAlive = true;
         _deathTimestamp = -1;
-        score.Economy.ShouldHardReset = false;
+        context.Economy.ShouldHardReset = false;
         _damageContributors.Clear(); // <--- ADD THIS LINE
 
         if (!H.IsHeadless && player == H.MainPlayer)
@@ -206,25 +204,25 @@ public class PlayerContext
 
     public void SessionReset()
     {
-        score.Combat.Mvps = 0;
-        score.Combat.Kills = 0;
-        score.Combat.Damage = 0;
-        score.Combat.Headshots = 0;
-        score.Combat.Assists = 0;
-        score.Combat.Deaths = 0;
-        score.Combat.IsAlive = true;
+        context.Combat.Mvps = 0;
+        context.Combat.Kills = 0;
+        context.Combat.Damage = 0;
+        context.Combat.Headshots = 0;
+        context.Combat.Assists = 0;
+        context.Combat.Deaths = 0;
+        context.Combat.IsAlive = true;
 
-        score.Combat.RoundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
-        score.Combat.RoundHeadshots = 0;
-        score.Combat.RoundKills = 0;
+        context.Combat.RoundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
+        context.Combat.RoundHeadshots = 0;
+        context.Combat.RoundKills = 0;
     }
 
     public void RoundReset()
     {
-        score.Combat.Damage += RoundDamage; // apply damage to the total counter after round
-        score.Combat.RoundDamage = 0;
-        score.Combat.RoundHeadshots = 0;
-        score.Combat.RoundKills = 0;
+        context.Combat.Damage += RoundDamage; // apply damage to the total counter after round
+        context.Combat.RoundDamage = 0;
+        context.Combat.RoundHeadshots = 0;
+        context.Combat.RoundKills = 0;
         ItemQuantityBoughtInRound.Clear();
     }
 
@@ -271,9 +269,9 @@ public class PlayerContext
 
     public void AddMoney(int amount)
     {
-        score.Economy.Money += amount;
+        context.Economy.Money += amount;
 
-        score.Economy.Money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
+        context.Economy.Money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
 
         if (H.IsHeadless) return;
         if (player == H.MainPlayer)
@@ -284,8 +282,8 @@ public class PlayerContext
     {
         if (H.Gamemode is IGMBuyable)
         {
-            score.Economy.Money -= amount;
-            if (Money < 0) score.Economy.Money = 0;
+            context.Economy.Money -= amount;
+            if (Money < 0) context.Economy.Money = 0;
 
             if (H.IsHeadless) return;
             EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
@@ -294,7 +292,7 @@ public class PlayerContext
 
     public void SetMoney(int newMoney)
     {
-        score.Economy.Money = newMoney;
+        context.Economy.Money = newMoney;
     }
 
     public bool CanBuy()

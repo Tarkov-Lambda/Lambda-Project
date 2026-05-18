@@ -101,7 +101,7 @@ public class EconomyManager : IDisposable
     {
         if (H.Arena.LastObjectivePlayer == null) return;
 
-        var score = H.Arena.LastObjectivePlayer.GetScore();
+        var score = H.Arena.LastObjectivePlayer.GetContext();
         if (score == null) return;
 
         if (state == BombState.Planted)

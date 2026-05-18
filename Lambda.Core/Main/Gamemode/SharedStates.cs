@@ -85,7 +85,7 @@ public class SharedWarmupEnd : IGameState
         foreach (var player in H.AllPlayers)
         {
             player.ForceUnlockInventory();
-            player.GetScore()?.SetHardReset();
+            player.GetContext()?.SetHardReset();
         }
     }
 
@@ -140,7 +140,7 @@ public class SharedCleanup : IGameState
         {
             if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
             {
-                var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.GetScore().ReadyState == PlayerReadinessState.Ready).RandomElement();
+                var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.GetContext().ReadyState == PlayerReadinessState.Ready).RandomElement();
                 var backpackSlot = randomTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
 
                 backpackSlot.RemoveItemWithoutRestrictions();
@@ -216,7 +216,7 @@ public class SharedPrepare : IGameState
 
         foreach (var player in H.AllPlayingPlayers)
         {
-            player.GetScore().Spawn();
+            player.GetContext().Spawn();
         }
     }
 

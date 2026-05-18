@@ -16,7 +16,7 @@ public partial struct SessionManagerSyncPacket : IPacket
     public string mapName;
 
     public Dictionary<Faction, int> factionWins;
-    public Dictionary<int, PlayerScoreInfo> scores;
+    public Dictionary<int, PlayerContextInfo> scores;
 }
 
 // Runs on MatchState.RoundEnd
@@ -33,7 +33,7 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
             mvpId = H.Session.mvpId,
             mapName = H.Session.level,
             factionWins = H.Session.factionWins,
-            scores = H.Scoreboard.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Score)
+            scores = H.Scoreboard.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Context)
         };
 
         return packet;

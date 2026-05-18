@@ -45,7 +45,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override void ProcessApprovedPacket(ref ChatMessagePacket packet, int peerId)
     {
-        if (packet.msg.StartsWith("!") && packet.Player.GetScore().IsAdmin)
+        if (packet.msg.StartsWith("!") && packet.Player.GetContext().IsAdmin)
         {
             HandleCommandMessage(packet);
         }

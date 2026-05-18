@@ -22,7 +22,7 @@ namespace Lambda.UI.scoreboard
 
         Faction _lastFaction;
 
-        public void Set(PlayerScoreInfo stats, bool isTeammate, int index)
+        public void Set(PlayerContextInfo stats, bool isTeammate, int index)
         {
             if (_lastFaction != stats.Faction)
             {
@@ -64,7 +64,7 @@ namespace Lambda.UI.scoreboard
             textDamage.SetAlpha(newAlpha);
         }
 
-        void SetHeadshotRatio(PlayerScoreInfo stats)
+        void SetHeadshotRatio(PlayerContextInfo stats)
         {
             if (stats.Kills <= 0)
             {

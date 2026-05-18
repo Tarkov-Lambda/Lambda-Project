@@ -12,17 +12,17 @@ namespace Lambda.UI.scoreboard
         [SerializeField] private FactionColors factionColors;
 
         private readonly List<TeamBoard> pool = new();
-        private readonly Dictionary<Faction, List<PlayerScoreInfo>> buckets = new Dictionary<Faction, List<PlayerScoreInfo>>();
+        private readonly Dictionary<Faction, List<PlayerContextInfo>> buckets = new Dictionary<Faction, List<PlayerContextInfo>>();
 
-        public void SetPlayers(PlayerScoreInfo[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
+        public void SetPlayers(PlayerContextInfo[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
         {
             buckets.Clear();
 
             foreach (var p in players)
             {
-                if (!buckets.TryGetValue(p.Faction, out List<PlayerScoreInfo> list))
+                if (!buckets.TryGetValue(p.Faction, out List<PlayerContextInfo> list))
                 {
-                    list = new List<PlayerScoreInfo>();
+                    list = new List<PlayerContextInfo>();
                     buckets[p.Faction] = list;
                 }
                 list.Add(p);
@@ -30,7 +30,7 @@ namespace Lambda.UI.scoreboard
 
             int index = 0;
 
-            foreach (KeyValuePair<Faction, List<PlayerScoreInfo>> kvp in buckets)
+            foreach (KeyValuePair<Faction, List<PlayerContextInfo>> kvp in buckets)
             {
                 TeamBoard board;
 

@@ -115,7 +115,7 @@ public static class InventoryResetter
         var pistol = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
         if (pistol == null)
         {
-            PistolItemClass defaultPistol = GetDefaultPistol(player.GetScore()).CloneItem();
+            PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
             var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
             pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
             pistol = defaultPistol;
@@ -196,7 +196,7 @@ public static class InventoryResetter
         }
 
         // Default Pistol
-        PistolItemClass defaultPistol = GetDefaultPistol(player.GetScore()).CloneItem();
+        PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
         var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
         pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
         RU.SetupWeaponImmediate(defaultPistol, player);

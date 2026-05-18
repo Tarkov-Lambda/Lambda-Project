@@ -19,7 +19,7 @@ namespace Lambda.UI
             t = 1f;
         }
 
-        public void Pop(PlayerScoreInfo killer)
+        public void Pop(PlayerContextInfo killer)
         {
             textKillerName.text = killer.Name;
             textKillerName.color = factionColors.Get(killer.Faction);

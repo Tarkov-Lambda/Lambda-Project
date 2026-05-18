@@ -216,7 +216,7 @@ public static class ItemUtilities
     {
         if (H.Gamemode is IGMTeam)
         {
-            string selectedArmband = player.GetScore().Faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
+            string selectedArmband = player.GetContext().Faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
 
             ArmBandItemClass armband = PresetItemsCache.Instance.GetPresetItem(selectedArmband).CloneItem() as ArmBandItemClass;
 
