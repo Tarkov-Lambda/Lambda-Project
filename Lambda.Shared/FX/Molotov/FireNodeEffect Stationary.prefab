@@ -65,8 +65,12 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6045502356979053673, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+      propertyPath: currentBakedSource
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6045502356979053673, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: reflectionsMixLevel
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6045502356979053673, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: applyHRTFToReflections
