@@ -32,7 +32,7 @@ public class UIManager : IDisposable
         H.AfterApplicationLoaded += Initialize;
 
         // hot reload
-        if (H.HasMainMenuLoaded()) Initialize();
+        if (H.IsMainMenuLoaded()) Initialize();
     }
 
     public void Initialize()

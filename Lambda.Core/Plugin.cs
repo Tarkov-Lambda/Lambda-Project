@@ -314,10 +314,10 @@ public class Plugin : BaseUnityPlugin
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
             RegisterSingleton<MusicHandler>();                                      // Listens to ArenaController and plays music when necessary
-            RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT!!!!!!!
             RegisterSingleton<SpectatorManager>();                                  // Spectator functionality
+            RegisterSingleton<ArenaController>();                                   // MAIN ENTRY POINT!!!!!!!
 
-            _disposables.Add(new UIManager());  // not a singleton (fuck you) - тебе ебало разбить сука? не зли меня
+            _disposables.Add(new UIManager());
 
             RegisterSingletonInRaid<LadderManager>().Forget();                    // Overwrites Player Controller on Ladder Collision and moves them.
             RegisterSingletonInRaid<BombHandler>().Forget();                      // Handler for the entirety of Bomb's lifecycle

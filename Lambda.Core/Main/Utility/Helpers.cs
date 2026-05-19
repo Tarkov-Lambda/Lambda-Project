@@ -174,7 +174,7 @@ public static class Helpers
         return GameWorld.AllAlivePlayersList.Where(player => player.GetContext().ReadyState != PlayerReadinessState.Disconnected && player.GetContext().Faction != Faction.Spectator).ToList();
     }
 
-    public static bool HasMainMenuLoaded()
+    public static bool IsMainMenuLoaded()
     {
         return H.TarkovClientISession?.Profile_1?.Id != null;
     }
