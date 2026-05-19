@@ -6,6 +6,7 @@ using Lambda.Core.Networking;
 using UnityEngine;
 using DG.Tweening;
 using PacketWarden.TimeSync;
+using EFT.Interactive;
 
 namespace Lambda.Core.Main;
 
@@ -133,7 +134,7 @@ public class MolotovInstance : MonoBehaviour
             main.startDelayMultiplier += Random.Range(0f, 0.1f);
         }
 
-        var PhysicsTrigger = fireEffect.AddComponent<MolotovPhysicsTrigger>();
+        fireEffect.GetOrAddComponent<FlameDamageTrigger>();
     }
 
     private async UniTask DestroySelfAfterDurationAsync(double packetTimestamp)

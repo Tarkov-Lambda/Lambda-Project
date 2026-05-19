@@ -1,5 +1,6 @@
 ﻿using System;
 using EFT;
+using UnityEngine.UIElements;
 
 public enum DeliveryType : byte
 {
@@ -10,14 +11,19 @@ public enum DeliveryType : byte
     ReliableSequenced = 3
 }
 
-public interface INetworkBackend
+public interface INetworkBackend : IDisposable
 {
-    bool IsServer { get; }
-    bool IsClient { get; }
+    bool IsServer   { get; }
+    bool IsClient   { get; }
     bool IsHeadless { get; }
-    bool IsOnline { get; }
+    bool IsOnline   { get; }
 
-    int NetId { get; }
+    int NetId       { get; }
+
+    Action OnNetworkCreated     { get; set; }
+    Action OnNetworkDestroyed   { get; set; }
+    Action<int> OnPeerConnected { get; set; }
+    Action<int> OnDisconnected  { get; set; }
 
     void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket;
     void UnregisterPacketWarden<T>() where T : IPacket;

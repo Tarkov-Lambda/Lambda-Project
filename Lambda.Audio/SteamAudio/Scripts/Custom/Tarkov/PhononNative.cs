@@ -16,7 +16,7 @@ namespace Lambda.Audio
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         public static extern void iplBinauralEffectRelease(ref IntPtr effect);
 
-        // Direct Effect (occlusion / transmission)
+        // Direct Effect
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         public static extern int iplDirectEffectCreate(IntPtr ctx, ref PAudioSettings audio, ref PDirectEffectSettings s, out IntPtr effect);
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
@@ -24,7 +24,7 @@ namespace Lambda.Audio
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         public static extern void iplDirectEffectRelease(ref IntPtr effect);
 
-        // Reflection Effect (convolution IR)
+        // Reflection Effect
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         public static extern int iplReflectionEffectCreate(IntPtr ctx, ref PAudioSettings audio, ref PReflectionEffectSettings s, out IntPtr effect);
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
@@ -32,7 +32,7 @@ namespace Lambda.Audio
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         public static extern void iplReflectionEffectRelease(ref IntPtr effect);
 
-        // Ambisonics Decode Effect (ambi → binaural stereo)
+        // Ambisonics Decode Effect
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]
         public static extern int iplAmbisonicsDecodeEffectCreate(IntPtr ctx, ref PAudioSettings audio, ref PAmbisonicsDecodeEffectSettings s, out IntPtr effect);
         [DllImport(PHONON, CallingConvention = CallingConvention.Cdecl)]

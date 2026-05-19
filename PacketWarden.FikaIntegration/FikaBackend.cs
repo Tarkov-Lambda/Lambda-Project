@@ -17,26 +17,44 @@ public class FikaBackend : INetworkBackend, IDisposable
 
     public int NetId       => Singleton<IFikaNetworkManager>.Instance.NetId;
 
-    private readonly Action<FikaNetworkManagerCreatedEvent> OnNetworkCreated;
-    private readonly Action<FikaNetworkManagerDestroyedEvent> OnNetworkDestroyed;
+    public Action OnNetworkCreated      { get;set; }
+    public Action OnNetworkDestroyed    { get;set; }
+    
+    public Action<int> OnPeerConnected  { get; set; }
+    public Action<int> OnDisconnected   { get; set; }
+
+    private readonly Action<FikaNetworkManagerCreatedEvent> OnFikaNetworkManagerCreatedEvent;
+    private readonly Action<FikaNetworkManagerDestroyedEvent> OnFikaNetworkManagerDestroyedEvent;
+    private readonly Action<PeerConnectedEvent> OnPeerConnectedEvent;
+    private readonly Action<PeerDisconnectedEvent> OnPeerDisconnectedEvent;
 
     public FikaBackend()
     {
-        OnNetworkCreated = new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated);
-        SubscribeEvent(OnNetworkCreated);
+        OnFikaNetworkManagerCreatedEvent = new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated);
+        SubscribeEvent(OnFikaNetworkManagerCreatedEvent);
 
-        OnNetworkDestroyed = new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed);
-        SubscribeEvent(OnNetworkDestroyed);
+        OnFikaNetworkManagerDestroyedEvent = new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed);
+        SubscribeEvent(OnFikaNetworkManagerDestroyedEvent);
+
+        OnPeerConnectedEvent = new Action<PeerConnectedEvent>(TriggerPeerConnected);
+        SubscribeEvent(OnPeerConnectedEvent);
+
+        OnPeerDisconnectedEvent = new Action<PeerDisconnectedEvent>(TriggerPeerDisconnected);
+        SubscribeEvent(OnPeerDisconnectedEvent);
     }
 
     public void Dispose()
     {
-        UnsubscribeEvent(OnNetworkCreated);
-        UnsubscribeEvent(OnNetworkDestroyed);
+        UnsubscribeEvent(OnFikaNetworkManagerCreatedEvent);
+        UnsubscribeEvent(OnFikaNetworkManagerDestroyedEvent);
+        UnsubscribeEvent(OnPeerConnectedEvent);
+        UnsubscribeEvent(OnPeerDisconnectedEvent);
     }
 
-    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => PacketWardenUtils.TriggerNetworkCreated();
-    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => PacketWardenUtils.TriggerNetworkDestroyed();
+    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => OnNetworkCreated.Invoke();
+    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => OnNetworkDestroyed.Invoke();
+    void TriggerPeerConnected(PeerConnectedEvent ev) => OnPeerConnected.Invoke(ev.Peer.Id);
+    void TriggerPeerDisconnected(PeerDisconnectedEvent ev) => OnDisconnected.Invoke(ev.Peer.Id);
 
     public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket
     {

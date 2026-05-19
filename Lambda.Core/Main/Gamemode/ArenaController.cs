@@ -14,6 +14,7 @@ using PacketWarden.TimeSync;
 using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
+using UnityEngine.UIElements;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -87,6 +88,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
                 Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
             }
         }
+        else if (fikaEvent is PeerConnectedEvent peerConnectedEvent && Session.matchState != MatchState.None)
+        {
+            // notify 
+            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, PresetBundleHandler.Instance.ItemsToLoad);
+        }
     }
 
     public async void StartSession()
@@ -113,7 +119,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             }
             else
             {
-                CreateFullBrightHack();
+                Fullbright();
             }
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
@@ -128,7 +134,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
     }
 
-    void CreateFullBrightHack()
+    void Fullbright()
     {
         _hideoutLight = new GameObject("hideoutlight");
 

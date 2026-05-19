@@ -5,26 +5,6 @@ using UnityEngine;
 
 namespace Lambda.Core.Patches;
 
-
-// currently unused
-internal class Patch_AudioSource_set_volume : ModulePatch
-{
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.volume));
-
-    [PatchPrefix]
-    public static bool Prefix(AudioSource __instance, ref float value)
-    {
-        if (SteamAudioSourceController.cache.TryGetValue(__instance, out var cache))
-        {
-            if (!cache.bridge.isBypass)
-            {
-                value = 1f; // Force Unity volume to 1 if Steam Audio is handling attenuation
-            }
-        }
-        return true;
-    }
-}
-
 internal class Patch_AudioSource_set_spatialBlend : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertySetter(typeof(AudioSource), nameof(AudioSource.spatialBlend));

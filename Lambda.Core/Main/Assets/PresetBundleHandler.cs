@@ -11,35 +11,29 @@ namespace Lambda.Core.Main.AssetBundleHandling;
 
 public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
 {
-    public List<Item> itemsToLoad { get; private set; }
+    public List<Item> ItemsToLoad { get; private set; }
+    private readonly HashSet<string> _cachedItems;
 
+    // TODO: this has to be up before OnGameStarted (for late joiners)
+    // this lifecycle needs to be improved for in between raids
     public PresetBundleHandler()
     {
-        itemsToLoad = [];
+        ItemsToLoad = [];
+        _cachedItems = [];
 
-        H.OnGameStarted += Initialize;
         H.OnGameDispose += ResetCache;
-
-        if (H.IsInRaid()) Initialize();
     }
 
     public void Dispose()
     {
-        H.OnGameStarted -= Initialize;
         H.OnGameDispose -= ResetCache;
         Release(this);
     }
 
-    private void ResetCache(SessionStartPacket packet) => ResetCache();
-
     private void ResetCache()
     {
-        itemsToLoad.Clear();
-    }
-
-    public void Initialize()
-    {
-
+        ItemsToLoad.Clear();
+        _cachedItems.Clear();
     }
 
     public void AddToCache(List<Item> items)
@@ -50,17 +44,16 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
         }
     }
 
-    // add unique items if the template id is unique
-    // used for bundle loading during SessionStart
     public void AddToCache(Item item)
     {
         var disassembledItem = item.GetAllItems();
 
         foreach (var part in disassembledItem)
         {
-            var foundItem = itemsToLoad.FirstOrDefault(itemToLoad => itemToLoad.TemplateId == part.TemplateId);
-
-            if (foundItem == null) itemsToLoad.Add(part);
+            if (_cachedItems.Add(part.TemplateId))
+            {
+                ItemsToLoad.Add(part);
+            }
         }
 
         foreach (var subItem in item.GetAllItems())
@@ -76,7 +69,7 @@ public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
     {
         var prefabsToLoad = new List<ResourceKey>();
 
-        foreach (var item in itemsToLoad)
+        foreach (var item in ItemsToLoad)
         {
             D.Log(item.LocalizedName());
             foreach (var i in item.GetAllItems())

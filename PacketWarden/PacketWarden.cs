@@ -39,7 +39,7 @@ public partial struct RejectionPacket<T> : IPacket where T : IPacket, new()
 /// <typeparam name="T">The packet struct managed by this warden.</typeparam>
 public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 {
-    /// <summary>Provides access to the underlying LiteNetLib/Fika network backend.</summary>
+    /// <summary>Provides access to the current network backend.</summary>
     protected INetworkBackend Network => Plugin.Network;
 
     /// <summary>
@@ -86,25 +86,25 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// </summary>
     protected virtual void Initialize()
     {
-        H.OnNetworkCreated += RegisterPacket;
-        H.OnNetworkDestroyed += UnregisterPacket;
+        Network.OnNetworkCreated += RegisterPacket;
+        Network.OnNetworkDestroyed += UnregisterPacket;
 
-        if (H.IsInRaid() && Network != null) RegisterPacket();
+        if (H.IsInRaid() && Network != null) RegisterPacket(); // Hot reloading
     }
 
     /// <inheritdoc/>
     public virtual void Dispose()
     {
-        H.OnNetworkCreated -= RegisterPacket;
-        H.OnNetworkDestroyed -= UnregisterPacket;
+        Network.OnNetworkCreated -= RegisterPacket;
+        Network.OnNetworkDestroyed -= UnregisterPacket;
 
-        if (H.IsInRaid() && Network != null) UnregisterPacket();
+        if (H.IsInRaid() && Network != null) UnregisterPacket(); // Hot reloading
     }
 
     /// <summary>
     /// Registers the packet and its corresponding RejectionPacket type with the network backend.
     /// </summary>
-    protected void RegisterPacket()
+    private void RegisterPacket()
     {
         H.Log($"Registering {typeof(T).Name}");
 
@@ -117,7 +117,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// <summary>
     /// Unregisters the packet from the network backend and clears rate limit states.
     /// </summary>
-    protected void UnregisterPacket()
+    private void UnregisterPacket()
     {
         try
         {

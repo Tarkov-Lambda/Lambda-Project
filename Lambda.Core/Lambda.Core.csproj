@@ -7,7 +7,7 @@
     <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);SPT_4_0;STEAMAUDIO_ENABLED</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- <AllowUnsafeBlocks>true</AllowUnsafeBlocks> -->
 
     <Product>Lambda</Product>
     <Version>0.6.84</Version>

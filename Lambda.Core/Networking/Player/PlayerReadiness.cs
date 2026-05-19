@@ -20,10 +20,6 @@ public partial struct PlayerReadinessPacket : IPacket, IAuthoredPacket
 
     public PlayerReadinessState readyState;
 
-    // presetItems is redundant as it can be derived form buySelection and defaultItems
-    [MemoryPackAllowSerialize]
-    public List<Item> assetItems;
-
     [MemoryPackAllowSerialize]
     public Dictionary<ShopItem, Item> buySelection;
 
@@ -47,7 +43,6 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
         if (readyState is PlayerReadinessState.Connected)
         {
-            packet.assetItems = PresetBundleHandler.Instance.itemsToLoad;
             packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
@@ -71,15 +66,19 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
     protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, int peerId)
     {
-        if (packet.assetItems != null)
+        if (packet.buySelection != null)
         {
             var playerScore = H.GetPlayerScore(packet.Player);
             playerScore.SetDefaultItems(packet.defaultItems);
             playerScore.SetBuySelection(packet.buySelection);
-            PresetBundleHandler.Instance.AddToCache(packet.assetItems);
 
-            // other clients don't need this info
-            packet.assetItems = null;
+            // we only need to add buy menu stuff into the cache
+            // because defaultItems is literally the equipment that player has spawned in the raid with
+            foreach (var shopItem in packet.buySelection)
+            {
+                PresetBundleHandler.Instance.AddToCache(shopItem.Value);
+            }
+
             packet.buySelection = null;
         }
     }
@@ -116,7 +115,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
                     // Broadcast updated itemsToLoad list
                     // whilst this is ridiculously wasteful, I know for a fact that it will work
                     // We should not forget about this, but for now it's fine
-                    Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.itemsToLoad).Forget();
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.ItemsToLoad).Forget();
 
                     // get the player up to speed
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);

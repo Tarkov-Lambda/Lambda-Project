@@ -9,30 +9,10 @@ namespace Lambda.Core.Main.Dying;
 
 public class Teleporter
 {
-    // Currently the teleport decides for itself where to teleport the player which is suboptimal in future but will work for now
     static public void Teleport(Player player, string mapName, Faction faction, int pair = 0)
     {
         string targetMap = mapName;
         Faction targetFaction = faction;
-
-        // string targetMap;
-        // Faction targetFaction;
-
-        // if (!string.IsNullOrEmpty(mapName))
-        // {
-        //     targetMap = mapName;
-        //     targetFaction = faction;
-        // }
-        // else if (pScore.IsAlive)
-        // {
-        //     targetMap = H.Session.mapName;
-        //     targetFaction = pScore.Faction;
-        // }
-        // else
-        // {
-        //     targetMap = "lobby";
-        //     targetFaction = Faction.None;
-        // }
 
         if (!TryGetNewPosition(targetMap, targetFaction, pair, out Transform nextPlayerPosition))
         {
@@ -55,7 +35,7 @@ public class Teleporter
 
     public static bool TryGetNewPosition(string sceneName, Faction faction, int pair, out Transform newPos)
     {
-        newPos = new Transform();
+        newPos = null;
 
         if (!RespawnUtilities.TryGetAllSpawnPointClusters(sceneName, faction, pair, out List<SpawnPointCluster> spawnPoints))
         {
@@ -63,6 +43,6 @@ public class Teleporter
         }
 
         newPos = spawnPoints.RandomElement().GetRandomSpawn();
-        return true;
+        return newPos != null;
     }
 }

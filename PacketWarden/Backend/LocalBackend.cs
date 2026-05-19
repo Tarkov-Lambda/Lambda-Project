@@ -11,6 +11,14 @@ public class LocalBackend : INetworkBackend
     
     public int NetId       => 0;
 
+    public Action OnNetworkCreated      { get; set; }
+    public Action OnNetworkDestroyed    { get; set; }
+
+    public Action<int> OnPeerConnected  { get;set; }
+    public Action<int> OnDisconnected   { get;set; }
+
+    public void Dispose() { }
+
     private Dictionary<Type, Delegate> _handlers = new();
 
     public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket

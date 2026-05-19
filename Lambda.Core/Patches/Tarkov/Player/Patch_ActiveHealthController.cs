@@ -9,8 +9,10 @@ using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Lambda.Core.Patches.Tarkov;
 
@@ -48,18 +50,17 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
         var playerScore = __instance.Player.GetContext();
         if (playerScore == null) return false;
 
-        // blacked out legs don't cause damage
-        if (damageInfo.DamageType == EDamageType.Fall && damage <= 3f) return false;
-
         if (damageInfo.DamageType == EDamageType.Flame)
         {
             damageInfo.Damage *= 2.5f;
             damage *= 2.5f;
         }
-
-        // if somehow the player falls through the map on roundprepare
-        if (damageInfo.DamageType == EDamageType.Fall)
+        else if (damageInfo.DamageType == EDamageType.Fall)
         {
+            // blacked out legs don't cause damage
+            if (damage <= 3f) return false;
+
+            // if somehow the player falls through the map on roundprepare
             if (H.Session.matchState == MatchState.RoundPrepare)
             {
                 __instance.Player.MovementContext.ResetFlying();
@@ -107,7 +108,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
         _lastKillTime = now;
 
 
-        if (!H.GetPlayerScore(__instance.Player.Id).IsAlive) return false;
+        if (!__instance.Player.GetContext().IsAlive) return false;
 
         var lastDamage = Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo;
 

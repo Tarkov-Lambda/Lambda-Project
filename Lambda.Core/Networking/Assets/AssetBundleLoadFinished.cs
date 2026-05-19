@@ -19,8 +19,6 @@ public partial struct AssetBundleLoadFinishedPacket : IPacket, IAuthoredPacket
 // Player tells server they are done loading this specific batch of asset bundles
 public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundleLoadFinishedPacket>
 {
-    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
-
     public void Send(string id)
     {
         var packet = new AssetBundleLoadFinishedPacket
@@ -32,6 +30,7 @@ public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundl
         DispatchPacket(packet);
     }
 
+    // server only application
     protected override void ProcessApprovedPacket(ref AssetBundleLoadFinishedPacket packet, int peerId)
     {
         MutateApprovedPacket(ref packet, peerId);

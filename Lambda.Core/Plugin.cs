@@ -407,6 +407,7 @@ public class Plugin : BaseUnityPlugin
         _cts = null;
 
         SteamAudioSourceController.Dispose();
+        BetterSourceProxyRouter.Dispose();
 
         foreach (var patch in _patches)
         {

@@ -42,8 +42,6 @@ public static class SteamAudioInitializer
 
         Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {Plugin.pathToDependencies}");
 
-        // phonon.dll is the core Phonon/Steam Audio native library that SteamAudioUnity.dll
-        // P/Invokes into.  It must be loaded BEFORE audioplugin_phonon.dll.
         string[] libs = { "phonon.dll", "audioplugin_phonon.dll" };
 
         foreach (string libName in libs)

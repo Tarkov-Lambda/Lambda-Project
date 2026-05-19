@@ -14,9 +14,11 @@ namespace Lambda.Core.Networking;
 public partial struct AssetBundleLoadPacket : IPacket
 {
     public string id;
-    
+
     [MemoryPackAllowSerialize]
-    public List<Item> items;
+    public List<Item> itemsToLoad;
+
+    public bool replyWhenLoaded;
 }
 
 // SERVER ONLY
@@ -39,15 +41,17 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
     }
 
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
+    protected override bool ShouldApplyBeforeArenaInitialized => true;
 
     public Dictionary<string, List<PlayerAssetBundleLoadState>> AssetBundleLoadProgress;
 
-    public async UniTask SendAndAwaitFullReadiness(List<Item> items)
+    public async UniTask SendAndAwaitFullReadiness(List<Item> itemsToLoad)
     {
         var packet = new AssetBundleLoadPacket
         {
             id = Guid.NewGuid().ToString(),
-            items = items
+            itemsToLoad = itemsToLoad,
+            replyWhenLoaded = true
         };
 
         AssetBundleLoadProgress[packet.id] = new List<PlayerAssetBundleLoadState>();
@@ -68,12 +72,26 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
         return;
     }
 
+    public void SendToLateJoiner(Player player, List<Item> itemsToLoad) => SendToLateJoiner(Network.GetPeerIdByPlayer(player), itemsToLoad);
+
+    public void SendToLateJoiner(int peerId, List<Item> itemsToLoad)
+    {
+        var packet = new AssetBundleLoadPacket
+        {
+            id = Guid.NewGuid().ToString(),
+            itemsToLoad = itemsToLoad,
+            replyWhenLoaded = false
+        };
+
+        DispatchPacket(packet, peerId);
+    }
+
     protected override async void Apply(AssetBundleLoadPacket packet, int peerId)
     {
-        PresetBundleHandler.Instance.AddToCache(packet.items);
+        PresetBundleHandler.Instance.AddToCache(packet.itemsToLoad);
         await PresetBundleHandler.Instance.LoadEverythingInCache();
 
-        if (!H.IsHeadless)
+        if (!H.IsHeadless && packet.replyWhenLoaded)
         {
             Singleton<AssetBundleLoadFinishedPacketWarden>.Instance.Send(packet.id);
         }

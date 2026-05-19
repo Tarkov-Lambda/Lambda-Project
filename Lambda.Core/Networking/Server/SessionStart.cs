@@ -17,7 +17,7 @@ public partial struct SessionStartPacket : IPacket
 {
     public string level;
     public string gamemode;
-    public List<Item> asssetBundles; // this needs to change to ResourceKeys
+    public List<Item> itemsToLoad; // this needs to change to ResourceKeys
     public bool isForLateJoiner;
 }
 
@@ -67,7 +67,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         if (H.IsServer)
         {
-            packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
+            packet.itemsToLoad = PresetBundleHandler.Instance.ItemsToLoad;
         }
 
         DispatchPacket(packet, peerId);
@@ -75,7 +75,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)
     {
-        packet.asssetBundles = PresetBundleHandler.Instance.itemsToLoad;
+        packet.itemsToLoad = PresetBundleHandler.Instance.ItemsToLoad;
     }
 
     protected override async void Apply(SessionStartPacket packet, int peerId)
@@ -92,7 +92,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         NetworkTime.Reset();
 
-        PresetBundleHandler.Instance.AddToCache(packet.asssetBundles);
+        PresetBundleHandler.Instance.AddToCache(packet.itemsToLoad);
 
         List<ResourceKey> firstPersonHands = new();
         foreach (var player in H.AllPlayers)

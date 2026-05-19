@@ -66,7 +66,7 @@ public class Patch_BetterSource_CheckBinauralAllowed : ModulePatch
     [PatchPrefix]
     static bool Prefix(BetterSource __instance)
     {
-        bool forceStereo = SteamAudioSourceController.ForceStereoRef(__instance);
+        bool forceStereo = BetterSourceProxyRouter.ForceStereoRef(__instance);
 
         if (forceStereo)
         {
@@ -79,7 +79,7 @@ public class Patch_BetterSource_CheckBinauralAllowed : ModulePatch
         else
         {
             // bypass eft shit that turns off 3D audio when < 1.5m away
-            var preset = SteamAudioSourceController.PresetRef(__instance);
+            var preset = BetterSourceProxyRouter.PresetRef(__instance);
             bool shouldSpatialize = preset != null && preset.SteamSpatialize && preset.DirectBinaural;
             __instance.RefreshSpatialization(shouldSpatialize);
         }
@@ -95,7 +95,7 @@ public class Patch_SimpleSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, bool forceStereo = false)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance, forceStereo);
+        BetterSourceProxyRouter.RouteBetterSource(__instance, forceStereo);
     }
 }
 
@@ -106,7 +106,7 @@ public class Patch_ReverbSimpleSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, bool forceStereo = false)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance, forceStereo);
+        BetterSourceProxyRouter.RouteBetterSource(__instance, forceStereo);
     }
 }
 
@@ -117,7 +117,7 @@ public class Patch_SuperSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, bool forceStereo = false)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance, forceStereo);
+        BetterSourceProxyRouter.RouteBetterSource(__instance, forceStereo);
     }
 }
 
@@ -128,7 +128,7 @@ public class Patch_ReverbSuperSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, bool forceStereo = false)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance, forceStereo);
+        BetterSourceProxyRouter.RouteBetterSource(__instance, forceStereo);
     }
 }
 
@@ -139,7 +139,7 @@ public class Patch_BetterSource_Play : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance, bool forceStereo = false)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance, forceStereo);
+        BetterSourceProxyRouter.RouteBetterSource(__instance, forceStereo);
     }
 }
 
@@ -150,7 +150,7 @@ public class Patch_BetterSource_PlayScheduled : ModulePatch
     [PatchPrefix]
     static void Prefix(BetterSource __instance)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance);
+        BetterSourceProxyRouter.RouteBetterSource(__instance);
     }
 }
 
@@ -161,7 +161,7 @@ public class Patch_SimpleSource_PlayScheduled : ModulePatch
     [PatchPrefix]
     static void Prefix(SimpleSource __instance)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance);
+        BetterSourceProxyRouter.RouteBetterSource(__instance);
     }
 }
 
@@ -172,7 +172,7 @@ public class Patch_ReverbSuperSource_PlayScheduled : ModulePatch
     [PatchPrefix]
     static void Prefix(ReverbSuperSource __instance)
     {
-        SteamAudioSourceController.RouteBetterSource(__instance);
+        BetterSourceProxyRouter.RouteBetterSource(__instance);
     }
 }
 
