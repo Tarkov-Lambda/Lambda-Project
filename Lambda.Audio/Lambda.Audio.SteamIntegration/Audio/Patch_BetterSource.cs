@@ -1,13 +1,9 @@
 using Audio.ReverbSubsystem;
-using Audio.SpatialSystem;
-using EFT;
 using HarmonyLib;
-using Lambda.Shared;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
-namespace Lambda.Core.Patches;
+namespace Lambda.Audio.SteamIntegration.Patches;
 
 internal class Patch_BetterSource_SetLowPassFilterParameters : ModulePatch
 {

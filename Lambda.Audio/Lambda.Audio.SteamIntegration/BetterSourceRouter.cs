@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Audio.ReverbSubsystem;
 using EFT;
 using HarmonyLib;
+using PhononSpatializerProxy.BepInEx;
 using UnityEngine;
 using UnityEngine.Audio;
 

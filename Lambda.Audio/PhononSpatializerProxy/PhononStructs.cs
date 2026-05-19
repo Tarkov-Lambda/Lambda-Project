@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Lambda.Audio
+namespace PhononSpatializerProxy
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct PAudioSettings

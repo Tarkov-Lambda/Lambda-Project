@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using Audio.SpatialSystem;
 
-namespace Lambda.Core.Patches;
+namespace Lambda.Audio.SteamIntegration.Patches;
 
 public class Patch_SpatialHighPassFilter_CalculateFrequency : ModulePatch
 {

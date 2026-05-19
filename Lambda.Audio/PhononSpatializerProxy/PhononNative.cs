@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using SteamAudio;
 
-namespace Lambda.Audio
+namespace PhononSpatializerProxy
 {
     internal static class PhononNative
     {

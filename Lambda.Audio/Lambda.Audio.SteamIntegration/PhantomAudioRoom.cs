@@ -3,6 +3,8 @@ using Audio.AmbientSubsystem;
 using Audio.SpatialSystem;
 using UnityEngine;
 
+namespace Lambda.Audio.SteamIntegration.AudioRooms;
+
 public class PhantomAudioRoom : ISpatialAudioRoom
 {
     public short ID { get; set; } = 870;

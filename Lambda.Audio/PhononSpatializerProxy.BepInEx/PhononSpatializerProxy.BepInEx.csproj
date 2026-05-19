@@ -8,10 +8,6 @@
     <DefineConstants>$(DefineConstants);SPT_4_0;STEAMAUDIO_ENABLED</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- <AllowUnsafeBlocks>true</AllowUnsafeBlocks> -->
-
-    <Product>Lambda</Product>
-    <Version>0.6.84</Version>
-    <Description>Made by ifp and tarkin</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,41 +57,23 @@
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
 
-    <Reference Include="..\Dependencies\libraries\*.dll" />
+    <Reference Include="..\..\Dependencies\libraries\*.dll" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lambda.UI\Lambda.UI.csproj" />
-
-    <ProjectReference Include="..\Lambda.Shared\Lambda.Shared.csproj" />
-
-    <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
+    <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
+    <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
-
     <ItemGroup>
-      <Dependencies Include="$(OutputPath)\Unitask.dll" />
-      <Dependencies Include="$(OutputPath)\Unitask.*.dll" />
-      <Dependencies Include="./Dependencies/libraries/ScriptEngine.dll" />
+      <Dependencies Include="../Dependencies/libraries/audioplugin_phonon.dll" />
+      <Dependencies Include="../Dependencies/libraries/phonon.dll" />
 
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
-
-      <Configs Include="../Dependencies/configs/*.cfg" />
-      <Presets Include="../Dependencies/configs/Presets/WeaponBuilds/*.json" />
-      <JSON Include="../Dependencies/configs/*.jsonc" />
+      <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-
-    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Dependencies" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-
-    <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
-    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
-
-    <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" Condition="'$(Configuration)' == 'Debug'" />
+    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
 </Project>

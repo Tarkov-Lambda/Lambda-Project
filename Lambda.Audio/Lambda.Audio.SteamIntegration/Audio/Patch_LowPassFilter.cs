@@ -1,12 +1,10 @@
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using Audio.ReverbSubsystem;
 using UnityEngine;
-using EFT;
 using Audio.SpatialSystem;
 
-namespace Lambda.Core.Patches;
+namespace Lambda.Audio.SteamIntegration.Patches;
 
 public class Patch_SpatialLowPassFilter_CalculateFrequency : ModulePatch
 {

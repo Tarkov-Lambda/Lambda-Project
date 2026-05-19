@@ -1,4 +1,4 @@
-namespace Lambda.Audio
+namespace PhononSpatializerProxy
 {
     public interface IProxiedAudioSource
     {

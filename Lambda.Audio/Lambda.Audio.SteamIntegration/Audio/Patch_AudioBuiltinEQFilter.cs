@@ -1,11 +1,9 @@
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
-using Audio.SpatialSystem;
 using Audio.Effects;
 
-namespace Lambda.Core.Patches;
+namespace Lambda.Audio.SteamIntegration.Patches;
 
 public class Patch_AudioBuiltinEQFilter_CalculateFrequency : ModulePatch
 {

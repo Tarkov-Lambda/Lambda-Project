@@ -3,6 +3,8 @@ using Audio.SpatialSystem;
 using Audio.SpatialSystem.Data;
 using Comfort.Common;
 
+namespace Lambda.Audio.SteamIntegration.AudioRooms;
+
 public class LambdaAudioRoomController : Singleton<LambdaAudioRoomController>, IDisposable
 {
     public ISpatialAudioRoom audioRoom = new PhantomAudioRoom();

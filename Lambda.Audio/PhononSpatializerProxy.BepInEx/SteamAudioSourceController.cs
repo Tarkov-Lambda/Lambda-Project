@@ -1,11 +1,8 @@
 using System.Collections.Generic;
-using Audio.ReverbSubsystem;
-using EFT;
-using HarmonyLib;
-using Lambda.Audio;
 using SteamAudio;
 using UnityEngine;
-using UnityEngine.Audio;
+
+namespace PhononSpatializerProxy.BepInEx;
 
 public struct SteamSourceData
 {
@@ -56,9 +53,9 @@ public static class SteamAudioSourceController
         steamAudio.transmissionType = TransmissionType.FrequencyDependent;
         steamAudio.transmissionInput = TransmissionInput.UserDefined;
 
-        steamAudio.transmissionHigh = GameplayVariables.vars.transmissionHigh;
-        steamAudio.transmissionMid = GameplayVariables.vars.transmissionMid;
-        steamAudio.transmissionLow = GameplayVariables.vars.transmissionLow;
+        steamAudio.transmissionHigh = 0.25f;
+        steamAudio.transmissionMid = 0.3f;
+        steamAudio.transmissionLow = 0.4f;
 
         audioSource.spatialize = initialSpatialize;
         audioSource.spatialBlend = initialBlend;

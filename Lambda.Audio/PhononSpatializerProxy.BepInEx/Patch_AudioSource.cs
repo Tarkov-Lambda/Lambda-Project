@@ -3,7 +3,7 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
 
-namespace Lambda.Core.Patches;
+namespace PhononSpatializerProxy.BepInEx.Patches;
 
 internal class Patch_AudioSource_set_spatialBlend : ModulePatch
 {

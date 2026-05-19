@@ -1,6 +1,6 @@
 ## Credits
-- **ifp**: Core • Gamemodes • Networking • SFX • Steam Audio • Patching
-- **tarkin**: UI • VFX • Map SDK • Patching  
+- **ifp**: Core • Networking • SFX • Steam Audio • Map SDK
+- **tarkin**: UI • VFX • Map SDK  
 ---
 
 ## Features
@@ -63,15 +63,18 @@
 
 ## Modules
 
-| Project                           | Description                                                      |
-|-----------------------------------|------------------------------------------------------------------|
-| **Lambda.Core**                   | Core framework and base systems                                  |
-| **Lambda.Shared**                 | Shared classes, types, and data structures *(Unity Package)*     |
-| **Lambda.UI**                     | All UI components and interfaces *(Unity Package)*               |
-| **Lambda.Audio**                  | Steam Audio / SFX integration *(Unity Package)*                  |
-| **PacketWarden**                  | Custom network framework for all transactions                    |
-| **PacketWarden.FikaIntegration**  | Fika/LiteNetLib Integration for PacketWarden                     |
-
+| Project                                | Description                                                      
+|-----------------------------------     |---------------------------------------------------------
+| **Lambda.Core**                        | Core framework and base systems                        |
+| **Lambda.Shared**                      | Shared classes, types, and data structures             |
+| **Lambda.UI**                          | All UI components and interfaces                       |         
+| **Lambda.Audio**                       | All Runtime Steam Audio assemblies for EFT             |
+| **PacketWarden**                       | Custom network framework for all transactions          |         
+| **PacketWarden.FikaIntegration**       | Fika/LiteNetLib Integration for PacketWarden           |         
+| **SteamAudioUnity**                    | Official Steam Audio Unity Integration Library         |    
+| **PhononSpatializerProxy**             | C# Rewrite of audiophonon_plugin for Unity             |
+| **PhononSpatializerProxy.BepInEx**     | PhononSpatializer Proxy integration for BepInEx        |
+| **BetterSource.SteamAudioIntegration** | EFT AudioSource system                                 |
 
 ## Licenses
 
@@ -84,6 +87,7 @@ This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/lic
 | Project        | License                                                                                |
 |----------------|----------------------------------------------------------------------------------------|
 | SPT.Modules    | [NCSA](https://dev.sp-tarkov.com/SPT/Modules/src/branch/master/LICENSE.md)             |
+| Fika           | [CC BY-NC-SA 4.0](https://github.com/project-fika/Fika-Plugin/blob/main/LICENSE.md)    |
 | Steam Audio    | [Apache 2.0](https://github.com/ValveSoftware/steam-audio/blob/master/LICENSE.md)      |
 | LiteNetLib     | [MIT](https://github.com/RevenantX/LiteNetLib/blob/master/LICENSE.txt)                 |
 | MemoryPack     | [MIT](https://github.com/Cysharp/MemoryPack/blob/main/LICENSE.txt)                     |

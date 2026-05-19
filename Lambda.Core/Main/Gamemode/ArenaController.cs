@@ -105,7 +105,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         if (!H.IsHeadless)
         {
-            SteamAudioInitializer.AttachListenerIfNeeded();
+            // SteamAudioInitializer.AttachListenerIfNeeded();
 
             await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
@@ -130,7 +130,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             PU.OpenEyes();
 
-            LambdaAudioRoomController.Instance.TriggerChange();
+            // LambdaAudioRoomController.Instance.TriggerChange();
         }
     }
 

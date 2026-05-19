@@ -1,10 +1,9 @@
 using DG.Tweening;
 using HarmonyLib;
-using Lambda.Shared;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
-namespace Lambda.Core.Patches;
+namespace Lambda.Audio.SteamIntegration.Patches;
 
 // attach steam listener on player
 internal class Patch_BetterAudio_SetProtagonist : ModulePatch
@@ -27,7 +26,7 @@ internal class Patch_BetterAudio_FadeMixerVolume : ModulePatch
     {
         if (!__instance.Master.GetFloat(mixerKey, out var _))
         {
-            D.LogError(mixerKey + " is not found");
+            // D.LogError(mixerKey + " is not found");
             return false;
         }
 

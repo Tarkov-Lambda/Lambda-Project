@@ -1,13 +1,12 @@
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using Audio.ReverbSubsystem;
 using UnityEngine;
 using EFT;
 using Audio.SpatialSystem;
-using System.Collections.Generic;
+using Lambda.Audio.SteamIntegration.AudioRooms;
 
-namespace Lambda.Core.Patches;
+namespace Lambda.Audio.SteamIntegration.Patches;
 
 internal class Patch_SpatialAudioSystem_Update : ModulePatch
 {

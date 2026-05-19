@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using SteamAudio;
 
-namespace Lambda.Audio
+namespace PhononSpatializerProxy
 {
     [RequireComponent(typeof(AudioSource))]
     public class PhononDSPBridge : MonoBehaviour, IProxiedAudioSource

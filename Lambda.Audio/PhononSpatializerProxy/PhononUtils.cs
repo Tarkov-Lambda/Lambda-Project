@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Lambda.Audio
+namespace PhononSpatializerProxy
 {
     internal static class PhononListenerCache
     {

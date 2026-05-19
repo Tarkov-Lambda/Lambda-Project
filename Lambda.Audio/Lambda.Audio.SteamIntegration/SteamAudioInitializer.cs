@@ -1,10 +1,11 @@
-using SteamAudio;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
+using Comfort.Common;
+using SteamAudio;
 using UnityEngine;
-using Lambda.Core;
+
+namespace Lambda.Audio.SteamIntegration;
 
 public static class SteamAudioInitializer
 {
@@ -112,7 +113,7 @@ public static class SteamAudioInitializer
     {
         if (SteamAudioManager.Singleton == null) return;
 
-        var betterAudio = H.BetterAudio;
+        var betterAudio = Singleton<BetterAudio>.Instance;
         if (betterAudio == null) return;
 
         Transform listenerTransform = betterAudio.ListenerTransform != null ? betterAudio.ListenerTransform : betterAudio.AudioListener?.transform;
