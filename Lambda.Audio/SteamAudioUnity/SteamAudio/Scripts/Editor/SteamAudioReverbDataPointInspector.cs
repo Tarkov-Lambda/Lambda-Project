@@ -106,6 +106,7 @@ namespace SteamAudio
                 if (!(assetPath.EndsWith(".unity") || assetPath.EndsWith(".prefab")))
                     continue;
 
+                // TODO: RE-ENABLE THIS (ever turning the entire Lambda Project to a Unity Package, GetBinaries is erroring)
                 // var assetBinaries = AssetDatabase.GetBinaries(assetPath, false);
                 // foreach (var assetDependency in assetBinaries)
                 // {

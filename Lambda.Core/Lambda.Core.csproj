@@ -94,7 +94,7 @@
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\" />
 
-    <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
 
     <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
   </Target>
