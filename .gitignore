@@ -13,4 +13,19 @@ obj/
 
 /builds/
 
-# Unfit for distribution
+# Meta files for assemblies not referenced by unity
+
+Lambda.Audio/Lambda.Audio.SteamIntegration/**/*.meta
+Lambda.Audio/Lambda.Audio.SteamIntegration/**.meta
+
+Lambda.Audio/PhononSpatializerProxy.BepInEx/**/*.meta
+Lambda.Audio/PhononSpatializerProxy.BepInEx/**.meta
+
+Lambda.Core/**/*.meta
+Lambda.Core/**.meta
+
+PacketWarden/**/*.meta
+PacketWarden/**.meta
+
+PacketWarden.FikaIntegration/**/*.meta
+PacketWarden.FikaIntegration/**.meta

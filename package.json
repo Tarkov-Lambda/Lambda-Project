@@ -1,0 +1,9 @@
+{
+   "name": "com.lambda.editor",
+   "displayName": "Lambda Editor Package",
+   "description": "One",
+   "version": "1.0.37",
+   "author": {
+      "name": "Lambda Project"
+   }
+}

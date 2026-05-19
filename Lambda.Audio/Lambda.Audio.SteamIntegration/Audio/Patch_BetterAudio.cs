@@ -1,5 +1,6 @@
 using DG.Tweening;
 using HarmonyLib;
+using PhononSpatializerProxy.BepInEx;
 using SPT.Reflection.Patching;
 using System.Reflection;
 

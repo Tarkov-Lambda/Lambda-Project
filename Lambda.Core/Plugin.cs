@@ -37,7 +37,7 @@ public class Plugin : BaseUnityPlugin
     public static readonly string pathToBundles = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "bundles");
     public static readonly string pathToMaps = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "maps");
     public static readonly string pathToBinaries = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Binaries");
-    public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "json");
+    public static readonly string pathToConfigs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Configuration");
     public static readonly string pathToLogs = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "logs");
 
     internal static ConfigEntry<string> Gamemode;

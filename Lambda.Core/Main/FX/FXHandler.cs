@@ -10,8 +10,8 @@ namespace Lambda.Core.Main.FX;
 public class FXHandler : Singleton<FXHandler>, IDisposable
 {
     private const string FX_BUNDLE_NAME = "fx";
-    private const string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.lambda.shared/FX/Molotov/MolotovFX.prefab";
-    private const string FIRE_NODE_EFFECT_PATH = "Packages/com.lambda.shared/FX/Molotov/FireNodeEffect.prefab";
+    private const string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.lambda.editor/Lambda.Shared/FX/Molotov/MolotovFX.prefab";
+    private const string FIRE_NODE_EFFECT_PATH = "Packages/com.lambda.editor/Lambda.Shared/FX/Molotov/FireNodeEffect.prefab";
     public string FXBundlePath => Path.Combine(Plugin.pathToBundles, FX_BUNDLE_NAME);
 
     public AssetBundle FXBundle;

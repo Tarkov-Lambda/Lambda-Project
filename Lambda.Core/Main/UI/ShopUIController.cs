@@ -28,7 +28,7 @@ namespace Lambda.Core.Main.UI
         {
             this.itemInfoProvider = itemInfoProvider;
 
-            GameObject prefabShopUI = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.ui/Shop/Shop.prefab");
+            GameObject prefabShopUI = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/Shop/Shop.prefab");
 
             ItemsPanel itemsPanel = Field_InventoryScreen__itemsPanel.GetValue(Singleton<CommonUI>.Instance.InventoryScreen) as ItemsPanel;
             Transform shopParent = (Field_ItemsPanel__simpleStashPanel.GetValue(itemsPanel) as SimpleStashPanel).transform.parent;

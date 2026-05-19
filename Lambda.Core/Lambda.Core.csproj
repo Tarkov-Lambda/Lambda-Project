@@ -10,7 +10,7 @@
     <!-- <AllowUnsafeBlocks>true</AllowUnsafeBlocks> -->
 
     <Product>Lambda</Product>
-    <Version>0.6.84</Version>
+    <Version>0.7.25</Version>
     <Description>Made by ifp and tarkin</Description>
   </PropertyGroup>
 
@@ -26,10 +26,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".\configs\*">
+    <None Include=".\Configuration\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include=".\Binaries*">
+    <None Include=".\.Binaries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -61,7 +61,7 @@
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
 
-    <Reference Include="..\Binaries\*.dll" />
+    <Reference Include="..\.Binaries\*.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,7 +78,7 @@
     <ItemGroup>
       <Binaries Include="$(OutputPath)\Unitask.dll" />
       <Binaries Include="$(OutputPath)\Unitask.*.dll" />
-      <Binaries Include="./Binaries/libraries/ScriptEngine.dll" />
+      <Binaries Include="./.Binaries/libraries/ScriptEngine.dll" />
 
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
@@ -92,10 +92,10 @@
     <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
 
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
-    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\" />
+    <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\" />
 
     <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\json\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
 
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" Condition="'$(Configuration)' == 'Debug'" />
+    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
   </Target>
 </Project>

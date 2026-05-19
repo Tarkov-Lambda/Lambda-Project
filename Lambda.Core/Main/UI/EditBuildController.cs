@@ -28,7 +28,7 @@ namespace Lambda.Core.Main.UI
             this.commonUI = commonUI;
             this.uibundle = uibundle;
 
-            prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.lambda.ui/EditBuild/EditBuildLambdaPanel.prefab");
+            prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/EditBuild/EditBuildLambdaPanel.prefab");
 
             Initialize();
         }

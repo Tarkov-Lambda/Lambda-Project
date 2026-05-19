@@ -22,10 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".\configs\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include=".\Binaries*">
+    <None Include=".\.Binaries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -57,7 +54,7 @@
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
 
-    <Reference Include="..\..\Binaries\*.dll" />
+    <Reference Include="..\..\.Binaries\*.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,12 +65,13 @@
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
     <ItemGroup>
-      <Binaries Include="../Binaries/libraries/audioplugin_phonon.dll" />
-      <Binaries Include="../Binaries/libraries/phonon.dll" />
+      <Binaries Include="../../.Binaries/audioplugin_phonon.dll" />
+      <Binaries Include="../../.Binaries/phonon.dll" />
 
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" />
   </Target>
 </Project>

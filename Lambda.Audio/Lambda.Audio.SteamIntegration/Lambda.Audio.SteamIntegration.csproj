@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-    <PackageReference Include="MemoryPack" Version="1.21.4" />
     <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.23.0" PrivateAssets="all" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.43" IncludeAssets="compile" />
   </ItemGroup>
@@ -22,10 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".\configs\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include=".\Binaries*">
+    <None Include=".\.Binaries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -57,7 +53,7 @@
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
 
-    <Reference Include="..\..\Binaries\*.dll" />
+    <Reference Include="..\..\.Binaries\*.dll" />
   </ItemGroup>
 
   <ItemGroup>

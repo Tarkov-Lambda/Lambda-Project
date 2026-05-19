@@ -6,14 +6,16 @@ using PhononSpatializerProxy.BepInEx.Patches;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace PhononSpatializerProxy.BepInEx;
 
-[BepInDependency("com.Lambda.Audio.PhononSpatializerProxy")]
-[BepInPlugin("com.Lambda.Audio.SteamAudioIntegration", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin("com.Lambda.Audio.PhononSpatializerProxy", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
+    public static readonly string pathToBinaries = Path.Combine(global::BepInEx.Paths.PluginPath, "ifp", "Binaries");
+
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
     private readonly List<Action> _releases = new();
@@ -26,6 +28,8 @@ public class Plugin : BaseUnityPlugin
 
     void Start()
     {
+        SteamAudioInitializer.Initialize();
+
         RegisterPatch(new Patch_AudioSource_set_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
         RegisterPatch(new Patch_AudioSource_get_spatialize());                      // Force internal spatialization off and redirect the real value to the DSP bridge
         RegisterPatch(new Patch_AudioSource_set_spatialBlend());                    // Proxy spatialBlend calls to PhononDSPBridge

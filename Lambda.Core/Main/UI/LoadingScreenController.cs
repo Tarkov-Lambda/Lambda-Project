@@ -19,7 +19,7 @@ namespace Lambda.Core.Main.UI
 
         internal LoadingScreenController(CommonUI commonUI, AssetBundle uiBundle)
         {
-            var prefab = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.ui/LoadingScreen/LoadingScreen.prefab");
+            var prefab = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/LoadingScreen/LoadingScreen.prefab");
             screen = GameObject.Instantiate(prefab, commonUI.EftBattleUIScreen.transform).GetComponent<LoadingScreen>();
             screen.gameObject.SetActive(false);
 

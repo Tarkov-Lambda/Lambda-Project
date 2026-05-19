@@ -61,7 +61,8 @@ public class Plugin : BaseUnityPlugin
 
     void Start()
     {
-        SteamAudioInitializer.Initialize();
+        _cts = new CancellationTokenSource();
+
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
 
         RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());

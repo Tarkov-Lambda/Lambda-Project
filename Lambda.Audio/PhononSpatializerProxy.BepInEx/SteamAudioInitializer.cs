@@ -5,7 +5,7 @@ using Comfort.Common;
 using SteamAudio;
 using UnityEngine;
 
-namespace Lambda.Audio.SteamIntegration;
+namespace PhononSpatializerProxy.BepInEx;
 
 public static class SteamAudioInitializer
 {

@@ -21,7 +21,7 @@ namespace Lambda.Core.Main.UI
             nameplateObject.transform.SetParent(commonUI.EftBattleUIScreen.transform, false);
 
             NameplateRenderer renderer = nameplateObject.GetComponent<NameplateRenderer>();
-            GameObject prefabNameplate = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.ui/Nameplate/Nameplate.prefab");
+            GameObject prefabNameplate = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/Nameplate/Nameplate.prefab");
             renderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
         }
 
