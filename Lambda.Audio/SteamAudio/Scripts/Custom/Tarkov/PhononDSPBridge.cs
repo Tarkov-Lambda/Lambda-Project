@@ -9,21 +9,26 @@ namespace Lambda.Audio
     {
         private class DSPParams
         {
-            public PVec3 Dir = new PVec3 { z = 1f };
-            public float DistAtten = 1f;
-            public float Occlusion = 1f;
-            public float TransLow = 0f;
-            public float TransMid = 0f;
-            public float TransHigh = 0f;
-            public bool ApplyTransmission = false;
-            public IntPtr Hrtf = IntPtr.Zero;
+            public float distanceAttenuationLevel = 1f;
 
+            public float occlusionLevel = 1f;
+
+            public bool transmission = false;
+
+            public float transmissionLow = 0f;
+            public float transmissionMid = 0f;
+            public float transmissionHigh = 0f;
+
+            public float reflectionsMixLevel = 1f;
+
+            public float spatialBlend = 1f;
+
+            public IntPtr Hrtf = IntPtr.Zero;
+            public PVec3 Dir = new() { z = 1f };
             public ReflectionEffectParams ReflParams;
             public bool HasValidReflData = false;
             public PCoordinateSpace3 ListenerCS;
-            public float ReflMixLevel = 1f;
 
-            public float SpatialBlend = 1f;
         }
 
         private volatile DSPParams _currentParams = new DSPParams();
@@ -81,22 +86,26 @@ namespace Lambda.Audio
             {
                 if (_binaural != IntPtr.Zero)
                 {
-                    PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero;
+                    PhononNative.iplBinauralEffectRelease(ref _binaural);
+                    _binaural = IntPtr.Zero;
                 }
 
                 if (_direct != IntPtr.Zero)
                 {
-                    PhononNative.iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero;
+                    PhononNative.iplDirectEffectRelease(ref _direct);
+                    _direct = IntPtr.Zero;
                 }
 
                 if (_reflectionEffect != IntPtr.Zero)
                 {
-                    PhononNative.iplReflectionEffectRelease(ref _reflectionEffect); _reflectionEffect = IntPtr.Zero;
+                    PhononNative.iplReflectionEffectRelease(ref _reflectionEffect);
+                    _reflectionEffect = IntPtr.Zero;
                 }
 
                 if (_ambiDecodeEffect != IntPtr.Zero)
                 {
-                    PhononNative.iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect); _ambiDecodeEffect = IntPtr.Zero;
+                    PhononNative.iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect);
+                    _ambiDecodeEffect = IntPtr.Zero;
                 }
 
                 if (_reflBufsAllocated)
@@ -122,14 +131,11 @@ namespace Lambda.Audio
                 if (ctx == IntPtr.Zero || hrtf == IntPtr.Zero) return;
 
                 int rate, frameSize;
-#if STEAMAUDIO_ENABLED
+
                 var saAudio = SteamAudioManager.AudioSettings;
                 rate = saAudio.samplingRate;
                 frameSize = saAudio.frameSize;
-#else
-                rate = UnityEngine.AudioSettings.outputSampleRate;
-                UnityEngine.AudioSettings.GetDSPBufferSize(out frameSize, out _);
-#endif
+
                 var audio = new PAudioSettings { samplingRate = rate, frameSize = frameSize };
 
                 if (_binaural == IntPtr.Zero)
@@ -147,11 +153,8 @@ namespace Lambda.Audio
 
                 if (SteamAudioManager.Simulator == null) return;
 
-#if STEAMAUDIO_ENABLED
                 if (_steamSrc == null || !_steamSrc.reflections) return;
-#else
-                return;
-#endif
+
 
                 var settings = SteamAudioSettings.Singleton;
                 if (settings == null) return;
@@ -214,10 +217,8 @@ namespace Lambda.Audio
                 if (_binaural == IntPtr.Zero) return;
             }
 
-#if STEAMAUDIO_ENABLED
             if (!_reflBufsAllocated && SteamAudioManager.Simulator != null && _steamSrc != null && _steamSrc.reflections)
                 InitEffects();
-#endif
 
             Transform listener = PhononListenerCache.GetListenerTransform();
             if (listener == null) return;
@@ -226,26 +227,25 @@ namespace Lambda.Audio
             UnityEngine.Vector3 d = localPos.sqrMagnitude < 1e-6f ? UnityEngine.Vector3.forward : localPos.normalized;
             float dist = (transform.position - listener.position).magnitude;
 
-            bool shouldApplyDistAtten = true;
-            float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
-            bool applyTrans = false;
+            bool distanceAttentuation = true;
+            float occlusion = 1f, transmissionLow = 0f, transmissionMid = 0f, transmissionHigh = 0f;
+            bool transmission = false;
 
             bool hasRefl = false;
             ReflectionEffectParams reflParams = default;
             PCoordinateSpace3 listenerCS = default;
-            float reflMix = 1f;
+            float reflectionsMixLevel = 1f;
 
-#if STEAMAUDIO_ENABLED
             if (_steamSrc != null)
             {
-                shouldApplyDistAtten = _steamSrc.distanceAttenuation;
-                occ = Mathf.Clamp01(_steamSrc.occlusionValue);
-                applyTrans = _steamSrc.transmission;
-                if (applyTrans)
+                distanceAttentuation = _steamSrc.distanceAttenuation;
+                occlusion = Mathf.Clamp01(_steamSrc.occlusionValue);
+                transmission = _steamSrc.transmission;
+                if (transmission)
                 {
-                    tLow = Mathf.Clamp01(_steamSrc.transmissionLow);
-                    tMid = Mathf.Clamp01(_steamSrc.transmissionMid);
-                    tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
+                    transmissionLow = Mathf.Clamp01(_steamSrc.transmissionLow);
+                    transmissionMid = Mathf.Clamp01(_steamSrc.transmissionMid);
+                    transmissionHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
                 }
 
                 if (_steamSrc.reflections && _reflBufsAllocated && _reflectionEffect != IntPtr.Zero)
@@ -261,7 +261,7 @@ namespace Lambda.Audio
                         reflParams.irSize = _irSize;
 
                         hasRefl = reflParams.ir != IntPtr.Zero;
-                        reflMix = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
+                        reflectionsMixLevel = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
 
                         UnityEngine.Vector3 lR = listener.right, lU = listener.up, lF = listener.forward, lP = listener.position;
                         listenerCS = new PCoordinateSpace3
@@ -278,27 +278,29 @@ namespace Lambda.Audio
                     }
                 }
             }
-#endif
 
-            float atten = shouldApplyDistAtten ? _attenuator.Calculate(dist) : 1f;
+            float distanceAttenuationLevel = distanceAttentuation ? _attenuator.Calculate(dist) : 1f;
             IntPtr hrtfPtr = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
             // atomic reference swap
             var newParams = new DSPParams
             {
-                Dir = new PVec3 { x = d.x, y = d.y, z = -d.z },
-                DistAtten = atten,
-                Occlusion = occ,
-                TransLow = tLow,
-                TransMid = tMid,
-                TransHigh = tHigh,
-                ApplyTransmission = applyTrans,
+                distanceAttenuationLevel = distanceAttenuationLevel,
+                occlusionLevel = occlusion,
+                transmission = transmission,
+                transmissionLow = transmissionLow,
+                transmissionMid = transmissionMid,
+                transmissionHigh = transmissionHigh,
+
+                reflectionsMixLevel = reflectionsMixLevel,
+
+                spatialBlend = spatialBlend,
+
                 Hrtf = hrtfPtr,
+                Dir = new PVec3 { x = d.x, y = d.y, z = -d.z },
                 HasValidReflData = hasRefl,
                 ReflParams = reflParams,
                 ListenerCS = listenerCS,
-                ReflMixLevel = reflMix,
-                SpatialBlend = spatialBlend
             };
 
             _currentParams = newParams;
@@ -332,8 +334,8 @@ namespace Lambda.Audio
                     return;
                 }
 
-                float blend = Mathf.Clamp01(p.SpatialBlend);
-                float effectiveAtten = Mathf.Lerp(1f, p.DistAtten, blend);
+                float blend = Mathf.Clamp01(p.spatialBlend);
+                float effectiveAtten = Mathf.Lerp(1f, p.distanceAttenuationLevel, blend);
 
                 for (int i = 0; i < n; i++)
                     _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
@@ -351,7 +353,7 @@ namespace Lambda.Audio
                     if (_direct != IntPtr.Zero)
                     {
                         int dflags = (int)DirectEffectFlags.ApplyOcclusion;
-                        if (p.ApplyTransmission) dflags |= (int)DirectEffectFlags.ApplyTransmission;
+                        if (p.transmission) dflags |= (int)DirectEffectFlags.ApplyTransmission;
 
                         var dp = new PDirectEffectParams
                         {
@@ -362,10 +364,10 @@ namespace Lambda.Audio
                             airAbsorptionMid = 1f,
                             airAbsorptionHigh = 1f,
                             directivity = 1f,
-                            occlusion = p.Occlusion,
-                            transmissionLow = p.TransLow,
-                            transmissionMid = p.TransMid,
-                            transmissionHigh = p.TransHigh,
+                            occlusion = p.occlusionLevel,
+                            transmissionLow = p.transmissionLow,
+                            transmissionMid = p.transmissionMid,
+                            transmissionHigh = p.transmissionHigh,
                         };
                         PhononNative.iplDirectEffectApply(_direct, ref dp, ref inBuf, ref outBuf);
                     }
@@ -412,7 +414,7 @@ namespace Lambda.Audio
                         float** reflChPtrs = (float**)_reflStereoNative.data.ToPointer();
                         float* reflL = reflChPtrs[0];
                         float* reflR = reflChPtrs[1];
-                        float mix = p.ReflMixLevel;
+                        float mix = p.reflectionsMixLevel;
 
                         for (int i = 0; i < n; i++)
                         {
