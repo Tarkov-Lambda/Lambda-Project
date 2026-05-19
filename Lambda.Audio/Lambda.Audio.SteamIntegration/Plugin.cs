@@ -16,7 +16,7 @@ namespace Lambda.Audio.SteamIntegration;
 [BepInPlugin("com.Lambda.Audio.SteamAudioIntegration", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly string pathToDependencies = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Dependencies");
+    public static readonly string pathToBinaries = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Binaries");
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();

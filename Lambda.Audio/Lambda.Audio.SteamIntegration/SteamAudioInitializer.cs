@@ -41,13 +41,13 @@ public static class SteamAudioInitializer
     private static void PreloadNativeDlls()
     {
 
-        Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {Plugin.pathToDependencies}");
+        Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {Plugin.pathToBinaries}");
 
         string[] libs = { "phonon.dll", "audioplugin_phonon.dll" };
 
         foreach (string libName in libs)
         {
-            string fullPath = Path.Combine(Plugin.pathToDependencies, libName);
+            string fullPath = Path.Combine(Plugin.pathToBinaries, libName);
             Debug.Log(fullPath);
             if (!File.Exists(fullPath))
             {

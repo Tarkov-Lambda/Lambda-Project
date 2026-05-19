@@ -105,8 +105,8 @@ namespace SteamAudio
                 if (!(assetPath.EndsWith(".unity") || assetPath.EndsWith(".prefab")))
                     continue;
 
-                var assetDependencies = AssetDatabase.GetDependencies(assetPath, false);
-                foreach (var assetDependency in assetDependencies)
+                var assetBinaries = AssetDatabase.GetBinaries(assetPath, false);
+                foreach (var assetDependency in assetBinaries)
                 {
                     if (assetDependency.Contains(reverbDataFolder[0]))
                         referencedReverbDataAssetPaths.Add(assetDependency);

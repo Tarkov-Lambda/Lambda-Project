@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <Reference Include="$(ManagedPath)\*.dll" Exclude="$(ManagedPath)\mscorlib.dll;$(ManagedPath)\netstandard.dll" />
-    <Reference Include="..\Dependencies\libraries\*.dll" />
+    <Reference Include="..\Binaries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

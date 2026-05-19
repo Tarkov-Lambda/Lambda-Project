@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".\Dependencies\libraries*">
+    <None Include=".\Binaries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -53,23 +53,23 @@
     <Reference Include="$(ManagedPath)\DOTween.dll" />
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
 
-    <Reference Include="..\Dependencies\libraries\*.dll" />
+    <Reference Include="..\Binaries\*.dll" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
 
     <ItemGroup>
-      <Dependencies Include="$(OutputPath)\MemoryPack.Core.dll" />
-      <Dependencies Include="$(OutputPath)\System.Collections.Immutable.dll" />
+      <Binaries Include="$(OutputPath)\MemoryPack.Core.dll" />
+      <Binaries Include="$(OutputPath)\System.Collections.Immutable.dll" />
 
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
 
-    <Copy SourceFiles="@(Dependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Dependencies"
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries"
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-    <Copy SourceFiles="@(DebugDependencies)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
+    <Copy SourceFiles="@(DebugBinaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\"
       SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
     <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>

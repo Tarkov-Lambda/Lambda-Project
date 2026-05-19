@@ -25,7 +25,7 @@
     <None Include=".\configs\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include=".\Dependencies\libraries*">
+    <None Include=".\Binaries*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -57,7 +57,7 @@
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
 
-    <Reference Include="..\..\Dependencies\libraries\*.dll" />
+    <Reference Include="..\..\Binaries\*.dll" />
   </ItemGroup>
 
   <ItemGroup>
