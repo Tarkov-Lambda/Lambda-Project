@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Audio.ReverbSubsystem;
-using Cysharp.Threading.Tasks;
 using EFT;
 using HarmonyLib;
 using Lambda.Audio;
@@ -12,7 +10,7 @@ using UnityEngine.Audio;
 public struct SteamSourceData
 {
     public SteamAudioSource steam;
-    public PhononDSPBridge bridge;
+    public IProxiedAudioSource bridge;
 }
 
 public static class SteamAudioSourceController
@@ -86,7 +84,7 @@ public static class SteamAudioSourceController
             return bypassed;
 
         string mixerName = mixer.name;
-        bypassed = mixerName.Contains("ClientPlayer") ||
+        bypassed =
                    mixerName.Contains("Ambient") ||
                    mixerName.Contains("UI") ||
                    mixerName.Contains("Music");
@@ -128,15 +126,24 @@ public static class SteamAudioSourceController
 
         ProcessAudioSource(betterSource.source1, shouldBypassSteamAudio);
 
+        var shouldEnableReflections = false;
+        // if (betterSource.source1.outputAudioMixerGroup.name is "ClientPlayerMovement" or "Gunshots")
+        // {
+        //     shouldEnableReflections = true;
+        //     EnableReflections(betterSource.source1);
+        // }
+
         if (betterSource is ReverbSimpleSource reverbSimpleSource)
         {
             AudioSource reverb = ReverbSimpleSourceFieldRef(reverbSimpleSource);
             if (reverb != null) ProcessAudioSource(reverb, shouldBypassSteamAudio);
+            if (shouldEnableReflections) EnableReflections(reverb);
         }
         else if (betterSource is SuperSource superSource)
         {
             if (superSource.source2 != null)
                 ProcessAudioSource(superSource.source2, shouldBypassSteamAudio);
+            if (shouldEnableReflections) EnableReflections(superSource.source2);
 
             if (superSource is ReverbSuperSource reverbSuperSource)
             {
@@ -145,14 +152,25 @@ public static class SteamAudioSourceController
 
                 if (a != null) ProcessAudioSource(a, shouldBypassSteamAudio);
                 if (b != null) ProcessAudioSource(b, shouldBypassSteamAudio);
+
+                if (shouldEnableReflections) EnableReflections(a);
+                if (shouldEnableReflections) EnableReflections(b);
             }
         }
+    }
+
+    private static void EnableReflections(AudioSource src)
+    {
+        // cache[src].steam.reflections = true;
+        // cache[src].steam.reflectionsMixLevel = 10;
+        // cache[src].steam.reflectionsType = ReflectionsType.Realtime;
+        // cache[src].steam.directMixLevel = 1f;
     }
 
     private static void ProcessAudioSource(AudioSource src, bool shouldBypassSteamAudio)
     {
         var cache = GetOrAdd(src);
-        bool wasBypassed = cache.bridge.IsBypass;
+        bool wasBypassed = cache.bridge.isBypass;
 
         // we toggle occlusion back and forth to save on constant unnecessary raycasts
         if (shouldBypassSteamAudio)
@@ -161,7 +179,7 @@ public static class SteamAudioSourceController
             {
                 cache.steam.occlusion = false;
 
-                cache.bridge.IsBypass = true;
+                cache.bridge.isBypass = true;
                 src.spatialize = cache.bridge.spatialize;
                 src.spatialBlend = cache.bridge.spatialBlend;
             }
@@ -175,7 +193,7 @@ public static class SteamAudioSourceController
                 bool currentNativeSpatialize = src.spatialize;
                 float currentNativeBlend = src.spatialBlend;
 
-                cache.bridge.IsBypass = false;
+                cache.bridge.isBypass = false;
 
                 src.spatialize = currentNativeSpatialize;
                 src.spatialBlend = currentNativeBlend;
@@ -194,10 +212,10 @@ public static class SteamAudioSourceController
             {
                 if (data.bridge != null)
                 {
-                    data.bridge.IsBypass = true; // bypass audiosource patches
+                    data.bridge.isBypass = true; // bypass audiosource patches
                     src.spatialize = data.bridge.spatialize;
                     src.spatialBlend = data.bridge.spatialBlend;
-                    Object.Destroy(data.bridge);
+                    Object.Destroy(data.bridge as MonoBehaviour);
                 }
 
                 if (data.steam != null)

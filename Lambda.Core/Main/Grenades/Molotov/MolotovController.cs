@@ -10,7 +10,7 @@ public static class MolotovController
     public static float duration = 7f;
     
     // maximum absolute distance from the origin the fire is allowed to travel
-    public static float maxSpreadDistance = 100.0f; 
+    public static float maxSpreadDistance = 6.0f; 
 
     public static async UniTask Spawn(MolotovExplosionPacket packet)
     {

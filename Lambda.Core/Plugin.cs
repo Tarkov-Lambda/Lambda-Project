@@ -330,14 +330,14 @@ public class Plugin : BaseUnityPlugin
             D.Log(ex.StackTrace);
         }
 
-        if (H.IsInRaid())
-        {
-            H.MainPlayer.MovementContext.PlantState = H.MainPlayer.MovementContext.GetNewState(EPlayerState.Plant, false);
-            H.MainPlayer.MovementContext.PlantState.Name = EPlayerState.Plant;
-            H.MainPlayer.MovementContext.PlantState.AnimatorStateHash = -1;
+        // if (H.IsInRaid())
+        // {
+        //     H.MainPlayer.MovementContext.PlantState = H.MainPlayer.MovementContext.GetNewState(EPlayerState.Plant, false);
+        //     H.MainPlayer.MovementContext.PlantState.Name = EPlayerState.Plant;
+        //     H.MainPlayer.MovementContext.PlantState.AnimatorStateHash = -1;
 
-            // LambdaAudioRoomController.Instance.TriggerChange();
-        }
+        //     // LambdaAudioRoomController.Instance.TriggerChange();
+        // }
     }
 
     private void InitConfiguration()

@@ -82,7 +82,10 @@ namespace Lambda.Core.Main.UI
         private void OnMessageReceived(ChatMessagePacket chatPacket)
         {
             PlayerContext playerScore = H.GetPlayerScore(chatPacket.Player);
-
+            
+            if (chatPacket.scope == ChatMessageScope.Team && chatPacket.Player.GetContext().Faction != H.MainPlayerScore.Faction)
+                return;
+            
             _chat.PopMessage(
                 chatPacket.scope,
                 playerScore.Faction,

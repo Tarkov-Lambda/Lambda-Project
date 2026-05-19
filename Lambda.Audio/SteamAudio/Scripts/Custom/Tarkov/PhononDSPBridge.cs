@@ -5,7 +5,7 @@ using SteamAudio;
 namespace Lambda.Audio
 {
     [RequireComponent(typeof(AudioSource))]
-    public class PhononDSPBridge : MonoBehaviour
+    public class PhononDSPBridge : MonoBehaviour, IProxiedAudioSource
     {
         private class DSPParams
         {
@@ -55,10 +55,9 @@ namespace Lambda.Audio
         private float[] _rightOut;
 
         // Unity proxy
-        public float spatialBlend = 1f;
-        public bool spatialize = true;
-
-        [NonSerialized] public bool IsBypass = false;
+        public float spatialBlend { get; set; } = 1f;
+        public bool spatialize { get; set; } = true;
+        public bool isBypass { get; set; } = false;
 
         private void Awake()
         {
@@ -315,7 +314,7 @@ namespace Lambda.Audio
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
-            if (IsBypass || channels != 2) return;
+            if (isBypass || channels != 2) return;
 
             DSPParams p = _currentParams;
 
