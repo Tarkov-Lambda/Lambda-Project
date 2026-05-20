@@ -1,11 +1,8 @@
-using Audio.SpatialSystem.Data;
 using BepInEx;
 using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
-using EFT.Weather;
-using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Dying;
@@ -13,6 +10,7 @@ using Lambda.Core.Main.FX;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Main.UI;
 using Lambda.Core.Networking;
+using Lambda.Core.Networking.Commands;
 using Lambda.Core.Patches;
 using Lambda.Core.Patches.Tarkov;
 using Lambda.Core.Patches.Tarkov.UI;
@@ -43,6 +41,9 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<string> Gamemode;
     internal static ConfigEntry<string> Level;
     internal static ConfigEntry<string> Password;
+    
+    internal static ConfigEntry<float> MusicVolume;
+
 
     internal static ConfigEntry<bool> DisplayLogAsNotificationInGame;
 
@@ -115,8 +116,6 @@ public class Plugin : BaseUnityPlugin
         _unityTickListner = new GameObject("UnityTickListener").AddComponent<UnityTicker>();
         DontDestroyOnLoad(_unityTickListner.gameObject);
 
-        // RegisterPatch(new AudioDiscovery_Play_Patch());
-
         // TARKOV
         RegisterPatch(new Patch_Gameworld_OnGameStarted());                         // Hooks
         RegisterPatch(new Patch_Gameworld_OnDispose());                             // Hooks
@@ -142,8 +141,6 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
         RegisterPatch(new Patch_GamePlayerOwner_TranslateCommand());                // Prevent Resetting Freelook from cancelling BetterPlantStateClass
-
-
 
         // RegisterPatch(new Patch_Class1396_method_3());                           // In edge cases where the hands controller gets bugged out - we hard reset it
         // RegisterPatch(new Patch_GClass2037_Start());                             // In edge cases where the hands controller gets bugged out - we hard reset it
@@ -265,12 +262,12 @@ public class Plugin : BaseUnityPlugin
         try
         {
             // Internal Classses (order matters)
-            RegisterSingleton<PresetBundleHandler>();                               // Handler of preset item loading (stuff in the buy menu)
-            RegisterSingleton<MapAssetBundleHandler>();                             // Handler of map asset loading
+            RegisterSingleton<RuntimeBundleLoader>();                               // Handler of preset item loading (stuff in the buy menu)
+            RegisterSingleton<MapAssetBundleLoader>();                             // Handler of map asset loading
             RegisterSingleton<RagdollCreator>();                                    // Fake Corpse Creation
             RegisterSingleton<PresetItemsCache>();                                  // Caching gun presets
             RegisterSingleton<WeaponPresetManager>();                               // Initializes/Saves/Loads what gun preset is selected for in raid spawning
-            RegisterSingleton<DefaultEquipmentManager>();                           // Collects
+            RegisterSingleton<ClientEquipmentManager>();                           // 
 
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
@@ -299,13 +296,22 @@ public class Plugin : BaseUnityPlugin
 
         //     // LambdaAudioRoomController.Instance.TriggerChange();
         // }
+
+        // TODO: make this initialization more in line with the rest of the project
+        UniTask.RunOnThreadPool(async () =>
+        {
+            await UniTask.WaitUntil(() => H.IsMainMenuLoaded());
+            ChatCommandInterceptor.Initialize();
+        }, cancellationToken: _cts.Token).Forget();
     }
 
     private void InitConfiguration()
     {
-        Level = Config.Bind("Admin", "Map Name", "", "");
+        Level = Config.Bind("Admin", "Map Name", "samplevel", "");
         Gamemode = Config.Bind("Admin", "Gamemode", "SNDGamemode", "");
         Password = Config.Bind("Admin", "Password", "", "");
+
+        // MusicVolume = Config.Bind("", "Music Volume", "", "");
 
         DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", false);
 
@@ -332,7 +338,7 @@ public class Plugin : BaseUnityPlugin
 
         if (MapReloadKey.Value.IsDown())
         {
-            MapAssetBundleHandler.Instance.ReloadMap(H.Session.level).Forget();
+            MapAssetBundleLoader.Instance.ReloadMap(H.Session.level).Forget();
         }
 
         if (UnfuckKey.Value.IsDown())

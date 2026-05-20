@@ -20,6 +20,8 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
+    
+
     [MemoryPackAllowSerialize]
     public ItemPlacement placement;
     

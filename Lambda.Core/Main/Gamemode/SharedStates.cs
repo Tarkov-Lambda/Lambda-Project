@@ -118,13 +118,14 @@ public class SharedCleanup : IGameState
             isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
         }
 
+        // TODO: Compartmentalize all this inventory logic elsewhere
         foreach (var player in H.AllPlayingPlayers)
         {
             player.ForceUnlockInventory();
 
             if (H.IsServer)
             {
-                var playerScore = H.GetPlayerScore(player);
+                var playerScore = H.GetPlayerContext(player);
 
                 if (!playerScore.ShouldHardReset && totalRounds > 0 && !isHalfTime)
                 {

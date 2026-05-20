@@ -104,7 +104,7 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
     {
         if (packet.Player.IsYourPlayer) _cts?.Cancel();
 
-        H.GetPlayerScore(packet.Player)?.ChangeFaction(packet.faction);
+        H.GetPlayerContext(packet.Player)?.ChangeFaction(packet.faction);
 
         if (H.Gamemode is IGMTeam)
         {

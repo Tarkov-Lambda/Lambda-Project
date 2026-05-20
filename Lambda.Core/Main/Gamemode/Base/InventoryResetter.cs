@@ -168,7 +168,7 @@ public static class InventoryResetter
         }
 
         // GIVING
-        foreach (var kvp in H.GetPlayerScore(player.Id).DefaultEquipment)
+        foreach (var kvp in player.GetContext().DefaultEquipment)
         {
             if (kvp.Value == null) continue;
 

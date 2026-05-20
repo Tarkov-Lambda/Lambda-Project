@@ -43,7 +43,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
         if (readyState is PlayerReadinessState.Connected)
         {
-            packet.defaultItems = DefaultEquipmentManager.Instance.RecordedItems;
+            packet.defaultItems = ClientEquipmentManager.Instance.RecordedItems;
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
@@ -68,15 +68,15 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     {
         if (packet.buySelection != null)
         {
-            var playerScore = H.GetPlayerScore(packet.Player);
-            playerScore.SetDefaultItems(packet.defaultItems);
-            playerScore.SetBuySelection(packet.buySelection);
+            var playerContext = H.GetPlayerContext(packet.Player);
+            playerContext.SetDefaultItems(packet.defaultItems);
+            playerContext.SetBuySelection(packet.buySelection);
 
             // we only need to add buy menu stuff into the cache
             // because defaultItems is literally the equipment that player has spawned in the raid with
             foreach (var shopItem in packet.buySelection)
             {
-                PresetBundleHandler.Instance.AddToCache(shopItem.Value);
+                RuntimeBundleLoader.Instance.AddToCache(shopItem.Value);
             }
 
             packet.buySelection = null;
@@ -86,7 +86,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
-        PlayerContext playerScore = H.GetPlayerScore(packet.Player);
+        PlayerContext playerContext = H.GetPlayerContext(packet.Player);
 
         if (packet.Player.TryGetHandsResourceKey(out ResourceKey handsBundle))
         {
@@ -98,12 +98,12 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
         {
             if (packet.readyState == PlayerReadinessState.Ready)
             {
-                playerScore.ChangeProgress(100f);
-                playerScore.ChangeFaction(Faction.Spectator);
+                playerContext.ChangeProgress(100f);
+                playerContext.ChangeFaction(Faction.Spectator);
             }
         }
 
-        playerScore.ChangeReadiness(packet.readyState);
+        playerContext.ChangeReadiness(packet.readyState);
 
         if (H.IsServer)
         {
@@ -115,7 +115,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
                     // Broadcast updated itemsToLoad list
                     // whilst this is ridiculously wasteful, I know for a fact that it will work
                     // We should not forget about this, but for now it's fine
-                    Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(PresetBundleHandler.Instance.ItemsToLoad).Forget();
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(RuntimeBundleLoader.Instance.ItemsToLoad).Forget();
 
                     // get the player up to speed
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);

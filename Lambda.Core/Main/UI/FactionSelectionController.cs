@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT.UI;
 using EFT.UI.Screens;
 using Lambda.Core.Main.Gamemode;
@@ -26,6 +27,21 @@ namespace Lambda.Core.Main.UI
             factionSelectionScreen.Close();
         }
 
+        public void Dispose()
+        {
+            UnityTicker.OnUpdate -= OnUpdate;
+            EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
+            EventBus.OnEnter -= OnMatchStateEnter;
+
+            if (factionSelectionScreen != null)
+            {
+                if (EftScreenManager.Instance.CurrentBaseScreenController is FactionSelectionEftScreen.FactionSelectionEftScreenController)
+                    EftScreenManager.Instance.CloseCurrentScreenForced();
+                EftScreenManager.Instance.ReleaseScreen(FactionSelectionEftScreen.FAKETYPE, factionSelectionScreen);
+                GameObject.Destroy(factionSelectionScreen.gameObject);
+            }
+        }
+
         void OnMatchStateEnter(MatchState matchState)
         {
             if (matchState == MatchState.Warmup && H.Gamemode is IGMTeam)
@@ -40,7 +56,7 @@ namespace Lambda.Core.Main.UI
                 factionSelectionScreen.Cancel();
         }
 
-        public void ShowFactionSelectionEftScreen()
+        public async void ShowFactionSelectionEftScreen()
         {
             FactionSelectionEftScreen.FactionSelectionEftScreenController screenController = new(Singleton<FactionChangePacketWarden>.Instance.Send);
             screenController.ShowScreen(EScreenState.Temporary);
@@ -57,21 +73,6 @@ namespace Lambda.Core.Main.UI
             if (Input.GetKeyDown(KeyCode.M))
             {
                 ShowFactionSelectionEftScreen();
-            }
-        }
-
-        public void Dispose()
-        {
-            UnityTicker.OnUpdate -= OnUpdate;
-            EventBus.OnSelfFactionChanged -= OnSelfFactionChanged;
-            EventBus.OnEnter -= OnMatchStateEnter;
-
-            if (factionSelectionScreen != null)
-            {
-                if (EftScreenManager.Instance.CurrentBaseScreenController is FactionSelectionEftScreen.FactionSelectionEftScreenController)
-                    EftScreenManager.Instance.CloseCurrentScreenForced();
-                EftScreenManager.Instance.ReleaseScreen(FactionSelectionEftScreen.FAKETYPE, factionSelectionScreen);
-                GameObject.Destroy(factionSelectionScreen.gameObject);
             }
         }
     }

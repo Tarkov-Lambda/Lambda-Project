@@ -20,7 +20,7 @@ public struct PresetManagerSlotInfo
 
 // this manager deals with capturing the equipment that the player brings into the raid for inventory resetting
 // also it equips a random upper/lower whenever a new profile has been created
-public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
+public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDisposable
 {
     private readonly string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "DefaultEquipment.jsonc");
 
@@ -28,7 +28,7 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
 
     public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; } = new(); // What is actually used
 
-    public DefaultEquipmentManager()
+    public ClientEquipmentManager()
     {
         LoadItems(File.ReadAllText(PresetDataPath));
         // H.OnGameStarted += CapturePreset;
@@ -101,7 +101,7 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
                 }
             }
 
-            PresetBundleHandler.Instance.AddToCache(equippedItem);
+            RuntimeBundleLoader.Instance.AddToCache(equippedItem);
             RecordedItems[presetInfo.Key] = equippedItem;
         }
     }

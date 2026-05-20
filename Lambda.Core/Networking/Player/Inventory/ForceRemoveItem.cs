@@ -7,6 +7,7 @@ using Lambda.Core.Main;
 using System;
 using Fika.Core.Main.Players;
 using MemoryPack;
+using PacketWarden.RateLimiting;
 
 namespace Lambda.Core.Networking;
 
@@ -25,7 +26,7 @@ public partial struct PopPacket : IPacket, IAuthoredPacket
 
 public class ForceRemoveItemPacketWarden : LambdaPacketWarden<PopPacket>
 {
-    // protected override RateLimitConfig ServerRateLimit => RateLimitPresets.StrictInteraction;
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(5);
 
     public void Send(Item item)
     {

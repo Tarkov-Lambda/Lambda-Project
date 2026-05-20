@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.UI;
 using EFT.UI.Screens;
@@ -24,6 +25,7 @@ namespace Lambda.Core.Main.UI
             Singleton<AnnouncementPacketWarden>.Instance.AfterPacketApplied += OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied += OnMessageReceived;
             UnityTicker.OnUpdate += Update;
+            EventBus.OnEnter += OnMatchStateEnter;
         }
 
         public void Dispose()
@@ -31,6 +33,7 @@ namespace Lambda.Core.Main.UI
             Singleton<AnnouncementPacketWarden>.Instance.AfterPacketApplied -= OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied -= OnMessageReceived;
             UnityTicker.OnUpdate -= Update;
+            EventBus.OnEnter -= OnMatchStateEnter;
         }
 
         private void Update()
@@ -43,6 +46,14 @@ namespace Lambda.Core.Main.UI
 
             if (Input.GetKeyDown(KeyCode.Escape))
                 SetChatFocus(false);
+        }
+
+        void OnMatchStateEnter(MatchState matchState)
+        {
+            if (matchState == MatchState.Warmup && H.Gamemode is IGMTeam)
+            {
+                SetChatFocus(false);
+            }
         }
 
         void SetChatFocus(bool enable)
@@ -74,15 +85,17 @@ namespace Lambda.Core.Main.UI
             Singleton<ChatMessagePacketWarden>.Instance.Send(scope, msg);
         }
 
-        private void OnAnnouncementReceived(AnnouncementPacket announcementPacket)
+        private async void OnAnnouncementReceived(AnnouncementPacket announcementPacket)
         {
             if (announcementPacket.specificFaction == null || announcementPacket.specificFaction == H.MainPlayerScore.Faction)
                 _chat.PopAnnouncementMessage(announcementPacket.msg);
         }
 
-        private void OnMessageReceived(ChatMessagePacket chatPacket)
+        private async void OnMessageReceived(ChatMessagePacket chatPacket)
         {
-            PlayerContext playerScore = H.GetPlayerScore(chatPacket.Player);
+            PlayerContext playerScore = H.GetPlayerContext(chatPacket.Player);
+
+            // await UniTask.DelayFrame(1);
 
             if (chatPacket.scope == ChatMessageScope.Team && chatPacket.Player.GetContext().Faction != H.MainPlayerScore.Faction)
                 return;

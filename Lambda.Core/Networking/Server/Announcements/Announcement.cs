@@ -12,12 +12,12 @@ namespace Lambda.Core.Networking;
 public partial struct AnnouncementPacket : IPacket
 {
     public string msg;
-    public Faction? specificFaction;
+    public Faction specificFaction;
 }
 
 public class AnnouncementPacketWarden : LambdaPacketWarden<AnnouncementPacket>
 {
-    protected override PacketAuthority Authority => PacketAuthority.Admin;
+    protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(string msg)
     {
@@ -35,8 +35,8 @@ public class AnnouncementPacketWarden : LambdaPacketWarden<AnnouncementPacket>
             msg = msg
         };
 
-        FikaPlayer fikaPlayer = player as FikaPlayer;
-        DispatchPacket(packet, fikaPlayer.NetId);
+        // FikaPlayer fikaPlayer = player as FikaPlayer;
+        DispatchPacket(packet, Network.NetId);
     }
 
     public void SendToFaction(Faction faction, string msg)

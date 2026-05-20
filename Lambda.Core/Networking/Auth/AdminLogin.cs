@@ -5,6 +5,7 @@ using System.Text;
 using EFT;
 using PacketWarden.RateLimiting;
 using MemoryPack;
+using Comfort.Common;
 
 namespace Lambda.Core.Networking;
 
@@ -181,8 +182,12 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
     private void HandleSuccess(AdminAuthPacket packet)
     {
-        D.Log($"{packet.player.Profile.Nickname} is now an Admin");
-        H.GetPlayerScore(packet.player)?.SetAdmin(true);
+        H.GetPlayerContext(packet.player)?.SetAdmin(true);
+
+        if (H.IsServer)
+        {
+            Singleton<AnnouncementPacketWarden>.Instance.Send($"{packet.player} is now an admin.");
+        }
     }
 
     private static string ComputeHash(string password, string nonce)

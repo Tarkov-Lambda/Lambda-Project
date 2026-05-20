@@ -71,7 +71,8 @@
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true"  />
+
     <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" />
   </Target>
 </Project>

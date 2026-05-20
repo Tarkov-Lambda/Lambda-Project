@@ -9,7 +9,7 @@ namespace Lambda.Core.Main.UI;
 
 internal class PresetItemsCache : Singleton<PresetItemsCache>, IDisposable
 {
-    Dictionary<string, Item> cacheImmutableItems = new Dictionary<string, Item>();
+    readonly Dictionary<string, Item> cacheImmutableItems = new();
 
     public PresetItemsCache()
     {

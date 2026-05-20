@@ -91,7 +91,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         else if (fikaEvent is PeerConnectedEvent peerConnectedEvent && Session.matchState != MatchState.None)
         {
             // notify 
-            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, PresetBundleHandler.Instance.ItemsToLoad);
+            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, RuntimeBundleLoader.Instance.ItemsToLoad);
         }
     }
 
@@ -107,11 +107,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         {
             // SteamAudioInitializer.AttachListenerIfNeeded();
 
-            await Singleton<MapAssetBundleHandler>.Instance.LoadMap("lobby");
+            await Singleton<MapAssetBundleLoader>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
 
-            PresetBundleHandler.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
-            DefaultEquipmentManager.Instance.CapturePreset();
+            RuntimeBundleLoader.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
+            ClientEquipmentManager.Instance.CapturePreset();
 
             if (H.GameWorld is not HideoutGameWorld)
             {

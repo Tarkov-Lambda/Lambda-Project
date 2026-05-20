@@ -13,7 +13,7 @@ public static class PlayerExtensions
 {
     public static PlayerContext GetContext(this Player player)
     {
-        return H.GetPlayerScore(player);
+        return H.GetPlayerContext(player);
     }
 
     // full retard nuclear hand resetting

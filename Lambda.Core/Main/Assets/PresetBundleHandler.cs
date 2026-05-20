@@ -9,14 +9,14 @@ using System.Linq;
 
 namespace Lambda.Core.Main.AssetBundleHandling;
 
-public class PresetBundleHandler : Singleton<PresetBundleHandler>, IDisposable
+public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 {
     public List<Item> ItemsToLoad { get; private set; }
     private readonly HashSet<string> _cachedItems;
 
     // TODO: this has to be up before OnGameStarted (for late joiners)
     // this lifecycle needs to be improved for in between raids
-    public PresetBundleHandler()
+    public RuntimeBundleLoader()
     {
         ItemsToLoad = [];
         _cachedItems = [];

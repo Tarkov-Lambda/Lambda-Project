@@ -83,12 +83,12 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
     // TODO: move logic outta here
     private void HandleKill(PlayerKilledPacket packet)
     {
-        PlayerContext victimScore = H.GetPlayerScore(packet.Player);
+        PlayerContext victimScore = H.GetPlayerContext(packet.Player);
         if (!victimScore.IsAlive) return;
 
         victimScore.Kill();
 
-        PlayerContext killerScore = H.GetPlayerScore(packet.killer);
+        PlayerContext killerScore = H.GetPlayerContext(packet.killer);
         if (killerScore != null && killerScore != victimScore && killerScore.Faction != victimScore.Faction)
         {
             killerScore.AddFrag(packet.IsHeadshot);
@@ -96,7 +96,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
         if (packet.assist != null)
         {
-            PlayerContext assistScore = H.GetPlayerScore(packet.assist);
+            PlayerContext assistScore = H.GetPlayerContext(packet.assist);
             if (assistScore != null && assistScore != victimScore && assistScore.Faction != victimScore.Faction)
             {
                 assistScore.AddAssist();

@@ -10,11 +10,11 @@ using UnityEngine.SceneManagement;
 
 namespace Lambda.Core.Main.AssetBundleHandling;
 
-public class MapAssetBundleHandler : Singleton<MapAssetBundleHandler>, IDisposable
+public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
 {
     private readonly Dictionary<string, AssetBundle> loadedAssetBundles = new();
 
-    public MapAssetBundleHandler()
+    public MapAssetBundleLoader()
     {
         Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;
     }

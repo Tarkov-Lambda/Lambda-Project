@@ -30,6 +30,26 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         UnityTicker.OnUpdate += Update;
     }
 
+    public void Dispose()
+    {
+        EventBus.OnEnter -= OnEnter;
+        EventBus.OnExit -= OnEnd;
+        UnityTicker.OnUpdate -= Update;
+
+        _cts.Cancel();
+        _cts.Dispose();
+
+        if (_musicObject != null)
+            GameObject.Destroy(_musicObject.gameObject);
+
+        Release(this);
+    }
+
+    public void ChangeVolume()
+    {
+
+    }
+
     public void Update()
     {
         if (H.Arena == null || H.Session == null) return;
@@ -58,7 +78,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
-            return;
+        return;
 #if DEBUG        
         if (!H.IsHeadless && H.MainPlayer?.Profile.Nickname == "notifp")
         {
@@ -125,26 +145,11 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         _cts.Dispose();
         _cts = new CancellationTokenSource();
     }
-
-    public void Dispose()
-    {
-        EventBus.OnEnter -= OnEnter;
-        EventBus.OnExit -= OnEnd;
-        UnityTicker.OnUpdate -= Update;
-
-        _cts.Cancel();
-        _cts.Dispose();
-
-        if (_musicObject != null)
-            GameObject.Destroy(_musicObject.gameObject);
-
-        Release(this);
-    }
 }
 
 internal class MusicObject : MonoBehaviour
 {
-    public float MaxVolume = 0.18f;
+    public float MaxVolume => Plugin.MusicVolume.Value;
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;
@@ -203,7 +208,7 @@ internal class MusicObject : MonoBehaviour
             await UniTask.Yield(PlayerLoopTiming.Update, ct);
         }
 
-        // Snap to final values and clean up the outgoing source.
+        // snap to final values and clean up the outgoing source.
         incoming.volume = MaxVolume;
         outgoing.volume = 0f;
         outgoing.Stop();
@@ -217,7 +222,7 @@ internal class MusicObject : MonoBehaviour
         AudioSource active = _aIsActive ? _sourceA : _sourceB;
         AudioSource inactive = _aIsActive ? _sourceB : _sourceA;
 
-        // Silence the idle source immediately in case a partial crossfade left it audible.
+        // silence the idle source immediately in case a partial crossfade left it audible.
         inactive.volume = 0f;
         inactive.Stop();
 

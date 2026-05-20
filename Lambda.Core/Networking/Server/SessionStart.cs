@@ -67,7 +67,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         if (H.IsServer)
         {
-            packet.itemsToLoad = PresetBundleHandler.Instance.ItemsToLoad;
+            packet.itemsToLoad = RuntimeBundleLoader.Instance.ItemsToLoad;
         }
 
         DispatchPacket(packet, peerId);
@@ -75,7 +75,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)
     {
-        packet.itemsToLoad = PresetBundleHandler.Instance.ItemsToLoad;
+        packet.itemsToLoad = RuntimeBundleLoader.Instance.ItemsToLoad;
     }
 
     protected override async void Apply(SessionStartPacket packet, int peerId)
@@ -92,7 +92,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         NetworkTime.Reset();
 
-        PresetBundleHandler.Instance.AddToCache(packet.itemsToLoad);
+        RuntimeBundleLoader.Instance.AddToCache(packet.itemsToLoad);
 
         List<ResourceKey> firstPersonHands = new();
         foreach (var player in H.AllPlayers)
@@ -104,8 +104,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         }
 
         await UniTask.WhenAll(
-            MapAssetBundleHandler.Instance.LoadMap(packet.level),
-            PresetBundleHandler.Instance.LoadEverythingInCache(),
+            MapAssetBundleLoader.Instance.LoadMap(packet.level),
+            RuntimeBundleLoader.Instance.LoadEverythingInCache(),
             firstPersonHands.LoadBundles()
         );
 

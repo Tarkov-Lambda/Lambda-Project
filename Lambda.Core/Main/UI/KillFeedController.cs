@@ -21,12 +21,12 @@ namespace Lambda.Core.Main.UI
 
         private void OnPlayerKill(PlayerKilledPacket packet)
         {
-            PlayerContext victim = H.GetPlayerScore(packet.Player);
+            PlayerContext victim = H.GetPlayerContext(packet.Player);
             if (!victim.IsAlive) return;
 
-            PlayerContext killer = H.GetPlayerScore(packet.killer);
+            PlayerContext killer = H.GetPlayerContext(packet.killer);
 
-            PlayerContext assist = H.GetPlayerScore(packet.assist);
+            PlayerContext assist = H.GetPlayerContext(packet.assist);
 
             string leftName = BuildLeftName(killer, assist);
             string rightName = FormatPlayer(victim);

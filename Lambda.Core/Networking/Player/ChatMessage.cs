@@ -1,4 +1,5 @@
 using EFT;
+using Lambda.Core.Networking.Commands;
 using Lambda.Shared.Models;
 using MemoryPack;
 using PacketWarden.RateLimiting;
@@ -23,12 +24,21 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     public void Send(ChatMessageScope scope, string msg)
     {
+
+
         var packet = new ChatMessagePacket
         {
             Player = H.MainPlayer,
             scope = scope,
             msg = msg
         };
+
+        if (ChatCommandInterceptor.TryHandleLocal(msg))
+        {
+            ApplyInternal(packet, Network.NetId);
+            return;
+        }
+
         DispatchPacket(packet);
     }
 
@@ -45,10 +55,11 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override void ProcessApprovedPacket(ref ChatMessagePacket packet, int peerId)
     {
+        // all exclamation mark commands are serverside
+        // the client sees their command message but others do not
         if (packet.msg.StartsWith("!") && packet.Player.GetContext().IsAdmin)
         {
-            HandleCommandMessage(packet);
-            DispatchPacket(packet, peerId);
+            ChatCommandInterceptor.HandleServer(packet.Player, packet.msg);
         }
         else
         {
@@ -56,11 +67,6 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         }
     }
 
-    // Handled in ChatController
+    /// Handled in ChatController
     protected override void Apply(ChatMessagePacket packet, int peerId) { }
-
-    private void HandleCommandMessage(ChatMessagePacket msg)
-    {
-        
-    }
 }

@@ -79,7 +79,7 @@ public class EconomyManager : IDisposable
         int reward = 300;
 
         // Team Kill Penalty?
-        if (killerScore.Faction == H.GetPlayerScore(packet.Player)?.Faction)
+        if (killerScore.Faction == H.GetPlayerContext(packet.Player)?.Faction)
         {
             reward = -300;
         }

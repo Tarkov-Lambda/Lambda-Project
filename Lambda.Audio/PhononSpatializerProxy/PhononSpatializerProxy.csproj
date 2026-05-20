@@ -56,7 +56,7 @@
     <ItemGroup>
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

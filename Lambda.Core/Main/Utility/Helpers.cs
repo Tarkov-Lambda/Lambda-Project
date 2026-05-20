@@ -79,7 +79,7 @@ public static class Helpers
     public static BombHandler BombHandler                               => IsInRaid() ? Singleton<BombHandler>.Instance : null;
     public static FXHandler FXHandler                                   => IsInRaid() ? Singleton<FXHandler>.Instance : null;
     public static SpectatorManager SpectatorManager                     => IsInRaid() ? Singleton<SpectatorManager>.Instance : null;
-    public static MapAssetBundleHandler MapAssetBundleHandler           => Singleton<MapAssetBundleHandler>.Instance;
+    public static MapAssetBundleLoader MapAssetBundleHandler           => Singleton<MapAssetBundleLoader>.Instance;
     public static WeaponPresetManager WeaponPresetManager               => Singleton<WeaponPresetManager>.Instance;
 
     // When the player fully spawns into the raid; after raid spawn countdown timer is 0 (Geneburn - Countdown reference)
@@ -143,7 +143,7 @@ public static class Helpers
         return AllPlayers.FirstOrDefault(p => p.ProfileId == profileId);
     }
 
-    public static PlayerContext GetPlayerScore(Player player) => GetPlayerScore(player.Id);
+    public static PlayerContext GetPlayerContext(Player player) => GetPlayerScore(player.Id);
 
     public static PlayerContext GetPlayerScore(int playerId)
     {

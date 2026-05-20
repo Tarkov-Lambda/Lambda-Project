@@ -58,20 +58,19 @@
   - Packet Authority (Anyone, Admin, Server Only)
   - Admin Authentication
   - Rate limiting
-- Unity Tracer
   - Class-wide method observation via Harmony postfixing  
 
 ## Modules
 
-| Project                                | Description                                                      
-|-----------------------------------     |---------------------------------------------------------
+| Project                                | Description                                            |         
+|-----------------------------------     |--------------------------------------------------------|
 | **Lambda.Core**                        | Core framework and base systems                        |
 | **Lambda.Shared**                      | Shared classes, types, and data structures             |
-| **Lambda.UI**                          | All UI components and interfaces                       |         
+| **Lambda.UI**                          | All UI components and interfaces                       |
 | **Lambda.Audio**                       | All Runtime Steam Audio assemblies for EFT             |
-| **PacketWarden**                       | Custom network framework for all transactions          |         
-| **PacketWarden.FikaIntegration**       | Fika/LiteNetLib Integration for PacketWarden           |         
-| **SteamAudioUnity**                    | Official Steam Audio Unity Integration Library         |    
+| **PacketWarden**                       | Custom network framework for all transactions          |
+| **PacketWarden.FikaIntegration**       | Fika/LiteNetLib Integration for PacketWarden           |
+| **SteamAudioUnity**                    | Official Steam Audio Unity Integration Library         |
 | **PhononSpatializerProxy**             | C# Rewrite of audiophonon_plugin for Unity             |
 | **PhononSpatializerProxy.BepInEx**     | PhononSpatializer Proxy integration for BepInEx        |
 | **BetterSource.SteamAudioIntegration** | EFT AudioSource system                                 |

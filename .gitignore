@@ -14,7 +14,6 @@ obj/
 /builds/
 
 # Meta files for assemblies not referenced by unity
-
 Lambda.Audio/Lambda.Audio.SteamIntegration/**/*.meta
 Lambda.Audio/Lambda.Audio.SteamIntegration/**.meta
 

@@ -173,7 +173,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             }
         }
 
-        if (!H.IsHeadless)
+        if (!H.IsHeadless && player.IsYourPlayer)
         {
             player.ProcessStatus = EProcessStatus.None;
             player.SetFirstAvailableItem((result) => 

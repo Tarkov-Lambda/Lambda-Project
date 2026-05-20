@@ -195,8 +195,17 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         }
         else
         {
+            // TODO: this block is extremely fucking sus.
+            // look around all the packets and see if this is okay to do
             MutateApprovedPacket(ref packet, targetPeerId.Value);
-            Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
+            if (targetPeerId.Value != Network.NetId)
+            {
+                Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
+            }
+            else
+            {
+                ApplyInternal(packet, targetPeerId.Value);
+            }
         }
     }
 
@@ -236,7 +245,9 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 
     /// <summary>
     /// Called after a packet passes all validation and rate limits on the server. <br/>
-    /// Mutates the packet, broadcasts it to clients, and applies it locally.
+    /// Mutates the packet, broadcasts it to clients, and applies it locally. <br/>
+    /// <b>OVERRIDE THIS METHOD ONLY TO DEFER PACKET APPLICATION OR MODIFY WHO GETS THE INFORMATION <br/>
+    /// USE MUTATEAPPROVEDPACKET AND APPLY FOR ALL THE ACTUAL PACKET LOGIC</b>
     /// </summary>
     protected virtual void ProcessApprovedPacket(ref T packet, int peerId)
     {

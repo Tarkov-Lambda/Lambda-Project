@@ -88,8 +88,8 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
 
     protected override async void Apply(AssetBundleLoadPacket packet, int peerId)
     {
-        PresetBundleHandler.Instance.AddToCache(packet.itemsToLoad);
-        await PresetBundleHandler.Instance.LoadEverythingInCache();
+        RuntimeBundleLoader.Instance.AddToCache(packet.itemsToLoad);
+        await RuntimeBundleLoader.Instance.LoadEverythingInCache();
 
         if (!H.IsHeadless && packet.replyWhenLoaded)
         {
