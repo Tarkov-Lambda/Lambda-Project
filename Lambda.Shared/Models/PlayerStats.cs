@@ -15,6 +15,7 @@ namespace Lambda.Shared.Models
         public readonly string Name                     => Identity.Name;
         public readonly Faction Faction                 => Identity.Faction;
         public readonly bool IsAdmin                    => Identity.IsAdmin;
+        public readonly string ClanTag                    => Identity.ClanTag;
         public readonly PlayerReadinessState ReadyState => Identity.ReadyState;
         public readonly int Ping                        => Identity.Ping;
         public readonly float LoadingProgress           => Identity.LoadingProgress;
@@ -42,6 +43,7 @@ namespace Lambda.Shared.Models
     public partial struct PlayerIdentity
     {
         public string Name;
+        public string ClanTag;
         public Faction Faction;
         public bool IsAdmin;
         

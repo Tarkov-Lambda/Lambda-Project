@@ -26,7 +26,7 @@ public class SessionStopPacketWarden : LambdaPacketWarden<SessionStopPacket>
 
     protected override async void Apply(SessionStopPacket packet, int peerId)
     {
-        H.Arena.ChangeState(MatchState.None);
+        H.Arena.ServerChangeState(MatchState.None);
         MapAssetBundleLoader.Instance.UnloadMap(H.Session.level).Forget();
     }
 }

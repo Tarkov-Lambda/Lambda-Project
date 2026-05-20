@@ -22,29 +22,30 @@ public class PlayerContext
     public Dictionary<EquipmentSlot, Item> DefaultEquipment { get; private set; }
     public Dictionary<ShopItem, int> ItemQuantityBoughtInRound { get; private set; }
 
-    public string Name                     => context.Name;
-    public Faction Faction                 => context.Faction;
-    public bool IsAdmin                    => context.IsAdmin;
+    public string Name => context.Name;
+    public string ClanTag => context.ClanTag;
+    public Faction Faction => context.Faction;
+    public bool IsAdmin => context.IsAdmin;
     public PlayerReadinessState ReadyState => context.ReadyState;
-    public int Ping                        => context.Ping;
-    public float LoadingProgress           => context.LoadingProgress;
+    public int Ping => context.Ping;
+    public float LoadingProgress => context.LoadingProgress;
 
-    public bool IsAlive                    => context.IsAlive;
-    
-    public int Kills                       => context.Kills;
-    public int Damage                      => context.Damage;
-    public int Headshots                   => context.Headshots;
-    public int Assists                     => context.Assists;
-    public int Deaths                      => context.Deaths;
-    
-    public int RoundDamage                 => context.RoundDamage;
-    public int RoundKills                  => context.RoundKills;
-    public int RoundHeadshots              => context.RoundHeadshots;
-    
-    public int Mvps                        => context.Mvps;
-    
-    public int Money                       => context.Money;
-    public bool ShouldHardReset            => context.ShouldHardReset;
+    public bool IsAlive => context.IsAlive;
+
+    public int Kills => context.Kills;
+    public int Damage => context.Damage;
+    public int Headshots => context.Headshots;
+    public int Assists => context.Assists;
+    public int Deaths => context.Deaths;
+
+    public int RoundDamage => context.RoundDamage;
+    public int RoundKills => context.RoundKills;
+    public int RoundHeadshots => context.RoundHeadshots;
+
+    public int Mvps => context.Mvps;
+
+    public int Money => context.Money;
+    public bool ShouldHardReset => context.ShouldHardReset;
 
     // Serverside
     private double _deathTimestamp;
@@ -55,8 +56,8 @@ public class PlayerContext
     public PlayerContext(int id)
     {
         player = H.GetPlayer(id);
-
         context.Identity.Name = player.Profile.Nickname;
+        context.Identity.ClanTag = "";
         context.Economy.Money = EconomyConstants.MAX_MONEY;
 
         ItemQuantityBoughtInRound = [];
@@ -136,6 +137,12 @@ public class PlayerContext
         context.Identity.LoadingProgress = loadingProgress;
     }
 
+    public void SetClanTag(string newClanTag)
+    {
+        newClanTag = newClanTag.ToUpper();
+        context.Identity.ClanTag = newClanTag;
+    }
+
     public void ChangeFaction(Faction faction)
     {
         context.Identity.Faction = faction;
@@ -212,7 +219,7 @@ public class PlayerContext
         context.Combat.Deaths = 0;
         context.Combat.IsAlive = true;
 
-        context.Combat.RoundDamage = 0; // very stupid but im not tracking this on clients and instead only doing this on server in HandleDamagePacket
+        context.Combat.RoundDamage = 0;
         context.Combat.RoundHeadshots = 0;
         context.Combat.RoundKills = 0;
     }

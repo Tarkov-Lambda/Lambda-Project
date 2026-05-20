@@ -43,7 +43,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<string> Password;
     
     internal static ConfigEntry<float> MusicVolume;
-
+    internal static ConfigEntry<string> ClanTag;
 
     internal static ConfigEntry<bool> DisplayLogAsNotificationInGame;
 
@@ -240,7 +240,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<EquipmentResyncPacketWarden>();                           // Resynchronize Inventory Controller
         RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
         RegisterSingleton<ChatMessagePacketWarden>();                               // Player sends a message
-        RegisterSingleton<AskForBombPriorityPacketWarden>();                        // 
+        RegisterSingleton<AskForBombPriorityPacketWarden>();                        // Player requesting to be the bomb carry for the foreseeable rounds
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -251,10 +251,11 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<SessionStartPacketWarden>();                              // ENTRY POINT. This is where admins start the game
         RegisterSingleton<SessionStopPacketWarden>();                               // Stop match prematurely and teleport everyone back to the lobby
         RegisterSingleton<AdminLoginPacketWarden>();                                // Allow clients to elevate their priviledges
-        RegisterSingleton<PausePacketWarden>();                                     // Create a timeout
+        RegisterSingleton<SessionPausePacketWarden>();                                     // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketWarden>();                        // Sync time of day between rounds
         RegisterSingleton<AnnouncementPacketWarden>();                              // Server sends an announcement message
         RegisterSingleton<ShutdownAnnouncementPacketWarden>();                      // Server announces imminent shutdown
+        RegisterSingleton<MoneyResyncPacketWarden>();                               // Server dictates new money amount for a specific player
 
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
@@ -311,7 +312,8 @@ public class Plugin : BaseUnityPlugin
         Gamemode = Config.Bind("Admin", "Gamemode", "SNDGamemode", "");
         Password = Config.Bind("Admin", "Password", "", "");
 
-        // MusicVolume = Config.Bind("", "Music Volume", "", "");
+        MusicVolume = Config.Bind("", "Music Volume", 0.25f, "");
+        ClanTag = Config.Bind("", "Clan Tag", "", "");
 
         DisplayLogAsNotificationInGame = Config.Bind("Debug", "DisplayLogAsNotificationInGame", false);
 

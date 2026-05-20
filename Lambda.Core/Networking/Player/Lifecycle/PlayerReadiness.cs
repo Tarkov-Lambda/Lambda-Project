@@ -19,6 +19,7 @@ public partial struct PlayerReadinessPacket : IPacket, IAuthoredPacket
     public Player Player { get; set; }
 
     public PlayerReadinessState readyState;
+    public string clanTag;
 
     [MemoryPackAllowSerialize]
     public Dictionary<ShopItem, Item> buySelection;
@@ -49,6 +50,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             {
                 packet.buySelection.Add(shopItem, PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId));
             }
+            packet.clanTag = Plugin.ClanTag.Value;
         }
 
         DispatchPacket(packet);
@@ -87,6 +89,8 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     {
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
+        
+        playerContext.SetClanTag(packet.clanTag);
 
         if (packet.Player.TryGetHandsResourceKey(out ResourceKey handsBundle))
         {

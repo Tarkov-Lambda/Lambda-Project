@@ -29,7 +29,9 @@ namespace Lambda.UI.scoreboard
                 DecideIfToShowStats(stats.Faction);
             }
 
-            textName.text = stats.Name;
+            string clantagPrefix = string.IsNullOrEmpty(stats.ClanTag) ? $"[{stats.ClanTag}] " : "";
+
+            textName.text = $"{clantagPrefix}{stats.Name}";
 
             iconRouble.gameObject.SetActive(isTeammate);
             textMoney.text = isTeammate ? MoneyFormat.FormatMoney(stats.Money) : " ";

@@ -46,14 +46,15 @@ namespace Lambda.Core.Main.UI
             });
         }
 
-        private static string FormatPlayer(PlayerContext player)
+        private static string FormatPlayer(PlayerContext pContext)
         {
-            if (player == null)
+            if (pContext == null)
                 return string.Empty;
 
-            string name = player.player.Profile.Nickname;
+            string name = pContext.player.Profile.Nickname;
+            string clantagPrefix = pContext.ClanTag.IsNullOrEmpty() ? $"[{pContext.ClanTag}] " : "";
 
-            return player.player.IsYourPlayer ? $"<b>{name}</b>" : name;
+            return pContext.player.IsYourPlayer ? $"<b>{clantagPrefix}{name}</b>" : name;
         }
 
         private static string BuildLeftName(PlayerContext killer, PlayerContext assist)

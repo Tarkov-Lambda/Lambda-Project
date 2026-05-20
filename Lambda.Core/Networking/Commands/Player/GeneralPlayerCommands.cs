@@ -1,5 +1,4 @@
 using Comfort.Common;
-using EFT;
 using Lambda.Core;
 using Lambda.Core.Networking;
 using Lambda.Core.Networking.Commands;
@@ -17,6 +16,12 @@ public static class GeneralPlayerCommands
     [ChatCommand("pause", "Requests server login", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
     public static void Pause(CommandContext ctx, string password)
     {
-        Singleton<AdminLoginPacketWarden>.Instance.Send();
+        Singleton<SessionPausePacketWarden>.Instance.Send();
+    }
+
+    [ChatCommand("setclan", "Set your new clan tag", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
+    public static void SetClanTag(CommandContext ctx, string clanTag)
+    {
+        Singleton<ClanTagResyncPacketWarden>.Instance.Send(clanTag);
     }
 }

@@ -10,28 +10,31 @@ public static class AdminCommands
     public static void StartMatchCommand(CommandContext ctx, string mapname)
     {
         H.Session.level = mapname;
-        ctx.Reply($"Changed next map to {mapname}");
+
+        Singleton<AnnouncementPacketWarden>.Instance.Send($"Changed next map to {mapname}");
     }
 
     [ChatCommand("start", "Starts the current session.", CommandTarget.ServerOnly, PacketAuthority.Admin)]
     public static void StartMatchCommand(CommandContext ctx)
     {
         Singleton<SessionStartPacketWarden>.Instance.Send();
-        ctx.Reply("Session is starting.");
+        Singleton<AnnouncementPacketWarden>.Instance.Send($"Session is starting.");
     }
 
     [ChatCommand("stop", "Ends the current session.", CommandTarget.ServerOnly, PacketAuthority.Admin)]
     public static void StopMatchCommand(CommandContext ctx)
     {
         Singleton<SessionStopPacketWarden>.Instance.Send();
-        ctx.Reply("An admin has stopped the match.");
+        Singleton<AnnouncementPacketWarden>.Instance.Send($"An admin has stopped the match.");
     }
 
-    [ChatCommand("givemoney", "Gives you money (in USD, but the conversion rate is favouring roubles)", CommandTarget.ServerOnly, PacketAuthority.Admin)]
+    [ChatCommand("givemoney", "Gives you money", CommandTarget.ServerOnly, PacketAuthority.Admin)]
     public static void GiveMoneyCommand(CommandContext ctx, Player player, int amount)
     {
-        H.GetPlayerContext(player).AddMoney(amount);
-        ctx.Reply($"Added {amount} money to your account.");
+        var pContext = player.GetContext();
+        pContext.AddMoney(amount);
+        Singleton<MoneyResyncPacketWarden>.Instance.Send(player, pContext.Money);
+        Singleton<AnnouncementPacketWarden>.Instance.SendToPlayer(player, $"You've received {amount / 80}");
     }
 
     [ChatCommand("kick", "Kicks a player", CommandTarget.ServerOnly, PacketAuthority.Admin)]
@@ -39,7 +42,7 @@ public static class AdminCommands
     {
         var peerId = PacketWardenUtils.Network.GetPeerIdByPlayer(target);
         PacketWardenUtils.Network.DisconnectPeer(peerId);
-        ctx.Reply($"{target.Profile.Nickname} was kicked. Reason: {reason}");
+        Singleton<AnnouncementPacketWarden>.Instance.Send($"{target.Profile.Nickname} was kicked. Reason: {reason}");
     }
 }
 

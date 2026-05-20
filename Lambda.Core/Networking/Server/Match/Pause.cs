@@ -1,4 +1,6 @@
-﻿using EFT;
+﻿using System.Text.RegularExpressions;
+using EFT;
+using Fika.Core.Networking.Pooling;
 using MemoryPack;
 using PacketWarden.TimeSync;
 
@@ -13,18 +15,21 @@ public partial struct PausePacket : IPacket, IAuthoredPacket, IServerTimestamped
     public double Timestamp { get; set; }
 }
 
-public class PausePacketWarden : LambdaPacketWarden<PausePacket>
+public class SessionPausePacketWarden : LambdaPacketWarden<PausePacket>
 {
     public void Send()
     {
-        var packet = new PausePacket { Timestamp = NetworkTime.ServerNowSeconds };
+        var packet = new PausePacket
+        {
+            Timestamp = NetworkTime.ServerNowSeconds
+        };
         DispatchPacket(packet);
     }
 
     protected override bool ValidatePacket(PausePacket packet, int peerId, out string rejectionReason)
     {
         rejectionReason = null;
-        return H.Session.matchState == MatchState.RoundPrepare;
+        return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
     protected override void MutateApprovedPacket(ref PausePacket packet, int peerId)
@@ -34,7 +39,7 @@ public class PausePacketWarden : LambdaPacketWarden<PausePacket>
 
     protected override void Apply(PausePacket packet, int peerId)
     {
-        MatchStateSyncPacket matchStateSyncPacket = new MatchStateSyncPacket
+        var matchStateSyncPacket = new MatchStateSyncPacket
         {
             matchState = MatchState.Pause,
             Timestamp = packet.Timestamp,

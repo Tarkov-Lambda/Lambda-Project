@@ -187,12 +187,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             MatchState? nextState = _currentState.OnUpdate();
             if (nextState.HasValue)
             {
-                ChangeState(nextState.Value);
+                ServerChangeState(nextState.Value);
             }
         }
     }
 
-    public async void ChangeState(MatchState newStateType)
+    public async void ServerChangeState(MatchState newStateType)
     {
         if (H.IsClient) return;
 
