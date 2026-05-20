@@ -243,6 +243,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<EquipmentResyncPacketWarden>();                           // Resynchronize Inventory Controller
         RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
         RegisterSingleton<ChatMessagePacketWarden>();                               // Player sends a message
+        RegisterSingleton<AskForBombPriorityPacketWarden>();                        // 
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map

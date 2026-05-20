@@ -141,8 +141,15 @@ public class SharedCleanup : IGameState
         {
             if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
             {
-                var randomTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.GetContext().ReadyState == PlayerReadinessState.Ready).RandomElement();
-                var backpackSlot = randomTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
+                Player selectedTerrorist = null;
+
+                Player assignedPlayer = Singleton<AskForBombPriorityPacketWarden>.Instance.AssignedPlayer;
+                if (assignedPlayer != null)
+                    selectedTerrorist = assignedPlayer;
+                else
+                    selectedTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.GetContext().ReadyState == PlayerReadinessState.Ready).RandomElement();
+
+                var backpackSlot = selectedTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
 
                 backpackSlot.RemoveItemWithoutRestrictions();
 
@@ -289,9 +296,9 @@ public class SharedRoundEnd : IGameState
 public class SharedSideSwap : IGameState
 {
     public MatchState StateType => MatchState.SideSwap;
+
     public virtual void OnEnter()
     {
-
         if (H.Gamemode is IGMSideSwappable sideSwappable)
         {
             if (H.Gamemode is IGMBuyable)
@@ -308,7 +315,9 @@ public class SharedSideSwap : IGameState
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
         }
     }
+
     public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
+
     public virtual void OnExit()
     {
         (H.Gamemode as IGMSideSwappable).HasSideSwapped = true;

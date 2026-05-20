@@ -48,6 +48,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         if (packet.msg.StartsWith("!") && packet.Player.GetContext().IsAdmin)
         {
             HandleCommandMessage(packet);
+            DispatchPacket(packet, peerId);
         }
         else
         {

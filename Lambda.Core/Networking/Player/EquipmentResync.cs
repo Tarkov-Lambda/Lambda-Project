@@ -1,9 +1,6 @@
 using EFT;
 using EFT.AssetsManager;
-using EFT.InputSystem;
 using EFT.InventoryLogic;
-using EFT.UI;
-using Fika.Core.Main.Utils;
 using MemoryPack;
 using PacketWarden.RateLimiting;
 using System;
