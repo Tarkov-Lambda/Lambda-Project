@@ -78,7 +78,6 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
-        return;
 #if DEBUG        
         if (!H.IsHeadless && H.MainPlayer?.Profile.Nickname == "notifp")
         {
@@ -149,7 +148,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
 internal class MusicObject : MonoBehaviour
 {
-    public float MaxVolume => Plugin.MusicVolume.Value;
+    public float MaxVolume => 0.18f;
 
     private AudioSource _sourceA;
     private AudioSource _sourceB;

@@ -9,6 +9,7 @@ using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Shared.Models;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main;
+using Fika.Core.Main.Players;
 
 namespace Lambda.Core.Networking;
 
@@ -70,9 +71,9 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     {
         if (packet.buySelection != null)
         {
-            var playerContext = H.GetPlayerContext(packet.Player);
-            playerContext.SetDefaultItems(packet.defaultItems);
-            playerContext.SetBuySelection(packet.buySelection);
+            PlayerContext pContext = H.GetPlayerContext(packet.Player);
+            pContext.SetDefaultItems(packet.defaultItems);
+            pContext.SetBuySelection(packet.buySelection);
 
             // we only need to add buy menu stuff into the cache
             // because defaultItems is literally the equipment that player has spawned in the raid with
@@ -87,9 +88,11 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
     protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
+        if (IsArenaReady && !packet.Player.IsYourPlayer) return;
+
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
-        
+
         playerContext.SetClanTag(packet.clanTag);
 
         if (packet.Player.TryGetHandsResourceKey(out ResourceKey handsBundle))
@@ -111,6 +114,11 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
         if (H.IsServer)
         {
+            if (packet.Player is ObservedPlayer observedPlayer)
+            {
+                Singleton<ReconnectSnapshotterResetPacketWarden>.Instance.Send(observedPlayer);
+            }
+
             // In case a player is reporting they are connected mid session (reconnects, new joins)
             if (H.Arena.gamemode != null && H.Session.matchState != MatchState.None)
             {
@@ -135,7 +143,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             }
         }
 
-        if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected)
+        if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected && !Plugin.Password.Value.IsNullOrEmpty())
         {
             Singleton<AdminLoginPacketWarden>.Instance.Send();
         }

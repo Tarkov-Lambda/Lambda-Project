@@ -63,6 +63,8 @@ public class Plugin : BaseUnityPlugin
     {
         _cts = new CancellationTokenSource();
 
+        if (PacketWardenUtils.Network.IsHeadless) return;
+
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
 
         RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
@@ -94,12 +96,14 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_2());     // bypass occlusion containers
         RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
 
-        RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();        // We invoke all audio room changes manually
+        RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();              // We invoke all audio room changes manually
     }
 
     void OnDestroy()
     {
         Logger.LogInfo("Unload");
+
+        if (PacketWardenUtils.Network.IsHeadless) return;
 
         BetterSourceProxyRouter.Dispose();
 

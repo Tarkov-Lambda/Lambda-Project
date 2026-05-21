@@ -391,7 +391,7 @@ public class Patch_HostGameController_GetHostLootItems : ModulePatch
 // causing the player to be motionless until their reconnected timestamp state reaches the old timestamp
 // as a result we are checking if the observed player already exists OnNetworkSettingsPacketReceived
 // and clearing the snapshotter manually 
-public class Patch_FikaServer_ReconnectFix : ModulePatch
+public class Patch_FikaServer_OnNetworkSettingsPacketReceived : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnNetworkSettingsPacketReceived");
 
@@ -405,26 +405,7 @@ public class Patch_FikaServer_ReconnectFix : ModulePatch
         {
             if (player.ProfileId == packet.ProfileId && player is ObservedPlayer observedPlayer)
             {
-                Debug.Log($"[FIKA Reconnect Fix] Reconnecting player '{player.Profile.Nickname}' (NetId: {player.NetId}) detected. Resetting network state.");
-
-                observedPlayer.Snapshotter?.Clear();
-
-                var traverse = Traverse.Create(observedPlayer);
-                var stateField = traverse.Field("CurrentPlayerState");
-                if (stateField.FieldExists())
-                {
-                    var stateObject = stateField.GetValue();
-                    if (stateObject != null)
-                    {
-                        var stateType = stateObject.GetType();
-                        var ctor = stateType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [typeof(Vector3), typeof(Vector2)], null);
-                        if (ctor != null)
-                        {
-                            var newState = ctor.Invoke([observedPlayer.Position, observedPlayer.Rotation]);
-                            stateField.SetValue(newState);
-                        }
-                    }
-                }
+                observedPlayer.ResetSnapshotter();
                 return;
             }
         }

@@ -29,7 +29,7 @@ namespace Lambda.UI.scoreboard
                 DecideIfToShowStats(stats.Faction);
             }
 
-            string clantagPrefix = string.IsNullOrEmpty(stats.ClanTag) ? $"[{stats.ClanTag}] " : "";
+            string clantagPrefix = string.IsNullOrEmpty(stats.ClanTag) ? "" : $"[{stats.ClanTag}] ";
 
             textName.text = $"{clantagPrefix}{stats.Name}";
 

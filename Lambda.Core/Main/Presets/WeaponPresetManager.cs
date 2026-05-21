@@ -24,6 +24,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     {
         H.AfterApplicationLoaded += InitializeOnApplicationLoad;
 
+        if(H.IsHeadless) return;
         // Hot-reload
         if (H.TarkovClientISession?.Profile_1?.Id != null) InitializeOnApplicationLoad();
     }
@@ -36,6 +37,8 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
     public async void InitializeOnApplicationLoad()
     {
+        if(H.IsHeadless) return;
+        
         _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "Presets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
 
         // Wait for all custom presets to finish importing and saving

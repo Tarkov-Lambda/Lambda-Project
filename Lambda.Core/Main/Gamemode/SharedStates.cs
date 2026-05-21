@@ -15,10 +15,9 @@ public class SharedNone : IGameState
     public MatchState StateType => MatchState.None;
     public virtual void OnEnter()
     {
-        Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
-
         if (!H.IsHeadless)
         {
+            Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
             PU.OpenEyes();
         }
@@ -104,10 +103,10 @@ public class SharedCleanup : IGameState
     public MatchState StateType => MatchState.Cleanup;
     public virtual void OnEnter()
     {
-        if (!H.IsHeadless)
-        {
-            H.MainPlayer.SetEmptyHands(delegate { });
-        }
+        // if (!H.IsHeadless)
+        // {
+        //     H.MainPlayer.SetEmptyHands(delegate { });
+        // }
 
         IU.GarbageCollectWorldLoot();
 
@@ -123,11 +122,14 @@ public class SharedCleanup : IGameState
         {
             player.ForceUnlockInventory();
 
+
             if (H.IsServer)
             {
-                var playerScore = H.GetPlayerContext(player);
+                Singleton<ReconnectSnapshotterResetPacketWarden>.Instance.Send(player);
 
-                if (!playerScore.ShouldHardReset && totalRounds > 0 && !isHalfTime)
+                var pContext = H.GetPlayerContext(player);
+
+                if (!pContext.ShouldHardReset && totalRounds > 0 && !isHalfTime)
                 {
                     player.SoftReset();
                 }

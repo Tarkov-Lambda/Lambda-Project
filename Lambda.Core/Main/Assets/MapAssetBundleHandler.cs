@@ -19,6 +19,13 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
         Patch_Gameworld_OnDispose.OnDispose += UnloadEverythingOnGameWorldDispose;
     }
 
+    public void Dispose()
+    {
+        Patch_Gameworld_OnDispose.OnDispose -= UnloadEverythingOnGameWorldDispose;
+        UnloadAll(true);
+        Release(this);
+    }
+
     public async UniTask ReloadMap(string mapName)
     {
         D.Log($"[AssetBundleHandler] Hot Reloading Map: {mapName}");
@@ -74,7 +81,7 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
             return;
         }
 
-        BundleLoadingProgressReport progressReportScene = new BundleLoadingProgressReport();
+        BundleLoadingProgressReport progressReportScene = new();
         var loadTasks = new List<UniTask>();
 
         foreach (var scenePath in scenePaths)
@@ -196,13 +203,6 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
         }
 
         MapLoadEvent.OnUnload?.Invoke();
-    }
-
-    public void Dispose()
-    {
-        Patch_Gameworld_OnDispose.OnDispose -= UnloadEverythingOnGameWorldDispose;
-        UnloadAll(true);
-        Release(this);
     }
 }
 

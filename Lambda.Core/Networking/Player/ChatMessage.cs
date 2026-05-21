@@ -24,8 +24,6 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     public void Send(ChatMessageScope scope, string msg)
     {
-
-
         var packet = new ChatMessagePacket
         {
             Player = H.MainPlayer,
@@ -44,7 +42,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override bool ValidatePacket(ChatMessagePacket packet, int peerId, out string rejectionReason)
     {
-        if (packet.msg.Length > 256)
+        if (packet.msg.Length > 132)
         {
             rejectionReason = "Character Limit Exceeded";
             return false;

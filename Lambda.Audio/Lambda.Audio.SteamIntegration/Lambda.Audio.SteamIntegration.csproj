@@ -60,6 +60,7 @@
     <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
     <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
     <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" />
+    <ProjectReference Include="..\..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

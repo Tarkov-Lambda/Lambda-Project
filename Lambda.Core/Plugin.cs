@@ -160,6 +160,8 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
         // RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());      // For controller locking
         RegisterPatch(new Patch_FirearmController_SetTriggerPressed());             // For controller locking
+        // RegisterPatch(new Patch_FirearmController_SetTriggerPressed_method_64());   // For controller locking
+
         // RegisterPatch(new Patch_ApplyShot());
 
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
@@ -203,7 +205,7 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_FikaServer_OnDestroy());                            // Stop NAT Introduction manually
 
         RegisterPatch(new Patch_HostGameController_GetHostLootItems());             // no bytes for loot items (some nre fix idk)
-        RegisterPatch(new Patch_FikaServer_ReconnectFix());                         // snapshotter timestamp reconnect fix
+        RegisterPatch(new Patch_FikaServer_OnNetworkSettingsPacketReceived());      // snapshotter timestamp reconnect fix
 
         RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
@@ -251,11 +253,13 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<SessionStartPacketWarden>();                              // ENTRY POINT. This is where admins start the game
         RegisterSingleton<SessionStopPacketWarden>();                               // Stop match prematurely and teleport everyone back to the lobby
         RegisterSingleton<AdminLoginPacketWarden>();                                // Allow clients to elevate their priviledges
-        RegisterSingleton<SessionPausePacketWarden>();                                     // Create a timeout
+        RegisterSingleton<SessionPausePacketWarden>();                              // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketWarden>();                        // Sync time of day between rounds
         RegisterSingleton<AnnouncementPacketWarden>();                              // Server sends an announcement message
         RegisterSingleton<ShutdownAnnouncementPacketWarden>();                      // Server announces imminent shutdown
         RegisterSingleton<MoneyResyncPacketWarden>();                               // Server dictates new money amount for a specific player
+
+        RegisterSingleton<ReconnectSnapshotterResetPacketWarden>();                 // Duct Tape
 
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load
         RegisterSingleton<AssetBundleLoadFinishedPacketWarden>();                   // Player responds back saying they loaded a specific batch of asset bundles
@@ -264,11 +268,11 @@ public class Plugin : BaseUnityPlugin
         {
             // Internal Classses (order matters)
             RegisterSingleton<RuntimeBundleLoader>();                               // Handler of preset item loading (stuff in the buy menu)
-            RegisterSingleton<MapAssetBundleLoader>();                             // Handler of map asset loading
+            RegisterSingleton<MapAssetBundleLoader>();                              // Handler of map asset loading
             RegisterSingleton<RagdollCreator>();                                    // Fake Corpse Creation
             RegisterSingleton<PresetItemsCache>();                                  // Caching gun presets
             RegisterSingleton<WeaponPresetManager>();                               // Initializes/Saves/Loads what gun preset is selected for in raid spawning
-            RegisterSingleton<ClientEquipmentManager>();                           // 
+            RegisterSingleton<ClientEquipmentManager>();                            // 
 
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)
@@ -346,7 +350,7 @@ public class Plugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            H.MainPlayer.UnfuckHands();
+            // H.MainPlayer.UnfuckHands();
             Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
         }
 

@@ -52,7 +52,7 @@ namespace Lambda.Core.Main.UI
                 return string.Empty;
 
             string name = pContext.player.Profile.Nickname;
-            string clantagPrefix = pContext.ClanTag.IsNullOrEmpty() ? $"[{pContext.ClanTag}] " : "";
+            string clantagPrefix = pContext.ClanTag.IsNullOrEmpty() ? "" : $"[{pContext.ClanTag}] ";
 
             return pContext.player.IsYourPlayer ? $"<b>{clantagPrefix}{name}</b>" : name;
         }

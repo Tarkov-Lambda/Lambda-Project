@@ -106,12 +106,12 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
         if (packet.broadcast)
         {
-            PacketWardenUtils.Network.SendData(ref packet, DeliveryType, true);
+            Network.SendData(ref packet, DeliveryType, true);
             ApplyInternal(packet, peerId);
         }
         else if (peerId != Network.NetId)
         {
-            PacketWardenUtils.Network.SendDataToPeer(ref packet, DeliveryType, peerId);
+            Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
     }
 
@@ -119,36 +119,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
     {
         Player player = packet.Player;
 
-        if (player.HandsController != null)
-        {
-            try
-            {
-                player.ProcessStatus = EProcessStatus.None;
-                player.AbstractProcess_0?.AbortAfterCompletion();
-                player.AbstractProcess_0 = null;
-                player.DestroyController();
-            }
-            catch (Exception ex)
-            {
-                D.LogError($"[EquipmentResync] Error safely destroying HandsController for {player.Profile.Nickname}: {ex}");
-                
-                // Fallback ensures no floating weapons are left on the map
-                if (player.HandsController != null)
-                {
-                    if (player.HandsController.ControllerGameObject != null)
-                    {
-                        AssetPoolObject.ReturnToPool(player.HandsController.ControllerGameObject, true);
-                    }
-                    UnityEngine.Object.Destroy(player.HandsController);
-                    player.HandsController = null;
-                }
-            }
-        }
-
-        player.RemoveLeftHandItem(1f);
-        // player.ProceduralWeaponAnimation?.ClearPreviousWeapon();
-        
-        player.MovementContext?.SetBlindFire(0);
+        player.UnfuckHands();
 
         foreach (var slotType in resyncableSlots)
         {
@@ -176,7 +147,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         if (!H.IsHeadless && player.IsYourPlayer)
         {
             player.ProcessStatus = EProcessStatus.None;
-            player.SetFirstAvailableItem((result) => 
+            player.SetFirstAvailableItem((result) =>
             {
                 if (result.Failed)
                 {
