@@ -41,7 +41,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<string> Gamemode;
     internal static ConfigEntry<string> Level;
     internal static ConfigEntry<string> Password;
-    
+
     internal static ConfigEntry<float> MusicVolume;
     internal static ConfigEntry<string> ClanTag;
 

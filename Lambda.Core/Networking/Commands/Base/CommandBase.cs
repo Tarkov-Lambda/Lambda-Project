@@ -23,21 +23,23 @@ public class ChatCommandAttribute(string name, string description, CommandTarget
 public class CommandContext
 {
     public Player Sender { get; }
+    public int PeerId { get; }
     public string RawMessage { get; }
     public string[] Args { get; }
 
-    public CommandContext(Player sender, string rawMessage, string[] args)
+    public CommandContext(Player sender, int peerId, string rawMessage, string[] args)
     {
         Sender = sender;
         RawMessage = rawMessage;
         Args = args;
+        PeerId = peerId;
     }
 
     public void Reply(string message)
     {
         if (H.IsServer)
         {
-            Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(Sender, message);
+            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer(message, PeerId);
         }
         else
         {

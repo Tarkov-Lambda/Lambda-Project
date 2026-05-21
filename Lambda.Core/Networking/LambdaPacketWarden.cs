@@ -8,7 +8,7 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
     // however for now it works and should not be touched
     protected virtual bool ShouldApplyBeforeArenaInitialized => false;
 
-    protected bool IsArenaReady => H.Arena?.Session != null;
+    public static bool IsArenaReady => H.Arena?.Session != null;
 
     protected override void WhenClientReceivesPacket(T packet, int peerId)
     {

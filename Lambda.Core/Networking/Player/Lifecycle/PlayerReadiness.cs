@@ -89,7 +89,9 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
         if (packet.Player == null) return;
-        if (IsArenaReady && !packet.Player.IsYourPlayer) return;
+        if (!IsArenaReady && !packet.Player.IsYourPlayer) return;
+
+        D.Log(peerId.ToString());
 
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
@@ -134,7 +136,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
                     Singleton<SessionManagerSyncPacketWarden>.Instance.SendToPeer(peerId);
                     Singleton<MatchStateSyncPacketWarden>.Instance.SendToLateJoiner(peerId);
-                    Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
+                    // Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {

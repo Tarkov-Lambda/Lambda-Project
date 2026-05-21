@@ -10,18 +10,18 @@ using static Fika.Core.Modding.FikaEventDispatcher;
 
 public class FikaBackend : INetworkBackend, IDisposable
 {
-    public bool IsServer   => FikaBackendUtils.IsServer;
-    public bool IsClient   => FikaBackendUtils.IsClient;
+    public bool IsServer => FikaBackendUtils.IsServer;
+    public bool IsClient => FikaBackendUtils.IsClient;
     public bool IsHeadless => FikaBackendUtils.IsHeadless;
-    public bool IsOnline   => true;
+    public bool IsOnline => true;
 
-    public int NetId       => Singleton<IFikaNetworkManager>.Instance.NetId;
+    public int NetId => Singleton<IFikaNetworkManager>.Instance.NetId;
 
-    public Action OnNetworkCreated      { get;set; }
-    public Action OnNetworkDestroyed    { get;set; }
-    
-    public Action<int> OnPeerConnected  { get; set; }
-    public Action<int> OnDisconnected   { get; set; }
+    public Action OnNetworkCreated { get; set; }
+    public Action OnNetworkDestroyed { get; set; }
+
+    public Action<int> OnPeerConnected { get; set; }
+    public Action<int> OnDisconnected { get; set; }
 
     private readonly Action<FikaNetworkManagerCreatedEvent> OnFikaNetworkManagerCreatedEvent;
     private readonly Action<FikaNetworkManagerDestroyedEvent> OnFikaNetworkManagerDestroyedEvent;
@@ -88,7 +88,7 @@ public class FikaBackend : INetworkBackend, IDisposable
         Singleton<IFikaNetworkManager>.Instance.SendDataToPeer(ref wrapper, (DeliveryMethod)method, Singleton<IFikaNetworkManager>.Instance.GetPeerById(id));
     }
 
-    public Player GetPlayerByPeerId(int peerId) => Singleton<IFikaNetworkManager>.Instance.GetPeerById(peerId).Player;
+    public Player GetPlayerByPeerId(int peerId) => Singleton<IFikaNetworkManager>.Instance.GetPeerById(peerId)?.Player;
 
     public int GetPeerIdByPlayer(Player player) => (player as FikaPlayer).NetId;
 }

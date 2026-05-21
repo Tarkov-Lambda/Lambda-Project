@@ -28,15 +28,15 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
         DispatchPacket(ref packet);
     }
 
-    public void SendToPlayer(Player player, string msg)
+    public void SendToPeer(string msg, int peerId)
     {
         var packet = new AnnouncementPacket
         {
-            msg = msg
+            msg = msg,
+            specificFaction = Faction.T
         };
 
-        FikaPlayer fikaPlayer = player as FikaPlayer;
-        DispatchPacket(ref packet, fikaPlayer.NetId);
+        DispatchPacket(ref packet, peerId);
     }
 
     public void SendToFaction(Faction faction, string msg)

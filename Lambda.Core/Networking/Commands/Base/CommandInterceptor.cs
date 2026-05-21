@@ -48,20 +48,20 @@ namespace Lambda.Core.Networking.Commands
 
             if (cmdInfo.Attribute.Target == CommandTarget.ClientOnly)
             {
-                ExecuteCommand(cmdInfo, H.MainPlayer, message, args);
+                ExecuteCommand(cmdInfo, H.MainPlayer, PacketWardenUtils.Network.NetId, message, args);
                 return true; // consumed
             }
 
             return false; // server command, send the packet
         }
 
-        public static void HandleServer(Player sender, string message)
+        public static void HandleServer(Player sender, int peerId, string message)
         {
             var (cmdName, args) = ParseRawMessage(message);
-            
+
             if (!Commands.TryGetValue(cmdName, out var cmdInfo))
             {
-                Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(sender, "Unknown command.");
+                Singleton<ServerMessagePacketWarden>.Instance.SendToPeer("Unknown command.", peerId);
                 return;
             }
 
@@ -73,17 +73,17 @@ namespace Lambda.Core.Networking.Commands
                 var score = H.GetPlayerContext(sender);
                 if (score == null || !score.IsAdmin)
                 {
-                    Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(sender, "You do not have permission to use this command.");
+                    Singleton<ServerMessagePacketWarden>.Instance.SendToPeer("You do not have permission to use this command.", peerId);
                     return;
                 }
             }
 
-            ExecuteCommand(cmdInfo, sender, message, args);
+            ExecuteCommand(cmdInfo, sender, peerId, message, args);
         }
 
-        private static void ExecuteCommand(CommandMethodInfo cmdInfo, Player sender, string rawMessage, string[] args)
+        private static void ExecuteCommand(CommandMethodInfo cmdInfo, Player sender, int peerId, string rawMessage, string[] args)
         {
-            var context = new CommandContext(sender, rawMessage, args);
+            var context = new CommandContext(sender, peerId, rawMessage, args);
 
             try
             {

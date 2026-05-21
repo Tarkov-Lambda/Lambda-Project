@@ -57,7 +57,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         // the client sees their command message but others do not
         if (packet.msg.StartsWith("!"))
         {
-            ChatCommandInterceptor.HandleServer(packet.Player, packet.msg);
+            ChatCommandInterceptor.HandleServer(packet.Player, peerId, packet.msg);
         }
         else
         {

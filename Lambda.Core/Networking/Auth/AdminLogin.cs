@@ -21,7 +21,7 @@ public enum AdminAuthStep
 public partial struct AdminAuthPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player Player {get; set; }
+    public Player Player { get; set; }
 
     public AdminAuthStep Step;
     public string Payload;
@@ -152,16 +152,16 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         switch (packet.Step)
         {
             case AdminAuthStep.Challenge:
-                HandleChallenge(packet);
+                HandleChallenge(packet, peerId);
                 break;
 
             case AdminAuthStep.Success:
-                HandleSuccess(packet);
+                HandleSuccess(packet, peerId);
                 break;
         }
     }
 
-    private void HandleChallenge(AdminAuthPacket packet)
+    private void HandleChallenge(AdminAuthPacket packet, int peerId)
     {
         if (string.IsNullOrEmpty(Plugin.Password.Value))
         {
@@ -181,13 +181,13 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         DispatchPacket(ref verify);
     }
 
-    private void HandleSuccess(AdminAuthPacket packet)
+    private void HandleSuccess(AdminAuthPacket packet, int peerId)
     {
         H.GetPlayerContext(packet.Player)?.SetAdmin(true);
 
         if (H.IsServer)
         {
-            Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(packet.Player, $"Your priviledges have been elevated.");
+            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer($"Your priviledges have been elevated.", peerId);
         }
     }
 
