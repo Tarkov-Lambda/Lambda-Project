@@ -26,7 +26,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     public SpectatorManager()
     {
         if (H.IsHeadless) return;
-        UnityTicker.OnLateUpdate += onUpdate;
+        UnityTicker.OnLateUpdate += OnUpdate;
         EventBus.OnEnter += OnEnter;
         EventBus.OnSelfFactionChanged += OnFactionChanged;
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKilled;
@@ -34,7 +34,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void Dispose()
     {
-        UnityTicker.OnLateUpdate -= onUpdate;
+        UnityTicker.OnLateUpdate -= OnUpdate;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKilled;
@@ -101,7 +101,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         }
     }
 
-    private void onUpdate()
+    private void OnUpdate()
     {
         if (observedPlayer == null) return;
 
@@ -131,7 +131,7 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         if (H.IsHeadless) return;
 
-        List<PlayerContext> validPlayersToSpectate = new List<PlayerContext>();
+        List<PlayerContext> validPlayersToSpectate = new();
 
         // Case 1: You are a dedicated Spectator
         if (H.MainPlayerScore.Faction == Faction.Spectator)

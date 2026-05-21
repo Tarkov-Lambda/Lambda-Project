@@ -9,7 +9,7 @@ namespace PhononSpatializerProxy
     {
         private class DSPParams
         {
-            public PVec3 Dir = new PVec3 { z = 1f };
+            public PVec3 Dir = new() { z = 1f };
             public float DistAtten = 1f;
             public float Occlusion = 1f;
             public float TransLow = 0f;
@@ -26,7 +26,7 @@ namespace PhononSpatializerProxy
             public float SpatialBlend = 1f;
         }
 
-        private volatile DSPParams _currentParams = new DSPParams();
+        private volatile DSPParams _currentParams = new();
 
         private IntPtr _binaural = IntPtr.Zero;
         private IntPtr _direct = IntPtr.Zero;
@@ -104,8 +104,10 @@ namespace PhononSpatializerProxy
                     _reflBufsAllocated = false;
                     if (_cachedContext != IntPtr.Zero)
                     {
-                        if (_reflAmbiNative.data != IntPtr.Zero) PhononNative.iplAudioBufferFree(_cachedContext, ref _reflAmbiNative);
-                        if (_reflStereoNative.data != IntPtr.Zero) PhononNative.iplAudioBufferFree(_cachedContext, ref _reflStereoNative);
+                        if (_reflAmbiNative.data != IntPtr.Zero)
+                            PhononNative.iplAudioBufferFree(_cachedContext, ref _reflAmbiNative);
+                        if (_reflStereoNative.data != IntPtr.Zero)
+                            PhononNative.iplAudioBufferFree(_cachedContext, ref _reflStereoNative);
                     }
                 }
             }
@@ -163,7 +165,13 @@ namespace PhononSpatializerProxy
 
                 if (_reflectionEffect == IntPtr.Zero)
                 {
-                    var reflS = new PReflectionEffectSettings { type = reflType, numChannels = ambiCh, irSize = irSz };
+                    var reflS = new PReflectionEffectSettings
+                    {
+                        type = reflType,
+                        numChannels = ambiCh,
+                        irSize = irSz
+                    };
+
                     if (PhononNative.iplReflectionEffectCreate(ctx, ref audio, ref reflS, out _reflectionEffect) != 0)
                         _reflectionEffect = IntPtr.Zero;
                 }
@@ -176,6 +184,7 @@ namespace PhononSpatializerProxy
                         hrtf = hrtf,
                         maxOrder = maxOrder,
                     };
+
                     if (PhononNative.iplAmbisonicsDecodeEffectCreate(ctx, ref audio, ref ambiS, out _ambiDecodeEffect) != 0)
                         _ambiDecodeEffect = IntPtr.Zero;
                 }
@@ -206,6 +215,7 @@ namespace PhononSpatializerProxy
             }
         }
 
+        // TODO: Reduce GC here
         private void Update()
         {
             if (_binaural == IntPtr.Zero)
@@ -222,9 +232,18 @@ namespace PhononSpatializerProxy
             Transform listener = PhononListenerCache.GetListenerTransform();
             if (listener == null) return;
 
-            UnityEngine.Vector3 localPos = listener.InverseTransformPoint(transform.position);
+
+            UnityEngine.Vector3 sourcePos = transform.position;
+            UnityEngine.Vector3 listenerPos = listener.position;
+            UnityEngine.Vector3 listenerRight = listener.right;
+            UnityEngine.Vector3 listenerUp = listener.up;
+            UnityEngine.Vector3 listenerForward = listener.forward;
+
+            // change
+            UnityEngine.Vector3 localPos = listener.InverseTransformPoint(sourcePos);
             UnityEngine.Vector3 d = localPos.sqrMagnitude < 1e-6f ? UnityEngine.Vector3.forward : localPos.normalized;
-            float dist = (transform.position - listener.position).magnitude;
+
+            float dist = (sourcePos - listenerPos).magnitude;
 
             bool shouldApplyDistAtten = true;
             float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
@@ -263,7 +282,7 @@ namespace PhononSpatializerProxy
                         hasRefl = reflParams.ir != IntPtr.Zero;
                         reflMix = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
 
-                        UnityEngine.Vector3 lR = listener.right, lU = listener.up, lF = listener.forward, lP = listener.position;
+                        UnityEngine.Vector3 lR = listenerRight, lU = listenerUp, lF = listenerForward, lP = listenerPos;
                         listenerCS = new PCoordinateSpace3
                         {
                             right = new PVec3 { x = lR.x, y = lR.y, z = -lR.z },
@@ -286,7 +305,12 @@ namespace PhononSpatializerProxy
             // atomic reference swap
             var newParams = new DSPParams
             {
-                Dir = new PVec3 { x = d.x, y = d.y, z = -d.z },
+                Dir = new PVec3
+                {
+                    x = d.x,
+                    y = d.y,
+                    z = -d.z
+                },
                 DistAtten = atten,
                 Occlusion = occ,
                 TransLow = tLow,

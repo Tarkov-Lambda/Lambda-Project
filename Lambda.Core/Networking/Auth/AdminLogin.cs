@@ -142,7 +142,8 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
             Payload = null
         };
 
-        PacketWardenUtils.Network.SendDataToPeer(ref success, DeliveryType, peerId);
+        DispatchPacket(success, peerId);
+        ApplyInternal(success, Network.NetId);
     }
 
 

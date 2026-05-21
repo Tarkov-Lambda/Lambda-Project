@@ -55,7 +55,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
     {
         // all exclamation mark commands are serverside
         // the client sees their command message but others do not
-        if (packet.msg.StartsWith("!") && packet.Player.GetContext().IsAdmin)
+        if (packet.msg.StartsWith("!"))
         {
             ChatCommandInterceptor.HandleServer(packet.Player, packet.msg);
         }
