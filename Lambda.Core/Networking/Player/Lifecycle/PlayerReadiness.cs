@@ -54,7 +54,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             packet.clanTag = Plugin.ClanTag.Value;
         }
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState)
@@ -64,7 +64,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             Player = targetPlayer,
             readyState = readyState,
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void MutateApprovedPacket(ref PlayerReadinessPacket packet, int peerId)

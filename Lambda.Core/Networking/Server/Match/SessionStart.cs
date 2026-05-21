@@ -51,7 +51,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
             gamemode = Plugin.Gamemode.Value,
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     // if a player was not present at the start of this session, send them the sitrep
@@ -70,7 +70,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
             packet.itemsToLoad = RuntimeBundleLoader.Instance.ItemsToLoad;
         }
 
-        DispatchPacket(packet, peerId);
+        DispatchPacket(ref packet, peerId);
     }
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)

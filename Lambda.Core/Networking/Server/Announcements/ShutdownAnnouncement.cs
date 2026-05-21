@@ -24,7 +24,7 @@ public class ShutdownAnnouncementPacketWarden : LambdaPacketWarden<ShutdownAnnou
         {
             msg = msg
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     public void SendToPlayer(Player player, string msg)
@@ -36,7 +36,7 @@ public class ShutdownAnnouncementPacketWarden : LambdaPacketWarden<ShutdownAnnou
 
         FikaPlayer fikaPlayer = player as FikaPlayer;
 
-        DispatchPacket(packet, fikaPlayer.NetId);
+        DispatchPacket(ref packet, fikaPlayer.NetId);
     }
 
     protected override void Apply(ShutdownAnnouncementPacket packet, int peerId)

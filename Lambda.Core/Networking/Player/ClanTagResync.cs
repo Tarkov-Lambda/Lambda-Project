@@ -27,7 +27,7 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
             newClanTag = newClanTag
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override bool ValidatePacket(ClanTagResyncPacket packet, int peerId, out string rejectionReason)

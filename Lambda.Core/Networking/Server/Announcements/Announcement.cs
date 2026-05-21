@@ -25,7 +25,7 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
         {
             msg = msg
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     public void SendToPlayer(Player player, string msg)
@@ -36,7 +36,7 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
         };
 
         FikaPlayer fikaPlayer = player as FikaPlayer;
-        DispatchPacket(packet, fikaPlayer.NetId);
+        DispatchPacket(ref packet, fikaPlayer.NetId);
     }
 
     public void SendToFaction(Faction faction, string msg)
@@ -47,7 +47,7 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
             specificFaction = faction
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     // Handled in ChatController

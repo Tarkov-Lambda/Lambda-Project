@@ -21,7 +21,7 @@ public class SessionStopPacketWarden : LambdaPacketWarden<SessionStopPacket>
     {
         var packet = new SessionStopPacket { isItTrue = true }; // true
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override async void Apply(SessionStopPacket packet, int peerId)

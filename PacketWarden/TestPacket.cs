@@ -25,7 +25,7 @@ public class TestPacketWarden : PacketWarden<TestPacket>
             clientSendLocalSeconds = NetworkTime.LocalNowSeconds
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void ProcessApprovedPacket(ref TestPacket packet, int peerId)

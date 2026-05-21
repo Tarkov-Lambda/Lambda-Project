@@ -55,7 +55,7 @@ public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
             IsRequesting = playerToItem[H.MainPlayer] != itemBsgId ? true : false
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override async void ApplyOptimistically(AskForMoneyPacket packet)

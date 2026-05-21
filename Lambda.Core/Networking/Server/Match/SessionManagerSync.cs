@@ -44,12 +44,14 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
         var session = H.Session;
         if (session == null) return;
 
-        DispatchPacket(FormatPacket());
+        var packet = FormatPacket();
+        DispatchPacket(ref packet);
     }
 
     public void SendToPeer(int peerId)
     {
-        DispatchPacket(FormatPacket(), peerId);
+        var packet = FormatPacket();
+        DispatchPacket(ref packet, peerId);
     }
 
     protected override void Apply(SessionManagerSyncPacket packet, int peerId)

@@ -20,7 +20,7 @@ public class GameplayVariablesSyncPacketWarden : LambdaPacketWarden<GameplayVari
             variables = GameplayVariables.vars
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     public void SendToPeer(int peerId)
@@ -30,7 +30,7 @@ public class GameplayVariablesSyncPacketWarden : LambdaPacketWarden<GameplayVari
             variables = GameplayVariables.vars
         };
         
-        DispatchPacket(packet, peerId);
+        DispatchPacket(ref packet, peerId);
     }
 
     protected override void Apply(GameplayVariablesSyncPacket packet, int peerId)

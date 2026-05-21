@@ -161,7 +161,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// </summary>
     /// <param name="packet">The packet payload to send.</param>
     /// <param name="targetPeerId">If provided (and invoked by the server), the packet is sent only to this specific peer.</param>
-    protected void DispatchPacket(T packet, int? targetPeerId = null)
+    protected void DispatchPacket(ref T packet, int? targetPeerId = null)
     {
         if (!H.IsInRaid()) return;
 

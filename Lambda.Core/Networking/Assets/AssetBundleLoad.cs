@@ -65,7 +65,7 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
             });
         }
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
 
         await UniTask.WaitUntil(() => !AssetBundleLoadProgress.ContainsKey(packet.id));
 
@@ -83,7 +83,7 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
             replyWhenLoaded = false
         };
 
-        DispatchPacket(packet, peerId);
+        DispatchPacket(ref packet, peerId);
     }
 
     protected override async void Apply(AssetBundleLoadPacket packet, int peerId)

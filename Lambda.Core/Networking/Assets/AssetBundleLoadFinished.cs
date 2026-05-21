@@ -27,7 +27,7 @@ public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundl
             Player = H.MainPlayer
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     // server only application

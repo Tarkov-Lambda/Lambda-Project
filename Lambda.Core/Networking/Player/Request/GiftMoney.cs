@@ -38,7 +38,7 @@ public class GiftMoneyPacketWarden : LambdaPacketWarden<GiveMoneyPacket>
             ItemBsgId = itemBsgId
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void ApplyOptimistically(GiveMoneyPacket packet)

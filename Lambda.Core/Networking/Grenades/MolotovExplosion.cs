@@ -36,7 +36,7 @@ public class MolotovExplosionPacketWarden : LambdaPacketWarden<MolotovExplosionP
             fireNodes = generatedNodes
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override async void Apply(MolotovExplosionPacket packet, int peerId)

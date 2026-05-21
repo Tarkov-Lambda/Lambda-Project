@@ -27,7 +27,7 @@ public class TimeSynchronizationPacketWarden : PacketWarden<TimeSynchronizationP
 
         try
         {
-            DispatchPacket(packet);
+            DispatchPacket(ref packet);
         }
         catch (NullReferenceException) { } // idrc
     }

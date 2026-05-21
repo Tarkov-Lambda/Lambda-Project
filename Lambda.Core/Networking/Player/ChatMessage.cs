@@ -37,7 +37,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
             return;
         }
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override bool ValidatePacket(ChatMessagePacket packet, int peerId, out string rejectionReason)

@@ -37,7 +37,7 @@ public class ForceRemoveItemPacketWarden : LambdaPacketWarden<PopPacket>
             itemAddress = item.CurrentAddress,
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override async void Apply(PopPacket packet, int peerId)

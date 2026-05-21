@@ -31,7 +31,7 @@ public class SmokeExplosionPacketWarden : LambdaPacketWarden<SmokeExplosionPacke
             explosionPos = explosionPos,
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override async void Apply(SmokeExplosionPacket packet, int peerId)

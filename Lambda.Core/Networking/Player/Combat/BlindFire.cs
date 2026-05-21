@@ -23,7 +23,7 @@ public class BlindFirePacketWarden : LambdaPacketWarden<BlindFirePacket>
             Player = H.MainPlayer,
             value  = value
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void Apply(BlindFirePacket packet, int peerId)

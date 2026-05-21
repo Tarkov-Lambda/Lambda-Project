@@ -32,7 +32,7 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
             Timestamp = NetworkTime.ServerNowSeconds
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void MutateApprovedPacket(ref BombStatePacket packet, int peerId)

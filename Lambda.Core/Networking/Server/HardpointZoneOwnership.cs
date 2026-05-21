@@ -24,7 +24,7 @@ public class ZoneOwnershipPacketWarden : LambdaPacketWarden<ZoneOwnershipPacket>
             ownership = ownership,
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void Apply(ZoneOwnershipPacket packet, int peerId)

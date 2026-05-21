@@ -28,7 +28,7 @@ public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacke
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
             roundActionEnd = roundActionEnd
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     // Send current phase state to a late/mid-session joiner.
@@ -43,7 +43,7 @@ public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacke
             serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
-        DispatchPacket(packet, peerId);
+        DispatchPacket(ref packet, peerId);
     }
 
     protected override bool ValidatePacket(MatchStateSyncPacket packet, int peerId, out string rejectionReason)

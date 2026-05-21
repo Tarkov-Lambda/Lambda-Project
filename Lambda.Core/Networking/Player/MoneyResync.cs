@@ -27,7 +27,7 @@ public class MoneyResyncPacketWarden : LambdaPacketWarden<MoneyResyncPacket>
             newMoney = newMoney
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
 

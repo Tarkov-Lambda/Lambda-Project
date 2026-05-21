@@ -46,7 +46,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             // placement = placement,
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override bool ValidatePacket(BuyItemPacket packet, int peerId, out string rejectionReason)

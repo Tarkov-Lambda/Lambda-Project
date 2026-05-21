@@ -52,7 +52,7 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
             Player = H.MainPlayer,
             isAsking = isAsking
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override bool ValidatePacket(AskForBombPriorityPacket packet, int peerId, out string rejectionReason)

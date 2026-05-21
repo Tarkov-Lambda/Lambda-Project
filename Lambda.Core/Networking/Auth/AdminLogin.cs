@@ -50,7 +50,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
             Payload = null
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override bool ValidatePacket(AdminAuthPacket packet, int peerId, out string rejectionReason)
@@ -128,7 +128,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
             Payload = nonce
         };
 
-        DispatchPacket(challenge, peerId);
+        DispatchPacket(ref challenge, peerId);
     }
 
     private void HandleVerify(ref AdminAuthPacket packet, int peerId)
@@ -142,7 +142,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
             Payload = null
         };
 
-        DispatchPacket(success, peerId);
+        DispatchPacket(ref success, peerId);
         ApplyInternal(success, Network.NetId);
     }
 
@@ -178,7 +178,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
             Payload = hash
         };
 
-        DispatchPacket(verify);
+        DispatchPacket(ref verify);
     }
 
     private void HandleSuccess(AdminAuthPacket packet)

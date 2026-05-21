@@ -10,7 +10,11 @@ public partial struct ReplenishPacket : IPacket, IAuthoredPacket
 
 public class ReplenishPacketWarden : LambdaPacketWarden<ReplenishPacket>
 {
-    public void Send() => DispatchPacket(new ReplenishPacket { Player = H.MainPlayer, });
+    public void Send()
+    {
+        var packet = new ReplenishPacket { Player = H.MainPlayer };
+        DispatchPacket(ref packet);
+    }
 
     protected override void Apply(ReplenishPacket packet, int peerId)
     {

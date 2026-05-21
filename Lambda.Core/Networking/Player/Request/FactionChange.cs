@@ -69,7 +69,7 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
                 await UniTask.WaitUntil(() => CanChangeFaction(H.MainPlayerScore, packet.faction), cancellationToken: _cts.Token);
             }
 
-            DispatchPacket(packet);
+            DispatchPacket(ref packet);
         }
         catch (OperationCanceledException)
         {

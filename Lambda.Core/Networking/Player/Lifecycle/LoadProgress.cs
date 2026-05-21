@@ -24,7 +24,7 @@ public class LoadProgressPacketWarden : LambdaPacketWarden<LoadProgressPacket>
             progress = progress
         };
 
-        // DispatchPacket(packet);
+        // DispatchPacket(ref packet);
     }
 
     protected override void Apply(LoadProgressPacket packet, int peerId)

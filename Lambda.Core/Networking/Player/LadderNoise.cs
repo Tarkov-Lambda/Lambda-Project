@@ -24,7 +24,7 @@ public class LadderNoisePacketWarden : LambdaPacketWarden<LadderNoisePacket>
             ladderMaterial = ladderMaterial
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void ApplyOptimistically(LadderNoisePacket packet)

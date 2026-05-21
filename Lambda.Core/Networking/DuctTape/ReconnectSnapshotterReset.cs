@@ -26,7 +26,7 @@ public class ReconnectSnapshotterResetPacketWarden : LambdaPacketWarden<Reconnec
         {
             Player = player
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void Apply(ReconnectSnapshotterResetPacket packet, int peerId)

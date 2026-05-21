@@ -23,7 +23,7 @@ public class WeatherAndTimeSyncPacketWarden : LambdaPacketWarden<WeatherAndTimeP
             minutesSinceMidnight = minutesSinceMidnight,
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void Apply(WeatherAndTimePacket packet, int peerId)

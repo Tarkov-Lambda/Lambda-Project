@@ -58,7 +58,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             broadcast = broadcast
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     public void SendToPeer(Player player, int peerId)
@@ -69,7 +69,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             broadcast = false
         };
 
-        DispatchPacket(packet, peerId);
+        DispatchPacket(ref packet, peerId);
     }
 
     protected override bool ValidatePacket(EquipmentResyncPacket packet, int peerId, out string rejectionReason)

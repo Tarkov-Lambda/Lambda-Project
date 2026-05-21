@@ -23,7 +23,7 @@ public class SessionPausePacketWarden : LambdaPacketWarden<PausePacket>
         {
             Timestamp = NetworkTime.ServerNowSeconds
         };
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override bool ValidatePacket(PausePacket packet, int peerId, out string rejectionReason)

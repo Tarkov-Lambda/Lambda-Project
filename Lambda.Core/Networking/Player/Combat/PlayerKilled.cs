@@ -66,7 +66,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
             D.Log(ex.ToString());
         }
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void ApplyOptimistically(PlayerKilledPacket packet)

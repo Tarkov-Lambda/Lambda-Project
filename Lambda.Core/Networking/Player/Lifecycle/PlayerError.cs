@@ -28,7 +28,7 @@ public class RaiseErrorPacketWarden : LambdaPacketWarden<RaiseErrorPacket>
             packet.Player = H.MainPlayer;
         }
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void Apply(RaiseErrorPacket packet, int peerId)

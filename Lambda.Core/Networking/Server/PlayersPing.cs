@@ -33,7 +33,7 @@ public class PlayersPingPacketWarden : LambdaPacketWarden<PlayersPingPacket>
             }).ToArray()
         };
 
-        DispatchPacket(packet);
+        DispatchPacket(ref packet);
     }
 
     protected override void Apply(PlayersPingPacket packet, int peerId)
