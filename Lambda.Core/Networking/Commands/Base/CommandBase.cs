@@ -37,11 +37,16 @@ public class CommandContext
     {
         if (H.IsServer)
         {
-            Singleton<AnnouncementPacketWarden>.Instance.SendToPlayer(Sender, message);
+            Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(Sender, message);
         }
         else
         {
             D.Notify(message);
         }
+    }
+
+    public void Announce(string message)
+    {
+        Singleton<ServerMessagePacketWarden>.Instance.Send(message);
     }
 }

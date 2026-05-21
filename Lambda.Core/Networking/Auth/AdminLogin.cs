@@ -18,10 +18,10 @@ public enum AdminAuthStep
 }
 
 [MemoryPackable]
-public partial struct AdminAuthPacket : IPacket
+public partial struct AdminAuthPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
-    public Player player;
+    public Player Player {get; set; }
 
     public AdminAuthStep Step;
     public string Payload;
@@ -45,7 +45,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
         var packet = new AdminAuthPacket
         {
-            player = H.MainPlayer,
+            Player = H.MainPlayer,
             Step = AdminAuthStep.Request,
             Payload = null
         };
@@ -75,7 +75,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
     {
         rejectionReason = null;
 
-        if (!_pendingChallenges.TryGetValue(packet.player, out var nonce))
+        if (!_pendingChallenges.TryGetValue(packet.Player, out var nonce))
         {
             rejectionReason = "No pending challenge.";
             return false;
@@ -119,25 +119,25 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
     {
         string nonce = Guid.NewGuid().ToString("N");
 
-        _pendingChallenges[packet.player] = nonce;
+        _pendingChallenges[packet.Player] = nonce;
 
         var challenge = new AdminAuthPacket
         {
-            player = packet.player,
+            Player = packet.Player,
             Step = AdminAuthStep.Challenge,
             Payload = nonce
         };
 
-        PacketWardenUtils.Network.SendDataToPeer(ref challenge, DeliveryType, peerId);
+        DispatchPacket(challenge, peerId);
     }
 
     private void HandleVerify(ref AdminAuthPacket packet, int peerId)
     {
-        _pendingChallenges.Remove(packet.player);
+        _pendingChallenges.Remove(packet.Player);
 
         var success = new AdminAuthPacket
         {
-            player = packet.player,
+            Player = packet.Player,
             Step = AdminAuthStep.Success,
             Payload = null
         };
@@ -173,7 +173,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
         var verify = new AdminAuthPacket
         {
-            player = H.MainPlayer,
+            Player = H.MainPlayer,
             Step = AdminAuthStep.Verify,
             Payload = hash
         };
@@ -183,11 +183,11 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
     private void HandleSuccess(AdminAuthPacket packet)
     {
-        H.GetPlayerContext(packet.player)?.SetAdmin(true);
+        H.GetPlayerContext(packet.Player)?.SetAdmin(true);
 
         if (H.IsServer)
         {
-            Singleton<AnnouncementPacketWarden>.Instance.Send($"{packet.player} is now an admin.");
+            Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(packet.Player, $"Your priviledges have been elevated.");
         }
     }
 

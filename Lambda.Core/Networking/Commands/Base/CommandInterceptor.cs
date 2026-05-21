@@ -61,7 +61,7 @@ namespace Lambda.Core.Networking.Commands
             
             if (!Commands.TryGetValue(cmdName, out var cmdInfo))
             {
-                Singleton<AnnouncementPacketWarden>.Instance.SendToPlayer(sender, "Unknown command.");
+                Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(sender, "Unknown command.");
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace Lambda.Core.Networking.Commands
                 var score = H.GetPlayerContext(sender);
                 if (score == null || !score.IsAdmin)
                 {
-                    Singleton<AnnouncementPacketWarden>.Instance.SendToPlayer(sender, "You do not have permission to use this command.");
+                    Singleton<ServerMessagePacketWarden>.Instance.SendToPlayer(sender, "You do not have permission to use this command.");
                     return;
                 }
             }

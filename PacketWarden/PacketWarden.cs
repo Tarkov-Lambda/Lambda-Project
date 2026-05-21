@@ -189,14 +189,14 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
             return;
         }
 
+        // if we are the server and we are not sending the packet to anyone
+        // process it as an approved packet that was sent by us (the server)
         if (targetPeerId == null)
         {
             ProcessApprovedPacket(ref packet, Network.NetId);
         }
         else
         {
-            // TODO: this block is extremely fucking sus.
-            // look around all the packets and see if this is okay to do
             MutateApprovedPacket(ref packet, targetPeerId.Value);
             if (targetPeerId.Value != Network.NetId)
             {

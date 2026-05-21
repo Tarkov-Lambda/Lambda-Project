@@ -3,6 +3,7 @@ using Lambda.Core;
 using Lambda.Core.Networking;
 using Lambda.Core.Networking.Commands;
 using PacketWarden;
+using UnityEngine;
 
 public static class GeneralPlayerCommands
 {
@@ -14,7 +15,7 @@ public static class GeneralPlayerCommands
     }
 
     [ChatCommand("pause", "Requests server login", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
-    public static void Pause(CommandContext ctx, string password)
+    public static void Pause(CommandContext ctx)
     {
         Singleton<SessionPausePacketWarden>.Instance.Send();
     }
@@ -23,5 +24,11 @@ public static class GeneralPlayerCommands
     public static void SetClanTag(CommandContext ctx, string clanTag)
     {
         Singleton<ClanTagResyncPacketWarden>.Instance.Send(clanTag);
+    }
+
+    [ChatCommand("volume_music", "Set music volume", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
+    public static void SetClanTag(CommandContext ctx, float volume)
+    {
+        Plugin.MusicVolume.Value = Mathf.Clamp01(volume);
     }
 }

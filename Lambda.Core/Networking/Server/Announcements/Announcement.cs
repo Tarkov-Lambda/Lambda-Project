@@ -15,7 +15,7 @@ public partial struct AnnouncementPacket : IPacket
     public Faction specificFaction;
 }
 
-public class AnnouncementPacketWarden : LambdaPacketWarden<AnnouncementPacket>
+public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
@@ -35,8 +35,8 @@ public class AnnouncementPacketWarden : LambdaPacketWarden<AnnouncementPacket>
             msg = msg
         };
 
-        // FikaPlayer fikaPlayer = player as FikaPlayer;
-        DispatchPacket(packet, Network.NetId);
+        FikaPlayer fikaPlayer = player as FikaPlayer;
+        DispatchPacket(packet, fikaPlayer.NetId);
     }
 
     public void SendToFaction(Faction faction, string msg)

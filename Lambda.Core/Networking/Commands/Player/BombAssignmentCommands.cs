@@ -1,5 +1,4 @@
 using Comfort.Common;
-using EFT;
 using Lambda.Core.Networking;
 using Lambda.Core.Networking.Commands;
 using PacketWarden;

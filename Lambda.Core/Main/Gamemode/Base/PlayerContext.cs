@@ -139,6 +139,8 @@ public class PlayerContext
 
     public void SetClanTag(string newClanTag)
     {
+        if(newClanTag.IsNullOrEmpty()) return;
+        
         newClanTag = newClanTag.ToUpper();
         context.Identity.ClanTag = newClanTag;
     }

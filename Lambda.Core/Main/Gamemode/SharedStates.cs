@@ -118,10 +118,9 @@ public class SharedCleanup : IGameState
         }
 
         // TODO: Compartmentalize all this inventory logic elsewhere
-        foreach (var player in H.AllPlayingPlayers)
+        foreach (var player in H.AllPlayers)
         {
             player.ForceUnlockInventory();
-
 
             if (H.IsServer)
             {
@@ -140,7 +139,7 @@ public class SharedCleanup : IGameState
             }
         }
 
-        if (H.Gamemode is SNDGamemode)
+        if (H.IsServer && H.Gamemode is SNDGamemode)
         {
             if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
             {
@@ -163,8 +162,9 @@ public class SharedCleanup : IGameState
 
         if (H.IsServer)
         {
-            foreach (var player in H.AllPlayingPlayers)
+            foreach (var player in H.AllPlayers)
             {
+                D.Log("A(UBSDA)");
                 Singleton<EquipmentResyncPacketWarden>.Instance.Send(player, true);
             }
         }

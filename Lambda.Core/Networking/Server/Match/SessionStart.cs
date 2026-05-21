@@ -63,7 +63,6 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         {
             level = H.Session.level,
             gamemode = H.Gamemode.GetType().Name, // deal with it
-            isForLateJoiner = true
         };
 
         if (H.IsServer)
