@@ -164,7 +164,6 @@ public class SharedCleanup : IGameState
         {
             foreach (var player in H.AllPlayers)
             {
-                D.Log("A(UBSDA)");
                 Singleton<EquipmentResyncPacketWarden>.Instance.Send(player, true);
             }
         }

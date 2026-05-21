@@ -1,9 +1,0 @@
-{
-   "name": "com.lambda.audio",
-   "displayName": "Lambda Audio Package",
-   "description": "Contains Steam Audio and the custom Phonon DSP bridge to bypass Unity baked Spatializer Engine.",
-   "version": "1.0.37",
-   "author": {
-      "name": "Lambda Project"
-   }
-}

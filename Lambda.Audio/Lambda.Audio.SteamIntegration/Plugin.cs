@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace Lambda.Audio.SteamIntegration;
 
-[BepInDependency("com.Lambda.Audio.PhononSpatializerProxy")]
+[BepInDependency("com.ifp.PhononSpatializerProxy")]
 [BepInPlugin("com.Lambda.Audio.SteamAudioIntegration", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {

@@ -28,31 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- BepInEx / SPT -->
     <Reference Include="$(BepInExPath)\core\0Harmony.dll" />
     <Reference Include="$(BepInExPath)\core\BepInEx.dll" />
-    <Reference Include="$(BepInExPath)\plugins\spt\spt-reflection.dll" />
-    <Reference Include="$(BepInExPath)\plugins\Fika\Fika.Core.dll" />
-
-    <!-- EFT -->
-    <Reference Include="$(ManagedPath)\ItemComponent.Types.dll" />
-    <Reference Include="$(ManagedPath)\ItemTemplate.Types.dll" />
-    <Reference Include="$(ManagedPath)\Assembly-CSharp.dll" />
-    <Reference Include="$(ManagedPath)\bsg.console.core.dll" />
-    <Reference Include="$(ManagedPath)\Comfort.Unity.dll" />
-    <Reference Include="$(ManagedPath)\Comfort.dll" />
-    <Reference Include="$(ManagedPath)\Newtonsoft.Json.dll" />
-    <Reference Include="$(ManagedPath)\Sirenix.Serialization.dll" />
-    <Reference Include="$(ManagedPath)\UnityEngine.AudioModule.dll" />
-    <Reference Include="$(ManagedPath)\UnityEngine.UI.dll" />
-    <Reference Include="$(ManagedPath)\Unity.TextMeshPro.dll" />
-    <Reference Include="$(ManagedPath)\Meta.XR.Audio.dll" />
-    <Reference Include="$(ManagedPath)\DissonanceVoip.dll" />
-    <Reference Include="$(ManagedPath)\Unity.Postprocessing.Runtime.dll" />
-    <Reference Include="$(ManagedPath)\DOTween.dll" />
-    <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
-    <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
-
 
     <Reference Include="..\..\.Binaries\*.dll" />
   </ItemGroup>

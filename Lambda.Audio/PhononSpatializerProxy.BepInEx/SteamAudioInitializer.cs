@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Comfort.Common;
 using SteamAudio;
 using UnityEngine;
 
@@ -107,25 +106,5 @@ public static class SteamAudioInitializer
         {
             Debug.Log("[SteamAudio] SteamAudioManager already running.");
         }
-    }
-
-    public static void AttachListenerIfNeeded()
-    {
-        if (SteamAudioManager.Singleton == null) return;
-
-        var betterAudio = Singleton<BetterAudio>.Instance;
-        if (betterAudio == null) return;
-
-        Transform listenerTransform = betterAudio.ListenerTransform != null ? betterAudio.ListenerTransform : betterAudio.AudioListener?.transform;
-
-        if (listenerTransform == null)
-        {
-            Debug.LogWarning("[SteamAudio] ListenerTransform is null - SteamAudioListener not attached yet.");
-            return;
-        }
-
-        listenerTransform.gameObject.GetOrAddComponent<SteamAudioListener>();
-        SteamAudioManager.NotifyAudioListenerChangedTo(listenerTransform);
-        Debug.Log($"[SteamAudio] SteamAudioListener attached to '{listenerTransform.gameObject.name}'.");
     }
 }
