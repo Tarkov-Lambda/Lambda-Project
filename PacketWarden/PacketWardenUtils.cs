@@ -21,7 +21,7 @@ public static class PacketWardenUtils
     public static Player MainPlayer                 => GetMainPlayer();
     public static List<Player> AllPlayers           => IsInRaid() ? GetAllPlayers() : new();
 
-    internal static void Log(string msg)            => Plugin.Logger.LogInfo(msg);
+    public static void Log(string msg)            => Plugin.Logger.LogInfo(msg);
     public static void Notify(object msg)           => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
 

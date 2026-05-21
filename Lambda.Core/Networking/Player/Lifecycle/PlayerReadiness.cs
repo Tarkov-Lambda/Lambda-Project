@@ -88,6 +88,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
     protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
+        if (packet.Player == null) return;
         if (IsArenaReady && !packet.Player.IsYourPlayer) return;
 
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);

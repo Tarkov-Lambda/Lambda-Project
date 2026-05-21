@@ -51,10 +51,10 @@ public class FikaBackend : INetworkBackend, IDisposable
         UnsubscribeEvent(OnPeerDisconnectedEvent);
     }
 
-    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => OnNetworkCreated.Invoke();
-    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => OnNetworkDestroyed.Invoke();
-    void TriggerPeerConnected(PeerConnectedEvent ev) => OnPeerConnected.Invoke(ev.Peer.Id);
-    void TriggerPeerDisconnected(PeerDisconnectedEvent ev) => OnDisconnected.Invoke(ev.Peer.Id);
+    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => OnNetworkCreated?.Invoke();
+    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => OnNetworkDestroyed?.Invoke();
+    void TriggerPeerConnected(PeerConnectedEvent ev) => OnPeerConnected?.Invoke(ev.Peer.Id);
+    void TriggerPeerDisconnected(PeerDisconnectedEvent ev) => OnDisconnected?.Invoke(ev.Peer.Id);
 
     public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket
     {

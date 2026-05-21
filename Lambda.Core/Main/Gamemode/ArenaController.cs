@@ -72,6 +72,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public void ManageFikaEvents(FikaEvent fikaEvent)
     {
+        if (H.IsClient) return;
+        
         if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
         {
             if (H.IsClient) return;
