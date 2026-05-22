@@ -57,7 +57,6 @@ public class Plugin : BaseUnityPlugin
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
     private readonly List<Action> _releases = new();
-    private readonly List<IMemoryPackFormatter> _memoryPackFormatters = new();
 
     private CancellationTokenSource _cts;
 
@@ -73,7 +72,7 @@ public class Plugin : BaseUnityPlugin
     {
         if (!MemoryPackFormatterProvider.IsRegistered<T>())
         {
-            MemoryPackFormatterProvider.Register<T>(formatter as MemoryPackFormatter<T>);
+            MemoryPackFormatterProvider.Register(formatter as MemoryPackFormatter<T>);
         }
     }
 
@@ -131,8 +130,6 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_DoBleed_HeavyBleeding());   // Do not add bleeding
         RegisterPatch(new Patch_ActiveHealthController_DoBleed_LightBleeding());   // Do not add bleeding
 
-        // RegisterPatch(new Patch_PlayerBody_UpdatePlayerRenders());               // For hands models for spectator
-
         RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
@@ -159,11 +156,7 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking
         RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
-        // RegisterPatch(new Patch_ClientFirearmController_CanPressTrigger());      // For controller locking
         RegisterPatch(new Patch_FirearmController_SetTriggerPressed());             // For controller locking
-        // RegisterPatch(new Patch_FirearmController_SetTriggerPressed_method_64());   // For controller locking
-
-        // RegisterPatch(new Patch_ApplyShot());
 
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
         RegisterPatch(new Patch_Effects_GetEmissionEffect());                       // Smoke tuning
@@ -182,21 +175,31 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_Grenade_Init());                                    // Force explode mollies after delay
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Server Generates Molly BFS Pattern on Explosion
 
+
+
+
+
         // Animation Patches
         // RegisterPatch(new Patch_GClass2963_Spawn());
         RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());                 // Instant Grenade Unequip
-        // RegisterPatch(new Patch_FirearmController_Spawn());
+        RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop());                          // Instant Weapon Unequip
-        // RegisterPatch(new Patch_FirearmController_InitiateOperation());
         RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Send Hands Examination Packet to other players
+
+
+
+
 
         // UI Patches
         UIPatches.Enable();
-        RegisterPatch(new Patch_LoginUI_Awake());                                   // Are we logging in for the first time?
         RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot in raid
-        RegisterPatch(new Patch_Class1841_method_0());                              // FOV and Headbobbing slider overwrites
-        RegisterPatch(new Patch_Class1841_method_1());                              // FOV and Headbobbing slider overwrites
-        RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV and Headbobbing slider overwrites
+        // RegisterPatch(new Patch_Class1841_method_0());                              // FOV and Headbobbing slider overwrites
+        // RegisterPatch(new Patch_Class1841_method_1());                              // FOV and Headbobbing slider overwrites
+        // RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV and Headbobbing slider overwrites
+        RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
+
+
+
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
@@ -207,8 +210,6 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_HostGameController_GetHostLootItems());             // no bytes for loot items (some nre fix idk)
         RegisterPatch(new Patch_FikaServer_OnNetworkSettingsPacketReceived());      // snapshotter timestamp reconnect fix
-
-        RegisterPatch(new Patch_Button_set_enabled());                              // Allow clients to connect mid raid
 
         RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
@@ -223,6 +224,10 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                    //
         RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
+
+
+
+
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new ItemPlacementFormatter());
@@ -259,7 +264,6 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<ServerMessagePacketWarden>();                              // Server sends an announcement message
         RegisterSingleton<ShutdownAnnouncementPacketWarden>();                      // Server announces imminent shutdown
         RegisterSingleton<MoneyResyncPacketWarden>();                               // Server dictates new money amount for a specific player
-
         RegisterSingleton<ReconnectSnapshotterResetPacketWarden>();                 // Duct Tape
 
         RegisterSingleton<AssetBundleLoadPacketWarden>();                           // Server broadcasts a batch of asset bundles to load

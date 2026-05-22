@@ -20,7 +20,7 @@ public class Patch_Player_VisualPass : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.VisualPass));
 
-    public static readonly ConditionalWeakTable<ProceduralWeaponAnimation, Player> PwaToPlayer = new ConditionalWeakTable<ProceduralWeaponAnimation, Player>();
+    public static readonly ConditionalWeakTable<ProceduralWeaponAnimation, Player> PwaToPlayer = new();
 
     [PatchPrefix]
     static void Prefix(Player __instance)
@@ -77,7 +77,6 @@ public class Patch_GClass2037_Start : ModulePatch
 public class Patch_Player_ShotReactions : ModulePatch, IDisposable
 {
     public static readonly Dictionary<Player, DamageInfoStruct> LastDamageToPlayer = new();
-
 
     private static Dictionary<int, long> _lastShotTimeDict = new();
     private const int CooldownMs = 15;
