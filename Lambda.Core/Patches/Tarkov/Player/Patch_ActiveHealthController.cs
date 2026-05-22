@@ -45,10 +45,10 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {
         if (!H.IsInRaid()) return false; // mid raid connect protection
-        if (H.Arena?.Session == null) return false;
+        if (H.IsArenaReady == false) return false;
 
-        var playerScore = __instance.Player.GetContext();
-        if (playerScore == null) return false;
+        var pContext = __instance.Player.GetContext();
+        if (pContext == null) return false;
 
         if (damageInfo.DamageType == EDamageType.Flame)
         {
@@ -65,9 +65,9 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
             {
                 __instance.Player.MovementContext.ResetFlying();
 
-                if (playerScore != null)
+                if (pContext != null)
                 {
-                    Teleporter.Teleport(H.MainPlayer, H.Session.level, playerScore.Faction);
+                    Teleporter.Teleport(__instance.Player, H.Session.level, pContext.Faction);
                 }
 
                 __instance.Player.MovementContext.ResetFlying();

@@ -81,7 +81,6 @@ namespace SteamAudio
         [MenuItem("Steam Audio/Steam Audio Reverb Data Point/Clear Unreferenced Data", false, 62)]
         public static void DeleteUnreferencedAssets()
         {
-            return;
             AssetDatabase.StartAssetEditing();
 
             // Find all assets in SteamAudioProbe.GetAssetFolderPath() path.
@@ -106,13 +105,12 @@ namespace SteamAudio
                 if (!(assetPath.EndsWith(".unity") || assetPath.EndsWith(".prefab")))
                     continue;
 
-                // TODO: RE-ENABLE THIS (ever turning the entire Lambda Project to a Unity Package, GetBinaries is erroring)
-                // var assetBinaries = AssetDatabase.GetBinaries(assetPath, false);
-                // foreach (var assetDependency in assetBinaries)
-                // {
-                //     if (assetDependency.Contains(reverbDataFolder[0]))
-                //         referencedReverbDataAssetPaths.Add(assetDependency);
-                // }
+                var assetBinaries = AssetDatabase.GetDependencies(assetPath, false);
+                foreach (var assetDependency in assetBinaries)
+                {
+                    if (assetDependency.Contains(reverbDataFolder[0]))
+                        referencedReverbDataAssetPaths.Add(assetDependency);
+                }
             }
 
             // Go through all the assets of type SteamAudioReverbData inside reverbDataFolder.

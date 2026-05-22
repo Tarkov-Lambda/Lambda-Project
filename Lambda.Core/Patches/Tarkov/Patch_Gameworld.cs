@@ -18,10 +18,6 @@ internal class Patch_Gameworld_OnGameStarted : ModulePatch
     [PatchPostfix]
     static void Postfix(GameWorld __instance)
     {
-#if DEBUG
-#else
-        if (__instance is HideoutGameWorld) return;
-#endif
         OnGameStarted?.Invoke();
     }
 }
@@ -35,10 +31,6 @@ internal class Patch_Gameworld_OnDispose : ModulePatch
     [PatchPostfix]
     static void Postfix(GameWorld __instance)
     {
-#if DEBUG
-#else
-        if (__instance is HideoutGameWorld) return;
-#endif
         OnDispose?.Invoke();
     }
 }
@@ -52,7 +44,7 @@ internal class Patch_Gameworld_RegisterLoot : ModulePatch
     {
         if (loot is LootItem lootItem)
         {
-            D.Log(lootItem.name);
+            // D.Log(lootItem.name);
         }
     }
 }

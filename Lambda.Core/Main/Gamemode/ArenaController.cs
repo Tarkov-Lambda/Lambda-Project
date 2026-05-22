@@ -90,7 +90,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
                 Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
             }
         }
-        else if (fikaEvent is PeerConnectedEvent peerConnectedEvent && Session.matchState != MatchState.None)
+        else if (fikaEvent is PeerConnectedEvent peerConnectedEvent && H.IsArenaReady)
         {
             // notify 
             Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, RuntimeBundleLoader.Instance.ItemsToLoad);

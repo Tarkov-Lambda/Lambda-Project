@@ -11,12 +11,12 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
 
+    public static AccessTools.FieldRef<Player.FirearmController, Player> playerRef = AccessTools.FieldRefAccess<Player.FirearmController, Player>("_player");
+
     [PatchPrefix]
     static bool Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 motion, ref Vector3 velocity)
     {
         if (!H.IsInRaid()) return true;
-        if (!Patch_Player_VisualPass.PwaToPlayer.TryGetValue(__instance, out Player player)) return true;
-        if (player is null) return true;
         if (____firearmController is null) return true;
         if (____firearmController.Item is not PistolItemClass) return true;
 
@@ -28,7 +28,7 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
         }
         else
         {
-            if (player.MovementContext.CurrentState is RunStateClass and not SprintStateClass)
+            if (playerRef(____firearmController).MovementContext.CurrentState is RunStateClass and not SprintStateClass)
             {
                 __instance.Mask |= EProceduralAnimationMask.Walking;
             }
@@ -87,40 +87,44 @@ public class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ZeroAdjustments));
 
     [PatchPrefix]
-    private static bool Prefix(ProceduralWeaponAnimation __instance,
-    ref Vector3 ____blindFirePosition,
-    ref Vector3 ____blindFireRotation,
-    ref float ____blindfireStrength)
+    private static bool Prefix(
+        ProceduralWeaponAnimation __instance,
+        ref Vector3 ____blindFirePosition,
+        ref Vector3 ____blindFireRotation,
+        ref float ____blindfireStrength)
     {
-        __instance.PositionZeroSum.y = __instance._shouldMoveWeaponCloser ? 0.05f : 0f;
-        __instance.RotationZeroSum.y = __instance.SmoothedTilt * __instance.PossibleTilt;
+        __instance.PositionZeroSum.y =
+            __instance._shouldMoveWeaponCloser ? 0.05f : 0f;
+
+        __instance.RotationZeroSum.y =
+            __instance.SmoothedTilt * __instance.PossibleTilt;
 
         float value = __instance.BlindfireBlender.Value;
         float num = Mathf.Abs(value);
 
-        float blindfireStrengthNew = 0f;
-
         if (num > 0f)
         {
-            ____blindfireStrength = (Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f);
+            ____blindfireStrength = Mathf.Abs(__instance.Pitch) < 45f ? 1f : (90f - Mathf.Abs(__instance.Pitch)) / 45f;
 
-            ____blindFirePosition = (value > 0f) ? (__instance.BlindFireOffset * num) : (__instance.SideFireOffset * num);
-            ____blindFireRotation = (value > 0f) ? (__instance.BlindFireRotation * num) : (__instance.SideFireRotation * num);
+            ____blindFirePosition = value > 0f ? __instance.BlindFireOffset * num : __instance.SideFireOffset * num;
 
-            __instance.BlindFireEndPosition = (value > 0f) ? __instance.BlindFireOffset : __instance.SideFireOffset;
+            ____blindFireRotation = value > 0f ? __instance.BlindFireRotation * num : __instance.SideFireRotation * num;
 
-            __instance.BlindFireEndPosition *= blindfireStrengthNew;
+            __instance.BlindFireEndPosition = value > 0f ? __instance.BlindFireOffset : __instance.SideFireOffset;
+
+            __instance.BlindFireEndPosition *= ____blindfireStrength;
         }
         else
         {
             ____blindFirePosition = Vector3.zero;
             ____blindFireRotation = Vector3.zero;
+            ____blindfireStrength = 0f;
         }
 
-        __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + blindfireStrengthNew * ____blindFirePosition;
+        __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + ____blindfireStrength * ____blindFirePosition;
+
         __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum + ____blindFireRotation;
 
         return false;
-
     }
 }

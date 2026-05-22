@@ -42,7 +42,6 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<string> Gamemode;
     internal static ConfigEntry<string> Level;
     internal static ConfigEntry<string> Password;
-
     internal static ConfigEntry<float> MusicVolume;
     internal static ConfigEntry<string> ClanTag;
 
@@ -122,6 +121,7 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_Gameworld_RegisterLoot());                       // Hooks
         // RegisterPatch(new Patch_LootItem_Init());                                // Creating Corpse doesn't create dogtag
 
+        // Damage and death behavior modification
         RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Cache last damage packet, multiply flame damage, negate blacked out limbs damage
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
 
@@ -130,11 +130,12 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_DoBleed_HeavyBleeding());   // Do not add bleeding
         RegisterPatch(new Patch_ActiveHealthController_DoBleed_LightBleeding());   // Do not add bleeding
 
-        RegisterPatch(new Patch_Player_VisualPass());                               // Mapping ProceduralWeaponAnimation to the respective Player
+        // Procedural BlindFire
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_UpdateSwayFactors());     // Reduce Sway for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_CalculateCameraPosition()); // Reduce Bobbing/inertia motion for pistols
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ZeroAdjustments());       // Procedural Blindfire Position
+        RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
         RegisterPatch(new Patch_MovementContext_PlayerAnimatorSetBlindFire());      // Override Blindfire Animation
         RegisterPatch(new Patch_MovementContext_SetBlindFire());                    // Override Blindfire Animation, Set HandsController Blindfire and transmit a packet
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
@@ -142,8 +143,6 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_Class1396_method_3());                           // In edge cases where the hands controller gets bugged out - we hard reset it
         // RegisterPatch(new Patch_GClass2037_Start());                             // In edge cases where the hands controller gets bugged out - we hard reset it
-
-        RegisterPatch(new Patch_MovementState_BlindFire());                         // Force Blindfire state regardless of movement state
 
         RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
         RegisterPatch(new Patch_Player_UpdateTick());                               // If the item can't be picked up -> unlock the player movement
@@ -175,20 +174,12 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_Grenade_Init());                                    // Force explode mollies after delay
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Server Generates Molly BFS Pattern on Explosion
 
-
-
-
-
         // Animation Patches
         // RegisterPatch(new Patch_GClass2963_Spawn());
         RegisterPatch(new Patch_BaseGrenadeHandsController_Drop());                 // Instant Grenade Unequip
-        RegisterPatch(new Patch_FirearmController_Spawn());
+        // RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop());                          // Instant Weapon Unequip
         RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Send Hands Examination Packet to other players
-
-
-
-
 
         // UI Patches
         UIPatches.Enable();
@@ -197,9 +188,6 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_Class1841_method_1());                              // FOV and Headbobbing slider overwrites
         // RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV and Headbobbing slider overwrites
         RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
-
-
-
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
@@ -224,9 +212,6 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                    //
         RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
-
-
-
 
 
         // Memory Pack Formatters

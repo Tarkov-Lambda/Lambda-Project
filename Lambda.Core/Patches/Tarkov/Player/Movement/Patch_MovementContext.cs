@@ -21,7 +21,7 @@ public class Patch_MovementContext_CanWalk : ModulePatch
     [PatchPostfix]
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsArenaReady) return;
 
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
@@ -57,7 +57,7 @@ public class Patch_MovementContext_CanJump : ModulePatch
     [PatchPostfix]
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsArenaReady) return;
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
             __result = false;

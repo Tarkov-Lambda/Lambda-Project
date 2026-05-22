@@ -15,25 +15,6 @@ using static EFT.Player.FirearmController;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-// For Patch_ProceduralWeaponAnimation_ProcessEffectors
-public class Patch_Player_VisualPass : ModulePatch
-{
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.VisualPass));
-
-    public static readonly ConditionalWeakTable<ProceduralWeaponAnimation, Player> PwaToPlayer = new();
-
-    [PatchPrefix]
-    static void Prefix(Player __instance)
-    {
-        var pwa = __instance.ProceduralWeaponAnimation;
-        if (pwa != null)
-        {
-            PwaToPlayer.Remove(pwa);
-            PwaToPlayer.Add(pwa, __instance);
-        }
-    }
-}
-
 public class Patch_GClass2037_Start : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GClass2037), nameof(GClass2037.Start));
@@ -86,7 +67,6 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
     [PatchPostfix]
     static void Postfix(Player __instance, DamageInfoStruct shot, EBodyPart bodyPart)
     {
-        // D.Dump(shot);
         if (shot.OverDamageFrom != null) return;
         LastDamageToPlayer[__instance] = shot;
 

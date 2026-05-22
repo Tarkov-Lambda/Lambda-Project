@@ -43,7 +43,7 @@ public class Patch_FirearmController_SetTriggerPressed : ModulePatch
     [PatchPrefix]
     static void Prefix(Player.FirearmController __instance, Player ____player, ref bool pressed)
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsArenaReady) return;
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
             pressed = false;
