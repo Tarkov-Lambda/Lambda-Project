@@ -136,7 +136,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
                     Singleton<SessionManagerSyncPacketWarden>.Instance.SendToPeer(peerId);
                     Singleton<MatchStateSyncPacketWarden>.Instance.SendToLateJoiner(peerId);
-                    // Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
+                    Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {

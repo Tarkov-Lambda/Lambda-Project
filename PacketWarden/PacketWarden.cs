@@ -276,6 +276,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// </summary>
     protected void ApplyInternal(T packet, int peerId)
     {
+        TryInvokeAction(BeforePacketApplied, packet);
         OptionalBoostrap(packet);
         Apply(packet, peerId);
         TryInvokeAction(AfterPacketApplied, packet);
@@ -286,6 +287,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     /// </summary>
     private void ApplyOptimisticallyInternal(T packet)
     {
+        TryInvokeAction(BeforePacketAppliedOptimistically, packet);
         ApplyOptimistically(packet);
         TryInvokeAction(AfterPacketAppliedOptimistically, packet);
     }

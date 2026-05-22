@@ -34,11 +34,7 @@ namespace Lambda.Core.Main.UI
             Faction leftFaction = killer == null ? Faction.None : killer.Faction;
             Faction rightFaction = victim == null ? Faction.None : victim.Faction;
 
-            var pop =
-                killFeed.Pop(
-                    leftName, leftFaction,
-                    rightName, rightFaction,
-                    packet.IsHeadshot);
+            var pop = killFeed.Pop(leftName, leftFaction, rightName, rightFaction, packet.IsHeadshot);
 
             itemInfoProvider.RequestIcon(packet.weaponId, onRendered: (weaponSprite) =>
             {

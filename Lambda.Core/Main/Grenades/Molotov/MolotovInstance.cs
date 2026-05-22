@@ -22,7 +22,7 @@ public class MolotovInstance : MonoBehaviour
     {
         _cts = new CancellationTokenSource();
 
-        CentroidPosition = GetFireCentroid(packet.fireNodes);
+        CentroidPosition = GetFireCentroid(packet.fireNodes);   
 
         H.BetterAudio.TryPlayAtPoint(
             out BetterSource Ignition,
@@ -121,7 +121,7 @@ public class MolotovInstance : MonoBehaviour
         fireEffect.transform.Rotate(0f, Random.Range(0f, 360f), 0f, Space.Self);
 
         float scaleVariance = Random.Range(0.85f, 1.15f);
-        float scaleMultiplier = (node.Radius / 0.2f) * scaleVariance;
+        float scaleMultiplier = node.Radius / 0.2f * scaleVariance;
         fireEffect.transform.localScale = Vector3.one * scaleMultiplier;
 
         ParticleSystem[] particleSystems = fireEffect.GetComponentsInChildren<ParticleSystem>();

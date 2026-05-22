@@ -179,7 +179,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59c3684b22f00604a97bb68037fcf4cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  directBinaural: 0
+  directBinaural: 1
   interpolation: 0
   perspectiveCorrection: 0
   distanceAttenuation: 1
@@ -204,11 +204,11 @@ MonoBehaviour:
   transmission: 1
   transmissionType: 1
   transmissionInput: 1
-  transmissionLow: 0.803
+  transmissionLow: 0.723
   transmissionMid: 0.322
   transmissionHigh: 0.097
   maxTransmissionSurfaces: 1
-  directMixLevel: 1
+  directMixLevel: 0
   reflections: 1
   reflectionsType: 1
   useDistanceCurveForReflections: 0
@@ -221,7 +221,7 @@ MonoBehaviour:
   hybridReverbEQHigh: 1
   hybridReverbDelay: 0
   applyHRTFToReflections: 0
-  reflectionsMixLevel: 5
+  reflectionsMixLevel: 10
   pathing: 0
   pathingProbeBatch: {fileID: 0}
   pathValidation: 1
@@ -449,7 +449,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2791160218185288825, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_Intensity
-      value: 1
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 2791160218185288825, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_SpotAngle
@@ -465,19 +465,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.526
+      value: 9.446
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -8.046722
+      value: 291.9533
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -20.874
+      value: -20.899
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.38268328
+      value: -0.3929484
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.x
@@ -485,7 +485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.92387956
+      value: 0.9195606
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.z
@@ -497,7 +497,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -135
+      value: 226.276
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -507,6 +507,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: FireNodeEffect Stationary
       objectReference: {fileID: 0}
+    - target: {fileID: 4876193206366678591, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+      propertyPath: lightsToFlicker.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4876193206366678591, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+      propertyPath: lightsToFlicker.Array.data[2]
+      value: 
+      objectReference: {fileID: 4500662403892330614}
     - target: {fileID: 6045502356979053673, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: reflections
       value: 1
@@ -539,7 +547,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: SupportPoint
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4876193206366678591, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
@@ -548,10 +557,55 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7650031783371612702}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4611955754295878946, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6024605784834110850}
   m_SourcePrefab: {fileID: 100100000, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+--- !u!108 &1453982621024574627 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 1659045962625352909, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+  m_PrefabInstance: {fileID: 228426834232367214}
+  m_PrefabAsset: {fileID: 0}
+--- !u!108 &2708837733101769751 stripped
+Light:
+  m_CorrespondingSourceObject: {fileID: 2791160218185288825, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+  m_PrefabInstance: {fileID: 228426834232367214}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &3756557391898394043 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
   m_PrefabInstance: {fileID: 228426834232367214}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4840100402513427788 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4611955754295878946, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
+  m_PrefabInstance: {fileID: 228426834232367214}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6024605784834110850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4840100402513427788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 397b030815e5543409618b038ffe3f0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightsToFlicker:
+  - {fileID: 2708837733101769751}
+  - {fileID: 1453982621024574627}
+  - {fileID: 4500662403892330614}
+  minIntensityMultiplier: 0.7
+  maxIntensityMultiplier: 0.8
+  intensitySpeed: 20
+  affectRange: 1
+  minRangeMultiplier: 0.9
+  maxRangeMultiplier: 1.1
+  rangeSpeed: 10
+  minFlickerInterval: 0.03
+  maxFlickerInterval: 0.12
+  burstChance: 0.03
+  burstStrength: 0.2

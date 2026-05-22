@@ -1,32 +1,36 @@
 using System;
+using System.Threading;
 using UnityEngine;
 using SteamAudio;
 
 namespace PhononSpatializerProxy
 {
     [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(SteamAudioSource))]
     public class PhononDSPBridge : MonoBehaviour, IProxiedAudioSource
     {
-        private class DSPParams
+        private struct DSPParams
         {
-            public PVec3 Dir = new() { z = 1f };
-            public float DistAtten = 1f;
-            public float Occlusion = 1f;
-            public float TransLow = 0f;
-            public float TransMid = 0f;
-            public float TransHigh = 0f;
-            public bool ApplyTransmission = false;
-            public IntPtr Hrtf = IntPtr.Zero;
+            public PVec3 Dir;
+            public float DistAtten;
+            public float Occlusion;
+            public float TransLow;
+            public float TransMid;
+            public float TransHigh;
+            public bool ApplyTransmission;
+            public IntPtr Hrtf;
 
             public ReflectionEffectParams ReflParams;
-            public bool HasValidReflData = false;
+            public bool HasValidReflData;
             public PCoordinateSpace3 ListenerCS;
-            public float ReflMixLevel = 1f;
+            public float ReflMixLevel;
 
-            public float SpatialBlend = 1f;
+            public float SpatialBlend;
         }
 
-        private volatile DSPParams _currentParams = new();
+        private DSPParams _currentParams;
+
+        private int _paramsLock = 0;
 
         private IntPtr _binaural = IntPtr.Zero;
         private IntPtr _direct = IntPtr.Zero;
@@ -59,18 +63,40 @@ namespace PhononSpatializerProxy
         public bool spatialize { get; set; } = true;
         public bool isBypass { get; set; } = false;
 
+        private volatile bool _bufferOverflowed;
+
+        private void EnterParamsLock()
+        {
+            var spinWait = new SpinWait();
+            while (Interlocked.CompareExchange(ref _paramsLock, 1, 0) != 0)
+                spinWait.SpinOnce();
+        }
+
+        private void ExitParamsLock()
+        {
+            Volatile.Write(ref _paramsLock, 0);
+        }
+
         private void Awake()
         {
             _src = GetComponent<AudioSource>();
             _attenuator = new PhononDistanceAttenuator(_src);
             _steamSrc = GetComponent<SteamAudioSource>();
 
-            // pre alloc scratch buffers to a safe maximum size to avoid gc allocations on audio thread.
             int safeMaxCapacity = 8192;
             _monoIn = new float[safeMaxCapacity];
             _monoOut = new float[safeMaxCapacity];
             _leftOut = new float[safeMaxCapacity];
             _rightOut = new float[safeMaxCapacity];
+
+            _currentParams = new DSPParams
+            {
+                Dir = new PVec3 { z = 1f },
+                DistAtten = 1f,
+                Occlusion = 1f,
+                ReflMixLevel = 1f,
+                SpatialBlend = 1f
+            };
 
             InitEffects();
         }
@@ -79,35 +105,18 @@ namespace PhononSpatializerProxy
         {
             lock (_lock)
             {
-                if (_binaural != IntPtr.Zero)
-                {
-                    PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero;
-                }
-
-                if (_direct != IntPtr.Zero)
-                {
-                    PhononNative.iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero;
-                }
-
-                if (_reflectionEffect != IntPtr.Zero)
-                {
-                    PhononNative.iplReflectionEffectRelease(ref _reflectionEffect); _reflectionEffect = IntPtr.Zero;
-                }
-
-                if (_ambiDecodeEffect != IntPtr.Zero)
-                {
-                    PhononNative.iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect); _ambiDecodeEffect = IntPtr.Zero;
-                }
+                if (_binaural != IntPtr.Zero) PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero;
+                if (_direct != IntPtr.Zero) PhononNative.iplDirectEffectRelease(ref _direct); _direct = IntPtr.Zero;
+                if (_reflectionEffect != IntPtr.Zero) PhononNative.iplReflectionEffectRelease(ref _reflectionEffect); _reflectionEffect = IntPtr.Zero;
+                if (_ambiDecodeEffect != IntPtr.Zero) PhononNative.iplAmbisonicsDecodeEffectRelease(ref _ambiDecodeEffect); _ambiDecodeEffect = IntPtr.Zero;
 
                 if (_reflBufsAllocated)
                 {
                     _reflBufsAllocated = false;
                     if (_cachedContext != IntPtr.Zero)
                     {
-                        if (_reflAmbiNative.data != IntPtr.Zero)
-                            PhononNative.iplAudioBufferFree(_cachedContext, ref _reflAmbiNative);
-                        if (_reflStereoNative.data != IntPtr.Zero)
-                            PhononNative.iplAudioBufferFree(_cachedContext, ref _reflStereoNative);
+                        if (_reflAmbiNative.data != IntPtr.Zero) PhononNative.iplAudioBufferFree(_cachedContext, ref _reflAmbiNative);
+                        if (_reflStereoNative.data != IntPtr.Zero) PhononNative.iplAudioBufferFree(_cachedContext, ref _reflStereoNative);
                     }
                 }
             }
@@ -215,7 +224,6 @@ namespace PhononSpatializerProxy
             }
         }
 
-        // TODO: Reduce GC here
         private void Update()
         {
             if (_binaural == IntPtr.Zero)
@@ -232,39 +240,38 @@ namespace PhononSpatializerProxy
             Transform listener = PhononListenerCache.GetListenerTransform();
             if (listener == null) return;
 
-
             UnityEngine.Vector3 sourcePos = transform.position;
-            UnityEngine.Vector3 listenerPos = listener.position;
-            UnityEngine.Vector3 listenerRight = listener.right;
-            UnityEngine.Vector3 listenerUp = listener.up;
-            UnityEngine.Vector3 listenerForward = listener.forward;
 
-            // change
-            UnityEngine.Vector3 localPos = listener.InverseTransformPoint(sourcePos);
+            listener.GetPositionAndRotation(out UnityEngine.Vector3 listenerPos, out UnityEngine.Quaternion listenerRot);
+
+            UnityEngine.Vector3 listenerRight = listenerRot * UnityEngine.Vector3.right;
+            UnityEngine.Vector3 listenerUp = listenerRot * UnityEngine.Vector3.up;
+            UnityEngine.Vector3 listenerForward = listenerRot * UnityEngine.Vector3.forward;
+
+            UnityEngine.Vector3 diff = sourcePos - listenerPos;
+            UnityEngine.Vector3 localPos = Quaternion.Inverse(listenerRot) * diff;
             UnityEngine.Vector3 d = localPos.sqrMagnitude < 1e-6f ? UnityEngine.Vector3.forward : localPos.normalized;
 
-            float dist = (sourcePos - listenerPos).magnitude;
+            float dist = diff.magnitude;
 
-            bool shouldApplyDistAtten = true;
-            float occ = 1f, tLow = 0f, tMid = 0f, tHigh = 0f;
-            bool applyTrans = false;
-
-            bool hasRefl = false;
-            ReflectionEffectParams reflParams = default;
-            PCoordinateSpace3 listenerCS = default;
-            float reflMix = 1f;
+            DSPParams newParams = default;
+            newParams.Dir = new PVec3 { x = d.x, y = d.y, z = -d.z };
+            newParams.SpatialBlend = spatialBlend;
+            newParams.DistAtten = 1f;
+            newParams.Occlusion = 1f;
+            newParams.ReflMixLevel = 1f;
 
 #if STEAMAUDIO_ENABLED
             if (_steamSrc != null)
             {
-                shouldApplyDistAtten = _steamSrc.distanceAttenuation;
-                occ = Mathf.Clamp01(_steamSrc.occlusionValue);
-                applyTrans = _steamSrc.transmission;
-                if (applyTrans)
+                newParams.DistAtten = _steamSrc.distanceAttenuation ? _attenuator.Calculate(dist) : 1f;
+                newParams.Occlusion = Mathf.Clamp01(_steamSrc.occlusionValue);
+                newParams.ApplyTransmission = _steamSrc.transmission;
+                if (newParams.ApplyTransmission)
                 {
-                    tLow = Mathf.Clamp01(_steamSrc.transmissionLow);
-                    tMid = Mathf.Clamp01(_steamSrc.transmissionMid);
-                    tHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
+                    newParams.TransLow = Mathf.Clamp01(_steamSrc.transmissionLow);
+                    newParams.TransMid = Mathf.Clamp01(_steamSrc.transmissionMid);
+                    newParams.TransHigh = Mathf.Clamp01(_steamSrc.transmissionHigh);
                 }
 
                 if (_steamSrc.reflections && _reflBufsAllocated && _reflectionEffect != IntPtr.Zero)
@@ -274,21 +281,20 @@ namespace PhononSpatializerProxy
                         var outputs = _steamSrc.GetOutputs(SimulationFlags.Reflections);
                         var saSettings = SteamAudioSettings.Singleton;
 
-                        reflParams = outputs.reflections;
-                        reflParams.type = saSettings.reflectionEffectType;
-                        reflParams.numChannels = _maxAmbiChannels;
-                        reflParams.irSize = _irSize;
+                        newParams.ReflParams = outputs.reflections;
+                        newParams.ReflParams.type = saSettings.reflectionEffectType;
+                        newParams.ReflParams.numChannels = _maxAmbiChannels;
+                        newParams.ReflParams.irSize = _irSize;
 
-                        hasRefl = reflParams.ir != IntPtr.Zero;
-                        reflMix = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
+                        newParams.HasValidReflData = newParams.ReflParams.ir != IntPtr.Zero;
+                        newParams.ReflMixLevel = Mathf.Clamp(_steamSrc.reflectionsMixLevel, 0f, 10f);
 
-                        UnityEngine.Vector3 lR = listenerRight, lU = listenerUp, lF = listenerForward, lP = listenerPos;
-                        listenerCS = new PCoordinateSpace3
+                        newParams.ListenerCS = new PCoordinateSpace3
                         {
-                            right = new PVec3 { x = lR.x, y = lR.y, z = -lR.z },
-                            up = new PVec3 { x = lU.x, y = lU.y, z = -lU.z },
-                            ahead = new PVec3 { x = lF.x, y = lF.y, z = -lF.z },
-                            origin = new PVec3 { x = lP.x, y = lP.y, z = -lP.z },
+                            right = new PVec3 { x = listenerRight.x, y = listenerRight.y, z = -listenerRight.z },
+                            up = new PVec3 { x = listenerUp.x, y = listenerUp.y, z = -listenerUp.z },
+                            ahead = new PVec3 { x = listenerForward.x, y = listenerForward.y, z = -listenerForward.z },
+                            origin = new PVec3 { x = listenerPos.x, y = listenerPos.y, z = -listenerPos.z },
                         };
                     }
                     catch (Exception ex)
@@ -297,59 +303,46 @@ namespace PhononSpatializerProxy
                     }
                 }
             }
+            else
+            {
+                newParams.DistAtten = _attenuator.Calculate(dist);
+            }
+#else
+            newParams.DistAtten = _attenuator.Calculate(dist);
 #endif
 
-            float atten = shouldApplyDistAtten ? _attenuator.Calculate(dist) : 1f;
-            IntPtr hrtfPtr = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
+            newParams.Hrtf = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
-            // atomic reference swap
-            var newParams = new DSPParams
-            {
-                Dir = new PVec3
-                {
-                    x = d.x,
-                    y = d.y,
-                    z = -d.z
-                },
-                DistAtten = atten,
-                Occlusion = occ,
-                TransLow = tLow,
-                TransMid = tMid,
-                TransHigh = tHigh,
-                ApplyTransmission = applyTrans,
-                Hrtf = hrtfPtr,
-                HasValidReflData = hasRefl,
-                ReflParams = reflParams,
-                ListenerCS = listenerCS,
-                ReflMixLevel = reflMix,
-                SpatialBlend = spatialBlend
-            };
-
+            EnterParamsLock();
             _currentParams = newParams;
+            ExitParamsLock();
 
             if (_bufferOverflowed)
             {
                 _bufferOverflowed = false;
-                Debug.LogError("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                Debug.LogError("Phonon Audio Buffer Size Overflow Exception.");
             }
         }
-
-        private volatile bool _bufferOverflowed;
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
             if (isBypass || channels != 2) return;
 
-            DSPParams p = _currentParams;
+            DSPParams p = default;
 
-            // this prevents native pointers from being destroyed by OnDestroy
-            lock (_lock)
+            EnterParamsLock();
+            p = _currentParams;
+            ExitParamsLock();
+
+            if (!Monitor.TryEnter(_lock))
+                return;
+
+            try
             {
                 if (_binaural == IntPtr.Zero) return;
 
-                int n = data.Length / channels;
+                int n = data.Length / 2;
 
-                // if DSP size spiked abnormally beyond the pre alloc
                 if (n > _monoIn.Length)
                 {
                     _bufferOverflowed = true;
@@ -359,11 +352,15 @@ namespace PhononSpatializerProxy
                 float blend = Mathf.Clamp01(p.SpatialBlend);
                 float effectiveAtten = Mathf.Lerp(1f, p.DistAtten, blend);
 
-                for (int i = 0; i < n; i++)
-                    _monoIn[i] = (data[i * channels] + data[i * channels + 1]) * 0.5f * effectiveAtten;
-
+                fixed (float* pData = data)
                 fixed (float* pIn = _monoIn, pOut = _monoOut, pLeft = _leftOut, pRight = _rightOut)
                 {
+                    // interleave to mono
+                    for (int i = 0; i < n; i++)
+                    {
+                        pIn[i] = (pData[i * 2] + pData[i * 2 + 1]) * 0.5f * effectiveAtten;
+                    }
+
                     IntPtr* inPtrs = stackalloc IntPtr[1]; inPtrs[0] = (IntPtr)pIn;
                     IntPtr* outPtrs = stackalloc IntPtr[1]; outPtrs[0] = (IntPtr)pOut;
                     IntPtr* binPtrs = stackalloc IntPtr[2]; binPtrs[0] = (IntPtr)pLeft; binPtrs[1] = (IntPtr)pRight;
@@ -395,7 +392,7 @@ namespace PhononSpatializerProxy
                     }
                     else
                     {
-                        for (int i = 0; i < n; i++) _monoOut[i] = _monoIn[i];
+                        for (int i = 0; i < n; i++) pOut[i] = pIn[i];
                     }
 
                     if (p.Hrtf != IntPtr.Zero)
@@ -412,7 +409,7 @@ namespace PhononSpatializerProxy
                     }
                     else
                     {
-                        for (int i = 0; i < n; i++) { _leftOut[i] = _monoOut[i]; _rightOut[i] = _monoOut[i]; }
+                        for (int i = 0; i < n; i++) { pLeft[i] = pOut[i]; pRight[i] = pOut[i]; }
                     }
 
                     bool doReflections = p.HasValidReflData && _reflBufsAllocated && _reflectionEffect != IntPtr.Zero &&
@@ -440,17 +437,22 @@ namespace PhononSpatializerProxy
 
                         for (int i = 0; i < n; i++)
                         {
-                            _leftOut[i] += reflL[i] * mix;
-                            _rightOut[i] += reflR[i] * mix;
+                            pLeft[i] += reflL[i] * mix;
+                            pRight[i] += reflR[i] * mix;
                         }
                     }
-                }
 
-                for (int i = 0; i < n; i++)
-                {
-                    data[i * channels] = _leftOut[i];
-                    data[i * channels + 1] = _rightOut[i];
+                    // write out back to Unity buffer vectorization loop
+                    for (int i = 0; i < n; i++)
+                    {
+                        pData[i * 2] = pLeft[i];
+                        pData[i * 2 + 1] = pRight[i];
+                    }
                 }
+            }
+            finally
+            {
+                Monitor.Exit(_lock);
             }
         }
     }

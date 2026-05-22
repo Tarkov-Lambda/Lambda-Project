@@ -50,7 +50,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 1
+    m_Type: 0
     m_Resolution: 1
     m_CustomResolution: -1
     m_Strength: 0
@@ -166,7 +166,7 @@ ParticleSystem:
       m_RotationOrder: 4
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
-  scalingMode: 0
+  scalingMode: 2
   randomSeed: 0
   InitialModule:
     serializedVersion: 3
@@ -2416,6 +2416,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3966107721852184021}
+  - component: {fileID: 4876193206366678591}
   m_Layer: 0
   m_Name: FireNodeEffect
   m_TagString: Untagged
@@ -2432,7 +2433,7 @@ Transform:
   m_GameObject: {fileID: 4611955754295878946}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -41.18457, y: 1.4234759, z: -13.291857}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -2443,6 +2444,32 @@ Transform:
   - {fileID: 7633505247426481599}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4876193206366678591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4611955754295878946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 397b030815e5543409618b038ffe3f0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightsToFlicker:
+  - {fileID: 2791160218185288825}
+  - {fileID: 1659045962625352909}
+  minIntensityMultiplier: 0.7
+  maxIntensityMultiplier: 1.3
+  intensitySpeed: 20
+  affectRange: 1
+  minRangeMultiplier: 0.9
+  maxRangeMultiplier: 1.1
+  rangeSpeed: 10
+  minFlickerInterval: 0.03
+  maxFlickerInterval: 0.12
+  burstChance: 0.15
+  burstStrength: 0.2
 --- !u!1 &6475208924164284963
 GameObject:
   m_ObjectHideFlags: 0
@@ -2551,7 +2578,7 @@ ParticleSystem:
       m_RotationOrder: 4
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
-  scalingMode: 0
+  scalingMode: 2
   randomSeed: 0
   InitialModule:
     serializedVersion: 3
@@ -4815,7 +4842,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 1
+    m_Type: 0
     m_Resolution: 1
     m_CustomResolution: -1
     m_Strength: 1
@@ -4931,7 +4958,7 @@ ParticleSystem:
       m_RotationOrder: 4
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
-  scalingMode: 0
+  scalingMode: 2
   randomSeed: 0
   InitialModule:
     serializedVersion: 3

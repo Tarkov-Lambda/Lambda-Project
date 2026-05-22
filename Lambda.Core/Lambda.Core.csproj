@@ -70,6 +70,8 @@
     <ProjectReference Include="..\Lambda.Shared\Lambda.Shared.csproj" />
 
     <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
+    
+    <ProjectReference Include="..\Lambda.Audio\Lambda.Audio.SteamIntegration\Lambda.Audio.SteamIntegration.csproj" />
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">

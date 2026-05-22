@@ -35,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
     <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
   </ItemGroup>
 
@@ -48,7 +47,7 @@
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true"  />
+    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true" />
 
     <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
   </Target>
