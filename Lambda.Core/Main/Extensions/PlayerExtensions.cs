@@ -93,18 +93,18 @@ public static class PlayerExtensions
                 player.MovementContext.PlayerAnimatorSetWeaponId(EWeaponAnimationType.EmptyHands);
             }
 
-            player.SetEmptyHands(new Callback<GInterface198>(result =>
-            {
-                if (result.Failed)
-                {
-                    D.LogError("failed to equip empty hands after reset: " + result.Error);
-                }
-                else
-                {
-                    player.ForceUnlockInventory();
-                    D.Log("successfully reset to empty hands");
-                }
-            }));
+            // player.SetEmptyHands(new Callback<GInterface198>(result =>
+            // {
+            //     if (result.Failed)
+            //     {
+            //         D.LogError("failed to equip empty hands after reset: " + result.Error);
+            //     }
+            //     else
+            //     {
+            //         player.ForceUnlockInventory();
+            //         D.Log("successfully reset to empty hands");
+            //     }
+            // }));
         }
         catch (Exception ex3)
         {

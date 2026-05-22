@@ -189,6 +189,9 @@ public class Plugin : BaseUnityPlugin
         // RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV and Headbobbing slider overwrites
         RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
 
+        // Camera Patches
+        RegisterPatch(new Patch_Class640_method_1());                       // Remove painkiller effect
+
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
         RegisterPatch(new Patch_FikaServer_OnNetworkReceiveUnconnected());          // Allow clients to connect mid raid
