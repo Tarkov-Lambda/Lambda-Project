@@ -9,7 +9,7 @@ public class LocalBackend : INetworkBackend
     public bool IsHeadless => false;    
     public bool IsOnline   => false;
     
-    public int NetId       => 0;
+    public int NetId       => INetworkBackend.LocalPeerId;
 
     public Action OnNetworkCreated      { get; set; }
     public Action OnNetworkDestroyed    { get; set; }
@@ -46,5 +46,5 @@ public class LocalBackend : INetworkBackend
 
     public Player GetPlayerByPeerId(int peerId) => H.MainPlayer;
 
-    public int GetPeerIdByPlayer(Player player) => 0;
+    public int GetPeerIdByPlayer(Player player) => INetworkBackend.LocalPeerId;
 }

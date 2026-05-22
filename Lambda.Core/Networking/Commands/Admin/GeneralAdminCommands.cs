@@ -51,4 +51,15 @@ public static class AdminCommands
         PacketWardenUtils.Network.DisconnectPeer(peerId);
         ctx.Announce($"{target.Profile.Nickname} was kicked. Reason: {reason}");
     }
+
+    [ChatCommand("kill", "kill a player", CommandTarget.ServerOnly, PacketAuthority.Admin)]
+    public static void KillCommand(CommandContext ctx, Player player)
+    {
+        var damageInfo = new DamageInfoStruct
+        {
+            Damage = 1f,
+            BodyPartColliderType = EBodyPartColliderType.RibcageUp
+        };
+        Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
+    }
 }

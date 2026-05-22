@@ -27,18 +27,6 @@ public class ShutdownAnnouncementPacketWarden : LambdaPacketWarden<ShutdownAnnou
         DispatchPacket(ref packet);
     }
 
-    public void SendToPlayer(Player player, string msg)
-    {
-        var packet = new ShutdownAnnouncementPacket
-        {
-            msg = msg
-        };
-
-        FikaPlayer fikaPlayer = player as FikaPlayer;
-
-        DispatchPacket(ref packet, fikaPlayer.NetId);
-    }
-
     protected override void Apply(ShutdownAnnouncementPacket packet, int peerId)
     {
         UniTask.RunOnThreadPool(async () =>

@@ -31,4 +31,15 @@ public static class GeneralPlayerCommands
     {
         Plugin.MusicVolume.Value = Mathf.Clamp01(volume);
     }
+
+    [ChatCommand("suicide", "Commit suicide", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
+    public static void KillCommand(CommandContext ctx)
+    {
+        var damageInfo = new DamageInfoStruct
+        {
+            Damage = 1f,
+            BodyPartColliderType = EBodyPartColliderType.RibcageUp
+        };
+        Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, H.MainPlayer, H.MainPlayer);
+    }
 }

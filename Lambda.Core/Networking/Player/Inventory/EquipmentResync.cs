@@ -109,7 +109,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             Network.SendData(ref packet, DeliveryType, true);
             ApplyInternal(packet, peerId);
         }
-        else if (peerId != Network.NetId)
+        else if (peerId != INetworkBackend.LocalPeerId)
         {
             Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
@@ -144,7 +144,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             }
         }
 
-        if (!H.IsHeadless && player.IsYourPlayer)
+        if (player.IsYourPlayer)
         {
             player.ProcessStatus = EProcessStatus.None;
             player.SetFirstAvailableItem((result) =>

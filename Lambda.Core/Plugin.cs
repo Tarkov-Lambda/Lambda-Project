@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Dying;

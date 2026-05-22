@@ -33,7 +33,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
         if (ChatCommandInterceptor.TryHandleLocal(msg))
         {
-            ApplyInternal(packet, Network.NetId);
+            ApplyInternal(packet, INetworkBackend.LocalPeerId);
             return;
         }
 
@@ -53,6 +53,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override void ProcessApprovedPacket(ref ChatMessagePacket packet, int peerId)
     {
+        // D.Log(packet.Player.GetContext()?.IsAdmin.ToString());
         // all exclamation mark commands are serverside
         // the client sees their command message but others do not
         if (packet.msg.StartsWith("!"))

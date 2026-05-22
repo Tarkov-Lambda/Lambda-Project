@@ -170,7 +170,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         if (H.GameWorld is HideoutGameWorld)
         {
             ApplyOptimisticallyInternal(packet);
-            ApplyInternal(packet, 0);
+            ApplyInternal(packet, INetworkBackend.LocalPeerId);
             return;
         }
 #endif
@@ -189,22 +189,21 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
             return;
         }
 
-        // if we are the server and we are not sending the packet to anyone
-        // process it as an approved packet that was sent by us (the server)
+        // if we are the server and we are not sending the packet to anyone specifically
         if (targetPeerId == null)
         {
-            ProcessApprovedPacket(ref packet, Network.NetId);
+            ProcessApprovedPacket(ref packet, INetworkBackend.LocalPeerId);
         }
         else
         {
             MutateApprovedPacket(ref packet, targetPeerId.Value);
-            if (targetPeerId.Value != Network.NetId)
+            if (targetPeerId.Value != INetworkBackend.LocalPeerId)
             {
                 Network.SendDataToPeer(ref packet, DeliveryType, targetPeerId.Value);
             }
             else
             {
-                ApplyInternal(packet, targetPeerId.Value);
+                ApplyInternal(packet, INetworkBackend.LocalPeerId);
             }
         }
     }

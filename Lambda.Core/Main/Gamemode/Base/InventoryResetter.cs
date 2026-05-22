@@ -148,7 +148,7 @@ public static class InventoryResetter
         IU.AddArmbandIfNeeded(player);
     }
 
-    public static async void HardReset(this Player player)
+    public static void HardReset(this Player player)
     {
         List<Item> itemsToRemove = [];
 

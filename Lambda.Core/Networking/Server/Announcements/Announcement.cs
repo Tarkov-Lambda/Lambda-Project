@@ -32,8 +32,7 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
     {
         var packet = new AnnouncementPacket
         {
-            msg = msg,
-            specificFaction = Faction.T
+            msg = msg
         };
 
         DispatchPacket(ref packet, peerId);

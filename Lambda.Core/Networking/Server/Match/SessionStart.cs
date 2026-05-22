@@ -63,12 +63,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         {
             level = H.Session.level,
             gamemode = H.Gamemode.GetType().Name, // deal with it
+            isForLateJoiner = true,
         };
-
-        if (H.IsServer)
-        {
-            packet.itemsToLoad = RuntimeBundleLoader.Instance.ItemsToLoad;
-        }
 
         DispatchPacket(ref packet, peerId);
     }
@@ -112,6 +108,11 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         if (!H.IsHeadless)
         {
             Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Ready);
+
+            if (packet.isForLateJoiner && !H.MainPlayer.GetContext().IsAlive)
+            {
+                SpectatorManager.Instance.SwitchSpectatePlayer();
+            }
         }
     }
 

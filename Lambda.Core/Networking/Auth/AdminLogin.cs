@@ -143,7 +143,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         };
 
         DispatchPacket(ref success, peerId);
-        ApplyInternal(success, Network.NetId);
+        ApplyInternal(success, INetworkBackend.LocalPeerId);
     }
 
 
@@ -183,11 +183,11 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
     private void HandleSuccess(AdminAuthPacket packet, int peerId)
     {
-        H.GetPlayerContext(packet.Player)?.SetAdmin(true);
+        packet.Player.GetContext()?.SetAdmin(true);
 
         if (H.IsServer)
         {
-            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer($"Your priviledges have been elevated.", peerId);
+            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer($"Your priviledges have been elevated.", PacketWardenUtils.Network.GetPeerIdByPlayer(packet.Player));
         }
     }
 

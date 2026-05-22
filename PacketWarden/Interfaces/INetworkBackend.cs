@@ -13,6 +13,8 @@ public enum DeliveryType : byte
 
 public interface INetworkBackend : IDisposable
 {
+    public const int LocalPeerId = -1;
+
     bool IsServer   { get; }
     bool IsClient   { get; }
     bool IsHeadless { get; }

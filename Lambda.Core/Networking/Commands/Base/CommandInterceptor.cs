@@ -44,15 +44,15 @@ namespace Lambda.Core.Networking.Commands
             if (!message.StartsWith("!")) return false;
 
             var (cmdName, args) = ParseRawMessage(message);
-            if (!Commands.TryGetValue(cmdName, out var cmdInfo)) return false; // unknown command, let server handle it
+            if (!Commands.TryGetValue(cmdName, out var cmdInfo)) return false;
 
             if (cmdInfo.Attribute.Target == CommandTarget.ClientOnly)
             {
-                ExecuteCommand(cmdInfo, H.MainPlayer, PacketWardenUtils.Network.NetId, message, args);
-                return true; // consumed
+                ExecuteCommand(cmdInfo, H.MainPlayer, INetworkBackend.LocalPeerId, message, args);
+                return true;
             }
 
-            return false; // server command, send the packet
+            return false;
         }
 
         public static void HandleServer(Player sender, int peerId, string message)

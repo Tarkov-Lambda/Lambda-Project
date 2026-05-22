@@ -88,7 +88,46 @@ public class FikaBackend : INetworkBackend, IDisposable
         Singleton<IFikaNetworkManager>.Instance.SendDataToPeer(ref wrapper, (DeliveryMethod)method, Singleton<IFikaNetworkManager>.Instance.GetPeerById(id));
     }
 
-    public Player GetPlayerByPeerId(int peerId) => Singleton<IFikaNetworkManager>.Instance.GetPeerById(peerId)?.Player;
+    public Player GetPlayerByPeerId(int peerId)
+    {
+        if (peerId == INetworkBackend.LocalPeerId) return Singleton<GameWorld>.Instance.MainPlayer;
+        return Singleton<IFikaNetworkManager>.Instance.GetPeerById(peerId)?.Player;
+    }
 
-    public int GetPeerIdByPlayer(Player player) => (player as FikaPlayer).NetId;
+    public int GetPeerIdByPlayer(Player player)
+    {
+        try
+        {
+            // if it's us, return local net id
+            if (player.IsYourPlayer) return INetworkBackend.LocalPeerId;
+
+            // if we are the server and 
+            if (IsServer && Singleton<IFikaNetworkManager>.Instance is FikaServer server)
+            {
+                if (server.NetServer != null)
+                {
+                    foreach (NetPeer peer in server.NetServer)
+                    {
+                        if (peer.Player != null && peer.Player.ProfileId == player.ProfileId)
+                        {
+                            return peer.Id;
+                        }
+                    }
+                }
+            }
+
+            if (IsClient)
+                throw new Exception("Client is trying to find a peer, this is not supposed to happen.");
+            else
+                throw new Exception($"Server can not find the peer responsible for {player.Profile.Nickname}");
+        }
+        catch (Exception ex)
+        {
+            PacketWardenUtils.Log(ex.Message);
+            PacketWardenUtils.Log(ex.StackTrace);
+        }
+
+        return -2;
+
+    }
 }

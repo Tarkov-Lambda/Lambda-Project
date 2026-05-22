@@ -130,7 +130,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
                     // Broadcast updated itemsToLoad list
                     // whilst this is ridiculously wasteful, I know for a fact that it will work
                     // We should not forget about this, but for now it's fine
-                    Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(RuntimeBundleLoader.Instance.ItemsToLoad).Forget();
+                    // Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(RuntimeBundleLoader.Instance.ItemsToLoad).Forget();
 
                     // get the player up to speed
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
