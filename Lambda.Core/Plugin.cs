@@ -237,6 +237,7 @@ public class Plugin : BaseUnityPlugin
         RegisterSingleton<DictateTeleportPacketWarden>();                           // Tell the player to teleport somewhere
         RegisterSingleton<ChatMessagePacketWarden>();                               // Player sends a message
         RegisterSingleton<AskForBombPriorityPacketWarden>();                        // Player requesting to be the bomb carry for the foreseeable rounds
+        RegisterSingleton<ClanTagResyncPacketWarden>();                             // Player sets new clan tag
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map

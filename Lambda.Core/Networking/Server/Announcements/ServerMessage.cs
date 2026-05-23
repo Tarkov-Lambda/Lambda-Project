@@ -9,19 +9,20 @@ using UnityEngine;
 namespace Lambda.Core.Networking;
 
 [MemoryPackable]
-public partial struct AnnouncementPacket : IPacket
+public partial struct ServerMessagePacket : IPacket
 {
     public string msg;
-    public Faction specificFaction;
+    public Faction? specificFaction;
 }
 
-public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
+// Handles all server originated messages (Session, Economy, etc)
+public class ServerMessagePacketWarden : LambdaPacketWarden<ServerMessagePacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(string msg)
     {
-        var packet = new AnnouncementPacket
+        var packet = new ServerMessagePacket
         {
             msg = msg
         };
@@ -30,7 +31,7 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
 
     public void SendToPeer(string msg, int peerId)
     {
-        var packet = new AnnouncementPacket
+        var packet = new ServerMessagePacket
         {
             msg = msg
         };
@@ -40,7 +41,7 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
 
     public void SendToFaction(Faction faction, string msg)
     {
-        var packet = new AnnouncementPacket
+        var packet = new ServerMessagePacket
         {
             msg = msg,
             specificFaction = faction
@@ -50,5 +51,5 @@ public class ServerMessagePacketWarden : LambdaPacketWarden<AnnouncementPacket>
     }
 
     // Handled in ChatController
-    protected override void Apply(AnnouncementPacket packet, int peerId) { }
+    protected override void Apply(ServerMessagePacket packet, int peerId) { }
 }

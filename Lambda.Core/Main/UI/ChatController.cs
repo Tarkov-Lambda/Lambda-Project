@@ -85,10 +85,10 @@ namespace Lambda.Core.Main.UI
             Singleton<ChatMessagePacketWarden>.Instance.Send(scope, msg);
         }
 
-        private async void OnAnnouncementReceived(AnnouncementPacket announcementPacket)
+        private async void OnAnnouncementReceived(ServerMessagePacket serverMessagePacket)
         {
-            if (announcementPacket.specificFaction == null || announcementPacket.specificFaction == H.MainPlayerScore.Faction)
-                _chat.PopAnnouncementMessage(announcementPacket.msg);
+            if (serverMessagePacket.specificFaction != null && serverMessagePacket.specificFaction == H.MainPlayerScore.Faction)
+                _chat.PopAnnouncementMessage(serverMessagePacket.msg);
         }
 
         private async void OnMessageReceived(ChatMessagePacket chatPacket)

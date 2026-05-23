@@ -61,6 +61,22 @@ namespace PhononSpatializerProxy
         // Unity proxy
         public float spatialBlend { get; set; } = 1f;
         public bool spatialize { get; set; } = true;
+
+        // [SerializeField] private float spatialBlend = 1f;
+        // [SerializeField] private bool spatialize = true;
+
+        // public float SpatialBlend
+        // {
+        //     get => spatialBlend;
+        //     set => spatialBlend = value;
+        // }
+
+        // public bool Spatialize
+        // {
+        //     get => spatialize;
+        //     set => spatialize = value;
+        // }
+
         public bool isBypass { get; set; } = false;
 
         private volatile bool _bufferOverflowed;

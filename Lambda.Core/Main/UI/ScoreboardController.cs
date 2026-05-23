@@ -27,6 +27,7 @@ namespace Lambda.Core.Main.UI
             this.scoreboardUI = scoreboardUI;
             Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
             Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied += OnPlayerReadiness;
+            Singleton<ClanTagResyncPacketWarden>.Instance.AfterPacketApplied += OnPlayerSetClanTag;
 
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
@@ -42,6 +43,7 @@ namespace Lambda.Core.Main.UI
         {
             Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
             Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied -= OnPlayerReadiness;
+            Singleton<ClanTagResyncPacketWarden>.Instance.AfterPacketApplied -= OnPlayerSetClanTag;
 
             EventBus.OnEnter -= OnMatchStateEnter;
             EventBus.OnExit -= OnMatchStateExit;
@@ -54,6 +56,7 @@ namespace Lambda.Core.Main.UI
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
         private void OnPlayerReadiness(PlayerReadinessPacket packet) => Refresh();
+        private void OnPlayerSetClanTag(ClanTagResyncPacket packet) => Refresh();
 
         private void OnMatchStateEnter(MatchState state)
         {
@@ -106,9 +109,7 @@ namespace Lambda.Core.Main.UI
 
         void Refresh()
         {
-            PlayerContextInfo[] allPlayerStats = H.Scoreboard.Values
-                .Select(p => p.Context)
-                .ToArray();
+            PlayerContextInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Context).ToArray();
             scoreboardUI.SetPlayers(
                 allPlayerStats,
                 H.Session.factionWins,

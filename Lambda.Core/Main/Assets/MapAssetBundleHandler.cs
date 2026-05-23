@@ -28,6 +28,11 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
         Release(this);
     }
 
+    private void ScanMapDirectory()
+    {
+        
+    }
+
     public async UniTask ReloadMap(string mapName)
     {
         D.Log($"[AssetBundleHandler] Hot Reloading Map: {mapName}");
