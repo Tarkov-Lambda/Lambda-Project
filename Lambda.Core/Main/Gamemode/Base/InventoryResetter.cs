@@ -11,70 +11,9 @@ using Lambda.Core.Main.UI;
 
 namespace Lambda.Core.Main.Gamemode;
 
-public static class InventoryResetter
+public class InventoryResetter
 {
-    public static bool IsResetting { get; private set; }
-
-    public static PistolItemClass GetDefaultPistol(this PlayerContext playerScore)
-    {
-        foreach (var category in BuyMenuSelection.buyCategories)
-        {
-            foreach (var shopItem in category.items)
-            {
-                if (string.IsNullOrEmpty(shopItem.ammoId))
-                    continue;
-
-                var immutable = playerScore.BuySelection[shopItem];
-                if (immutable is not PistolItemClass pistolItem)
-                    continue;
-
-                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
-                    return pistolItem;
-            }
-        }
-
-        return null;
-    }
-
-    public static SniperRifleItemClass GetFirstSniperRifleItem(this PlayerContext playerScore)
-    {
-        foreach (var category in BuyMenuSelection.buyCategories)
-        {
-            foreach (var shopItem in category.items)
-            {
-                if (string.IsNullOrEmpty(shopItem.ammoId))
-                    continue;
-
-                var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
-                if (immutable is not SniperRifleItemClass assaultCarbine)
-                    continue;
-
-                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
-                    return assaultCarbine;
-            }
-        }
-
-        return null;
-    }
-
-    public static void AddItem(ref List<Item> itemList, Item item)
-    {
-        if (itemList.Contains(item)) return;
-        if (item == null) return;
-        D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
-        itemList.Add(item);
-    }
-
-    public static void AddRange(ref List<Item> itemList, IEnumerable<Item> itemCollection)
-    {
-        foreach (Item item in itemCollection)
-        {
-            D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
-        }
-        itemList.AddRange(itemCollection);
-    }
-
-    public static void SoftReset(this Player player)
+    public static void SoftReset(Player player)
     {
         List<Item> itemsToRemove = [];
 
@@ -148,7 +87,7 @@ public static class InventoryResetter
         IU.AddArmbandIfNeeded(player);
     }
 
-    public static void HardReset(this Player player)
+    public static void HardReset(Player player)
     {
         List<Item> itemsToRemove = [];
 
@@ -202,5 +141,65 @@ public static class InventoryResetter
         RU.SetupWeaponImmediate(defaultPistol, player);
 
         IU.AddArmbandIfNeeded(player);
+    }
+
+
+    public static PistolItemClass GetDefaultPistol(PlayerContext playerScore)
+    {
+        foreach (var category in BuyMenuSelection.buyCategories)
+        {
+            foreach (var shopItem in category.items)
+            {
+                if (string.IsNullOrEmpty(shopItem.ammoId))
+                    continue;
+
+                var immutable = playerScore.BuySelection[shopItem];
+                if (immutable is not PistolItemClass pistolItem)
+                    continue;
+
+                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
+                    return pistolItem;
+            }
+        }
+
+        return null;
+    }
+
+    public static SniperRifleItemClass GetFirstSniperRifleItem(PlayerContext playerScore)
+    {
+        foreach (var category in BuyMenuSelection.buyCategories)
+        {
+            foreach (var shopItem in category.items)
+            {
+                if (string.IsNullOrEmpty(shopItem.ammoId))
+                    continue;
+
+                var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
+                if (immutable is not SniperRifleItemClass assaultCarbine)
+                    continue;
+
+                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
+                    return assaultCarbine;
+            }
+        }
+
+        return null;
+    }
+
+    public static void AddItem(ref List<Item> itemList, Item item)
+    {
+        if (itemList.Contains(item)) return;
+        if (item == null) return;
+        D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+        itemList.Add(item);
+    }
+
+    public static void AddRange(ref List<Item> itemList, IEnumerable<Item> itemCollection)
+    {
+        foreach (Item item in itemCollection)
+        {
+            D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+        }
+        itemList.AddRange(itemCollection);
     }
 }

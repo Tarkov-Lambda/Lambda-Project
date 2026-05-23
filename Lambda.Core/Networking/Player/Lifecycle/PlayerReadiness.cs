@@ -10,6 +10,7 @@ using Lambda.Shared.Models;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main;
 using Fika.Core.Main.Players;
+using Lambda.Core.Main.Gamemode;
 
 namespace Lambda.Core.Networking;
 
@@ -40,7 +41,8 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
         var packet = new PlayerReadinessPacket
         {
             Player = H.MainPlayer,
-            readyState = readyState
+            readyState = readyState,
+            clanTag = Plugin.ClanTag.Value
         };
 
         if (readyState is PlayerReadinessState.Connected)
@@ -51,7 +53,6 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             {
                 packet.buySelection.Add(shopItem, PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId));
             }
-            packet.clanTag = Plugin.ClanTag.Value;
         }
 
         DispatchPacket(ref packet);
@@ -91,12 +92,13 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
         if (packet.Player == null) return;
         if (!IsArenaReady && !packet.Player.IsYourPlayer) return;
 
-        D.Log(peerId.ToString());
-
         bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
 
-        playerContext.SetClanTag(packet.clanTag);
+        if (packet.clanTag != null)
+        {
+            playerContext.SetClanTag(packet.clanTag);
+        }
 
         if (packet.Player.TryGetHandsResourceKey(out ResourceKey handsBundle))
         {
@@ -110,6 +112,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             {
                 playerContext.ChangeProgress(100f);
                 playerContext.ChangeFaction(Faction.Spectator);
+                playerContext.SetHardReset();
             }
         }
 
@@ -127,11 +130,6 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             {
                 if (packet.readyState == PlayerReadinessState.Connected)
                 {
-                    // Broadcast updated itemsToLoad list
-                    // whilst this is ridiculously wasteful, I know for a fact that it will work
-                    // We should not forget about this, but for now it's fine
-                    // Singleton<AssetBundleLoadPacketWarden>.Instance.SendAndAwaitFullReadiness(RuntimeBundleLoader.Instance.ItemsToLoad).Forget();
-
                     // get the player up to speed
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
                     Singleton<SessionManagerSyncPacketWarden>.Instance.SendToPeer(peerId);

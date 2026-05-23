@@ -130,11 +130,11 @@ public class SharedCleanup : IGameState
 
                 if (!pContext.ShouldHardReset && totalRounds > 0 && !isHalfTime)
                 {
-                    player.SoftReset();
+                    InventoryResetter.SoftReset(player);
                 }
                 else
                 {
-                    player.HardReset();
+                    InventoryResetter.HardReset(player);
                 }
             }
         }

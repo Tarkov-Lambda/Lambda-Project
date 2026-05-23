@@ -26,7 +26,7 @@ namespace Lambda.Core.Main.UI
 
             PlayerContext killer = H.GetPlayerContext(packet.killer);
 
-            PlayerContext assist = H.GetPlayerContext(packet.assist);
+            PlayerContext assist = packet.assist != null ? H.GetPlayerContext(packet.assist) : null;
 
             string leftName = BuildLeftName(killer, assist);
             string rightName = FormatPlayer(victim);

@@ -71,7 +71,7 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 
         foreach (var item in ItemsToLoad)
         {
-            D.Log(item.LocalizedName());
+            // D.LogInventory(item.LocalizedName());
             foreach (var i in item.GetAllItems())
             {
                 if (i.Template == null)

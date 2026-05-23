@@ -233,11 +233,12 @@ public static class InventoryActionExtensions
             (p, item) => p.TryPopItem(item),
             async (p, items) =>
             {
+                List<UniTask> poppingTasks = new();
                 foreach (var item in items)
                 {
-                    await p.TryPopItem(item);
-                    await UniTask.Delay(25);
+                    poppingTasks.Add(p.TryPopItem(item));
                 }
+                await UniTask.WhenAll(poppingTasks);
             }
         );
     }

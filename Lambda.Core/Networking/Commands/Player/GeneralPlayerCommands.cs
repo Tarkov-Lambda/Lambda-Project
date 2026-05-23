@@ -27,7 +27,7 @@ public static class GeneralPlayerCommands
     }
 
     [ChatCommand("volume_music", "Set music volume", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
-    public static void SetClanTag(CommandContext ctx, float volume)
+    public static void SetVolumeMusic(CommandContext ctx, float volume)
     {
         Plugin.MusicVolume.Value = Mathf.Clamp01(volume);
     }

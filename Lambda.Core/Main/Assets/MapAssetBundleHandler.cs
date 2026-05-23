@@ -1,7 +1,9 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using HarmonyLib;
 using Lambda.Core.Networking;
 using Lambda.Core.Patches.Tarkov;
+using PhononSpatializerProxy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -105,6 +107,7 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
 
         await UniTask.WhenAll(loadTasks);
 
+        // GameObject[] AllPhononDSPBridges = [];
         if (H.GameWorld is HideoutGameWorld && mapName != "lobby")
         {
             foreach (var scenePath in scenePaths)
@@ -117,6 +120,8 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
                 foreach (GameObject root in scene.GetRootGameObjects())
                 {
                     root.transform.position += offset;
+                    
+                    // AllPhononDSPBridges.AddRangeToArray(root.GetComponentsInChildren<PhononDSPBridge>(false));
                 }
             }
         }

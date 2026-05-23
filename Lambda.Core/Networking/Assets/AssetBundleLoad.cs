@@ -7,6 +7,7 @@ using EFT;
 using Cysharp.Threading.Tasks;
 using Comfort.Common;
 using System;
+using System.Threading;
 
 namespace Lambda.Core.Networking;
 
@@ -34,16 +35,19 @@ public struct PlayerAssetBundleLoadState
 // this is kind of bad but I don't have time to fix it
 public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPacket>
 {
+    private readonly CancellationTokenSource _cts = new();
+
     public override void Dispose()
     {
-        AssetBundleLoadProgress = null;
+        _cts.Cancel();
+        _cts.Dispose();
         base.Dispose();
     }
 
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
     protected override bool ShouldApplyBeforeArenaInitialized => true;
 
-    public Dictionary<string, List<PlayerAssetBundleLoadState>> AssetBundleLoadProgress;
+    public Dictionary<string, List<PlayerAssetBundleLoadState>> AssetBundleLoadProgress = new();
 
     public async UniTask SendAndAwaitFullReadiness(List<Item> itemsToLoad)
     {
@@ -67,7 +71,7 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
 
         DispatchPacket(ref packet);
 
-        await UniTask.WaitUntil(() => !AssetBundleLoadProgress.ContainsKey(packet.id));
+        await UniTask.WaitUntil(() => !AssetBundleLoadProgress.ContainsKey(packet.id), cancellationToken: _cts.Token);
 
         return;
     }

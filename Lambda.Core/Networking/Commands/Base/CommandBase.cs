@@ -20,20 +20,12 @@ public class ChatCommandAttribute(string name, string description, CommandTarget
     public PacketAuthority Authority { get; } = authority;
 }
 
-public class CommandContext
+public class CommandContext(Player sender, int peerId, string rawMessage, string[] args)
 {
-    public Player Sender { get; }
-    public int PeerId { get; }
-    public string RawMessage { get; }
-    public string[] Args { get; }
-
-    public CommandContext(Player sender, int peerId, string rawMessage, string[] args)
-    {
-        Sender = sender;
-        RawMessage = rawMessage;
-        Args = args;
-        PeerId = peerId;
-    }
+    public Player Sender { get; } = sender;
+    public int PeerId { get; } = peerId;
+    public string RawMessage { get; } = rawMessage;
+    public string[] Args { get; } = args;
 
     public void Reply(string message)
     {

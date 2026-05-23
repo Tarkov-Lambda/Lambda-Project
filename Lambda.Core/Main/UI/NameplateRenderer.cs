@@ -15,23 +15,23 @@ internal class NameplateRenderer : MonoBehaviour
     float _triangleFadeStart = 10f;
     float _triangleFadeEnd = 30f;
 
-    RectTransform rectTransform => transform as RectTransform;
+    RectTransform RectTransform => transform as RectTransform;
 
-    List<Nameplate> nameplates = new List<Nameplate>();
+    readonly List<Nameplate> nameplates = new();
 
     Nameplate prefabNameplate;
 
     public void Init(CommonUI commonUI, Nameplate prefabNameplate)
     {
-        rectTransform.SetParent(commonUI.EftBattleUIScreen.transform);
-        rectTransform.SetAsFirstSibling();
+        RectTransform.SetParent(commonUI.EftBattleUIScreen.transform);
+        RectTransform.SetAsFirstSibling();
 
-        rectTransform.localScale = Vector3.one;
-        rectTransform.localPosition = Vector3.zero;
-        rectTransform.anchorMin = Vector2.zero;
-        rectTransform.anchorMax = Vector2.one;
-        rectTransform.offsetMin = Vector2.zero;
-        rectTransform.offsetMax = Vector2.zero;
+        RectTransform.localScale = Vector3.one;
+        RectTransform.localPosition = Vector3.zero;
+        RectTransform.anchorMin = Vector2.zero;
+        RectTransform.anchorMax = Vector2.one;
+        RectTransform.offsetMin = Vector2.zero;
+        RectTransform.offsetMax = Vector2.zero;
 
         this.prefabNameplate = prefabNameplate;
     }
@@ -40,7 +40,7 @@ internal class NameplateRenderer : MonoBehaviour
     {
         while (nameplates.Count <= index)
         {
-            Nameplate instance = Instantiate(prefabNameplate, rectTransform);
+            Nameplate instance = Instantiate(prefabNameplate, RectTransform);
             instance.gameObject.SetActive(false);
             nameplates.Add(instance);
         }
@@ -91,13 +91,13 @@ internal class NameplateRenderer : MonoBehaviour
 
             RectTransform nameplateRect = nameplate.transform as RectTransform;
 
-            Vector2 screenPos = new Vector2(
+            Vector2 screenPos = new(
                 viewportPos.x * Screen.width,
                 viewportPos.y * Screen.height
             );
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                rectTransform,
+                RectTransform,
                 screenPos,
                 cam: null,
                 out Vector2 localPoint

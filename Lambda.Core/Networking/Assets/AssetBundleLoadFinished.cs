@@ -1,5 +1,4 @@
-﻿using PacketWarden;
-using MemoryPack;
+﻿using MemoryPack;
 using EFT;
 using Cysharp.Threading.Tasks;
 using Comfort.Common;
@@ -23,8 +22,8 @@ public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundl
     {
         var packet = new AssetBundleLoadFinishedPacket
         {
-            id = id,
-            Player = H.MainPlayer
+            Player = H.MainPlayer,
+            id = id
         };
 
         DispatchPacket(ref packet);
