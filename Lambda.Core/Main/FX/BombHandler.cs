@@ -18,8 +18,8 @@ using UnityEngine;
 
 namespace Lambda.Core.Main.FX;
 
-// TODO: REFACTOR
-// WHY THE FUCK AM I RUNNING THIS EVERY FRAME
+// This class is absolute garbage and needs to be thrown out and rewritten from scratch
+// alongside all its implementation in ArenaController and the network transaction
 public class BombHandler : Singleton<BombHandler>, IDisposable
 {
     public BetterSource LastBombSource { get; private set; }
@@ -63,7 +63,13 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         CancelBombAudio();
         _beforeExplodingPlayed = false;
         _isAlreadyPlanted = false;
-        BombVisuals?.SetActive(false);
+        BombPlantedPosition = Vector3.zero;
+
+        if (BombVisuals != null)
+        {
+            BombVisuals.transform.position = Vector3.zero;
+            BombVisuals.SetActive(false);
+        }
     }
 
     public void Update()
@@ -234,13 +240,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         {
             if (!H.IsHeadless)
             {
-                Vector3 explosionCenter = BombVisuals.transform.position;
-                float distance = Vector3.Distance(explosionCenter, H.MainPlayer.PlayerBody.transform.position);
-                if (distance <= 25f)
-                {
-                    H.MainPlayer.ActiveHealthController.Kill(EDamageType.Explosion);
-                }
-                H.Effects.Emit("Gas_explosion", explosionCenter, Vector3.up * 0.1f);
+                H.Effects.Emit("Gas_explosion", bombStatePacket.position, Vector3.up * 0.1f);
             }
         }
     }

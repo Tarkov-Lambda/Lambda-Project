@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using Lambda.Shared;
 using System.Collections.Generic;
@@ -114,7 +115,7 @@ public class SND_Planted : IGameState
         if (H.Arena.StateTimer <= 0)
         {
             H.Arena.Award(Faction.T, RoundWinReason.Objective);
-            Singleton<BombStatePacketWarden>.Instance.Send(H.Arena.LastObjectivePlayer, BombState.Exploded, Vector3.zero);
+            Singleton<BombStatePacketWarden>.Instance.Send(H.Arena.LastObjectivePlayer, BombState.Exploded, BombHandler.Instance.BombPlantedPosition);
             return MatchState.RoundEnd;
         }
 

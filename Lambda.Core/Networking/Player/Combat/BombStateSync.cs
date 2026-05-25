@@ -4,6 +4,7 @@ using Lambda.Shared;
 using MemoryPack;
 using UnityEngine;
 using PacketWarden.TimeSync;
+using Comfort.Common;
 
 namespace Lambda.Core.Networking;
 
@@ -80,6 +81,26 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
         {
             H.Arena.LastObjectiveBombState = packet.state;
             if (packet.Player != null) H.Arena.LastObjectivePlayer = packet.Player;
+        }
+
+        if (H.IsServer && packet.state is BombState.Exploded)
+        {
+            var damageInfo = new DamageInfoStruct
+            {
+                Damage = 900f,
+                BodyPartColliderType = EBodyPartColliderType.RibcageUp,
+                DamageType = EDamageType.Explosion,
+            };
+            foreach (var player in H.AllPlayers)
+            {
+                float distance = Vector3.Distance(packet.position, player.PlayerBody.transform.position);
+                if (distance <= 30f)
+                {
+                    Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, H.Arena.LastObjectivePlayer);
+                }
+            }
+
+
         }
 
         H.BombHandler.SetBombVisuals(packet);

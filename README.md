@@ -10,11 +10,10 @@
 - First Person Spectator Mode  
 - Gamemode Framework  
 - Search and Destroy, AWP Only, Duel, King Of The Hill
-- Headless Support
+- Headless Server Support
 - Respawning Mechanic
 - Preemptive Server-Side Deaths
 - Mid-Raid Spawning
-- Lootable Fake Corpses  
 - Molotovs
 
 ### UI / UX
@@ -25,6 +24,7 @@
 - Top Faction Score
 - Quick Access UI Rework
 - Round Result
+- Chat Menu
 
 ### Audio
 - Steam Audio Integration (Occlusion, Transmission, Distance Attentuation)
@@ -46,7 +46,7 @@
 
 - Unity Spatializer Engine bypass
 - PacketWarden
-  - Network Agnostic
+  - Network Backend Agnostic
   - Time Synchronization
   - MemoryPack Automatic De/Serialization
   - MemoryPack Formatters For EFT Classes
@@ -58,7 +58,6 @@
   - Packet Authority (Anyone, Admin, Server Only)
   - Admin Authentication
   - Rate limiting
-  - Class-wide method observation via Harmony postfixing  
 
 ## Modules
 

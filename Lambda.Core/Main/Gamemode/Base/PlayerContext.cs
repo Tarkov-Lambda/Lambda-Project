@@ -88,7 +88,7 @@ public class PlayerContext
         {
             if (killer != null && kvp.Key == killer.Id) continue;
 
-            if (kvp.Value > maxDamage && kvp.Value >= 25f)
+            if (kvp.Value > maxDamage && kvp.Value >= 125f)
             {
                 maxDamage = kvp.Value;
                 topAssistId = kvp.Key;
