@@ -68,7 +68,7 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
     {
         if (packet.Player.IsYourPlayer)
         {
-            Plugin.ClanTag.Value = packet.newClanTag;
+            LambdaPlugin.ClanTag.Value = packet.newClanTag;
         }
         packet.Player.GetContext().SetClanTag(packet.newClanTag);
     }

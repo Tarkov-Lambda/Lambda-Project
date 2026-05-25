@@ -10,14 +10,14 @@ public static class AdminCommands
     [ChatCommand("gamemode", "Starts the current session.", CommandTarget.ServerOnly, PacketAuthority.Admin)]
     public static void ChangeGamemodeCommand(CommandContext ctx, string gamemode)
     {
-        Plugin.Gamemode.Value = gamemode;
+        LambdaPlugin.Gamemode.Value = gamemode;
         ctx.Announce($"Changed next gamemode to {gamemode}");
     }
 
     [ChatCommand("map", "Starts the current session.", CommandTarget.ServerOnly, PacketAuthority.Admin)]
     public static void ChangeLevelCommand(CommandContext ctx, string gamemode)
     {
-        Plugin.Level.Value = gamemode;
+        LambdaPlugin.Level.Value = gamemode;
         ctx.Announce($"Changed next map to {gamemode}");
     }
 

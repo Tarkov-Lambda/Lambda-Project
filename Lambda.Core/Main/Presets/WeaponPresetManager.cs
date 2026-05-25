@@ -11,8 +11,8 @@ namespace Lambda.Core.Main;
 
 public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 {
-    private string _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "Presets");
-    private readonly string _buildsDirectoryPath = Path.Combine(Plugin.pathToConfigs, "Presets", "WeaponBuilds");
+    private string _playerSelectionFilePath = Path.Combine(LambdaPlugin.pathToConfigs, "Presets");
+    private readonly string _buildsDirectoryPath = Path.Combine(LambdaPlugin.pathToConfigs, "Presets", "WeaponBuilds");
 
     // template bsgId -> WeaponBuildClass.MongoID_0
     public Dictionary<string, string> SelectedGunPresetMap = new();
@@ -39,7 +39,7 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     {
         if (H.IsHeadless) return;
 
-        _playerSelectionFilePath = Path.Combine(Plugin.pathToConfigs, "Presets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
+        _playerSelectionFilePath = Path.Combine(LambdaPlugin.pathToConfigs, "Presets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
 
         // Wait for all custom presets to finish importing and saving
         await ImportExternalPresetsFromDisk();

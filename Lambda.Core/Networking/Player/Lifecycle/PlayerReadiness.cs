@@ -42,7 +42,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
         {
             Player = H.MainPlayer,
             readyState = readyState,
-            clanTag = Plugin.ClanTag.Value
+            clanTag = LambdaPlugin.ClanTag.Value
         };
 
         if (readyState is PlayerReadinessState.Connected)
@@ -144,7 +144,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             }
         }
 
-        if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected && !Plugin.Password.Value.IsNullOrEmpty())
+        if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected && !LambdaPlugin.Password.Value.IsNullOrEmpty())
         {
             Singleton<AdminLoginPacketWarden>.Instance.Send();
         }

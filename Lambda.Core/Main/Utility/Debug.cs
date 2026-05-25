@@ -17,9 +17,9 @@ public static class Debugging
     public static void NotifyLong(string msg) => NotificationManagerClass.DisplayMessageNotification(msg, EFT.Communications.ENotificationDurationType.Long);
 
     // #if DEBUG
-    public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
+    public static void Log(string msg) => LambdaPlugin.Logger.LogInfo(msg);
     // public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg); // for stuff that goes over the wire
-    public static void LogArenaController(string msg) => Plugin.Logger.LogInfo(msg);
+    public static void LogArenaController(string msg) => LambdaPlugin.Logger.LogInfo(msg);
     // public static void LogInventory(string msg) => Plugin.Logger.LogInfo(msg); // for inventory item tracking
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
     public static void DumpFile(object obj, string fileName = "Unknown Log", int depth = 0, [CallerArgumentExpression("obj")] string name = null) => _dumpFile(obj, fileName, depth);
@@ -41,7 +41,7 @@ public static class Debugging
 
     public static void LogError(string msg)
     {
-        Plugin.Logger.LogError(msg);
+        LambdaPlugin.Logger.LogError(msg);
 
         if (_throttled) return;
         _throttled = true;
@@ -78,7 +78,7 @@ public static class Debugging
     private static void _dumpFile(object obj, string fileName = "Unnamed Log", int depth = 1)
     {
         string dump = _dump(obj, depth, false);
-        var logFilePath = Path.Combine(Plugin.pathToLogs, $"{fileName}.txt");
+        var logFilePath = Path.Combine(LambdaPlugin.pathToLogs, $"{fileName}.txt");
         File.WriteAllText(logFilePath, dump);
     }
 

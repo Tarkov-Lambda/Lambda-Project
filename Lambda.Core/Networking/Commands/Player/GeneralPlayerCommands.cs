@@ -10,7 +10,7 @@ public static class GeneralPlayerCommands
     [ChatCommand("login", "Requests server login", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
     public static void Login(CommandContext ctx, string password)
     {
-        Plugin.Password.Value = password;
+        LambdaPlugin.Password.Value = password;
         Singleton<AdminLoginPacketWarden>.Instance.Send();
     }
 
@@ -29,7 +29,7 @@ public static class GeneralPlayerCommands
     [ChatCommand("volume_music", "Set music volume", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
     public static void SetVolumeMusic(CommandContext ctx, float volume)
     {
-        Plugin.MusicVolume.Value = Mathf.Clamp01(volume);
+        LambdaPlugin.MusicVolume.Value = Mathf.Clamp01(volume);
     }
 
     [ChatCommand("suicide", "Commit suicide", CommandTarget.ClientOnly, PacketAuthority.Anyone)]

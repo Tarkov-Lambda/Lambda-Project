@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 public static class GameplayVariables
 {
-    private readonly static string DefaultGameplayVariablesPath = Path.Combine(Plugin.pathToConfigs, "GameplayVariables.jsonc");
+    private readonly static string DefaultGameplayVariablesPath = Path.Combine(LambdaPlugin.pathToConfigs, "GameplayVariables.jsonc");
 
     public static GameplayVariablesStruct vars = JsonConvert.DeserializeObject<GameplayVariablesStruct>(File.ReadAllText(DefaultGameplayVariablesPath));
 

@@ -8,7 +8,7 @@ namespace Lambda.Core.Main.Economy;
 
 public static class BuyMenuSelection
 {
-    private readonly static string EconomyDataPath = Path.Combine(Plugin.pathToConfigs, "Economy.jsonc");
+    private readonly static string EconomyDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "Economy.jsonc");
 
     public static List<BuyCategory> buyCategories = new();
 

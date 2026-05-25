@@ -1,0 +1,36 @@
+P0
+1. Steam Audio Bindings and lifecycle Rework
+2. Keep optimizing hot paths
+3. FIX Cleanup related NRE (Player.MouseLook, Player.method_23)
+
+Fuck you eclips
+1. Remove flashlights on night time
+2. Populate max mag size quantity on every gun
+
+Other shit
+1. Disallow armored facecovers (why the fuck do you bring tagilla mask into the raid dawg)
+2. Disallow backpacks
+
+QOL
+2. Night Time lifecycle improvements
+3. Rework Inventory Resetter
+4. Implement overtime
+5. Work on side swap, match end UI
+6. 
+
+Editor & Core
+1. Implement multi-scene workflow
+2. Rework MapAssetBundleHandler to load multiple bundles from one folder
+3. Rework smokes
+
+Hardpoint
+1. Finish Respawn Manager
+2. Implement Objective UI
+3. Extend from reworked Inventory Resetter
+
+Infrastructure/Backend
+1. Setup publish CI/CD
+2. Spin up R2
+3. Rework Lambda.Updater
+4. Rework Lambda.Entrance
+5. Chunk-based downloading

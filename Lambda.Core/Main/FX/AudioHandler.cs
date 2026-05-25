@@ -20,7 +20,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
     private const string PREFAB_SOUNDS_PATH = "Assets/Audio/SoundData.asset";
     private const string MUSIC_KIT_SOUNDS_PATH = "Assets/Audio/MusicKitSoundData.asset";
 
-    private static string AudioBundlePath => Path.Combine(Plugin.pathToBundles, AUDIO_BUNDLE_NAME);
+    private static string AudioBundlePath => Path.Combine(LambdaPlugin.pathToBundles, AUDIO_BUNDLE_NAME);
 
     public AssetBundle AudioBundle { get; private set; }
     public LambdaSounds PrefabSounds { get; private set; }

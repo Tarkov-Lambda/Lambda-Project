@@ -27,7 +27,7 @@ internal class LambdaConsoleCommands
 
         foreach (var fieldDump in fieldDumps)
         {
-            Plugin.Logger.LogInfo(fieldDump);
+            LambdaPlugin.Logger.LogInfo(fieldDump);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Lambda.Core.Patches.Tarkov.UI
 
         static string GetWatermark()
         {
-            Assembly assembly = Assembly.GetAssembly(typeof(Plugin));
+            Assembly assembly = Assembly.GetAssembly(typeof(LambdaPlugin));
             Version version = assembly.GetName().Version;
 
             string product = assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product ?? "";

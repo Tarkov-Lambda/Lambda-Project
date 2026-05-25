@@ -22,7 +22,7 @@ public struct PresetManagerSlotInfo
 // also it equips a random upper/lower whenever a new profile has been created
 public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDisposable
 {
-    private readonly string PresetDataPath = Path.Combine(Plugin.pathToConfigs, "DefaultEquipment.jsonc");
+    private readonly string PresetDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "DefaultEquipment.jsonc");
 
     private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 

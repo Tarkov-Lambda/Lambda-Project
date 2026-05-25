@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using Lambda.Core.Networking;
 using Lambda.Core.Patches.Tarkov;
-using PhononSpatializerProxy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -47,7 +46,7 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
 
     public async UniTask UnloadMap(string mapName)
     {
-        string fullPath = Path.Combine(Plugin.pathToMaps, mapName);
+        string fullPath = Path.Combine(LambdaPlugin.pathToMaps, mapName);
 
         if (loadedAssetBundles.TryGetValue(fullPath, out AssetBundle bundle) && bundle != null)
         {
@@ -145,7 +144,7 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
 
     public async UniTask<AssetBundle> LoadAssetBundle(string name)
     {
-        string fullPath = Path.Combine(Plugin.pathToMaps, name);
+        string fullPath = Path.Combine(LambdaPlugin.pathToMaps, name);
         if (!File.Exists(fullPath))
         {
             D.LogError($"[AssetBundleHandler] Map file does not exist at: {fullPath}");

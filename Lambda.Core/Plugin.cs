@@ -29,7 +29,7 @@ namespace Lambda.Core;
 [BepInDependency("com.fika.core")]
 [BepInDependency("com.ifp.PacketWarden")]
 [BepInPlugin("com.ifp.lambda", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-public class Plugin : BaseUnityPlugin
+public class LambdaPlugin : BaseUnityPlugin
 {
     public static new EFTLogger Logger;
 

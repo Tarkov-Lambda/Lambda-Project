@@ -17,7 +17,7 @@ public class UIManager : IDisposable
     private const string MATCH_UI_PREFAB_PATH =  "Packages/com.lambda.editor/Lambda.UI/ArenaMatchUI.prefab";
     private const string UI_MATTE_PATH        =  "Packages/com.lambda.editor/Lambda.UI/UIMatte.mat";
 
-    private static string UIAssetBundlePath   => Path.Combine(Plugin.pathToBundles, UI_BUNDLE_NAME);
+    private static string UIAssetBundlePath   => Path.Combine(LambdaPlugin.pathToBundles, UI_BUNDLE_NAME);
 
     private AssetBundle UIBundle;
 
@@ -65,7 +65,7 @@ public class UIManager : IDisposable
 
     void LoadUI(CommonUI commonUI)
     {
-        Plugin.Logger.LogInfo("Loading UIManager");
+        LambdaPlugin.Logger.LogInfo("Loading UIManager");
 
         BSGItemInfoProvider itemInfoProvider = new BSGItemInfoProvider();
 
@@ -95,7 +95,7 @@ public class UIManager : IDisposable
         }
         catch (Exception e)
         {
-            Plugin.Logger.LogError(e);
+            LambdaPlugin.Logger.LogError(e);
         }
 
         PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = UIBundle.LoadAsset<Material>(UI_MATTE_PATH);

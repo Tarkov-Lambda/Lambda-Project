@@ -81,7 +81,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
             return false;
         }
 
-        string serverPassword = Plugin.Password.Value;
+        string serverPassword = LambdaPlugin.Password.Value;
         if (string.IsNullOrEmpty(serverPassword))
         {
             rejectionReason = "Server password not configured.";
@@ -163,13 +163,13 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
     private void HandleChallenge(AdminAuthPacket packet, int peerId)
     {
-        if (string.IsNullOrEmpty(Plugin.Password.Value))
+        if (string.IsNullOrEmpty(LambdaPlugin.Password.Value))
         {
             D.Log("Admin auth failed: client password is empty.");
             return;
         }
 
-        string hash = ComputeHash(Plugin.Password.Value, packet.Payload);
+        string hash = ComputeHash(LambdaPlugin.Password.Value, packet.Payload);
 
         var verify = new AdminAuthPacket
         {

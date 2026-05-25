@@ -21,6 +21,16 @@ public class SharedNone : IGameState
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
             PU.OpenEyes();
         }
+
+        if (H.IsServer)
+        {
+            var allDisconnected = H.Scoreboard.Values.Where(p => p.ReadyState == PlayerReadinessState.Disconnected);
+
+            foreach (var disconnectedPlayer in allDisconnected)
+            {
+                Singleton<PlayerReadinessPacketWarden>.Instance.SendForPlayer(disconnectedPlayer.player, PlayerReadinessState.Disconnected);
+            }
+        }
     }
 
     public virtual MatchState? OnUpdate()

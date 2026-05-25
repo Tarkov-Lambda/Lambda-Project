@@ -27,7 +27,7 @@ internal class BSGItemInfoProvider : IItemInfoProvider
         }
         catch (Exception ex)
         {
-            Plugin.Logger.LogInfo(ex);
+            LambdaPlugin.Logger.LogInfo(ex);
         }
 
         return "epop";
@@ -45,7 +45,7 @@ internal class BSGItemInfoProvider : IItemInfoProvider
         }
         catch (Exception ex)
         {
-            Plugin.Logger.LogInfo(ex);
+            LambdaPlugin.Logger.LogInfo(ex);
         }
 
         return "epop";
@@ -65,7 +65,7 @@ internal class BSGItemInfoProvider : IItemInfoProvider
 
         if (immutableItem == null)
         {
-            Plugin.Logger.LogWarning($"error creating immutable item for template '{bsgId}'");
+            LambdaPlugin.Logger.LogWarning($"error creating immutable item for template '{bsgId}'");
             if (emptySprite == null)
                 emptySprite = Sprite.Create(Texture2D.blackTexture, new Rect(0, 0, 1, 1), Vector2.zero, 100);
             onRendered?.Invoke(emptySprite);
