@@ -8,6 +8,9 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using EFT.Interactive;
 using Lambda.Core.Main.UI;
+using Lambda.Shared.Models;
+using Lambda.Core.Main.Economy;
+using System.Linq;
 
 namespace Lambda.Core.Main;
 
@@ -188,6 +191,31 @@ public static class ItemUtilities
             foreach (var plate in vestItem.GetArmorPlates())
             {
                 plate.CurrentAddress.RemoveWithoutRestrictions(plate);
+            }
+        }
+    }
+
+    public static void DowngradeMagIfNeeded(Weapon weapon)
+    {
+        if (BuyMenuSelection.TryGetItemData(weapon.TemplateId, out ShopItem itemData))
+        {
+            var magSlot = weapon.GetMagazineSlot();
+            MagazineItemClass mag = magSlot.ContainedItem as MagazineItemClass;
+
+            bool needsReplacement = mag == null || mag.Cartridges.MaxCount > 40 || mag.Cartridges.Items.Any(cartridge => cartridge.TemplateId != itemData.ammoId);
+
+            if (needsReplacement)
+            {
+                WeaponBuildClass defaultPresetWeaponBuild = FU.Presets.FirstOrDefault(b => b.FromPreset && b.Item.TemplateId == weapon.TemplateId);
+                Weapon defaultPresetWeapon = defaultPresetWeaponBuild.Item as Weapon;
+
+                MagazineItemClass defaultWeaponMag = defaultPresetWeapon.GetCurrentMagazine().CloneItem();
+
+                if (mag != null)
+                {
+                    magSlot.RemoveItemWithoutRestrictions();
+                }
+                magSlot.AddWithoutRestrictions(defaultWeaponMag);
             }
         }
     }

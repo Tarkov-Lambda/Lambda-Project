@@ -67,18 +67,18 @@ public class Plugin : BaseUnityPlugin
 
         RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
 
-        RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
+        // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
 
-        RegisterPatch(new Patch_SimpleSource_Play());                               // Audio Source Routing
-        RegisterPatch(new Patch_SuperSource_Play());                                // Audio Source Routing
-        RegisterPatch(new Patch_ReverbSimpleSource_Play());                         // Audio Source Routing
-        RegisterPatch(new Patch_ReverbSuperSource_Play());                          // Audio Source Routing
-        RegisterPatch(new Patch_BetterSource_Play());                               // Audio Source Routing
-        RegisterPatch(new Patch_BetterSource_PlayScheduled());                      // Audio Source Routing
-        RegisterPatch(new Patch_SimpleSource_PlayScheduled());                      // Audio Source Routing
-        RegisterPatch(new Patch_ReverbSuperSource_PlayScheduled());                 // Audio Source Routing
+        // RegisterPatch(new Patch_SimpleSource_Play());                               // Audio Source Routing
+        // RegisterPatch(new Patch_SuperSource_Play());                                // Audio Source Routing
+        // RegisterPatch(new Patch_ReverbSimpleSource_Play());                         // Audio Source Routing
+        // RegisterPatch(new Patch_ReverbSuperSource_Play());                          // Audio Source Routing
+        // RegisterPatch(new Patch_BetterSource_Play());                               // Audio Source Routing
+        // RegisterPatch(new Patch_BetterSource_PlayScheduled());                      // Audio Source Routing
+        // RegisterPatch(new Patch_SimpleSource_PlayScheduled());                      // Audio Source Routing
+        // RegisterPatch(new Patch_ReverbSuperSource_PlayScheduled());                 // Audio Source Routing
 
-        RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
+        // RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
 
         RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
         RegisterPatch(new Patch_BetterSource_SetOcclusionRolloffScale());

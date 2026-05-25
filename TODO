@@ -1,11 +1,9 @@
 P0
 1. Steam Audio Bindings and lifecycle Rework
 2. Keep optimizing hot paths
-3. FIX Cleanup related NRE (Player.MouseLook, Player.method_23)
 
 Fuck you eclips
 1. Remove flashlights on night time
-2. Populate max mag size quantity on every gun
 
 Other shit
 1. Disallow armored facecovers (why the fuck do you bring tagilla mask into the raid dawg)

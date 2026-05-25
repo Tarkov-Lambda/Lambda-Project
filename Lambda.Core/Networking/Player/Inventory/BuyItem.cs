@@ -119,30 +119,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         // this logic needs to be relocated
         if (packet.item is Weapon weapon)
         {
-            if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData) && itemData.maxMagSize != 0)
-            {
-                var magSlot = weapon.GetMagazineSlot();
-                MagazineItemClass mag = magSlot.ContainedItem as MagazineItemClass;
-
-                bool needsReplacement = mag == null
-                    || mag.Cartridges.MaxCount > itemData.maxMagSize
-                    || mag.Cartridges.Items.Any(cartridge => cartridge.TemplateId != itemData.ammoId);
-
-                if (needsReplacement)
-                {
-                    WeaponBuildClass defaultPresetWeaponBuild = FU.Presets.FirstOrDefault(b => b.FromPreset && b.Item.TemplateId == weapon.TemplateId);
-                    Weapon defaultPresetWeapon = defaultPresetWeaponBuild.Item as Weapon;
-
-                    MagazineItemClass defaultWeaponMag = defaultPresetWeapon.GetCurrentMagazine().CloneItem();
-
-                    if (mag != null)
-                    {
-                        magSlot.RemoveItemWithoutRestrictions();
-                    }
-                    magSlot.AddWithoutRestrictions(defaultWeaponMag);
-                }
-            }
-
+            IU.DowngradeMagIfNeeded(weapon);
             RU.SetupWeapon(weapon, packet.Player);
         }
         else if (packet.item is HeadwearItemClass headwear)

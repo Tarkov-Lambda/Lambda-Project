@@ -137,6 +137,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             {
                 slot.AddWithoutRestrictions(itemAndAddress.item);
                 itemAndAddress.address.RaiseForceAdd(itemAndAddress.item, player);
+
                 if (player.IsYourPlayer)
                 {
                     player.AutoExamineAndSearch(itemAndAddress.item);
@@ -144,9 +145,10 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             }
         }
 
+        player.ProcessStatus = EProcessStatus.None;
+
         if (player.IsYourPlayer)
         {
-            player.ProcessStatus = EProcessStatus.None;
             player.SetFirstAvailableItem((result) =>
             {
                 if (result.Failed)
@@ -155,6 +157,10 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                     player.SetEmptyHands(delegate { });
                 }
             });
+        }
+        else
+        {
+            player.SetEmptyHands(delegate { });
         }
     }
 }

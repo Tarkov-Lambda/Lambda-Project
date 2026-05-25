@@ -10,8 +10,6 @@ public class Patch_Effects_GetEmissionEffect : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Effects), nameof(Effects.GetEmissionEffect));
 
-    // public Dictionary<GrenadeEmission
-
     [PatchPostfix]
     static void Postfix(string key, GrenadeEmission __result)
     {
