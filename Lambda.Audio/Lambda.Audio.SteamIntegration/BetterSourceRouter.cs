@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Audio.ReverbSubsystem;
 using EFT;
 using HarmonyLib;
-using PhononSpatializerProxy.BepInEx;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -65,27 +64,27 @@ public static class BetterSourceProxyRouter
             shouldBypassSteamAudio = true;
         }
 
-        SteamAudioSourceController.ProcessAudioSource(betterSource.source1, shouldBypassSteamAudio);
+        // SteamAudioSourceController.ProcessAudioSource(betterSource.source1, shouldBypassSteamAudio);
 
-        if (betterSource is ReverbSimpleSource reverbSimpleSource)
-        {
-            AudioSource reverb = ReverbSimpleSourceFieldRef(reverbSimpleSource);
-            if (reverb != null) SteamAudioSourceController.ProcessAudioSource(reverb, shouldBypassSteamAudio);
-        }
-        else if (betterSource is SuperSource superSource)
-        {
-            if (superSource.source2 != null)
-                SteamAudioSourceController.ProcessAudioSource(superSource.source2, shouldBypassSteamAudio);
+        // if (betterSource is ReverbSimpleSource reverbSimpleSource)
+        // {
+        //     AudioSource reverb = ReverbSimpleSourceFieldRef(reverbSimpleSource);
+        //     if (reverb != null) SteamAudioSourceController.ProcessAudioSource(reverb, shouldBypassSteamAudio);
+        // }
+        // else if (betterSource is SuperSource superSource)
+        // {
+        //     if (superSource.source2 != null)
+        //         SteamAudioSourceController.ProcessAudioSource(superSource.source2, shouldBypassSteamAudio);
 
-            if (superSource is ReverbSuperSource reverbSuperSource)
-            {
-                AudioSource a = ReverbSuperSourceAFieldRef(reverbSuperSource);
-                AudioSource b = ReverbSuperSourceBFieldRef(reverbSuperSource);
+        //     if (superSource is ReverbSuperSource reverbSuperSource)
+        //     {
+        //         AudioSource a = ReverbSuperSourceAFieldRef(reverbSuperSource);
+        //         AudioSource b = ReverbSuperSourceBFieldRef(reverbSuperSource);
 
-                if (a != null) SteamAudioSourceController.ProcessAudioSource(a, shouldBypassSteamAudio);
-                if (b != null) SteamAudioSourceController.ProcessAudioSource(b, shouldBypassSteamAudio);
-            }
-        }
+        //         if (a != null) SteamAudioSourceController.ProcessAudioSource(a, shouldBypassSteamAudio);
+        //         if (b != null) SteamAudioSourceController.ProcessAudioSource(b, shouldBypassSteamAudio);
+        //     }
+        // }
     }
 
     public static void Dispose()

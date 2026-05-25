@@ -2,7 +2,6 @@ using Comfort.Common;
 using DG.Tweening;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using SteamAudio;
 using System.Reflection;
 using UnityEngine;
 
@@ -16,22 +15,22 @@ internal class Patch_BetterAudio_SetProtagonist : ModulePatch
     [PatchPostfix]
     static void Postfix()
     {
-        if (SteamAudioManager.Singleton == null) return;
+        // if (SteamAudioManager.Singleton == null) return;
 
-        var betterAudio = Singleton<BetterAudio>.Instance;
-        if (betterAudio == null) return;
+        // var betterAudio = Singleton<BetterAudio>.Instance;
+        // if (betterAudio == null) return;
 
-        Transform listenerTransform = betterAudio.ListenerTransform != null ? betterAudio.ListenerTransform : betterAudio.AudioListener?.transform;
+        // Transform listenerTransform = betterAudio.ListenerTransform != null ? betterAudio.ListenerTransform : betterAudio.AudioListener?.transform;
 
-        if (listenerTransform == null)
-        {
-            Debug.LogError("[SteamAudio] ListenerTransform is null - SteamAudioListener not attached yet.");
-            return;
-        }
+        // if (listenerTransform == null)
+        // {
+        //     Debug.LogError("[SteamAudio] ListenerTransform is null - SteamAudioListener not attached yet.");
+        //     return;
+        // }
 
-        listenerTransform.gameObject.GetOrAddComponent<SteamAudioListener>();
-        SteamAudioManager.NotifyAudioListenerChangedTo(listenerTransform);
-        Debug.LogError($"[SteamAudio] SteamAudioListener attached to '{listenerTransform.gameObject.name}'.");
+        // listenerTransform.gameObject.GetOrAddComponent<SteamAudioListener>();
+        // SteamAudioManager.NotifyAudioListenerChangedTo(listenerTransform);
+        // Debug.LogError($"[SteamAudio] SteamAudioListener attached to '{listenerTransform.gameObject.name}'.");
     }
 }
 

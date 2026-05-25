@@ -19,7 +19,7 @@ public struct PresetManagerSlotInfo
 }
 
 // this manager deals with capturing the equipment that the player brings into the raid for inventory resetting
-// also it equips a random upper/lower whenever a new profile has been created
+// at the moment there is no server side validation for this, and ultimately it would be best if capture preset would be split into validation as well
 public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDisposable
 {
     private readonly string PresetDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "DefaultEquipment.jsonc");
@@ -40,9 +40,6 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
         PresetInfoConfig = JsonConvert.DeserializeObject<Dictionary<EquipmentSlot, PresetManagerSlotInfo>>(json);
     }
 
-    // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // TacticalVest must always be evaluated first before Armor Vest to make sure that it's not armoured
-    // WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public void CapturePreset()
     {
         if (H.IsHeadless) return;
@@ -64,25 +61,31 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
                         equippedItem = existingItem;
                     }
                 }
-                else equippedItem = existingItem;
-            }
-
-            if (equippedItem == null && presetInfo.Value.isRequired)
-            {
-                equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
-            }
-
-            // If the tactical rig is armoured, skip armor vest
-            if (presetInfo.Key is EquipmentSlot.ArmorVest)
-            {
-                if (PU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                else if (presetInfo.Key is EquipmentSlot.FaceCover)
                 {
-                    continue;
+                    if (existingItem is not ArmoredEquipmentItemClass)
+                    {
+                        equippedItem = existingItem;
+                    }
                 }
-            }
 
-            RuntimeBundleLoader.Instance.AddToCache(equippedItem);
-            RecordedItems[presetInfo.Key] = equippedItem;
+                if (equippedItem == null && presetInfo.Value.isRequired)
+                {
+                    equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
+                }
+
+                // If the tactical rig is armoured, skip armor vest
+                if (presetInfo.Key is EquipmentSlot.ArmorVest)
+                {
+                    if (PU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                    {
+                        continue;
+                    }
+                }
+
+                RuntimeBundleLoader.Instance.AddToCache(equippedItem);
+                RecordedItems[presetInfo.Key] = equippedItem;
+            }
         }
     }
 }

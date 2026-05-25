@@ -46,6 +46,8 @@ public partial struct PlayerKilledPacket : IPacket, IAuthoredPacket
 
 public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 {
+    protected override DeliveryType DeliveryType => DeliveryType.ReliableUnordered;
+
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
         var packet = new PlayerKilledPacket

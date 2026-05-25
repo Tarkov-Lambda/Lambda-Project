@@ -231,7 +231,7 @@ public class SharedPrepare : IGameState
 
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 0.5f);
 
-            H.MainPlayer.SetFirstAvailableItem((result) => { });
+            // H.MainPlayer.SetFirstAvailableItem((result) => { });
         }
 
         foreach (var player in H.AllPlayingPlayers)

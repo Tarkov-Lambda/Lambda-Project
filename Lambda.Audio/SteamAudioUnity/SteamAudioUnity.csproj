@@ -26,6 +26,6 @@
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" />
+    <!-- <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" /> -->
   </Target>
 </Project>

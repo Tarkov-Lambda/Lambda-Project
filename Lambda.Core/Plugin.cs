@@ -153,8 +153,11 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());               // move in ads slightly faster
         RegisterPatch(new Patch_MovementContext_method_15());                       // Faster Leaning
 
-        RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking
-        RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking
+        // RegisterPatch(new Patch_RunStateClass_Jump());                           // Just jump or whatever (il error for some reason)
+
+        RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking (Also allow running during meds)
+        RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking (Also allow running during meds)
+        RegisterPatch(new Patch_MovementContext_CanProne());                        // No proning allowed
         RegisterPatch(new Patch_FirearmController_SetTriggerPressed());             // For controller locking
 
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
@@ -213,8 +216,8 @@ public class LambdaPlugin : BaseUnityPlugin
         // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
         // RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
 
-        // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                    //
-        RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
+        // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                        //
+        // RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
 
 
         // Memory Pack Formatters

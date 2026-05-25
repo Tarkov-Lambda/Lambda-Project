@@ -215,9 +215,11 @@ public static class ReplenishmentUtilities
     {
         if (item is Weapon weapon)
         {
-            weapon.Repairable.Durability = 100;
+            weapon.Repairable.MaxDurability = 100f;
+            weapon.Repairable.Durability = 100f;
             weapon.MalfState.LastShotOverheat = 0f;
         }
+
         else if (item is CompoundItem compoundItem)
         {
             foreach (var slot in compoundItem.AllSlots)
@@ -226,7 +228,8 @@ public static class ReplenishmentUtilities
                 {
                     if (childItem is ArmoredEquipmentItemClass armor)
                     {
-                        armor.Repairable.Durability = armor.Repairable.MaxDurability;
+                        armor.Repairable.MaxDurability = armor.Repairable.TemplateDurability;
+                        armor.Repairable.Durability = armor.Repairable.TemplateDurability;
                     }
                 }
             }

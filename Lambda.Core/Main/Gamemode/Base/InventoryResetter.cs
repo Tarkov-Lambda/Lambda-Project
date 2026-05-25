@@ -13,14 +13,13 @@ namespace Lambda.Core.Main.Gamemode;
 
 public class InventoryResetter
 {
-    public static void SoftReset(Player player)
+
+    public static void HandlePrimaries(Player player, ref List<Item> itemsToRemove)
     {
-        List<Item> itemsToRemove = [];
-
         var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
-
         var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
 
+        // Make sure that the player only has one primary, but also make sure that we only ever delete one at most
         if (secondPrimaryWeapon != null)
         {
             if (firstPrimaryWeapon != null)
@@ -35,23 +34,30 @@ public class InventoryResetter
             }
         }
 
+        AddRange(ref itemsToRemove, player.GetNonMatchingMags());
+        if (firstPrimaryWeapon != null)
+        {
+            RU.SetupWeaponImmediate(firstPrimaryWeapon, player);
+            firstPrimaryWeapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
+        }
+    }
+
+    public static void SoftReset(Player player)
+    {
+        List<Item> itemsToRemove = [];
+
+        HandlePrimaries(player, ref itemsToRemove);
+
         var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
         AddItem(ref itemsToRemove, backpack);
-
-        AddRange(ref itemsToRemove, player.GetNonMatchingMags());
 
         foreach (var itemToRemove in itemsToRemove)
         {
             itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
         }
 
-        if (firstPrimaryWeapon != null)
-        {
-            RU.SetupWeaponImmediate(firstPrimaryWeapon, player);
-            firstPrimaryWeapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
-        }
 
-        var pistol = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
+        var pistol = player.GetSlotItem(EquipmentSlot.Holster) as Weapon;
         if (pistol == null)
         {
             PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();

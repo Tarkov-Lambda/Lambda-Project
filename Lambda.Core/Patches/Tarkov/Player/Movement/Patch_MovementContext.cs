@@ -26,6 +26,7 @@ public class Patch_MovementContext_CanWalk : ModulePatch
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
             __result = false;
+            return;
         }
 
 
@@ -45,6 +46,10 @@ public class Patch_MovementContext_CanWalk : ModulePatch
             {
                 __result = false;
             }
+            else
+            {
+                __result = true;
+            }
         }
 
     }
@@ -61,6 +66,7 @@ public class Patch_MovementContext_CanJump : ModulePatch
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
             __result = false;
+            return;
         }
 
         if (____player.IsYourPlayer)
@@ -68,10 +74,28 @@ public class Patch_MovementContext_CanJump : ModulePatch
             if (Noclip.IsEnabled)
             {
                 __result = false;
+                return;
+            }
+            else
+            {
+                __result = true;
             }
         }
     }
 }
+
+public class Patch_MovementContext_CanProne : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanProne));
+
+    [PatchPostfix]
+    static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
+    {
+        if (!H.IsArenaReady) return;
+        __result = false;
+    }
+}
+
 
 // BLINDFIRE
 public class Patch_MovementContext_PlayerAnimatorSetBlindFire : ModulePatch
