@@ -11,7 +11,7 @@ using Lambda.Core.Main.UI;
 
 namespace Lambda.Core.Main.Gamemode;
 
-public class InventoryResetter
+public class InventoryManager
 {
 
     public static void HandlePrimaries(Player player, ref List<Item> itemsToRemove)
@@ -42,7 +42,7 @@ public class InventoryResetter
         }
     }
 
-    public static void SoftReset(Player player)
+    public static void Replenish(Player player)
     {
         List<Item> itemsToRemove = [];
 

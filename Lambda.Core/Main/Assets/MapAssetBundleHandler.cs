@@ -131,7 +131,7 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
         }
 
         await UniTask.DelayFrame(1);
-        AmbientLight.RuntimeOptimizePrepare();
+        AmbientLight.RuntimeOptimizePrepare(); // idk if we need to clear our stuff on unload for performance, but for now it's fine
 
         if (mapName != "lobby")
             MapLoadEvent.OnSuccessfulLoad?.Invoke();

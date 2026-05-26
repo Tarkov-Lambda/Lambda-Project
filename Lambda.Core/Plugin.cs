@@ -98,6 +98,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterSingleton<T>();
     }
 
+    // Никому не верь кроме монолиту и братьям твоим, никому.
     async void Start()
     {
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
@@ -187,13 +188,14 @@ public class LambdaPlugin : BaseUnityPlugin
         // UI Patches
         UIPatches.Enable();
         RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot in raid
-        // RegisterPatch(new Patch_Class1841_method_0());                              // FOV and Headbobbing slider overwrites
-        // RegisterPatch(new Patch_Class1841_method_1());                              // FOV and Headbobbing slider overwrites
-        // RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV and Headbobbing slider overwrites
+        RegisterPatch(new Patch_Class1841_method_0());                              // FOV slider overwrite
+        RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV slider overwrite
+        RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateLobbyLimit());          // Crank max lobby framerate to 120 fps
+        RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateGameLimit());           // Crank max game framerate to 345 fps (at 350 fps jumps break)
         RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
 
         // Camera Patches
-        RegisterPatch(new Patch_Class640_method_1());                       // Remove painkiller effect
+        RegisterPatch(new Patch_Class640_method_1());                               // Remove visual painkiller effect
 
         // Fika Patches
         RegisterPatch(new Patch_FikaServer_OnCommonPlayerPacketReceived());         // Server-side preemptive death broadcasting
@@ -209,7 +211,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
 
-        RegisterPatch(new Patch_FikaConfig_UseNamePlates());
+        RegisterPatch(new Patch_FikaConfig_ToNumber());
         // RegisterPatch(new Patch_FikaGlobals_ToNumber());                            // Crank movement send rate to 60hz
         // RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Reduce Adaptive Jitter Buffer's base delay to 20ms
         // RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)

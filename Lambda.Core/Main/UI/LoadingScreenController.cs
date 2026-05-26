@@ -101,7 +101,7 @@ namespace Lambda.Core.Main.UI
                     countReady++;
             }
 
-            if (countReady == H.Scoreboard.Values.Count)
+            if (countReady == H.Scoreboard.Count)
                 return false;
 
             bool waitingOnLastPlayer = (H.Scoreboard.Count - countReady) == 1;

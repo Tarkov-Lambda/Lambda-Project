@@ -130,7 +130,7 @@ public class Patch_Player_UpdateTick : ModulePatch
 
             if (_lockTimer > 0.7f)
             {
-                D.Notify("Item is fucked, hol up chat");
+                D.Notify("Picking up an unregistered item.");
                 H.MainPlayer.MovementContext.ProcessStateEnter(new IdleStateClass(H.MainPlayer.MovementContext));
 
                 _lockTimer = 0f;

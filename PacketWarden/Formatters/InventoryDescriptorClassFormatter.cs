@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using MemoryPack;
 
 public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDescriptorClass>
@@ -15,12 +14,14 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
         writer.WriteObjectHeader(1);
 
         var eftWriter = WriterPoolManager.GetWriter();
+        
         eftWriter.WriteEFTItemDescriptor(value);
 
-        var segment = eftWriter.ToArraySegment();
-        writer.WriteUnmanagedSpan(segment.AsSpan());
+        byte[] itemBytes = eftWriter.ToArray();
         
         WriterPoolManager.ReturnWriter(eftWriter);
+
+        writer.WriteUnmanagedArray(itemBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref InventoryDescriptorClass value)
@@ -31,31 +32,19 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
             return;
         }
 
-        Span<byte> span = default;
-        reader.ReadUnmanagedSpan(ref span);
+        byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
 
-        if (span.Length == 0)
+        if (itemBytes == null || itemBytes.Length == 0)
         {
             value = null;
             return;
         }
 
-        byte[] rentedBytes = ArrayPool<byte>.Shared.Rent(span.Length);
         try
         {
-            span.CopyTo(rentedBytes);
-
-            var segment = new ArraySegment<byte>(rentedBytes, 0, span.Length);
-            using var eftReader = PacketToEFTReaderAbstractClass.Get(segment);
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
             value = eftReader.ReadEFTItemDescriptor();
         }
-        catch (Exception) 
-        { 
-            value = null;
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(rentedBytes);
-        }
+        catch (Exception) { }
     }
 }

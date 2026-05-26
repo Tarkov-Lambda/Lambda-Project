@@ -1,10 +1,10 @@
 using System;
-using System.Buffers;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using MemoryPack;
 
+// TODO: Make this work for all IItemOwner and not just InventoryController subtype
 public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
 {
     public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ItemAddress value)
@@ -37,12 +37,14 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         var descriptor = value.ToDescriptor();
         
         var eftWriter = WriterPoolManager.GetWriter();
+
         eftWriter.WritePolymorph(descriptor);
 
-        var segment = eftWriter.ToArraySegment();
-        writer.WriteUnmanagedSpan(segment.AsSpan());
+        byte[] addressBytes = eftWriter.ToArray();
         
         WriterPoolManager.ReturnWriter(eftWriter);
+
+        writer.WriteUnmanagedArray(addressBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemAddress value)
@@ -54,9 +56,7 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         int playerId = reader.ReadUnmanaged<int>();
-
-        Span<byte> span = default;
-        reader.ReadUnmanagedSpan(ref span);
+        byte[] addressBytes = reader.ReadUnmanagedArray<byte>();
 
         if (!Singleton<GameWorld>.Instantiated)
         {
@@ -74,29 +74,18 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             }
         }
 
-        if (span.Length == 0 || player == null)
+        if (addressBytes == null || addressBytes.Length == 0 || player == null)
         {
             value = null;
             return;
         }
 
-        byte[] rentedBytes = ArrayPool<byte>.Shared.Rent(span.Length);
         try
         {
-            span.CopyTo(rentedBytes);
-
-            var segment = new ArraySegment<byte>(rentedBytes, 0, span.Length);
-            using var eftReader = PacketToEFTReaderAbstractClass.Get(segment);
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(addressBytes);
             var descriptor = eftReader.ReadPolymorph<GClass1950>();
             value = player.InventoryController.ToItemAddress(descriptor);
         }
-        catch (Exception) 
-        { 
-            value = null;
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(rentedBytes);
-        }
+        catch (Exception) { }
     }
 }

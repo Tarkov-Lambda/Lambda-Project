@@ -89,7 +89,7 @@ public static class InventoryGetterExtensions
 
         return false;
     }
-    
+
     public static CompoundItem GetPlateCarrier(this Player player)
     {
         if (player.GetSlotItem(EquipmentSlot.TacticalVest) is VestItemClass tacRig)
@@ -191,5 +191,43 @@ public static class InventoryGetterExtensions
 
         D.LogError($"Can't match a mag for {weapon.LocalizedName()}");
         return null;
+    }
+
+    public static int CountAvailableArmorPlateSlots(this Player player)
+    {
+        var plateHolder = player.GetPlateCarrier();
+        if (plateHolder == null) return 0;
+
+        int count = 0;
+
+        foreach (ArmorHolderComponent armorHolder in plateHolder.Components.OfType<ArmorHolderComponent>())
+        {
+            foreach (var slot in armorHolder.ArmorSlots)
+            {
+                if (slot.ContainedItem != null)
+                    continue;
+
+                bool isPlateSlot =
+                    (!string.IsNullOrEmpty(slot.Name) && slot.Name.EndsWith("_plate", StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(slot.CachedSlotName) && slot.CachedSlotName.EndsWith("_plate", StringComparison.OrdinalIgnoreCase));
+
+                if (isPlateSlot)
+                    count++;
+            }
+        }
+
+        foreach (var slot in plateHolder.Slots)
+        {
+            if (slot.ContainedItem != null)
+                continue;
+
+            if (!string.IsNullOrEmpty(slot.Name) &&
+                slot.Name.EndsWith("_plate", StringComparison.OrdinalIgnoreCase))
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 }

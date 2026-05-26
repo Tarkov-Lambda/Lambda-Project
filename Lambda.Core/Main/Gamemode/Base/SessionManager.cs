@@ -9,7 +9,7 @@ namespace Lambda.Core.GameTypes;
 public class SessionManager
 {
     public MatchState matchState = MatchState.None;
-    public Dictionary<int, PlayerContext> scoreboard = new();
+    public PlayerContextLookup scoreboard = new(256);
     public Dictionary<Faction, int> factionWins = new();
     public BombState bombState = BombState.None;
 
@@ -119,3 +119,74 @@ public class SessionManager
     }
 }
 
+// sloppy and crude
+public class PlayerContextLookup(int maxId)
+{
+    private readonly PlayerContext?[] _items = new PlayerContext?[maxId + 1];
+
+    private int _count;
+
+    public int Count => _count;
+
+    public PlayerContext? this[int id]
+    {
+        get => _items[id];
+        set => _items[id] = value;
+    }
+
+    public IEnumerable<PlayerContext> Values
+    {
+        get
+        {
+            foreach (var item in _items)
+            {
+                if (item is not null)
+                    yield return item;
+            }
+        }
+    }
+
+    public IEnumerable<(int Id, PlayerContext Context)> Entries
+    {
+        get
+        {
+            for (int i = 0; i < _items.Length; i++)
+            {
+                var item = _items[i];
+
+                if (item is not null)
+                    yield return (i, item);
+            }
+        }
+    }
+
+    public bool TryGetValue(int id, out PlayerContext? value)
+    {
+        value = _items[id];
+        return value is not null;
+    }
+
+    public bool ContainsKey(int id)
+    {
+        return _items[id] is not null;
+    }
+
+    public void Add(int id, PlayerContext value)
+    {
+        if (_items[id] is not null)
+            throw new ArgumentException($"ID {id} already exists");
+
+        _items[id] = value;
+        _count++;
+    }
+
+    public bool Remove(int id)
+    {
+        if (_items[id] is null)
+            return false;
+
+        _items[id] = default;
+        _count--;
+        return true;
+    }
+}

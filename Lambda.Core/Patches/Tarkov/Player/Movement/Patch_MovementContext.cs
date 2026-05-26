@@ -22,6 +22,7 @@ public class Patch_MovementContext_CanWalk : ModulePatch
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
         if (!H.IsArenaReady) return;
+        if (!____player.IsYourPlayer) return;
 
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
@@ -29,29 +30,24 @@ public class Patch_MovementContext_CanWalk : ModulePatch
             return;
         }
 
-
-        if (____player.IsYourPlayer)
+        if (LadderManager.isOnLadder)
         {
-            if (LadderManager.isOnLadder)
-            {
-                wasOnLadder = true;
-                __result = false;
-            }
-            else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground after ladder use to move 
-            {
-                wasOnLadder = false;
-                __result = false;
-            }
-            else if (Noclip.IsEnabled)
-            {
-                __result = false;
-            }
-            else
-            {
-                __result = true;
-            }
+            wasOnLadder = true;
+            __result = false;
         }
-
+        else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground after ladder use to move 
+        {
+            wasOnLadder = false;
+            __result = false;
+        }
+        else if (Noclip.IsEnabled)
+        {
+            __result = false;
+        }
+        else
+        {
+            __result = true;
+        }
     }
 }
 
@@ -63,23 +59,22 @@ public class Patch_MovementContext_CanJump : ModulePatch
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
         if (!H.IsArenaReady) return;
+        if (!____player.IsYourPlayer) return;
+
         if (____player.GetContext().IsControllerPartiallyLocked())
         {
             __result = false;
             return;
         }
 
-        if (____player.IsYourPlayer)
+        if (Noclip.IsEnabled)
         {
-            if (Noclip.IsEnabled)
-            {
-                __result = false;
-                return;
-            }
-            else
-            {
-                __result = true;
-            }
+            __result = false;
+            return;
+        }
+        else
+        {
+            __result = true;
         }
     }
 }

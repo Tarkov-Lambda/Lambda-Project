@@ -62,7 +62,7 @@ public static class AddressUtilities
         var plateHolder = player.GetPlateCarrier();
         if (plateHolder == null) return ItemPlacement.None;
 
-        foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent))
+        foreach (ArmorHolderComponent armorHolder in plateHolder.Components.Where(c => c is ArmorHolderComponent).Cast<ArmorHolderComponent>())
         {
             foreach (var slot in armorHolder.ArmorSlots)
             {

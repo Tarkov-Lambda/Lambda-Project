@@ -73,7 +73,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public void ManageFikaEvents(FikaEvent fikaEvent)
     {
         if (H.IsClient) return;
-        
+
         if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
         {
             if (H.IsClient) return;
@@ -115,14 +115,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             RuntimeBundleLoader.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
             ClientEquipmentManager.Instance.CapturePreset();
 
-            if (H.GameWorld is not HideoutGameWorld)
-            {
-                HU.ApplyPainkiller();
-            }
-            else
-            {
-                Fullbright();
-            }
+            HU.ApplyPainkiller();
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
             H.Session.scoreboard[H.MainPlayer.Id] = new PlayerContext(H.MainPlayer.Id);
@@ -136,33 +129,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         }
     }
 
-    void Fullbright()
-    {
-        _hideoutLight = new GameObject("hideoutlight");
-
-        CreateDirLight(_hideoutLight.transform, new Vector3(90, 0, 0));
-        CreateDirLight(_hideoutLight.transform, new Vector3(-90, 0, 0));
-        CreateDirLight(_hideoutLight.transform, new Vector3(0, 90, 0));
-        CreateDirLight(_hideoutLight.transform, new Vector3(0, -90, 0));
-    }
-
-    void CreateDirLight(Transform parent, Vector3 rotation)
-    {
-        var go = new GameObject("DirLight");
-        go.transform.parent = parent;
-        go.transform.rotation = Quaternion.Euler(rotation);
-
-        var light = go.AddComponent<Light>();
-        light.type = UnityEngine.LightType.Directional;
-
-        light.intensity = 0.5f;
-        light.shadows = LightShadows.None;
-    }
-
     public void EndSession()
     {
-        Physics.simulationMode = SimulationMode.Script;
-
         _currentState?.OnExit();
         _currentState = null;
 

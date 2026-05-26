@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Lambda.Core.Patches;
 
-internal class Patch_FikaConfig_UseNamePlates : ModulePatch
+internal class Patch_FikaConfig_ToNumber : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(FikaConfig), nameof(FikaConfig.UseNamePlates));
 

@@ -26,11 +26,11 @@ public class PlayersPingPacketWarden : LambdaPacketWarden<PlayersPingPacket>
     {
         var packet = new PlayersPingPacket
         {
-            scores = H.Scoreboard.Select(kvp => new PlayerPingData
-            {
-                playerId = kvp.Key,
-                ping = H.NetManager.GetPeerById(kvp.Key).Ping,
-            }).ToArray()
+            // scores = H.Scoreboard.Select(kvp => new PlayerPingData
+            // {
+            //     playerId = kvp.Key,
+            //     ping = H.NetManager.GetPeerById(kvp.Key).Ping,
+            // }).ToArray()
         };
 
         DispatchPacket(ref packet);

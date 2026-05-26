@@ -44,17 +44,14 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     [PatchPrefix]
     static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
     {
-        if (!H.IsInRaid()) return false; // mid raid connect protection
-        if (H.IsArenaReady == false) return false;
-
-        var pContext = __instance.Player.GetContext();
-        if (pContext == null) return false;
+        if (!H.IsArenaReady) return false;
 
         if (damageInfo.DamageType == EDamageType.Flame)
         {
             damageInfo.Damage *= 2.5f;
             damage *= 2.5f;
         }
+
         else if (damageInfo.DamageType == EDamageType.Fall)
         {
             // blacked out legs don't cause damage
@@ -64,6 +61,7 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
             if (H.Session.matchState == MatchState.RoundPrepare)
             {
                 __instance.Player.MovementContext.ResetFlying();
+                var pContext = __instance.Player.GetContext();
 
                 if (pContext != null)
                 {
@@ -97,7 +95,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     [PatchPrefix]
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
-        if (!H.IsInRaid()) return false; // mid raid connect protection
+        if (!H.IsArenaReady) return false;
         if (__instance.Player == null || __instance.Player.GetContext() == null) return false; // mid raid connect protection
 
         long now = Stopwatch.GetTimestamp();

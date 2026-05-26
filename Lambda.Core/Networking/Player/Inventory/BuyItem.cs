@@ -20,11 +20,11 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
 
-    
+
 
     [MemoryPackAllowSerialize]
     public ItemPlacement placement;
-    
+
     [MemoryPackAllowSerialize]
     public Item item;
 }
@@ -66,6 +66,15 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 if (playerScore.HasReachedLimit(itemData))
                 {
                     rejectionReason = $"Limit reached for this round ({itemData.maxBuy})";
+                    return false;
+                }
+            }
+
+            if (packet.item is HeadwearItemClass)
+            {
+                if (packet.Player.CountAvailableArmorPlateSlots() > 0)
+                {
+                    rejectionReason = $"You must buy armor first";
                     return false;
                 }
             }

@@ -44,6 +44,8 @@ public partial struct PlayerKilledPacket : IPacket, IAuthoredPacket
     }
 }
 
+// TODO: Rework. The arbitrary 4 second thing bleeds into ragdoll creator and spectator manager without any oversight.
+// it's a miracle camera management is somehow functioning.
 public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 {
     protected override DeliveryType DeliveryType => DeliveryType.ReliableUnordered;

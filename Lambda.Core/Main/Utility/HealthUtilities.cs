@@ -13,15 +13,12 @@ public static class HealthUtilities
     // Applies a permanent painkiller at the start of the raid
     public static void ApplyPainkiller()
     {
-        var aHealth = H.MainPlayer.ActiveHealthController;
         Type painkillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
 
-        bool hasPainkiller = aHealth.GetAllEffects()
-            .Any(effect => effect.GetType() == painkillerType && effect.BodyPart == EBodyPart.Head);
-
+        bool hasPainkiller = H.MainPlayer.ActiveHealthController.GetAllEffects().Any(effect => effect.BodyPart == EBodyPart.Head && effect.GetType() == painkillerType);
         if (!hasPainkiller)
         {
-            aHealth.DoPainKiller();
+            H.MainPlayer.ActiveHealthController.DoPainKiller();
         }
     }
 

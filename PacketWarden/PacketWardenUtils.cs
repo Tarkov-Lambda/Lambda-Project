@@ -19,7 +19,8 @@ public static class PacketWardenUtils
 
     public static GameWorld GameWorld               => Singleton<GameWorld>.Instance;
     public static Player MainPlayer                 => GetMainPlayer();
-    public static List<Player> AllPlayers           => IsInRaid() ? GetAllPlayers() : new();
+
+    public static bool HasGameStarted               = false;
 
     public static void Log(string msg)            => Plugin.Logger.LogInfo(msg);
     public static void Notify(object msg)           => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
@@ -45,17 +46,6 @@ public static class PacketWardenUtils
         }
 
         return null;
-    }
-
-    public static Player GetPlayer(int playerId)
-    {
-        if (!IsInRaid()) return null;
-        return AllPlayers.FirstOrDefault(p => p.Id == playerId);
-    }
-
-    private static List<Player> GetAllPlayers()
-    {
-        return GameWorld.AllAlivePlayersList;
     }
 
     public static bool IsInRaid()

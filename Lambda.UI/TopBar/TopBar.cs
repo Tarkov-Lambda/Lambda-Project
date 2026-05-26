@@ -25,6 +25,8 @@ namespace Lambda.UI
         public RectTransform Rect { get; private set; }
         public CanvasGroup Canvas { get; private set; }
 
+        private int _lastSeconds = -1;
+
         void Awake()
         {
             Rect = GetComponent<RectTransform>();
@@ -42,9 +44,11 @@ namespace Lambda.UI
 
         public void SetTime(float seconds)
         {
-            if (TextTimer == null)
-                return;
-            TextTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(seconds)}</mspace>";
+            int intSeconds = Mathf.CeilToInt(seconds);
+            if (intSeconds == _lastSeconds) return;
+
+            _lastSeconds = intSeconds;
+            TextTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(intSeconds)}</mspace>";
         }
 
         public void SetTeamStatuses(PlayerContextInfo[] leftTeam, PlayerContextInfo[] rightTeam)

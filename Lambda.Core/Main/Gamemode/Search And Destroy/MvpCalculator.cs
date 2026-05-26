@@ -16,10 +16,15 @@ public static class MvpCalculator
 
         rng ??= new Random();
 
-        var winners = H.Scoreboard
-            .Where(kvp => kvp.Value != null && kvp.Value.Faction == winner)
-            .Select(kvp => kvp.Value)
-            .ToList();
+        var winners = new List<PlayerContext>();
+
+        foreach (var kvp in H.Scoreboard.Values)
+        {
+            if (kvp != null && kvp.Faction == winner)
+            {
+                winners.Add(kvp);
+            }
+        }
 
         if (winners.Count == 0) return (-1, null);
 

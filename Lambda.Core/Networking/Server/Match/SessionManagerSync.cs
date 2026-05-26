@@ -16,7 +16,7 @@ public partial struct SessionManagerSyncPacket : IPacket
     public string mapName;
 
     public Dictionary<Faction, int> factionWins;
-    public Dictionary<int, PlayerContextInfo> scores;
+    public PlayerContextInfo?[] scores;
 }
 
 // Runs on MatchState.RoundEnd
@@ -26,17 +26,22 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
 
     public SessionManagerSyncPacket FormatPacket()
     {
-        var packet = new SessionManagerSyncPacket
+        var scores = new PlayerContextInfo?[256];
+
+        foreach (var (id, player) in H.Scoreboard.Entries)
+        {
+            scores[id] = player.Context;
+        }
+
+        return new SessionManagerSyncPacket
         {
             roundState = H.Session.matchState,
             bombState = H.Session.bombState,
             mvpId = H.Session.mvpId,
             mapName = H.Session.level,
             factionWins = H.Session.factionWins,
-            scores = H.Scoreboard.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Context)
+            scores = scores
         };
-
-        return packet;
     }
 
     public void Send()
@@ -64,23 +69,27 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
         H.Session.level = packet.mapName;
         H.Session.factionWins = packet.factionWins;
 
-        foreach (var syncScore in packet.scores)
+        for (int id = 0; id < packet.scores.Length; id++)
         {
-            var id = syncScore.Key;
-            var newInfo = syncScore.Value;
+            var newInfo = packet.scores[id];
+
+            if (!newInfo.HasValue)
+                continue;
+
+            var info = newInfo.Value;
 
             if (!H.Scoreboard.ContainsKey(id))
                 H.Scoreboard[id] = new PlayerContext(id);
 
-            var playerScore = H.Scoreboard[id];
+            var playerScore = H.Scoreboard[id]!;
 
             var oldFaction = playerScore.Faction;
-            bool factionChanged = oldFaction != newInfo.Faction;
+            bool factionChanged = oldFaction != info.Faction;
 
-            playerScore.Apply(newInfo);
+            playerScore.Apply(info);
 
             if (!H.IsHeadless && factionChanged && id == H.MainPlayer.Id)
-                EventBus.OnSelfFactionChanged?.Invoke(newInfo.Faction);
+                EventBus.OnSelfFactionChanged?.Invoke(info.Faction);
         }
     }
 }

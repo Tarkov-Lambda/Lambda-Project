@@ -28,14 +28,14 @@ namespace Lambda.UI.Nameplate
 
         public void SetTextAlpha(float alpha)
         {
-            textName.alpha = alpha;
+            textName.canvasRenderer.SetAlpha(alpha);
         }
 
         public void SetGraphicsAlpha(float alpha)
         {
             foreach (var graphic in coloredGraphic)
             {
-                graphic.SetAlpha(alpha);
+                graphic.canvasRenderer.SetAlpha(alpha);
             }
         }
     }

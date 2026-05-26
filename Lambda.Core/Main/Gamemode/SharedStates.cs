@@ -127,7 +127,7 @@ public class SharedCleanup : IGameState
             isHalfTime = totalRounds == roundBased.MaxRoundsToWin - 1;
         }
 
-        // TODO: Compartmentalize all this inventory logic elsewhere
+        // Replenish/Reset Inventories
         foreach (var player in H.AllPlayers)
         {
             player.ForceUnlockInventory();
@@ -140,15 +140,16 @@ public class SharedCleanup : IGameState
 
                 if (!pContext.ShouldHardReset && totalRounds > 0 && !isHalfTime)
                 {
-                    InventoryResetter.SoftReset(player);
+                    InventoryManager.Replenish(player);
                 }
                 else
                 {
-                    InventoryResetter.HardReset(player);
+                    InventoryManager.HardReset(player);
                 }
             }
         }
 
+        // if Search and Destroy - add a bomb to a random terrorist
         if (H.IsServer && H.Gamemode is SNDGamemode)
         {
             if (H.Session.GetPlayersFromFaction(Faction.T).Count > 0)
@@ -170,6 +171,7 @@ public class SharedCleanup : IGameState
             }
         }
 
+        // Broadcast all new equipment
         if (H.IsServer)
         {
             foreach (var player in H.AllPlayers)
@@ -206,13 +208,7 @@ public class SharedPause : IGameState
 {
     public MatchState StateType => MatchState.Pause;
     public virtual void OnEnter() { }
-
-    public virtual MatchState? OnUpdate()
-    {
-        if (!H.IsServer) return null;
-        if (H.Arena.StateTimer <= 0) return MatchState.RoundPrepare;
-        return null;
-    }
+    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public virtual void OnExit() { }
 }
 
