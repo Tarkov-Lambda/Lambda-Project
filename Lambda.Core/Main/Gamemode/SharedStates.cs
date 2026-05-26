@@ -20,6 +20,7 @@ public class SharedNone : IGameState
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
             PU.OpenEyes();
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(false);
         }
 
         if (H.IsServer)
@@ -217,8 +218,6 @@ public class SharedPrepare : IGameState
     public MatchState StateType => MatchState.RoundPrepare;
     public virtual void OnEnter()
     {
-        H.Session.ResetRoundScopeFields();
-
         if (!H.IsHeadless)
         {
             Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
@@ -251,7 +250,7 @@ public class SharedRoundEnd : IGameState
     {
         if (H.IsServer)
         {
-            H.Arena.OnRoundEnd();
+            Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
         }
 
         if (!H.IsHeadless)
@@ -298,6 +297,7 @@ public class SharedRoundEnd : IGameState
     {
         IU.GarbageCollectWorldLoot();
         H.RagdollCreator.ClearAllCorpses();
+        H.Session.ResetRoundScopeFields();
     }
 }
 

@@ -7,10 +7,9 @@ using System.Collections.Concurrent;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
-using UnityEngine;
-using System.Linq;
 using PacketWarden.RateLimiting;
 using MemoryPack;
+using System.Diagnostics;
 
 namespace Lambda.Core.Networking;
 
@@ -176,12 +175,21 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     }
 }
 
+// Whilst buying items in raid is one of the most important parts of this mod
+// I do not have the expertise nor the time to learn Tarkov/Fika to correctly find a segment to hook into
+// because of this, I've made this very gnarly system that errors every now and then, but is solvable with equipment resynchronization
 public static class PlayerInventoryTimeGate
 {
     private static readonly ConcurrentDictionary<int, PlayerQueue> _playerQueues = new();
 
+    private static CancellationTokenSource _cts = new();
+
+    private const float TimeoutSeconds = 3.0f;
+
     public static void Enqueue(int playerId, Action action)
     {
+        if (action == null) return;
+
         var queue = _playerQueues.GetOrAdd(playerId, id => new PlayerQueue(id));
         queue.Enqueue(action);
     }
@@ -189,49 +197,50 @@ public static class PlayerInventoryTimeGate
     public static void ClearAll()
     {
         _playerQueues.Clear();
+
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
     }
 
-    private class PlayerQueue(int playerId)
+    private sealed class PlayerQueue
     {
-        private readonly int _playerId = playerId;
+        private readonly int _playerId;
         private readonly ConcurrentQueue<Action> _queue = new();
-        private int _isProcessing = 0; // 0/1 false/true
+
+        // 0/1 false/true
+        private int _isProcessing;
+
+        public PlayerQueue(int playerId) => _playerId = playerId;
 
         public void Enqueue(Action action)
         {
             _queue.Enqueue(action);
 
-            // if the loop isn't running - start it
+            // start processing if not already running
             if (Interlocked.Exchange(ref _isProcessing, 1) == 0)
-            {
-                ProcessQueueAsync().Forget();
-            }
+                ProcessQueueAsync(_cts.Token).Forget();
         }
 
-        private async UniTaskVoid ProcessQueueAsync()
+        private async UniTaskVoid ProcessQueueAsync(CancellationToken ct)
         {
             try
             {
-                while (_queue.TryDequeue(out var action))
+                while (!ct.IsCancellationRequested && _queue.TryDequeue(out var action))
                 {
-                    Player player = H.GetPlayer(_playerId);
+                    Player player = null;
+                    try { player = H.GetPlayer(_playerId); }
+                    catch { /* ignored */ }
 
-                    float timeout = 3.0f;
-                    while (player.InventoryController.HasActiveEvents && timeout > 0f)
-                    {
-                        await UniTask.DelayFrame(1);
-                        timeout -= Time.deltaTime;
-                    }
-
-                    await UniTask.DelayFrame(1);
+                    await WaitForInventoryToSettle(player, ct);
 
                     try
                     {
-                        action?.Invoke();
+                        action.Invoke();
                     }
                     catch (Exception ex)
                     {
-                        D.LogError($"[PlayerInventoryTimeGate] Error processing packet: {ex}");
+                        D.LogError($"[PlayerInventoryTimeGate] Error processing action for player {_playerId}: {ex}");
                     }
                 }
             }
@@ -239,11 +248,31 @@ public static class PlayerInventoryTimeGate
             {
                 Interlocked.Exchange(ref _isProcessing, 0);
 
-                if (!_queue.IsEmpty && Interlocked.Exchange(ref _isProcessing, 1) == 0)
-                {
-                    ProcessQueueAsync().Forget();
-                }
+                // race-safe restart if something was enqueued after loop ended
+                if (!_queue.IsEmpty && !ct.IsCancellationRequested && Interlocked.Exchange(ref _isProcessing, 1) == 0)
+                    ProcessQueueAsync(ct).Forget();
             }
+        }
+
+        private static async UniTask WaitForInventoryToSettle(Player player, CancellationToken ct)
+        {
+            long endTicks = Stopwatch.GetTimestamp() + (long)(TimeoutSeconds * Stopwatch.Frequency);
+
+            if (!player.InventoryController.HasActiveEvents)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+                return;
+            }
+
+            while (!ct.IsCancellationRequested && Stopwatch.GetTimestamp() < endTicks)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+
+                if (!player.InventoryController.HasActiveEvents)
+                    break;
+            }
+
+            await UniTask.Yield(PlayerLoopTiming.Update, ct);
         }
     }
 }

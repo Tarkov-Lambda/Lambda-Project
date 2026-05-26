@@ -217,8 +217,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
     }
-
-    public void OnRoundEnd() => Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
 }
 
 public class UnityTicker : MonoBehaviour

@@ -139,8 +139,8 @@ public class PlayerContext
 
     public void SetClanTag(string newClanTag)
     {
-        if(newClanTag.IsNullOrEmpty()) return;
-        
+        if (newClanTag.IsNullOrEmpty()) return;
+
         newClanTag = newClanTag.ToUpper();
         context.Identity.ClanTag = newClanTag;
     }
@@ -193,6 +193,11 @@ public class PlayerContext
         }
         context.Combat.IsAlive = false;
         _deathTimestamp = NetworkTime.ServerNowSeconds;
+
+        if (!H.IsHeadless && player == H.MainPlayer)
+        {
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(true);
+        }
     }
 
     public void SetHardReset()
@@ -205,25 +210,19 @@ public class PlayerContext
         context.Combat.IsAlive = true;
         _deathTimestamp = -1;
         context.Economy.ShouldHardReset = false;
-        _damageContributors.Clear(); // <--- ADD THIS LINE
+        _damageContributors.Clear();
 
         if (!H.IsHeadless && player == H.MainPlayer)
+        {
             EventBus.OnSelfRespawn?.Invoke();
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(false);
+        }
     }
 
     public void SessionReset()
     {
-        context.Combat.Mvps = 0;
-        context.Combat.Kills = 0;
-        context.Combat.Damage = 0;
-        context.Combat.Headshots = 0;
-        context.Combat.Assists = 0;
-        context.Combat.Deaths = 0;
-        context.Combat.IsAlive = true;
-
-        context.Combat.RoundDamage = 0;
-        context.Combat.RoundHeadshots = 0;
-        context.Combat.RoundKills = 0;
+        context.Combat = new();
+        context.Economy = new();
     }
 
     public void RoundReset()
@@ -262,14 +261,15 @@ public class PlayerContext
     public bool IsControllerPartiallyLocked()
     {
         if (H.IsHeadless) return false;
-        if (!H.IsInRaid()) return false;
+        if (!H.IsArenaReady) return false;
 
         var matchState = H.Session.matchState;
-        if (matchState is MatchState.WarmupEnd ||
-            matchState is MatchState.RoundPrepare ||
-            matchState is MatchState.Pause ||
-            matchState is MatchState.SideSwap ||
-            matchState is MatchState.Cleanup) return true;
+        if (matchState
+            is MatchState.WarmupEnd
+            or MatchState.RoundPrepare
+            or MatchState.Pause
+            or MatchState.SideSwap
+            or MatchState.Cleanup) return true;
 
         if (!IsAlive && matchState is not MatchState.None) return true;
 

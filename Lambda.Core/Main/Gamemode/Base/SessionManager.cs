@@ -86,7 +86,7 @@ public class SessionManager
 
     public List<Player> GetPlayersFromFaction(Faction faction)
     {
-        if (!H.IsInRaid()) return [];
+        if (!H.IsArenaReady) return [];
 
         var result = new List<Player>();
 
@@ -103,7 +103,7 @@ public class SessionManager
 
     public List<PlayerContext> GetPlayerScoresFromFaction(Faction faction)
     {
-        if (!H.IsInRaid()) return [];
+        if (!H.IsArenaReady) return [];
 
         var result = new List<PlayerContext>();
 

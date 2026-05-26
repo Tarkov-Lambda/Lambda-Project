@@ -46,14 +46,8 @@ public static class Helpers
 
     // EFT Main Player
     public static Player MainPlayer                                       => GetMainPlayer();
-    public static Inventory MainInventory                                 => IsInRaid() ? MainPlayer.Inventory : null;
-    public static InventoryController MainInventoryController             => IsInRaid() ? MainPlayer.InventoryController : null;
-
-    // Fika
-    public static NetPeer NetPeer                                         => Singleton<NetPeer>.Instance;
-    public static IFikaNetworkManager FikaNet                             => Singleton<IFikaNetworkManager>.Instance;
-    public static NetPacketProcessor NetPacketProcessor                   => GetPacketProcessor();
-    public static NetManager NetManager                                   => GetNetManager();
+    public static Inventory MainInventory                                 => MainPlayer != null ? MainPlayer.Inventory : null;
+    public static InventoryController MainInventoryController             => MainPlayer != null ? MainPlayer.InventoryController : null;
 
     public static bool IsHeadless                                         => GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
     public static bool IsClient                                           => FikaBackendUtils.IsClient;
@@ -69,18 +63,18 @@ public static class Helpers
 
     public static PlayerContextLookup Scoreboard                          => Singleton<ArenaController>.Instance.Session.scoreboard;
     public static PlayerContext MainPlayerScore                           => GetMainPlayerScore();
-    public static List<Player> AllTeammates                               => Session.GetPlayersFromFaction(H.MainPlayerScore.Faction);
-    public static List<PlayerContext> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(H.MainPlayerScore.Faction);
-    public static List<Player> AllPlayers                                 => IsInRaid() ? GetAllPlayers() : new();
-    public static List<Player> AllPlayingPlayers                          => IsInRaid() ? GetAllPlayingPlayers() : new();
+    public static List<Player> AllTeammates                               => Session.GetPlayersFromFaction(MainPlayerScore.Faction);
+    public static List<PlayerContext> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(MainPlayerScore.Faction);
+    public static List<Player> AllPlayers                                 => IsArenaReady ? GetAllPlayers() : new();
+    public static List<Player> AllPlayingPlayers                          => IsArenaReady ? GetAllPlayingPlayers() : new();
 
-    public static AudioHandler AudioHandler                               => IsInRaid() ? Singleton<AudioHandler>.Instance : null;
-    public static LambdaSounds Sounds                                     => IsInRaid() ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
-    public static MusicKit MusicKit                                       => IsInRaid() ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
+    public static AudioHandler AudioHandler                               => IsArenaReady ? Singleton<AudioHandler>.Instance : null;
+    public static LambdaSounds Sounds                                     => IsArenaReady ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
+    public static MusicKit MusicKit                                       => IsArenaReady ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
 
-    public static BombHandler BombHandler                                 => IsInRaid() ? Singleton<BombHandler>.Instance : null;
-    public static FXHandler FXHandler                                     => IsInRaid() ? Singleton<FXHandler>.Instance : null;
-    public static SpectatorManager SpectatorManager                       => IsInRaid() ? Singleton<SpectatorManager>.Instance : null;
+    public static BombHandler BombHandler                                 => IsArenaReady ? Singleton<BombHandler>.Instance : null;
+    public static FXHandler FXHandler                                     => IsArenaReady ? Singleton<FXHandler>.Instance : null;
+    public static SpectatorManager SpectatorManager                       => IsArenaReady ? Singleton<SpectatorManager>.Instance : null;
     public static MapAssetBundleLoader MapAssetBundleHandler              => Singleton<MapAssetBundleLoader>.Instance;
     public static WeaponPresetManager WeaponPresetManager                 => Singleton<WeaponPresetManager>.Instance;
 
@@ -110,7 +104,7 @@ public static class Helpers
     {
         try
         {
-            if (H.IsHeadless)
+            if (IsHeadless)
             {
                 D.Log("Headless trying to access MainPlayer. This is not supposed to happen.");
                 D.Log(Environment.StackTrace);
@@ -129,27 +123,24 @@ public static class Helpers
 
     public static Player GetPlayer(int playerId)
     {
-        if (!IsInRaid()) return null;
-        return AllPlayers.FirstOrDefault(p => p.Id == playerId);
+        return AllPlayers?.FirstOrDefault(p => p.Id == playerId);
     }
 
     public static Player GetPlayer(string profileId)
     {
-        if (!IsInRaid()) return null;
-        return AllPlayers.FirstOrDefault(p => p.Profile.ProfileId == profileId);
+        return AllPlayers?.FirstOrDefault(p => p.Profile.ProfileId == profileId);
     }
 
     public static Player GetPlayerByName(string profileId)
     {
-        if (!IsInRaid()) return null;
-        return AllPlayers.FirstOrDefault(p => p.ProfileId == profileId);
+        return AllPlayers?.FirstOrDefault(p => p.ProfileId == profileId);
     }
 
     public static PlayerContext GetPlayerContext(Player player) => GetPlayerScore(player.Id);
 
     public static PlayerContext GetPlayerScore(int playerId)
     {
-        if (!IsInRaid()) return null;
+        if (!IsArenaReady) return null;
         if (!Scoreboard.TryGetValue(playerId, out var playerScore))
         {
             playerScore = new PlayerContext(playerId);
@@ -160,7 +151,7 @@ public static class Helpers
 
     public static PlayerContext GetMainPlayerScore()
     {
-        if (!IsInRaid()) return null;
+        if (!IsArenaReady) return null;
         Scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
         return playerScore;
     }
@@ -190,36 +181,5 @@ public static class Helpers
 // #else
 //         return GameWorld != null && GameWorld is not HideoutGameWorld;
 // #endif
-    }
-
-
-    public static NetPacketProcessor GetPacketProcessor()
-    {
-        var manager = FikaNet;
-        if (manager == null) return null;
-
-        var field = AccessTools.Field(FikaNet.GetType(), "_packetProcessor");
-
-        return field?.GetValue(manager) as NetPacketProcessor;
-    }
-
-    public static NetManager GetNetManager()
-    {
-        var manager = FikaNet;
-        if (manager == null) return null;
-
-        var field = AccessTools.Field(FikaNet.GetType(), "_netServer");
-
-        return field?.GetValue(manager) as NetManager;
-    }
-
-    public static Dictionary<string, int> GetCachedConnections()
-    {
-        var manager = FikaNet;
-        if (manager == null) return null;
-
-        var field = AccessTools.Field(FikaNet.GetType(), "_cachedConnections");
-
-        return field?.GetValue(manager) as Dictionary<string, int>;
     }
 }
