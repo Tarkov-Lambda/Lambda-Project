@@ -10,9 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7650031783371612702}
   - component: {fileID: 3244552091205509448}
-  - component: {fileID: 8928306026478709430}
-  - component: {fileID: 8688861571413439403}
-  - component: {fileID: 2088158783442313736}
   m_Layer: 0
   m_Name: Audio
   m_TagString: Untagged
@@ -167,130 +164,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &8928306026478709430
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4251904167033121971}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59c3684b22f00604a97bb68037fcf4cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  directBinaural: 0
-  interpolation: 0
-  perspectiveCorrection: 0
-  distanceAttenuation: 1
-  distanceAttenuationInput: 0
-  distanceAttenuationValue: 1
-  airAbsorption: 1
-  airAbsorptionInput: 0
-  airAbsorptionLow: 1
-  airAbsorptionMid: 1
-  airAbsorptionHigh: 1
-  directivity: 0
-  directivityInput: 0
-  dipoleWeight: 0
-  dipolePower: 0
-  directivityValue: 1
-  occlusion: 1
-  occlusionInput: 0
-  occlusionType: 1
-  occlusionRadius: 0.13
-  occlusionSamples: 4
-  occlusionValue: 1
-  transmission: 1
-  transmissionType: 1
-  transmissionInput: 1
-  transmissionLow: 0.723
-  transmissionMid: 0.322
-  transmissionHigh: 0.097
-  maxTransmissionSurfaces: 1
-  directMixLevel: 0
-  reflections: 1
-  reflectionsType: 1
-  useDistanceCurveForReflections: 0
-  currentBakedSource: {fileID: 2088158783442313736}
-  reverbTimeLow: 0
-  reverbTimeMid: 0
-  reverbTimeHigh: 0
-  hybridReverbEQLow: 1
-  hybridReverbEQMid: 1
-  hybridReverbEQHigh: 1
-  hybridReverbDelay: 0
-  applyHRTFToReflections: 0
-  reflectionsMixLevel: 10
-  pathing: 0
-  pathingProbeBatch: {fileID: 0}
-  pathValidation: 1
-  findAlternatePaths: 1
-  pathingEQ:
-  - 1
-  - 1
-  - 1
-  pathingSH:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  applyHRTFToPathing: 0
-  pathingMixLevel: 1
-  normalizePathingEQ: 0
---- !u!114 &8688861571413439403
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4251904167033121971}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e579d9eadcde7847b8294edd849ee93, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spatialBlend: 1
-  spatialize: 1
---- !u!114 &2088158783442313736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4251904167033121971}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ea378497d2d9e847898c57b9eb3fb94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  influenceRadius: 1000
-  useAllProbeBatches: 0
-  probeBatches: []
-  mTotalDataSize: 0
-  mProbeDataSizes: 
-  mIdentifier:
-    type: 0
-    variation: 0
-    endpointInfluence:
-      center:
-        x: 0
-        y: 0
-        z: 0
-      radius: 0
-  mProbeBatchesUsed: []
 --- !u!1 &4694537915370550288
 GameObject:
   m_ObjectHideFlags: 0
@@ -467,7 +340,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.888
+      value: 9.446
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalPosition.y
@@ -475,11 +348,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -15.033
+      value: -20.899
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.3723697
+      value: -0.3929484
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.x
@@ -487,7 +360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.9280845
+      value: 0.9195606
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalRotation.z
@@ -499,7 +372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 136.276
+      value: 226.276
       objectReference: {fileID: 0}
     - target: {fileID: 3966107721852184021, guid: 2b9fc9b45964deb41958c07d52389330, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z

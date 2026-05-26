@@ -1,4 +1,4 @@
-public enum RoundWinReason
+public enum RoundWinReason : byte
 {
     None,
     Objective,

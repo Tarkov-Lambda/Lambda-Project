@@ -18,6 +18,8 @@ public class HardpointAction : IGameState
 
 public class HardpointGamemode : LambdaGamemode, IGMTeam, IGMObjective
 {
+    public override string Name { get; } = "King Of The Hill";
+
     public List<ILambdaObjective> Objectives { get; set; } = [];
 
     public override IGameState CreateState(MatchState state) => state switch

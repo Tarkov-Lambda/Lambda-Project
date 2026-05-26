@@ -1,4 +1,4 @@
-﻿public enum Faction
+﻿public enum Faction : byte
 {
     None, // FFA
     CT,
@@ -6,7 +6,7 @@
     Spectator
 }
 
-public enum ZoneOwnership
+public enum ZoneOwnership : byte
 {
     None,
     CT,

@@ -63,6 +63,8 @@ public class DuelAction : IGameState
 
 public class DuelGamemode : LambdaGamemode, IGMRound, IGMTeam
 {
+    public override string Name { get; } = "Duel";
+
     public int MaxRoundsToWin { get; set; } = 13;
 
     public override IGameState CreateState(MatchState state) => state switch

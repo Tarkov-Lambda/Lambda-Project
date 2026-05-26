@@ -10,17 +10,13 @@ namespace Lambda.Core.Main.Economy;
 
 public static class EconomyConstants
 {
-#if DEBUG
-    public const int MAX_MONEY = 16000000;
-#else
     public const int MAX_MONEY = 16000;
-#endif
 
-#if DEBUG
-    public const int START_MONEY = MAX_MONEY / 2;
-#else 
+// #if DEBUG
+//     public const int START_MONEY = MAX_MONEY / 2;
+// #else 
     public const int START_MONEY = 800;
-#endif
+// #endif
 
     public const int WIN_ELIMINATION = 3250;
     public const int WIN_TIME = 3250;
@@ -76,15 +72,11 @@ public class EconomyManager : IDisposable
         if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
         if (packet.killer == packet.Player) return; // Suicide handled in Round End usually
 
-        int reward = 300;
-
-        // Team Kill Penalty?
-        if (killerScore.Faction == H.GetPlayerContext(packet.Player)?.Faction)
+        if (killerScore.Faction == packet.Player.GetContext().Faction)
         {
-            reward = -300;
+            killerScore.AddMoney(-300);
         }
-
-        killerScore.AddMoney(reward);
+        else killerScore.AddMoney(300);
     }
 
     private int GetWeaponReward(Item weapon)
@@ -104,7 +96,7 @@ public class EconomyManager : IDisposable
         var score = H.Arena.LastObjectivePlayer.GetContext();
         if (score == null) return;
 
-        if (state == BombState.Planted)
+        if (state == BombState.Exploded)
         {
             score.AddMoney(EconomyConstants.OBJ_PLANT);
         }
@@ -127,7 +119,7 @@ public class EconomyManager : IDisposable
         if (_lossCounters[winner] > 0) _lossCounters[winner]--;
 
         int winReward = CalculateWinReward(result.roundWinReason);
-        int lossReward = CalculateLossReward(loser, result.roundWinReason);
+        int lossReward = CalculateLossReward(loser);
 
         foreach (var p in H.Scoreboard.Values)
         {
@@ -174,7 +166,7 @@ public class EconomyManager : IDisposable
         }
     }
 
-    private int CalculateLossReward(Faction losingFaction, RoundWinReason reason)
+    private int CalculateLossReward(Faction losingFaction)
     {
         int count = _lossCounters[losingFaction];
 

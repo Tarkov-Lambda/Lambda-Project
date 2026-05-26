@@ -1,4 +1,4 @@
-public enum BombState
+public enum BombState : byte
 {
     None,
     Planting,

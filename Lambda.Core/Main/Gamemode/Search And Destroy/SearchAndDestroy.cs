@@ -134,6 +134,8 @@ public class SND_RoundEnd : SharedRoundEnd
 
 public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable, IGMWithNightMode
 {
+    public override string Name { get; } = "Search And Destroy";
+
     public List<ILambdaObjective> Objectives { get; set; } = [];
 
     public int MaxRoundsToWin { get; set; } = 13;
@@ -174,23 +176,23 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         {MatchState.RoundAction, 10000},
         {MatchState.RoundEnd, 7},
         {MatchState.RoundPlanted, 45},
-        {MatchState.SideSwap, 10},
+        {MatchState.SideSwap, 5},
         {MatchState.MatchEnd, 15}
     };
 
     public override IGameState CreateState(MatchState state) => state switch
     {
-        MatchState.None         => new SharedNone(),
-        MatchState.Warmup       => new SharedWarmup(),
-        MatchState.WarmupEnd    => new SharedWarmupEnd(),
-        MatchState.Cleanup      => new SND_Cleanup(),
-        MatchState.Pause        => new SharedPause(),
+        MatchState.None => new SharedNone(),
+        MatchState.Warmup => new SharedWarmup(),
+        MatchState.WarmupEnd => new SharedWarmupEnd(),
+        MatchState.Cleanup => new SND_Cleanup(),
+        MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new SND_Prepare(),
-        MatchState.RoundAction  => new SND_Action(),
+        MatchState.RoundAction => new SND_Action(),
         MatchState.RoundPlanted => new SND_Planted(),
-        MatchState.RoundEnd     => new SND_RoundEnd(),
-        MatchState.SideSwap     => new SharedSideSwap(),
-        MatchState.MatchEnd     => new SharedMatchEnd(),
+        MatchState.RoundEnd => new SND_RoundEnd(),
+        MatchState.SideSwap => new SharedSideSwap(),
+        MatchState.MatchEnd => new SharedMatchEnd(),
         _ => null
     };
 }

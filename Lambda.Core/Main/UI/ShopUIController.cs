@@ -40,7 +40,6 @@ namespace Lambda.Core.Main.UI
             H.OnGameStarted += SetInteractable;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
-            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKill;
 
             shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
         }
@@ -51,15 +50,9 @@ namespace Lambda.Core.Main.UI
             EventBus.OnSelfMoneyChanged -= OnSelfMoneyChanged;
             H.OnGameStarted -= SetInteractable;
             EventBus.OnEnter -= OnMatchStateEnter;
-            Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKill;
 
             if (shop != null)
                 GameObject.Destroy(shop.gameObject);
-        }
-
-        private void OnPlayerKill(PlayerKilledPacket packet)
-        {
-            shop.SetCurrentMoneyBalance(H.MainPlayerScore.Money);
         }
 
         private void OnMatchStateEnter(MatchState state)

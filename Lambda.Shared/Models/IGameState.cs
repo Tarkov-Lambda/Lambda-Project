@@ -11,6 +11,8 @@ public interface IGameState
 
 public abstract class LambdaGamemode
 {
+    public virtual string Name { get; } = "Generic Lambda Gamemode";
+
     public abstract IGameState CreateState(MatchState state);
 
     public virtual Dictionary<MatchState, float> StateTimerConfig { get; } = new()

@@ -1,4 +1,4 @@
-public enum MatchState
+public enum MatchState : byte
 {
     // Just chilling type beat
     None,

@@ -1,6 +1,6 @@
 ﻿namespace Lambda.Shared.Models
 {
-    public enum ChatMessageScope
+    public enum ChatMessageScope : byte
     {
         All,
         Team,

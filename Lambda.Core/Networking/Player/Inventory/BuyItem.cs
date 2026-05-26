@@ -135,6 +135,19 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             IU.AttachNightVisionIfNeeded(headwear);
         }
+        else if (packet.item is ArmorPlateItemClass)
+        {
+            int availablePlateSlots = packet.Player.CountAvailableArmorPlateSlots();
+            for (int i = 0; i < availablePlateSlots - 1; i++)
+            {
+                var anotherPlatePacket = new BuyItemPacket
+                {
+                    Player = packet.Player,
+                    item = packet.item,
+                };
+                DispatchPacket(ref anotherPlatePacket); // auto fill slots
+            }
+        }
     }
 
     protected override void Apply(BuyItemPacket packet, int peerId)

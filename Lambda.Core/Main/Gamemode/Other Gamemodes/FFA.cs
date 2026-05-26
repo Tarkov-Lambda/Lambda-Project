@@ -18,6 +18,8 @@ public class FFAAction : IGameState
 
 public class FFAGamemode : LambdaGamemode
 {
+    public override string Name { get; } = "Free For All";
+
     public override IGameState CreateState(MatchState state) => state switch
     {
         MatchState.None         => new SharedNone(),

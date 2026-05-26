@@ -34,7 +34,8 @@
       },
       {
         "bsgId": "5ea17ca01412a1425304d1c0", // Bastion Helmet
-        "price": 350
+        "price": 350,
+        "maxBuy": 1
       },
       // {
       //   "bsgId": "5b40e1525acfc4771e1c6611",
