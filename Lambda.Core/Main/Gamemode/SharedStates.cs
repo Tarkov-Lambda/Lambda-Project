@@ -5,6 +5,7 @@ using EFT.InventoryLogic;
 using Fika.Core;
 using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
+using System;
 using System.Linq;
 
 namespace Lambda.Core.Main.Gamemode;
@@ -119,7 +120,6 @@ public class SharedCleanup : IGameState
         //     H.MainPlayer.SetEmptyHands(delegate { });
         // }
 
-        IU.GarbageCollectWorldLoot();
 
         int totalRounds = H.Session.factionWins.Values.Sum();
         bool isHalfTime = false;
@@ -187,7 +187,14 @@ public class SharedCleanup : IGameState
 
             UniTask.Void(async () =>
             {
-                await UniTask.Delay(750);
+                await UniTask.Delay(250);
+
+                IU.GarbageCollectWorldLoot();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                await UniTask.Delay(500);
 
                 HU.HealMe().Forget();
                 if (H.MainPlayer.MovementContext.IsInPronePose)

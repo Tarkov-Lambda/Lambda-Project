@@ -48,10 +48,10 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     private IGameState _currentState;
 
-    public event Action OnArenaBeginInitializing;
-    public event Action OnArenaInitialized;
-    public event Action OnArenaBeginDisposing;
-    public event Action OnArenaDisposed;
+    public event Action OnBeginInitializing;
+    public event Action OnInitialized;
+    public event Action OnBeginDisposing;
+    public event Action OnDisposed;
 
     public ArenaController()
     {
@@ -67,7 +67,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.OnGameDispose -= EndSession;
         OnFikaEvent -= ManageFikaEvents;
         EndSession();
-        Release(this);
     }
 
     public void ManageFikaEvents(FikaEvent fikaEvent)
@@ -101,10 +100,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         if (!H.IsInRaid()) return;
 
+        OnBeginInitializing?.Invoke();
+
         UnityTicker.OnUpdate += Update;
 
         Session = new SessionManager();
-
+        
         if (!H.IsHeadless)
         {
             // SteamAudioInitializer.AttachListenerIfNeeded();
@@ -114,12 +115,10 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             RuntimeBundleLoader.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
             ClientEquipmentManager.Instance.CapturePreset();
-
+            
             HU.ApplyPainkiller();
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;
-            H.Session.scoreboard[H.MainPlayer.Id] = new PlayerContext(H.MainPlayer.Id);
-            H.MainPlayerScore.Spawn();
 
             Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Connected);
 
@@ -127,10 +126,14 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             // LambdaAudioRoomController.Instance.TriggerChange();
         }
+
+        OnInitialized?.Invoke();
     }
 
     public void EndSession()
     {
+        OnBeginDisposing?.Invoke();
+
         _currentState?.OnExit();
         _currentState = null;
 
@@ -142,6 +145,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         {
             GameObject.Destroy(_hideoutLight);
         }
+
+        OnDisposed?.Invoke();
     }
 
     public void Update()

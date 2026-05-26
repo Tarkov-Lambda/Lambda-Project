@@ -190,8 +190,10 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot in raid
         RegisterPatch(new Patch_Class1841_method_0());                              // FOV slider overwrite
         RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV slider overwrite
-        RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateLobbyLimit());          // Crank max lobby framerate to 120 fps
-        RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateGameLimit());           // Crank max game framerate to 345 fps (at 350 fps jumps break)
+        // RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateLobbyLimit());          // Crank max lobby framerate to 120 fps
+        // RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateGameLimit());           // Crank max game framerate to 345 fps (at 350 fps jumps break)
+        GameGraphicsClass.MaxFramerateGameLimit = 345;
+        GameGraphicsClass.MaxFramerateLobbyLimit = 120;
         RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
 
         // Camera Patches

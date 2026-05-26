@@ -34,7 +34,7 @@ public class SessionManager
                 if (p == null) continue;
                 if (!scoreboard.ContainsKey(p.Id))
                 {
-                    scoreboard[p.Id] = new PlayerContext(p.Id);
+                    scoreboard.Add(p.Id, new PlayerContext(p.Id));
                 }
             }
         }
@@ -131,7 +131,7 @@ public class PlayerContextLookup(int maxId)
     public PlayerContext? this[int id]
     {
         get => _items[id];
-        set => _items[id] = value;
+        // set => _items[id] = value;
     }
 
     public IEnumerable<PlayerContext> Values

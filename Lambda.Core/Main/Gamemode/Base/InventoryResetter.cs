@@ -13,7 +13,6 @@ namespace Lambda.Core.Main.Gamemode;
 
 public class InventoryManager
 {
-
     public static void HandlePrimaries(Player player, ref List<Item> itemsToRemove)
     {
         var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;

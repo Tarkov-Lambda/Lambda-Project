@@ -79,7 +79,7 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
             var info = newInfo.Value;
 
             if (!H.Scoreboard.ContainsKey(id))
-                H.Scoreboard[id] = new PlayerContext(id);
+                H.Scoreboard.Add(id, new PlayerContext(id));
 
             var playerScore = H.Scoreboard[id]!;
 

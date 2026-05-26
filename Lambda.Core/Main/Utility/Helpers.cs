@@ -65,7 +65,7 @@ public static class Helpers
     public static PlayerContext MainPlayerScore                           => GetMainPlayerScore();
     public static List<Player> AllTeammates                               => Session.GetPlayersFromFaction(MainPlayerScore.Faction);
     public static List<PlayerContext> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(MainPlayerScore.Faction);
-    public static List<Player> AllPlayers                                 => IsArenaReady ? GetAllPlayers() : new();
+    public static List<Player> AllPlayers                                 => GetAllPlayers();
     public static List<Player> AllPlayingPlayers                          => IsArenaReady ? GetAllPlayingPlayers() : new();
 
     public static AudioHandler AudioHandler                               => IsArenaReady ? Singleton<AudioHandler>.Instance : null;
@@ -140,7 +140,7 @@ public static class Helpers
 
     public static PlayerContext GetPlayerScore(int playerId)
     {
-        if (!IsArenaReady) return null;
+        if (!IsInRaid()) return null;
         if (!Scoreboard.TryGetValue(playerId, out var playerScore))
         {
             playerScore = new PlayerContext(playerId);
@@ -151,14 +151,14 @@ public static class Helpers
 
     public static PlayerContext GetMainPlayerScore()
     {
-        if (!IsArenaReady) return null;
+        if (!IsInRaid()) return null;
         Scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
         return playerScore;
     }
 
     private static List<Player> GetAllPlayers()
     {
-        return GameWorld.AllAlivePlayersList;
+        return GameWorld != null ? GameWorld.AllAlivePlayersList : null;
     }
 
     private static List<Player> GetAllPlayingPlayers()

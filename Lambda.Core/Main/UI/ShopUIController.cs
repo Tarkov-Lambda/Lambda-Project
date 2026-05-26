@@ -92,7 +92,5 @@ namespace Lambda.Core.Main.UI
 
             shop.gameObject.SetActive(containerLooting == null);
         }
-
-
     }
 }

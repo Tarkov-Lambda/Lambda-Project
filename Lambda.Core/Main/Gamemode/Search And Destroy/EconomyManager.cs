@@ -70,7 +70,7 @@ public class EconomyManager : IDisposable
     {
         if (packet.killer == null || packet.Player == null) return;
         if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
-        if (packet.killer == packet.Player) return; // Suicide handled in Round End usually
+        if (packet.killer == packet.Player) return;
 
         if (killerScore.Faction == packet.Player.GetContext().Faction)
         {
@@ -114,7 +114,6 @@ public class EconomyManager : IDisposable
         Faction winner = result.winner;
         Faction loser = winner == Faction.CT ? Faction.T : Faction.CT;
 
-        // If you lose, counter goes UP. If you win, counter goes DOWN (soft reset).
         if (_lossCounters[loser] < 4) _lossCounters[loser]++;
         if (_lossCounters[winner] > 0) _lossCounters[winner]--;
 
@@ -127,18 +126,14 @@ public class EconomyManager : IDisposable
 
             if (p.Faction == winner)
             {
-                // Winner always gets paid
                 p.AddMoney(winReward);
             }
             else
             {
-                // Loser Logic
                 bool isTerrorist = p.Faction == Faction.T;
                 bool survived = p.IsAlive;
                 bool bombWasPlanted = H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Exploded;
 
-                // CS2 Rule: Saving as T
-                // If T loses, survives, time ran out (Timeout), and bomb was NOT planted -> $0
                 bool isSavingPenalty = isTerrorist && survived && !bombWasPlanted && result.roundWinReason == RoundWinReason.Timeout;
 
                 if (isSavingPenalty)
@@ -157,10 +152,10 @@ public class EconomyManager : IDisposable
     {
         switch (reason)
         {
-            case RoundWinReason.Objective: // Bomb Exploded or Defused
+            case RoundWinReason.Objective:
                 return 3500;
-            case RoundWinReason.Elimination: // Killed all enemies
-            case RoundWinReason.Timeout: // CT won by time
+            case RoundWinReason.Elimination:
+            case RoundWinReason.Timeout:
             default:
                 return 3250;
         }

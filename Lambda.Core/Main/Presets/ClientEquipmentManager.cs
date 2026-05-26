@@ -55,8 +55,7 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
             {
                 if (presetInfo.Key is EquipmentSlot.TacticalVest or EquipmentSlot.ArmorVest)
                 {
-                    CompoundItem armor = existingItem as CompoundItem;
-                    if (armor.CanFitPlates())
+                    if (existingItem is CompoundItem armor && armor.CanFitPlates())
                     {
                         equippedItem = existingItem;
                     }
@@ -74,18 +73,21 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
                     equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
                 }
 
-                // If the tactical rig is armoured, skip armor vest
                 if (presetInfo.Key is EquipmentSlot.ArmorVest)
                 {
-                    if (PU.IsTacRigArmored(RecordedItems[EquipmentSlot.TacticalVest] as VestItemClass))
+                    if (RecordedItems.TryGetValue(EquipmentSlot.TacticalVest, out Item tacVestItem) && PU.IsTacRigArmored(tacVestItem as VestItemClass))
                     {
                         continue;
                     }
                 }
 
-                RuntimeBundleLoader.Instance.AddToCache(equippedItem);
-                RecordedItems[presetInfo.Key] = equippedItem;
+                if (equippedItem != null)
+                {
+                    RuntimeBundleLoader.Instance.AddToCache(equippedItem);
+                    RecordedItems[presetInfo.Key] = equippedItem;
+                }
             }
         }
     }
 }
+
