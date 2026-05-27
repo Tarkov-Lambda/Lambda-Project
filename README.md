@@ -1,25 +1,22 @@
 ## Credits
-- **ifp**: Core • Networking • SFX • Steam Audio • Map SDK
-- **tarkin**: UI • VFX • Map SDK  
+- **ifp**: Core • Networking • Steam Audio • Map SDK
+- **tarkin**: Core • UI/UX • Map SDK
 ---
 
 ## Features
 
 ### Gameplay
-- Custom Preset Buy Menu
-- First Person Spectator Mode  
-- Gamemode Framework  
-- Search and Destroy, AWP Only, Duel, King Of The Hill
+- Personalized Buy Menu Equipment
+- Gamemode Framework (Including Search And Destroy, King Of the Hill, and Free For All)
 - Headless Server Support
-- Respawning Mechanic
-- Preemptive Server-Side Deaths
-- Mid-Raid Spawning
+- Kill Trading, Respawning, Looting
+- 
 - Molotovs
 
 ### UI / UX
 - Buy Menu
-- Hideout Weapon Build Selector for Buy Menu
 - Teammate Nameplates
+- Hideout Weapon Build Selector for Buy Menu
 - Scoreboard
 - Top Faction Score
 - Quick Access UI Rework
@@ -27,20 +24,18 @@
 - Chat Menu
 
 ### Audio
-- Steam Audio Integration (Occlusion, Transmission, Distance Attentuation)
-
----
+- Steam Audio Integration
+- In Game Music Kit
 
 ## Reworks
 
 - Sound Occlusion & Transmission overhaul  
 - Arena-like movement
-- Accurate Pistols  
-- No Unequip Animations  
-- Blindfire movement enabled
+- Accurate Pistols
+- No Unequip Animations
+- Blindfire in movement
 - Flash and Smoke changes
-
----
+- Health System and Player Controller streamlined for battle
 
 ## For Nerds
 

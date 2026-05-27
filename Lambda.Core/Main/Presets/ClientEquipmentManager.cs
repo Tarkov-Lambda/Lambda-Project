@@ -67,25 +67,29 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
                         equippedItem = existingItem;
                     }
                 }
-
-                if (equippedItem == null && presetInfo.Value.isRequired)
+                else
                 {
-                    equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
+                    equippedItem = existingItem;
                 }
+            }
 
-                if (presetInfo.Key is EquipmentSlot.ArmorVest)
-                {
-                    if (RecordedItems.TryGetValue(EquipmentSlot.TacticalVest, out Item tacVestItem) && PU.IsTacRigArmored(tacVestItem as VestItemClass))
-                    {
-                        continue;
-                    }
-                }
+            if (equippedItem == null && presetInfo.Value.isRequired)
+            {
+                equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
+            }
 
-                if (equippedItem != null)
+            if (presetInfo.Key is EquipmentSlot.ArmorVest)
+            {
+                if (RecordedItems.TryGetValue(EquipmentSlot.TacticalVest, out Item tacVestItem) && tacVestItem is VestItemClass vest && PU.IsTacRigArmored(vest))
                 {
-                    RuntimeBundleLoader.Instance.AddToCache(equippedItem);
-                    RecordedItems[presetInfo.Key] = equippedItem;
+                    continue;
                 }
+            }
+
+            if (equippedItem != null)
+            {
+                RuntimeBundleLoader.Instance.AddToCache(equippedItem);
+                RecordedItems[presetInfo.Key] = equippedItem;
             }
         }
     }

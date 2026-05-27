@@ -42,4 +42,11 @@ public static class GeneralPlayerCommands
         };
         Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, H.MainPlayer, H.MainPlayer);
     }
+
+    [ChatCommand("resetme", "Safely reset yourself", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
+    public static void ResetHandsCommand(CommandContext ctx)
+    {
+        PU.OpenEyes();
+        Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
+    }
 }

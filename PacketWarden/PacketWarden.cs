@@ -53,7 +53,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled;
 
     /// <summary>Whether basic lifecycle events (Sending/Receiving) should be logged.</summary>
-    protected virtual bool ShouldLog => true;
+    protected virtual bool ShouldLog => false;
 
     /// <summary>Whether the client should receive an in-game UI notification if their packet is rejected by the server.</summary>
     protected virtual bool ShouldNotifyAboutRejection => false;

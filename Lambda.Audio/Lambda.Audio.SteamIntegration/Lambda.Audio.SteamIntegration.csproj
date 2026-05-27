@@ -62,11 +62,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\PhononSpatializerProxy\**\*.cs"
+    <!-- <Compile Include="..\PhononSpatializerProxy\**\*.cs"
       Link="PhononSpatializerProxy\%(RecursiveDir)%(Filename)%(Extension)" />
 
     <Compile Include="..\PhononSpatializerProxy.BepInEx\**\*.cs"
-      Link="PhononSpatializerProxy.BepInEx\%(RecursiveDir)%(Filename)%(Extension)" />
+      Link="PhononSpatializerProxy.BepInEx\%(RecursiveDir)%(Filename)%(Extension)" /> -->
   </ItemGroup>
 
   <ItemGroup>

@@ -107,6 +107,44 @@ public class SharedWarmupEnd : IGameState
         H.Session.InitializeScoreBoard();
         H.Arena.economyManager.ResetEconomy();
 
+        if (H.IsServer && H.Gamemode is IGMTeam)
+        {
+            int ctCount = 0;
+            int tCount = 0;
+
+            foreach (var p in H.Scoreboard.Values)
+            {
+                if (p.ReadyState == PlayerReadinessState.Disconnected)
+                    continue;
+
+                if (p.Faction == Faction.CT) ctCount++;
+                else if (p.Faction == Faction.T) tCount++;
+            }
+
+            bool factionsChanged = false;
+
+            foreach (var p in H.Scoreboard.Values)
+            {
+                if (p.ReadyState == PlayerReadinessState.Disconnected)
+                    continue;
+
+                if (p.Faction != Faction.CT && p.Faction != Faction.T)
+                {
+                    Faction assignedFaction = ctCount <= tCount ? Faction.CT : Faction.T;
+                    p.ChangeFaction(assignedFaction);
+
+                    if (assignedFaction == Faction.CT) ctCount++;
+                    else tCount++;
+
+                    factionsChanged = true;
+                }
+            }
+
+            if (factionsChanged)
+            {
+                Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
+            }
+        }
     }
 }
 

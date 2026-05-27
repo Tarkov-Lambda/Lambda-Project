@@ -49,7 +49,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         EquipmentSlot.Pockets,
     ];
 
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(5);
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.1, RateLimitAction.Drop);
 
     public void Send(Player player, bool broadcast = false)
     {

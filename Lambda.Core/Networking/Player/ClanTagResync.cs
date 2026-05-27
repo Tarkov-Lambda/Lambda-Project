@@ -40,9 +40,9 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
             return false;
         }
 
-        if (packet.newClanTag.Length > 5)
+        if (packet.newClanTag.Length > 3)
         {
-            rejectionReason = "Clan Tag cannot exceed 5 characters";
+            rejectionReason = "Clan Tag cannot exceed 3 characters";
             return false;
         }
 

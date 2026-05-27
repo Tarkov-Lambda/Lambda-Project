@@ -87,7 +87,9 @@ namespace Lambda.Core.Main.UI
 
         private async void OnAnnouncementReceived(ServerMessagePacket serverMessagePacket)
         {
-            if (serverMessagePacket.specificFaction != null && serverMessagePacket.specificFaction == H.MainPlayerScore.Faction)
+            if (serverMessagePacket.specificFaction != null && serverMessagePacket.specificFaction.Value == H.MainPlayerScore.Faction)
+                _chat.PopAnnouncementMessage(serverMessagePacket.msg);
+            else if (serverMessagePacket.specificFaction == null)
                 _chat.PopAnnouncementMessage(serverMessagePacket.msg);
         }
 

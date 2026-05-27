@@ -10,6 +10,8 @@ using System.Threading;
 using PacketWarden.RateLimiting;
 using MemoryPack;
 using System.Diagnostics;
+using UnityEngine;
+using Comfort.Common;
 
 namespace Lambda.Core.Networking;
 
@@ -18,8 +20,6 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
-
-
 
     [MemoryPackAllowSerialize]
     public ItemPlacement placement;
@@ -182,14 +182,8 @@ public static class PlayerInventoryTimeGate
 {
     private static readonly ConcurrentDictionary<int, PlayerQueue> _playerQueues = new();
 
-    private static CancellationTokenSource _cts = new();
-
-    private const float TimeoutSeconds = 3.0f;
-
     public static void Enqueue(int playerId, Action action)
     {
-        if (action == null) return;
-
         var queue = _playerQueues.GetOrAdd(playerId, id => new PlayerQueue(id));
         queue.Enqueue(action);
     }
@@ -197,50 +191,54 @@ public static class PlayerInventoryTimeGate
     public static void ClearAll()
     {
         _playerQueues.Clear();
-
-        _cts.Cancel();
-        _cts.Dispose();
-        _cts = new CancellationTokenSource();
     }
 
-    private sealed class PlayerQueue
+    private class PlayerQueue(int playerId)
     {
-        private readonly int _playerId;
+        private readonly int _playerId = playerId;
         private readonly ConcurrentQueue<Action> _queue = new();
-
-        // 0/1 false/true
-        private int _isProcessing;
-
-        public PlayerQueue(int playerId) => _playerId = playerId;
+        private int _isProcessing = 0; // 0/1 false/true
 
         public void Enqueue(Action action)
         {
             _queue.Enqueue(action);
 
-            // start processing if not already running
+            // if the loop isn't running - start it
             if (Interlocked.Exchange(ref _isProcessing, 1) == 0)
-                ProcessQueueAsync(_cts.Token).Forget();
+            {
+                ProcessQueueAsync().Forget();
+            }
         }
 
-        private async UniTaskVoid ProcessQueueAsync(CancellationToken ct)
+        private async UniTaskVoid ProcessQueueAsync()
         {
             try
             {
-                while (!ct.IsCancellationRequested && _queue.TryDequeue(out var action))
+                while (_queue.TryDequeue(out var action))
                 {
-                    Player player = null;
-                    try { player = H.GetPlayer(_playerId); }
-                    catch { /* ignored */ }
+                    Player player = H.GetPlayer(_playerId);
 
-                    await WaitForInventoryToSettle(player, ct);
+                    float timeout = 3.0f;
+                    while (player.InventoryController.HasActiveEvents && timeout > 0f)
+                    {
+                        await UniTask.DelayFrame(1);
+                        timeout -= Time.deltaTime;
+                    }
+
+                    await UniTask.DelayFrame(1);
 
                     try
                     {
-                        action.Invoke();
+                        action?.Invoke();
                     }
                     catch (Exception ex)
                     {
-                        D.LogError($"[PlayerInventoryTimeGate] Error processing action for player {_playerId}: {ex}");
+                        D.LogError($"[PlayerInventoryTimeGate] Error processing packet: {ex}");
+                        UniTask.RunOnThreadPool(async () =>
+                        {
+                            await UniTask.Delay(50);
+                            Singleton<EquipmentResyncPacketWarden>.Instance.Send(player);
+                        }).Forget();
                     }
                 }
             }
@@ -248,31 +246,11 @@ public static class PlayerInventoryTimeGate
             {
                 Interlocked.Exchange(ref _isProcessing, 0);
 
-                // race-safe restart if something was enqueued after loop ended
-                if (!_queue.IsEmpty && !ct.IsCancellationRequested && Interlocked.Exchange(ref _isProcessing, 1) == 0)
-                    ProcessQueueAsync(ct).Forget();
+                if (!_queue.IsEmpty && Interlocked.Exchange(ref _isProcessing, 1) == 0)
+                {
+                    ProcessQueueAsync().Forget();
+                }
             }
-        }
-
-        private static async UniTask WaitForInventoryToSettle(Player player, CancellationToken ct)
-        {
-            long endTicks = Stopwatch.GetTimestamp() + (long)(TimeoutSeconds * Stopwatch.Frequency);
-
-            if (!player.InventoryController.HasActiveEvents)
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update, ct);
-                return;
-            }
-
-            while (!ct.IsCancellationRequested && Stopwatch.GetTimestamp() < endTicks)
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update, ct);
-
-                if (!player.InventoryController.HasActiveEvents)
-                    break;
-            }
-
-            await UniTask.Yield(PlayerLoopTiming.Update, ct);
         }
     }
 }

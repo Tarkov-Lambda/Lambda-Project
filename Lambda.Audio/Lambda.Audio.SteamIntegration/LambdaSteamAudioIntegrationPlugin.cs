@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using Lambda.Audio.SteamIntegration.AudioRooms;
 using Lambda.Audio.SteamIntegration.Patches;
-using PhononSpatializerProxy.BepInEx;
 using SPT.Reflection.Patching;
 using SteamAudio;
 using System;

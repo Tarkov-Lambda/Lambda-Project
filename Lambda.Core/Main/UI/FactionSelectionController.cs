@@ -70,10 +70,11 @@ namespace Lambda.Core.Main.UI
             if (UIEventSystem.Instance.EventSystem_0.IsActive())
                 return;
 
-            if (Input.GetKeyDown(KeyCode.M))
-            {
+            if (!Input.GetKeyDown(KeyCode.M))
+                return;
+
+            if (H.MainPlayer.MovementContext.CurrentState is IdleStateClass)
                 ShowFactionSelectionEftScreen();
-            }
         }
     }
 }

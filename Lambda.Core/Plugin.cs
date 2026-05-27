@@ -351,12 +351,11 @@ public class LambdaPlugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            // H.MainPlayer.UnfuckHands();
             Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
         }
 
         // TODO: This needs to get the fuck out of here
-        if (NoclipKey.Value.IsDown() && H.IsInRaid() && H.MainPlayerScore?.IsAdmin != false)
+        if (NoclipKey.Value.IsDown() && H.MainPlayerScore?.IsAdmin != false)
         {
             Noclip.ToggleNoclip();
 

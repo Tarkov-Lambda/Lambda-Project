@@ -21,4 +21,21 @@ public enum MatchState : byte
     // Probably a good way to do these
     SideSwap,
     MatchEnd,
+
+    // Extra
+    Alpha,
+    Beta,
+    Charlie,
+    Delta,
+    Echo,
+    Foxtrot,
+    Golf,
+    Hotel,
+    India,
+    Juliett,
+    Kilo,
+    Lima,
+    Mike,
+    November,
+    Oscar
 }

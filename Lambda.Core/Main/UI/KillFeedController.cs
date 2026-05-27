@@ -15,14 +15,12 @@ namespace Lambda.Core.Main.UI
             this.killFeed = killFeed;
             this.itemInfoProvider = itemInfoProvider;
 
-            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketAppliedOptimistically += OnPlayerKill;
-            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketApplied += OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.PopKillFeed += OnPlayerKill;
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet)
         {
             PlayerContext victim = H.GetPlayerContext(packet.Player);
-            if (!victim.IsAlive) return;
 
             PlayerContext killer = H.GetPlayerContext(packet.killer);
 
@@ -70,8 +68,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketAppliedOptimistically -= OnPlayerKill;
-            Singleton<PlayerKilledPacketWarden>.Instance.BeforePacketApplied -= OnPlayerKill;
+            Singleton<PlayerKilledPacketWarden>.Instance.PopKillFeed -= OnPlayerKill;
         }
     }
 }

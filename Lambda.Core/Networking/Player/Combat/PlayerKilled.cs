@@ -50,6 +50,8 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 {
     protected override DeliveryType DeliveryType => DeliveryType.ReliableUnordered;
 
+    public event Action<PlayerKilledPacket> PopKillFeed;
+
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
         var packet = new PlayerKilledPacket
@@ -72,6 +74,17 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
         DispatchPacket(ref packet);
     }
+
+    // protected override bool ValidatePacket(PlayerKilledPacket packet, int peerId, out string rejectionReason)
+    // {
+    //     if (!packet.Player.GetContext().IsAlive)
+    //     {
+    //         rejectionReason = "";
+    //         return false;
+    //     }
+
+    //     return base.ValidatePacket(packet, peerId, out rejectionReason);
+    // }
 
     protected override void ApplyOptimistically(PlayerKilledPacket packet)
     {
@@ -155,6 +168,8 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
             Teleporter.Teleport(packet.Player, "lobby", Faction.None);
         }
+
+        PopKillFeed?.Invoke(packet);
     }
 
     private async UniTaskVoid HandleLocalPlayerDeath(PlayerKilledPacket packet)
