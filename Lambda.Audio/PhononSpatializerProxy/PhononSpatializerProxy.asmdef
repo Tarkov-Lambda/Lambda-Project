@@ -1,11 +1,13 @@
-﻿{
+{
     "name": "PhononSpatializerProxy",
     "rootNamespace": "",
     "references": [
         "SteamAudioUnity"
     ],
     "includePlatforms": [],
-    "excludePlatforms": [],
+    "excludePlatforms": [
+        "Editor"
+    ],
     "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],

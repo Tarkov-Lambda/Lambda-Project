@@ -1,6 +1,6 @@
 ## Credits
-- **ifp**: Core • Networking • Steam Audio • Map SDK
-- **tarkin**: Core • UI/UX • Map SDK
+- **ifp**: Core • Gamemodes • Equipment • Networking • Steam Audio
+- **tarkin**: Core • UI/UX • Map SDK • Mentor
 ---
 
 ## Features
@@ -33,7 +33,7 @@
 - Arena-like movement
 - Accurate Pistols
 - No Unequip Animations
-- Blindfire in movement
+- Blindfire in movementyf gн
 - Flash and Smoke changes
 - Health System and Player Controller streamlined for battle
 
