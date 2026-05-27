@@ -10,7 +10,7 @@
 - Gamemode Framework (Including Search And Destroy, King Of the Hill, and Free For All)
 - Headless Server Support
 - Kill Trading, Respawning, Looting
-- 
+- Mid-Session match joining
 - Molotovs
 
 ### UI / UX
@@ -33,7 +33,7 @@
 - Arena-like movement
 - Accurate Pistols
 - No Unequip Animations
-- Blindfire in movementyf gн
+- Blindfire in movement
 - Flash and Smoke changes
 - Health System and Player Controller streamlined for battle
 
