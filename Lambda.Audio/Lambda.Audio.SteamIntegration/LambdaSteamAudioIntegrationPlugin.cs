@@ -1,22 +1,28 @@
 using BepInEx;
+using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Lambda.Audio.SteamIntegration.AudioRooms;
 using Lambda.Audio.SteamIntegration.Patches;
+using PhononSpatializerProxy.BepInEx;
 using SPT.Reflection.Patching;
+using SteamAudio;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using UnityEngine;
 
 namespace Lambda.Audio.SteamIntegration;
 
 // [BepInDependency("com.ifp.PhononSpatializerProxy")]
 [BepInPlugin("com.Lambda.Audio.SteamAudioIntegration", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-public class Plugin : BaseUnityPlugin
+public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
 {
     public static readonly string pathToBinaries = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Binaries");
+
+    internal ManualLogSource Log => Logger;
 
     private readonly List<ModulePatch> _patches = new();
     private readonly List<IDisposable> _disposables = new();
@@ -61,6 +67,8 @@ public class Plugin : BaseUnityPlugin
 
     void Start()
     {
+        Logger.LogInfo("Loading LambdaSteamAudioIntegrationPlugin");
+
         _cts = new CancellationTokenSource();
 
         if (PacketWardenUtils.Network.IsHeadless) return;
@@ -69,24 +77,22 @@ public class Plugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
 
-        // RegisterPatch(new Patch_SimpleSource_Play());                               // Audio Source Routing
-        // RegisterPatch(new Patch_SuperSource_Play());                                // Audio Source Routing
-        // RegisterPatch(new Patch_ReverbSimpleSource_Play());                         // Audio Source Routing
-        // RegisterPatch(new Patch_ReverbSuperSource_Play());                          // Audio Source Routing
-        // RegisterPatch(new Patch_BetterSource_Play());                               // Audio Source Routing
-        // RegisterPatch(new Patch_BetterSource_PlayScheduled());                      // Audio Source Routing
-        // RegisterPatch(new Patch_SimpleSource_PlayScheduled());                      // Audio Source Routing
-        // RegisterPatch(new Patch_ReverbSuperSource_PlayScheduled());                 // Audio Source Routing
-
         // RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
+
+        RegisterPatch(new Patch_BetterSource_Init());                                   // do not let anything be occluded
+
+        // foreach (BetterSource source in FindObjectsByType<BetterSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        // {
+        //     BetterSourceProxyRouter.LobotomizeBetterSource(source);
+        // }
 
         RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
         RegisterPatch(new Patch_BetterSource_SetOcclusionRolloffScale());
         RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
         RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
 
-        RegisterPatch(new Patch_BetterSource_SetLowPassFilterParameters());
-        RegisterPatch(new Patch_BetterSource_SetHighPassFilterParameters());
+        RegisterPatch(new Patch_BetterSource_SetLowPassFilterParameters());         //
+        RegisterPatch(new Patch_BetterSource_SetHighPassFilterParameters());        //
 
         RegisterPatch(new Patch_SpatialAudioSystem_Update());                       // bypass high filter muffling
         RegisterPatch(new Patch_SpatialAudioSystem_LateUpdate());                   // bypass high filter muffling
@@ -97,15 +103,15 @@ public class Plugin : BaseUnityPlugin
         RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
 
         RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();              // We invoke all audio room changes manually
+
+        // RegisterSingleton<BetterSourceProxyRouter>();
     }
 
     void OnDestroy()
     {
-        Logger.LogInfo("Unload");
+        Logger.LogInfo("Unloading LambdaSteamAudioIntegrationPlugin");
 
         if (PacketWardenUtils.Network.IsHeadless) return;
-
-        BetterSourceProxyRouter.Dispose();
 
         foreach (var patch in _patches)
         {

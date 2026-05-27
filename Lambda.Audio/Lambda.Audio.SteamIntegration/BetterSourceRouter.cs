@@ -1,94 +1,109 @@
+
 using System.Collections.Generic;
 using Audio.ReverbSubsystem;
+using Comfort.Common;
 using EFT;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Audio;
 
-public static class BetterSourceProxyRouter
+public class BetterSourceProxyRouter : Singleton<BetterSourceProxyRouter>
 {
-    public static AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef = AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
-    public static AccessTools.FieldRef<BetterSource, bool> ForceStereoRef = AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
-    public static AccessTools.FieldRef<ReverbSimpleSource, AudioSource> ReverbSimpleSourceFieldRef = AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>("_reverbSource");
-    public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceAFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceA");
-    public static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceBFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
+    public readonly static AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef = AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
+    public readonly static AccessTools.FieldRef<BetterSource, bool> ForceStereoRef = AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
+    public readonly static AccessTools.FieldRef<ReverbSimpleSource, AudioSource> ReverbSimpleSourceFieldRef = AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>("_reverbSource");
+    public readonly static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceAFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceA");
+    public readonly static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceBFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
 
     // Selection of mixers we do not route through steam audio
-    private static readonly Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
+    private readonly static Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
+    private readonly static HashSet<BetterSource> playingBetterSources = new();
+
 
     // it works idgaf
-    private static bool IsMixerBypassed(AudioMixerGroup mixer)
-    {
-        if (mixer == null) return false;
+    // private static bool IsMixerBypassed(AudioMixerGroup mixer)
+    // {
+    //     if (mixer == null) return false;
 
-        if (MixerBypassCache.TryGetValue(mixer, out bool bypassed))
-            return bypassed;
+    //     if (MixerBypassCache.TryGetValue(mixer, out bool bypassed))
+    //         return bypassed;
 
-        string mixerName = mixer.name;
-        bypassed = mixerName.Contains("Ambient") ||
-                   mixerName.Contains("UI") ||
-                   mixerName.Contains("Music");
+    //     string mixerName = mixer.name;
+    //     bypassed = mixerName.Contains("Ambient") ||
+    //                mixerName.Contains("UI") ||
+    //                mixerName.Contains("Music");
 
-        MixerBypassCache[mixer] = bypassed;
-        return bypassed;
-    }
+    //     MixerBypassCache[mixer] = bypassed;
+    //     return bypassed;
+    // }
 
-    public static void RouteBetterSource(BetterSource betterSource, bool? forceStereoOverride = null)
-    {
-        if (betterSource == null || betterSource.source1 == null) return;
+    // public static void Process(BetterSource betterSource, bool? forceStereoOverride = null)
+    // {
+    //     SteamSourceData data = SteamAudioSourceController.GetOrAdd(betterSource.source1);
 
-        bool forceStereo = forceStereoOverride ?? ForceStereoRef(betterSource);
-        bool shouldBypassSteamAudio = false;
+    //     // data.steam.distanceAttenuation = false;
+    //     // data.steam.occlusion = false;
+    //     // betterSource.source1.spatialize = false;
+    //     // betterSource.source1.spatialBlend = 0f;
 
-        var preset = PresetRef(betterSource);
-        if (preset != null)
-        {
-            var type = preset.Type;
-            if (type
-                is BetterAudio.AudioSourceGroupType.Nonspatial
-                or BetterAudio.AudioSourceGroupType.NonspatialBypass
-                or BetterAudio.AudioSourceGroupType.Environment
-                or BetterAudio.AudioSourceGroupType.OutEnvironment)
-            {
-                shouldBypassSteamAudio = true;
-            }
-        }
+    //     bool forceStereo = forceStereoOverride ?? ForceStereoRef(betterSource);
 
-        if (!shouldBypassSteamAudio)
-        {
-            shouldBypassSteamAudio = IsMixerBypassed(betterSource.source1.outputAudioMixerGroup);
-        }
+    //     if (forceStereo)
+    //     {
+    //         data.steam.distanceAttenuation = false;
+    //         data.steam.occlusion = false;
+    //         betterSource.source1.spatialize = false;
+    //         betterSource.source1.spatialBlend = 0f;
 
-        if (forceStereo)
-        {
-            shouldBypassSteamAudio = true;
-        }
+    //         if (betterSource is ReverbSimpleSource reverbSimpleSource)
+    //         {
+    //             SteamSourceData reverbSimpleSourceData = SteamAudioSourceController.GetOrAdd(betterSource.source1);
+    //             reverbSimpleSourceData.steam.distanceAttenuation = false;
+    //             reverbSimpleSourceData.steam.occlusion = false;
+    //             ReverbSimpleSourceFieldRef(reverbSimpleSource).spatialize = false;
+    //             ReverbSimpleSourceFieldRef(reverbSimpleSource).spatialBlend = 0f;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         data.steam.distanceAttenuation = true;
+    //         data.steam.occlusion = true;
+    //         betterSource.source1.spatialize = true;
+    //         betterSource.source1.spatialBlend = 1f;
 
-        // SteamAudioSourceController.ProcessAudioSource(betterSource.source1, shouldBypassSteamAudio);
+    //         if (betterSource is ReverbSimpleSource reverbSimpleSource)
+    //         {
+    //             SteamSourceData reverbSimpleSourceData = SteamAudioSourceController.GetOrAdd(betterSource.source1);
+    //             reverbSimpleSourceData.steam.distanceAttenuation = true;
+    //             reverbSimpleSourceData.steam.occlusion = true;
+    //             ReverbSimpleSourceFieldRef(reverbSimpleSource).spatialize = true;
+    //             ReverbSimpleSourceFieldRef(reverbSimpleSource).spatialBlend = 1f;
+    //         }
+    //     }
 
-        // if (betterSource is ReverbSimpleSource reverbSimpleSource)
-        // {
-        //     AudioSource reverb = ReverbSimpleSourceFieldRef(reverbSimpleSource);
-        //     if (reverb != null) SteamAudioSourceController.ProcessAudioSource(reverb, shouldBypassSteamAudio);
-        // }
-        // else if (betterSource is SuperSource superSource)
-        // {
-        //     if (superSource.source2 != null)
-        //         SteamAudioSourceController.ProcessAudioSource(superSource.source2, shouldBypassSteamAudio);
+    // }
 
-        //     if (superSource is ReverbSuperSource reverbSuperSource)
-        //     {
-        //         AudioSource a = ReverbSuperSourceAFieldRef(reverbSuperSource);
-        //         AudioSource b = ReverbSuperSourceBFieldRef(reverbSuperSource);
+    // public static void LobotomizeBetterSource(BetterSource betterSource)
+    // {
+    //     betterSource.source1.enabled = true;
+    //     SteamSourceData data = SteamAudioSourceController.ProcessAudioSource(betterSource.source1);
 
-        //         if (a != null) SteamAudioSourceController.ProcessAudioSource(a, shouldBypassSteamAudio);
-        //         if (b != null) SteamAudioSourceController.ProcessAudioSource(b, shouldBypassSteamAudio);
-        //     }
-        // }
-    }
+    //     if (betterSource is ReverbSimpleSource reverbSimpleSource)
+    //     {
+    //         ReverbSimpleSourceFieldRef(reverbSimpleSource).enabled = true;
+    //         SteamAudioSourceController.ProcessAudioSource(ReverbSimpleSourceFieldRef(reverbSimpleSource));
 
-    public static void Dispose()
-    {
-        MixerBypassCache.Clear();
-    }
+    //     }
+    //     else if (betterSource is SuperSource superSource)
+    //     {
+    //         superSource.source2.enabled = false;
+
+    //         if (superSource is ReverbSuperSource reverbSuperSource)
+    //         {
+    //             ReverbSuperSourceAFieldRef(reverbSuperSource).enabled = false;
+    //             ReverbSuperSourceBFieldRef(reverbSuperSource).enabled = false;
+    //         }
+    //     }
+
+    // }
 }

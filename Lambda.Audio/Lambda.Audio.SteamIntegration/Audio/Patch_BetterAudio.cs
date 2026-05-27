@@ -1,9 +1,7 @@
-using Comfort.Common;
 using DG.Tweening;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System.Reflection;
-using UnityEngine;
 
 namespace Lambda.Audio.SteamIntegration.Patches;
 

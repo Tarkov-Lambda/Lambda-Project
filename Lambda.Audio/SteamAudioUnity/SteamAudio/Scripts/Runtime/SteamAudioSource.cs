@@ -245,10 +245,10 @@ namespace SteamAudio
             mSource.AddToSimulator(mSimulator);
             SteamAudioManager.AddSource(this);
 
-            if (mAudioEngineSource != null)
-            {
-                mAudioEngineSource.UpdateParameters(this);
-            }
+            // if (mAudioEngineSource != null)
+            // {
+            //     mAudioEngineSource.UpdateParameters(this);
+            // }
         }
 
         private void OnDisable()
@@ -258,13 +258,13 @@ namespace SteamAudio
             mSource.RemoveFromSimulator(mSimulator);
         }
 
-        private void Update()
-        {
-            if (mAudioEngineSource != null)
-            {
-                mAudioEngineSource.UpdateParameters(this);
-            }
-        }
+        // private void Update()
+        // {
+        //     if (mAudioEngineSource != null)
+        //     {
+        //         mAudioEngineSource.UpdateParameters(this);
+        //     }
+        // }
 
         private void OnDrawGizmosSelected()
         {

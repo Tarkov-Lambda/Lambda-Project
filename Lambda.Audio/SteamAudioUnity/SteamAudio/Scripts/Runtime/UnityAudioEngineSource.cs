@@ -54,6 +54,9 @@ namespace SteamAudio
 
         public override void UpdateParameters(SteamAudioSource source)
         {
+            // everything is handled in PhononDSPBridge.
+            return;
+
             if (!mAudioSource)
                 return;
 

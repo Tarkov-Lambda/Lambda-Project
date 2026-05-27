@@ -7,7 +7,7 @@
     <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <DefineConstants>$(DefineConstants);SPT_4_0;STEAMAUDIO_ENABLED</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <!-- <AllowUnsafeBlocks>true</AllowUnsafeBlocks> -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +19,11 @@
   <PropertyGroup>
     <NoWarn>0649,0169,0414,NU1702</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\PhononSpatializerProxy\.obj\**" />
+    <Compile Remove="..\PhononSpatializerProxy.BepInEx\.obj\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include=".\.Binaries*">
@@ -57,17 +62,34 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" /> -->
-    <!-- <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" /> -->
+    <Compile Include="..\PhononSpatializerProxy\**\*.cs"
+      Link="PhononSpatializerProxy\%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <Compile Include="..\PhononSpatializerProxy.BepInEx\**\*.cs"
+      Link="PhononSpatializerProxy.BepInEx\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
+    <!-- <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
+    <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" /> -->
     <ProjectReference Include="..\..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
     <ItemGroup>
-      
-      <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+
+      <!-- <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" /> -->
+      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <!-- <Copy SourceFiles="@(FilesToCopyToPlugins)"
+    DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
+    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
   </Target>
 </Project>

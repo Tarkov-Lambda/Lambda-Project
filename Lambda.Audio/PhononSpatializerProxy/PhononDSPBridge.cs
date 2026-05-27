@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 using SteamAudio;
+using Unity.Profiling;
 
 namespace PhononSpatializerProxy
 {
@@ -28,8 +29,6 @@ namespace PhononSpatializerProxy
             public float SpatialBlend;
         }
 
-        private DSPParams _currentParams;
-
         private int _paramsLock = 0;
 
         private IntPtr _binaural = IntPtr.Zero;
@@ -49,6 +48,11 @@ namespace PhononSpatializerProxy
         private AudioSource _src;
         private SteamAudioSource _steamSrc;
         private PhononDistanceAttenuator _attenuator;
+        private Transform _transform;
+
+        public AudioSource AudioSource => _src;
+        public SteamAudioSource SteamAudioSource => _steamSrc;
+
         private IntPtr _cachedContext = IntPtr.Zero;
 
         private readonly object _lock = new object();
@@ -58,26 +62,20 @@ namespace PhononSpatializerProxy
         private float[] _leftOut;
         private float[] _rightOut;
 
-        // Unity proxy
-        public float spatialBlend { get; set; } = 1f;
-        public bool spatialize { get; set; } = true;
+        // Unity proxy (thread safe backing fields)
+        private float _spatialBlend = 1f;
+        public float spatialBlend
+        {
+            get => _spatialBlend;
+            set => _spatialBlend = value;
+        }
 
-        // [SerializeField] private float spatialBlend = 1f;
-        // [SerializeField] private bool spatialize = true;
-
-        // public float SpatialBlend
-        // {
-        //     get => spatialBlend;
-        //     set => spatialBlend = value;
-        // }
-
-        // public bool Spatialize
-        // {
-        //     get => spatialize;
-        //     set => spatialize = value;
-        // }
-
-        public bool isBypass { get; set; } = false;
+        private volatile bool _spatialize = true;
+        public bool spatialize
+        {
+            get => _spatialize;
+            set => _spatialize = value;
+        }
 
         private volatile bool _bufferOverflowed;
 
@@ -99,26 +97,48 @@ namespace PhononSpatializerProxy
             _attenuator = new PhononDistanceAttenuator(_src);
             _steamSrc = GetComponent<SteamAudioSource>();
 
+            _transform = transform;
+
             int safeMaxCapacity = 8192;
             _monoIn = new float[safeMaxCapacity];
             _monoOut = new float[safeMaxCapacity];
             _leftOut = new float[safeMaxCapacity];
             _rightOut = new float[safeMaxCapacity];
 
-            _currentParams = new DSPParams
-            {
-                Dir = new PVec3 { z = 1f },
-                DistAtten = 1f,
-                Occlusion = 1f,
-                ReflMixLevel = 1f,
-                SpatialBlend = 1f
-            };
-
             InitEffects();
         }
 
+        private void OnEnable()
+        {
+            _steamSrc.enabled = true;
+            PhononUpdateManager.Instance.ActiveBridges.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            _steamSrc.enabled = false;
+            PhononUpdateManager.Instance.ActiveBridges.Remove(this);
+        }
+
+        public bool IsSourcePlaying() => _src.isPlaying;
+
         private void OnDestroy()
         {
+            // Safely restore AudioSource real state so we don't permanently break it
+            if (_src != null)
+            {
+                BepInEx.AudioSourceStateBypass.Bypass = true;
+                try
+                {
+                    _src.spatialBlend = _spatialBlend;
+                    _src.spatialize = _spatialize;
+                }
+                finally
+                {
+                    BepInEx.AudioSourceStateBypass.Bypass = false;
+                }
+            }
+
             lock (_lock)
             {
                 if (_binaural != IntPtr.Zero) PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero;
@@ -240,7 +260,16 @@ namespace PhononSpatializerProxy
             }
         }
 
-        private void Update()
+        // triple buffer for lock-free audio thread parameter passing
+        private readonly DSPParams[] _paramsBuffer = new DSPParams[3];
+
+        // bit-packed state: R=0 (00), W=1 (01), N=2 (10) -> 100100 in binary = 36 (0x24)
+        // bits 0-1: consumer read index
+        // bits 2-3: producer write index
+        // bits 4-5: newest ready index
+        private int _bufferState = 0x24;
+
+        public void MainThreadTick(UnityEngine.Vector3 listenerPos, Quaternion listenerRot)
         {
             if (_binaural == IntPtr.Zero)
             {
@@ -253,12 +282,7 @@ namespace PhononSpatializerProxy
                 InitEffects();
 #endif
 
-            Transform listener = PhononListenerCache.GetListenerTransform();
-            if (listener == null) return;
-
-            UnityEngine.Vector3 sourcePos = transform.position;
-
-            listener.GetPositionAndRotation(out UnityEngine.Vector3 listenerPos, out UnityEngine.Quaternion listenerRot);
+            _transform.GetPositionAndRotation(out UnityEngine.Vector3 sourcePos, out Quaternion sourceRot);
 
             UnityEngine.Vector3 listenerRight = listenerRot * UnityEngine.Vector3.right;
             UnityEngine.Vector3 listenerUp = listenerRot * UnityEngine.Vector3.up;
@@ -329,9 +353,26 @@ namespace PhononSpatializerProxy
 
             newParams.Hrtf = SteamAudioManager.CurrentHRTF?.Get() ?? IntPtr.Zero;
 
-            EnterParamsLock();
-            _currentParams = newParams;
-            ExitParamsLock();
+            // get the current active write buffer index safely
+            int w = (_bufferState >> 2) & 0x3;
+
+            // write the data (audio thread is guaranteed to NOT be reading this index)
+            _paramsBuffer[w] = newParams;
+
+            // atomic publish the new buffer and acquire a new empty one
+            int currentState, nextState;
+            do
+            {
+                currentState = _bufferState;
+                int r = currentState & 0x3;
+                int oldW = (currentState >> 2) & 0x3;
+
+                int newN = oldW;                 // the buffer we just wrote becomes the newest
+                int newW = 3 - r - newN;         // The remaining unused buffer becomes the new Write target
+
+                nextState = r | (newW << 2) | (newN << 4);
+            }
+            while (Interlocked.CompareExchange(ref _bufferState, nextState, currentState) != currentState);
 
             if (_bufferOverflowed)
             {
@@ -342,13 +383,30 @@ namespace PhononSpatializerProxy
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
-            if (isBypass || channels != 2) return;
+            if (channels != 2) return;
 
-            DSPParams p = default;
+            int currentState, nextState, r;
+            do
+            {
+                currentState = _bufferState;
+                int oldR = currentState & 0x3;
+                int w = (currentState >> 2) & 0x3;
+                int n = (currentState >> 4) & 0x3;
 
-            EnterParamsLock();
-            p = _currentParams;
-            ExitParamsLock();
+                // if newest is the same as our current read - there is no new data.
+                if (n == oldR)
+                {
+                    r = oldR;
+                    break;
+                }
+
+                // otherwise adopt the newest buffer as our read buffer.
+                r = n;
+                nextState = r | (w << 2) | (n << 4);
+            }
+            while (Interlocked.CompareExchange(ref _bufferState, nextState, currentState) != currentState);
+
+            DSPParams p = _paramsBuffer[r];
 
             if (!Monitor.TryEnter(_lock))
                 return;

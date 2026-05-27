@@ -34,9 +34,9 @@
     <Reference Include="..\..\.Binaries\*.dll" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
@@ -49,6 +49,7 @@
 
     <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true" />
 
-    <!-- <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
+    <!-- <Copy SourceFiles="@(FilesToCopyToPlugins)"
+    DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
   </Target>
 </Project>

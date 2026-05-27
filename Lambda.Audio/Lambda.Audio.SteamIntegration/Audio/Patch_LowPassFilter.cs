@@ -11,15 +11,10 @@ public class Patch_SpatialLowPassFilter_CalculateFrequency : ModulePatch
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialLowPassFilter), nameof(SpatialLowPassFilter.CalculateFrequency));
 
     [PatchPrefix]
-    static bool Prefix(SpatialLowPassFilter __instance)
+    static bool Prefix(AudioLowPassFilter ____filter)
     {
-        var unityFilter = __instance.GetComponent<AudioLowPassFilter>();
-        if (unityFilter != null)
-        {
-            unityFilter.enabled = false;
-            unityFilter.cutoffFrequency = 22000f;
-        }
-
+        ____filter.enabled = false;
+        ____filter.cutoffFrequency = 22000f;
         return false;
     }
 }

@@ -1,13 +1,13 @@
 using BepInEx;
 using HarmonyLib;
+using Lambda.Audio.SteamIntegration;
 using System.IO;
-using System.Reflection;
 using UnityEngine;
 
 namespace PhononSpatializerProxy.BepInEx;
 
 [BepInPlugin("com.ifp.PhononSpatializerProxy", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-public class Plugin : BaseUnityPlugin
+public class PhononSpatializerProxyPlugin : BaseUnityPlugin
 {
     public static readonly string pathToBinaries = Path.Combine(global::BepInEx.Paths.PluginPath, "ifp", "Binaries");
 
@@ -15,17 +15,21 @@ public class Plugin : BaseUnityPlugin
 
     void Start()
     {
-        SteamAudioInitializer.Initialize();
+        Logger.LogInfo("Loading PhononSpatializerProxyPlugin");
+        
+        // _harmony = new Harmony("com.ifp.PhononSpatializerProxy");
+        // _harmony.PatchAll(Assembly.GetExecutingAssembly());
 
-        _harmony = new Harmony("com.ifp.PhononSpatializerProxy");
-        _harmony.PatchAll(Assembly.GetExecutingAssembly());
+        // SteamAudioInitializer.Initialize();
+
+        // PhononUpdateManager.Initialize();
     }
 
     void OnDestroy()
     {
-        Logger.LogInfo("Unload");
+        Logger.LogInfo("Unloading PhononSpatializerProxyPlugin");
 
-        SteamAudioSourceController.Dispose();
+        PhononUpdateManager.Instance.Dispose();
 
         _harmony.UnpatchSelf();
     }
