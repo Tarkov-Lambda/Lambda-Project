@@ -1,3 +1,5 @@
+using Comfort.Common;
+using Lambda.Core.Networking;
 using PacketWarden;
 
 public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket, new()
@@ -7,6 +9,8 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
     // later on it might be better to hook the arena initialization into loading process
     // however for now it works and should not be touched
     protected virtual bool ShouldApplyBeforeArenaInitialized => false;
+
+    protected virtual bool ShouldDisplayRejectionInChat => false;
 
     public bool IsArenaReady => H.Arena?.Session != null;
 
@@ -20,7 +24,7 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
     protected override bool IsUnauthorized(int id)
     {
         if (H.IsServer) return false;
-        
+
         if (Authority == PacketAuthority.Admin)
         {
             PlayerContext score = H.GetPlayerScore(id);
@@ -32,5 +36,22 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
         }
 
         return false;
+    }
+
+    protected override void Notify(string rejectionReason)
+    {
+        if (ShouldDisplayRejectionInChat)
+        {
+            ServerMessagePacket RejectionReasonChatWrapperPacket = new()
+            {
+                msg = rejectionReason
+            };
+            // not the cleanest pattern, but at least we pass it through the Packet Warden in a sense?
+            Singleton<ServerMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(RejectionReasonChatWrapperPacket);
+        }
+        else
+        {
+            base.Notify(rejectionReason);
+        }
     }
 }

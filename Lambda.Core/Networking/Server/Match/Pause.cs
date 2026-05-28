@@ -26,6 +26,8 @@ public partial struct PausePacket : IPacket, IAuthoredPacket, IServerTimestamped
 // A little crude but it will work
 public class SessionPausePacketWarden : LambdaPacketWarden<PausePacket>
 {
+    protected override bool ShouldDisplayRejectionInChat => true;
+
     public void Pause()
     {
         var packet = new PausePacket

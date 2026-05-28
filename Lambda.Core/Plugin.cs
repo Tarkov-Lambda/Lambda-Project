@@ -214,7 +214,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
 
         RegisterPatch(new Patch_FikaConfig_ToNumber());
-        // RegisterPatch(new Patch_FikaGlobals_ToNumber());                            // Crank movement send rate to 60hz
+        // RegisterPatch(new Patch_FikaGlobals_ToNumber());                         // Crank movement send rate to 60hz
         // RegisterPatch(new Patch_AdaptiveJitterBuffer_CurrentDelay());               // Reduce Adaptive Jitter Buffer's base delay to 20ms
         // RegisterPatch(new Patch_PlayerSnapshotter_Constructor());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
         // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
@@ -222,6 +222,7 @@ public class LambdaPlugin : BaseUnityPlugin
 
         // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                        //
         // RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
+        // RegisterPatch(new Patch_Player_FindItemById());                             // Player camera leans with the observed player during spectation
 
 
         // Memory Pack Formatters

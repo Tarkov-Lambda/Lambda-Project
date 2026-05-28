@@ -22,6 +22,7 @@ namespace Lambda.Core.Main.UI
 
             chat.OnSubmit += OnSubmit;
 
+            Singleton<ServerMessagePacketWarden>.Instance.OnRejectionMessageInChat += OnAnnouncementReceived;
             Singleton<ServerMessagePacketWarden>.Instance.AfterPacketApplied += OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied += OnMessageReceived;
             UnityTicker.OnUpdate += Update;
@@ -30,6 +31,7 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
+            Singleton<ServerMessagePacketWarden>.Instance.OnRejectionMessageInChat -= OnAnnouncementReceived;
             Singleton<ServerMessagePacketWarden>.Instance.AfterPacketApplied -= OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied -= OnMessageReceived;
             UnityTicker.OnUpdate -= Update;

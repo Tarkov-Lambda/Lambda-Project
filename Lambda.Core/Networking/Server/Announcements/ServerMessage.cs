@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -19,6 +20,8 @@ public partial struct ServerMessagePacket : IPacket
 public class ServerMessagePacketWarden : LambdaPacketWarden<ServerMessagePacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
+
+    public Action<ServerMessagePacket> OnRejectionMessageInChat;
 
     public void Send(string msg)
     {

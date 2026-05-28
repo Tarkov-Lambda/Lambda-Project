@@ -18,6 +18,7 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
 {
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(5);
     protected override bool ShouldNotifyAboutRejection => true;
+    protected override bool ShouldDisplayRejectionInChat => true;
 
     public void Send(string newClanTag)
     {

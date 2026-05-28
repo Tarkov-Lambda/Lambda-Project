@@ -1,5 +1,9 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
+using EFT.InventoryLogic;
 using Fika.Core.Main.Players;
+using HarmonyLib;
+using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
@@ -46,5 +50,28 @@ public class ObservedPlayer_VisualPass_Patch : ModulePatch
         }
 
         return true;
+    }
+}
+
+public class Patch_Player_FindItemById : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.FindItemById));
+
+    [PatchPrefix]
+    public static bool Prefix(Player __instance, ref GStruct156<Item> __result, MongoID itemId, bool checkDistance = true, bool checkOwnership = true)
+    {
+        if (__instance is ObservedPlayer)
+        {
+            GStruct156<ValueTuple<Item, GameWorld.GStruct162>> gstruct = __instance.GameWorld.FindItemWithWorldData(itemId);
+            if (gstruct.Failed)
+            {
+                __result = gstruct.Error;
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(__instance);
+            }
+            __result = gstruct.Value.Item1;
+
+            return false;
+        }
+        else return true;
     }
 }

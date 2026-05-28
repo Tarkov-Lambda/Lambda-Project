@@ -35,7 +35,7 @@ public partial struct EquipmentResyncPacket : IPacket
     public Dictionary<EquipmentSlot, ItemAndAddress> Equipment;
 
     [MemoryPackAllowSerialize]
-    public Weapon WeaponInHands;
+    public Item WeaponInHands;
 
     public EquipmentResyncRequestType type;
 }
