@@ -215,7 +215,7 @@ public class SharedCleanup : IGameState
         {
             foreach (var player in H.AllPlayers)
             {
-                Singleton<EquipmentResyncPacketWarden>.Instance.Send(player, true);
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(player, EquipmentResyncRequestType.CleanupBroadcast);
             }
         }
 

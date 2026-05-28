@@ -19,6 +19,12 @@ public partial struct ItemAndAddress
     public ItemAddress address;
 }
 
+public enum EquipmentResyncRequestType : byte
+{
+    CleanupBroadcast,
+    ClientRequest
+}
+
 [MemoryPackable]
 public partial struct EquipmentResyncPacket : IPacket
 {
@@ -28,7 +34,10 @@ public partial struct EquipmentResyncPacket : IPacket
     [MemoryPackAllowSerialize]
     public Dictionary<EquipmentSlot, ItemAndAddress> Equipment;
 
-    public bool broadcast;
+    [MemoryPackAllowSerialize]
+    public Weapon WeaponInHands;
+
+    public EquipmentResyncRequestType type;
 }
 
 // TODO: include optional item in hands address for clients if this is requested in round
@@ -51,12 +60,12 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.1, RateLimitAction.Drop);
 
-    public void Send(Player player, bool broadcast = false)
+    public void Send(Player player, EquipmentResyncRequestType type = EquipmentResyncRequestType.ClientRequest)
     {
         var packet = new EquipmentResyncPacket
         {
             Player = player,
-            broadcast = broadcast
+            type = type
         };
 
         DispatchPacket(ref packet);
@@ -67,7 +76,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         var packet = new EquipmentResyncPacket
         {
             Player = player,
-            broadcast = false
+            type = EquipmentResyncRequestType.ClientRequest
         };
 
         DispatchPacket(ref packet, peerId);
@@ -75,7 +84,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
     protected override bool ValidatePacket(EquipmentResyncPacket packet, int peerId, out string rejectionReason)
     {
-        if (packet.broadcast == true)
+        if (packet.type is EquipmentResyncRequestType.CleanupBroadcast)
         {
             rejectionReason = "Action Unauthorized";
             return false;
@@ -99,18 +108,26 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                 };
             }
         }
+
+        if (H.Session.matchState is not MatchState.Cleanup)
+        {
+            if (packet.Player.HandsController.Item is not null and Weapon weapon)
+            {
+                packet.WeaponInHands = weapon;
+            }
+        }
     }
 
     protected override void ProcessApprovedPacket(ref EquipmentResyncPacket packet, int peerId)
     {
         MutateApprovedPacket(ref packet, peerId);
 
-        if (packet.broadcast)
+        if (packet.type is EquipmentResyncRequestType.CleanupBroadcast)
         {
             Network.SendData(ref packet, DeliveryType, true);
             ApplyInternal(packet, peerId);
         }
-        else if (peerId != INetworkBackend.LocalPeerId)
+        else if (peerId is not INetworkBackend.LocalPeerId)
         {
             Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
@@ -147,6 +164,19 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         }
 
         player.ProcessStatus = EProcessStatus.None;
+
+        if (packet.WeaponInHands != null)
+        {
+            player.SetInHands(packet.WeaponInHands, (result) =>
+            {
+                if (result.Failed)
+                {
+                    D.LogError($"[EquipmentResync] Failed to equip item: {result.Error}");
+                    player.SetEmptyHands(delegate { });
+                }
+            });
+            return;
+        }
 
         if (player.IsYourPlayer)
         {

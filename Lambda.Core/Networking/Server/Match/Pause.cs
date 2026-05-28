@@ -6,6 +6,12 @@ using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
+public enum PausePacketRequestType : byte
+{
+    Pause,
+    Unpause
+}
+
 [MemoryPackable]
 public partial struct PausePacket : IPacket, IAuthoredPacket, IServerTimestampedPacket
 {
@@ -13,22 +19,66 @@ public partial struct PausePacket : IPacket, IAuthoredPacket, IServerTimestamped
     public Player Player { get; set; }
 
     public double Timestamp { get; set; }
+
+    public PausePacketRequestType type;
 }
 
+// A little crude but it will work
 public class SessionPausePacketWarden : LambdaPacketWarden<PausePacket>
 {
-    public void Send()
+    public void Pause()
     {
         var packet = new PausePacket
         {
-            Timestamp = NetworkTime.ServerNowSeconds
+            type = PausePacketRequestType.Pause
         };
         DispatchPacket(ref packet);
     }
 
+    public void Unpause()
+    {
+        var packet = new PausePacket
+        {
+            type = PausePacketRequestType.Unpause
+        };
+        DispatchPacket(ref packet);
+    }
+
+    public void RequestUnpause()
+    {
+
+    }
+
     protected override bool ValidatePacket(PausePacket packet, int peerId, out string rejectionReason)
     {
-        rejectionReason = null;
+        if (packet.type is PausePacketRequestType.Pause)
+        {
+            if (H.Session.matchState is not MatchState.RoundPrepare)
+            {
+                rejectionReason = "Pause can only be requested during preparation phase.";
+                return false;
+            }
+        }
+        else
+        {
+            if (!packet.Player.GetContext().IsAdmin)
+            {
+                if (H.Session.matchState is not MatchState.RoundPrepare)
+                {
+                    rejectionReason = "Unpause request is only valid during preparation phase.";
+                    return false;
+                }
+
+                var elapsed = NetworkTime.ServerNowSeconds - H.Arena.ServerPhaseStartSeconds;
+
+                if (elapsed < 15f)
+                {
+                    rejectionReason = $"Unpause not allowed yet ({elapsed:0.0}s / 15s required).";
+                    return false;
+                }
+            }
+        }
+
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 

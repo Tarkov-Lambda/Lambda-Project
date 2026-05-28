@@ -317,10 +317,15 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 
         if (ShouldNotifyAboutRejection && !string.IsNullOrEmpty(rejectedPacket.rejectionReason))
         {
-            H.Notify(rejectedPacket.rejectionReason);
+            Notify(rejectedPacket.rejectionReason);
         }
 
         WhenRejected(rejectedPacket.Payload, peerId);
+    }
+
+    protected virtual void Notify(string rejectionReason)
+    {
+        H.Notify(rejectionReason);
     }
 
     private void TryInvokeAction(Action<T> action, T packet)

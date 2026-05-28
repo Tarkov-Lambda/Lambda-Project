@@ -148,7 +148,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 #if DEBUG
     public int TimeInActivePhaseToBuy { get; set; } = 110;
 #else
-    public int TimeInActivePhaseToBuy { get; set; } = 30;
+    public int TimeInActivePhaseToBuy { get; set; } = 10;
 #endif
 
 #if DEBUG
@@ -167,13 +167,13 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         {MatchState.Warmup, 120},
         {MatchState.WarmupEnd, 5},
         {MatchState.Cleanup, 3},
-        {MatchState.Pause, 45},
+        {MatchState.Pause, 600},
 #if DEBUG
         {MatchState.RoundPrepare, 5},
 #else
         {MatchState.RoundPrepare, 15},
 #endif
-        {MatchState.RoundAction, 10000},
+        {MatchState.RoundAction, 115},
         {MatchState.RoundEnd, 7},
         {MatchState.RoundPlanted, 45},
         {MatchState.SideSwap, 5},

@@ -1,4 +1,5 @@
 using Comfort.Common;
+using EFT;
 using Lambda.Core;
 using Lambda.Core.Networking;
 using Lambda.Core.Networking.Commands;
@@ -17,7 +18,13 @@ public static class GeneralPlayerCommands
     [ChatCommand("pause", "Requests server login", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
     public static void Pause(CommandContext ctx)
     {
-        Singleton<SessionPausePacketWarden>.Instance.Send();
+        Singleton<SessionPausePacketWarden>.Instance.Pause();
+    }
+
+    [ChatCommand("unpause", "Requests server login", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
+    public static void Unpause(CommandContext ctx)
+    {
+        Singleton<SessionPausePacketWarden>.Instance.Unpause();
     }
 
     [ChatCommand("setclan", "Set your new clan tag", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
@@ -33,7 +40,7 @@ public static class GeneralPlayerCommands
     }
 
     [ChatCommand("suicide", "Commit suicide", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
-    public static void KillCommand(CommandContext ctx)
+    public static void Suicide(CommandContext ctx)
     {
         var damageInfo = new DamageInfoStruct
         {
@@ -44,9 +51,11 @@ public static class GeneralPlayerCommands
     }
 
     [ChatCommand("resetme", "Safely reset yourself", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
-    public static void ResetHandsCommand(CommandContext ctx)
+    public static void ResetMe(CommandContext ctx)
     {
         PU.OpenEyes();
+        H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
         Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
+        H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(false);
     }
 }

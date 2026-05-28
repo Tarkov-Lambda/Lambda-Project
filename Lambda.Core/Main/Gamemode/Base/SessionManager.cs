@@ -119,10 +119,14 @@ public class SessionManager
     }
 }
 
+#nullable enable
+
 // sloppy and crude
 public class PlayerContextLookup(int maxId)
 {
     private readonly PlayerContext?[] _items = new PlayerContext?[maxId + 1];
+
+    private readonly List<PlayerContext> _activeContexts = new();
 
     private int _count;
 
@@ -134,17 +138,7 @@ public class PlayerContextLookup(int maxId)
         // set => _items[id] = value;
     }
 
-    public IEnumerable<PlayerContext> Values
-    {
-        get
-        {
-            foreach (var item in _items)
-            {
-                if (item is not null)
-                    yield return item;
-            }
-        }
-    }
+    public IReadOnlyList<PlayerContext> Values => _activeContexts;
 
     public IEnumerable<(int Id, PlayerContext Context)> Entries
     {
@@ -166,25 +160,23 @@ public class PlayerContextLookup(int maxId)
         return value is not null;
     }
 
-    public bool ContainsKey(int id)
-    {
-        return _items[id] is not null;
-    }
+    public bool ContainsKey(int id) => _items[id] is not null;
 
     public void Add(int id, PlayerContext value)
     {
-        if (_items[id] is not null)
-            throw new ArgumentException($"ID {id} already exists");
-
         _items[id] = value;
+        _activeContexts.Add(value);
         _count++;
     }
 
     public bool Remove(int id)
     {
-        if (_items[id] is null)
+        var item = _items[id];
+
+        if (item is null)
             return false;
 
+        _activeContexts.Remove(item);
         _items[id] = default;
         _count--;
         return true;

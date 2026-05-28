@@ -88,8 +88,8 @@
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
-    <!-- <Copy SourceFiles="@(FilesToCopyToPlugins)"
-    DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy SourceFiles="@(FilesToCopyToPlugins)"
+    DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <!-- <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" /> -->
   </Target>
 </Project>

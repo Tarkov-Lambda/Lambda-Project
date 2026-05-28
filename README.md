@@ -1,7 +1,6 @@
 ## Credits
 - **ifp**: Core • Gamemodes • Equipment • Networking • Steam Audio
 - **tarkin**: Core • UI/UX • Map SDK • Mentor
----
 
 ## Features
 
@@ -39,6 +38,7 @@
 
 ## For Nerds
 
+- Full hot-reload support via ScriptEngine
 - Unity Spatializer Engine bypass
 - PacketWarden
   - Network Backend Agnostic
@@ -67,7 +67,7 @@
 | **SteamAudioUnity**                    | Official Steam Audio Unity Integration Library         |
 | **PhononSpatializerProxy**             | C# Rewrite of audiophonon_plugin for Unity             |
 | **PhononSpatializerProxy.BepInEx**     | PhononSpatializer Proxy integration for BepInEx        |
-| **BetterSource.SteamAudioIntegration** | EFT AudioSource system                                 |
+| **BetterSource.SteamAudioIntegration** | EFT AudioSource system integration with SteamAudio     |
 
 ## Licenses
 

@@ -17,12 +17,19 @@ namespace Lambda.UI.Nameplate
         [SerializeField] private Graphic[] coloredGraphic;
         [SerializeField] private FactionColors factionColors;
 
+        private string _cachedName;
+        private Faction _cachedFaction;
+
         public void Set(string name, Faction faction)
         {
-            textName.text = name;
-            foreach (var graphic in coloredGraphic)
+            if (_cachedName != name || _cachedFaction != faction)
             {
-                graphic.color = factionColors.Get(faction);
+                textName.text = name;
+                _cachedName = name;
+
+                Color newColor = factionColors.Get(faction);
+                foreach (var graphic in coloredGraphic)
+                    if (graphic.color != newColor) graphic.color = newColor;
             }
         }
 

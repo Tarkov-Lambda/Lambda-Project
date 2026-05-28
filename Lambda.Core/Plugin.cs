@@ -351,7 +351,7 @@ public class LambdaPlugin : BaseUnityPlugin
         if (UnfuckKey.Value.IsDown())
         {
             PU.OpenEyes();
-            Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
+            Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer, EquipmentResyncRequestType.ClientRequest);
         }
 
         // TODO: This needs to get the fuck out of here
