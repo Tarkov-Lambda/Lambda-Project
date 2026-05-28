@@ -32,9 +32,6 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
 public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
-
-    protected override bool ShouldProcessInstantly => false;
-
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.15);
 
     public void Send(Item item, ItemPlacement placement, Player player)

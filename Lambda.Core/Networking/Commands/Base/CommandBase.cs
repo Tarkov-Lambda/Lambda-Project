@@ -31,14 +31,7 @@ public class CommandContext(Player sender, int peerId, string rawMessage, string
     {
         if (H.IsServer)
         {
-            if (PeerId == INetworkBackend.LocalPeerId)
-            {
-                D.Notify(message);
-            }
-            else
-            {
-                Singleton<ServerMessagePacketWarden>.Instance.SendToPeer(message, PeerId);
-            }
+            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer(message, PeerId);
         }
         else
         {

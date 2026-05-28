@@ -175,6 +175,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                     player.SetEmptyHands(delegate { });
                 }
             });
+            
             return;
         }
 
