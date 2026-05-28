@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.InventoryLogic;
 using Lambda.Core.Main.Dying;
 using MemoryPack;
 using System;
@@ -65,7 +66,13 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
         try
         {
-            packet.weaponId = killer?.HandsController?.Item?.TemplateId ?? "";
+            if (packet.damageType is EDamageType.Bullet or EDamageType.Blunt)
+            {
+                if (killer != null && killer.HandsController != null && killer.HandsController.Item is not null and Weapon weapon)
+                {
+                    packet.weaponId = weapon.TemplateId.ToString() ?? "";
+                }
+            }
         }
         catch (Exception ex)
         {

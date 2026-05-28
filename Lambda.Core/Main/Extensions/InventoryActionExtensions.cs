@@ -119,6 +119,7 @@ public static class InventoryActionExtensions
         return true;
     }
 
+    static readonly MethodInfo RecalculateEquippedArmorComponents = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
     public static bool TryRecalculateEquippedArmorComponents(this Player player, CompoundItem plateCarrier = null)
     {
         try
@@ -131,9 +132,7 @@ public static class InventoryActionExtensions
                 return false;
             }
 
-            FikaPlayer fikaPlayer = player as FikaPlayer;
-            MethodInfo method = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-            method.Invoke(fikaPlayer, [plateCarrier]);
+            RecalculateEquippedArmorComponents.Invoke(player as FikaPlayer, [plateCarrier]);
             return true;
         }
         catch (Exception e)
@@ -209,7 +208,7 @@ public static class InventoryActionExtensions
     public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
     {
         // TODO: stop being a retard
-        if (H.IsServer)
+        if (H.IsServer && player.IsYourPlayer)
         {
             if (player.HandsController.Item == player.GetSlotItem(equipmentSlot))
             {
@@ -217,7 +216,6 @@ public static class InventoryActionExtensions
                 await UniTask.Delay(50);
             }
         }
-
 
         return await player.TryOperateWeaponAndMags(
             equipmentSlot,

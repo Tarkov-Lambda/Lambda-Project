@@ -160,7 +160,10 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 
         if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
         {
-            packet.Player.HandsController?.FastForwardCurrentState();
+            if (packet.Player.HandsController != null)
+            {
+                packet.Player.HandsController.FastForwardCurrentState();
+            }
         }
 
         packet.Player.PlaceItem(packet.item, packet.placement);
@@ -234,11 +237,14 @@ public static class PlayerInventoryTimeGate
                     catch (Exception ex)
                     {
                         D.LogError($"[PlayerInventoryTimeGate] Error processing packet: {ex}");
-                        UniTask.RunOnThreadPool(async () =>
+                        if (H.IsClient) // nightmare fuel spaghetti out here
                         {
-                            await UniTask.Delay(50);
-                            Singleton<EquipmentResyncPacketWarden>.Instance.Send(player);
-                        }).Forget();
+                            UniTask.RunOnThreadPool(async () =>
+                            {
+                                await UniTask.Delay(50);
+                                Singleton<EquipmentResyncPacketWarden>.Instance.Send(player);
+                            }).Forget();
+                        }
                     }
                 }
             }
