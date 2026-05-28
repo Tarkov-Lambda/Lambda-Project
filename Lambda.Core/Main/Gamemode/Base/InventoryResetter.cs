@@ -13,7 +13,7 @@ namespace Lambda.Core.Main.Gamemode;
 
 public class InventoryManager
 {
-    public static void HandlePrimaries(Player player, ref List<Item> itemsToRemove)
+    public static void EnforceOnePrimaryAtMost(Player player, ref List<Item> itemsToRemove)
     {
         var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
         var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
@@ -45,7 +45,7 @@ public class InventoryManager
     {
         List<Item> itemsToRemove = [];
 
-        HandlePrimaries(player, ref itemsToRemove);
+        EnforceOnePrimaryAtMost(player, ref itemsToRemove);
 
         var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
         AddItem(ref itemsToRemove, backpack);
@@ -71,7 +71,7 @@ public class InventoryManager
         {
             // item utilities automatically adds NVGs to headwear if it's night time
             var Headwear = player.GetSlotItem(EquipmentSlot.Headwear);
-            if (Headwear != null && Headwear.TemplateId != Hardcode.STRAP_NVG)
+            if (Headwear != null && Headwear.TemplateId == Hardcode.HELMET)
             {
                 var HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem() as HeadwearItemClass;
                 IU.AttachNightVisionIfNeeded(HelmetWithNVGs);

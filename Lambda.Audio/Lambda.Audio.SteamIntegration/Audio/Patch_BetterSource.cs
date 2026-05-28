@@ -65,7 +65,6 @@ internal class Patch_BetterSource_SetOcclusionRolloffScale : ModulePatch
     [PatchPrefix]
     static bool Prefix(BetterSource __instance)
     {
-        // Force the scale to stay at 1.0, bypassing EFT's distance shrink and fixing the native pooling bug
         __instance.OcclusionRolloffScale = 1f;
         return false;
     }

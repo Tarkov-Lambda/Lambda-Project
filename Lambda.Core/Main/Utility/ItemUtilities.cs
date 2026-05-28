@@ -222,8 +222,6 @@ public static class ItemUtilities
 
     public static void AttachNightVisionIfNeeded(HeadwearItemClass headwear)
     {
-        if (!H.IsNightTime) return;
-
         foreach (var slot in headwear.Slots)
         {
             if (slot.Name == "mod_nvg")

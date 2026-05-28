@@ -145,17 +145,9 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public bool CanBuyInActivePhase { get; set; } = true;
 
-#if DEBUG
-    public int TimeInActivePhaseToBuy { get; set; } = 110;
-#else
     public int TimeInActivePhaseToBuy { get; set; } = 10;
-#endif
 
-#if DEBUG
     public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
-#else
-    public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
-#endif
 
     public static float platingTime = 4.5f;
     public static float defusingTime = 10f;

@@ -28,6 +28,7 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
     public Item item;
 }
 
+// all the inventory add logic should just be rewritten from scratch
 public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
@@ -128,7 +129,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         if (packet.item is Weapon weapon)
         {
             IU.DowngradeMagIfNeeded(weapon);
-            RU.SetupWeapon(weapon, packet.Player);
+            RU.SetupWeapon(weapon, packet.Player); // will send off additional mag buyitem packets on its own for the client player
         }
         else if (packet.item is HeadwearItemClass headwear)
         {
@@ -137,14 +138,14 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         else if (packet.item is ArmorPlateItemClass)
         {
             int availablePlateSlots = packet.Player.CountAvailableArmorPlateSlots();
-            for (int i = 0; i < availablePlateSlots - 1; i++)
+            for (int i = 0; i < availablePlateSlots - 1; i++)  // auto fill other plate slots (buy one plate get all)
             {
                 var anotherPlatePacket = new BuyItemPacket
                 {
                     Player = packet.Player,
                     item = packet.item,
                 };
-                DispatchPacket(ref anotherPlatePacket); // auto fill slots
+                DispatchPacket(ref anotherPlatePacket);
             }
         }
     }
@@ -166,7 +167,15 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             }
         }
 
-        packet.Player.PlaceItem(packet.item, packet.placement);
+        var success = packet.Player.PlaceItem(packet.item, packet.placement);
+        if (!success && H.IsClient)
+        {
+            UniTask.RunOnThreadPool(async () =>
+            {
+                await UniTask.Delay(50);
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(packet.Player);
+            }).Forget();
+        }
     }
 
     protected override void WhenRejected(BuyItemPacket packet, int peerId)

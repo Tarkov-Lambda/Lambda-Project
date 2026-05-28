@@ -9,6 +9,7 @@ using EFT.InventoryLogic;
 using Fika.Core.Main.Players;
 using HarmonyLib;
 using Lambda.Core.Main;
+using Lambda.Core.Networking;
 using static Fika.Core.Main.ClientClasses.ClientInventoryController;
 
 public static class InventoryActionExtensions
