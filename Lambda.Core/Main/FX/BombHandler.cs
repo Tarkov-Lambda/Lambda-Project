@@ -129,7 +129,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
             case BombState.Planted:
                 if (!_isAlreadyPlanted)
                 {
-                    pos = H.BombHandler.BombPlantedPosition;
+                    pos = packet.position;
                     clip = H.Sounds.Planted;
                     StartBombTick(pos);
                     _isAlreadyPlanted = true;

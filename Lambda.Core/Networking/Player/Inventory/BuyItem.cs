@@ -81,35 +81,35 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     }
 
 
-    // SERVER: Wait for the host's representation of the player's inventory to settle, then mutate and broadcast.
-    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, int peerId)
-    {
-        int playerId = packet.Player.Id;
-        var localPacket = packet;
+    // // SERVER: Wait for the host's representation of the player's inventory to settle, then mutate and broadcast.
+    // protected override void ProcessApprovedPacket(ref BuyItemPacket packet, int peerId)
+    // {
+    //     int playerId = packet.Player.Id;
+    //     var localPacket = packet;
 
-        PlayerInventoryTimeGate.Enqueue(playerId, () =>
-        {
-            MutateApprovedPacket(ref localPacket, peerId); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
-            if (localPacket.placement.Kind == PlacementKind.None)
-            {
-                SendRejection(ref localPacket, peerId, "Can't find placement for your item");
-                return;
-            }
+    //     PlayerInventoryTimeGate.Enqueue(playerId, () =>
+    //     {
+    //         MutateApprovedPacket(ref localPacket, peerId); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
+    //         if (localPacket.placement.Kind == PlacementKind.None)
+    //         {
+    //             SendRejection(ref localPacket, peerId, "Can't find placement for your item");
+    //             return;
+    //         }
 
-            PacketWardenUtils.Network.SendData(ref localPacket, DeliveryType, true);
-            ApplyInternal(localPacket, peerId);
-        });
-    }
+    //         PacketWardenUtils.Network.SendData(ref localPacket, DeliveryType, true);
+    //         ApplyInternal(localPacket, peerId);
+    //     });
+    // }
 
-    // CLIENT: Wait for the observing client's representation of the player's inventory to settle, then apply locally.
-    // I don't know if this will play nicely, but it's "good enough" for now
-    protected override void WhenClientReceivesPacket(BuyItemPacket packet, int peerId)
-    {
-        int playerId = packet.Player.Id;
-        var localPacket = packet;
+    // // CLIENT: Wait for the observing client's representation of the player's inventory to settle, then apply locally.
+    // // I don't know if this will play nicely, but it's "good enough" for now
+    // protected override void WhenClientReceivesPacket(BuyItemPacket packet, int peerId)
+    // {
+    //     int playerId = packet.Player.Id;
+    //     var localPacket = packet;
 
-        PlayerInventoryTimeGate.Enqueue(playerId, () => base.WhenClientReceivesPacket(localPacket, peerId));
-    }
+    //     PlayerInventoryTimeGate.Enqueue(playerId, () => base.WhenClientReceivesPacket(localPacket, peerId));
+    // }
 
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, int peerId)
     {

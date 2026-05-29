@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Comfort.Common;
 using EFT.InventoryLogic;
 using MemoryPack;
@@ -14,18 +15,12 @@ public class ItemFormatter : MemoryPackFormatter<Item>
         }
 
         writer.WriteObjectHeader(1);
-        
-        var descriptor = EFTItemSerializerClass.SerializeItem(value, GClass2240.Instance);
 
         var eftWriter = WriterPoolManager.GetWriter();
-
+        var descriptor = EFTItemSerializerClass.SerializeItem(value, GClass2240.Instance);
         eftWriter.WriteEFTItemDescriptor(descriptor);
-
-        byte[] itemBytes = eftWriter.ToArray();
-        
+        writer.WriteUnmanagedArray(eftWriter.ToArray());
         WriterPoolManager.ReturnWriter(eftWriter);
-
-        writer.WriteUnmanagedArray(itemBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Item value)
@@ -51,6 +46,10 @@ public class ItemFormatter : MemoryPackFormatter<Item>
 
             value = EFTItemSerializerClass.DeserializeItem(descriptor, Singleton<ItemFactoryClass>.Instance, []);
         }
-        catch (Exception) { }
+        catch (Exception ex)
+        {
+            PacketWardenUtils.Log(ex.Message);
+            PacketWardenUtils.Log(ex.StackTrace);
+        }
     }
 }

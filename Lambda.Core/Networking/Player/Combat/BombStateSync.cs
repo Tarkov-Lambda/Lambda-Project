@@ -58,12 +58,20 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
     {
         H.Session.bombState = packet.state;
 
+        if (!H.IsHeadless)
+        {
+            if (!packet.Player.IsYourPlayer)
+            {
+                H.BombHandler.PlayBombAudio(packet);
+            }
+        }
+
         if (packet.state is BombState.Planted)
         {
             H.Arena.LastObjectivePlayer = packet.Player;
             foreach (var bombPlantZone in Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
-                bombPlantZone.GetComponent<BoxCollider>().enabled = false;
+                bombPlantZone.GetComponent<BoxCollider>().enabled = false; // remove interaction triggers
             }
         }
 
@@ -89,16 +97,6 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
                 {
                     Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, H.Arena.LastObjectivePlayer);
                 }
-            }
-
-
-        }
-
-        if (!H.IsHeadless)
-        {
-            if (!packet.Player.IsYourPlayer)
-            {
-                H.BombHandler.PlayBombAudio(packet);
             }
         }
 

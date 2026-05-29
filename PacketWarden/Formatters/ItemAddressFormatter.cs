@@ -34,17 +34,11 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         writer.WriteObjectHeader(2);
         writer.WriteUnmanaged(addressPlayerOwner.Id);
 
-        var descriptor = value.ToDescriptor();
-        
         var eftWriter = WriterPoolManager.GetWriter();
-
+        var descriptor = value.ToDescriptor();
         eftWriter.WritePolymorph(descriptor);
-
-        byte[] addressBytes = eftWriter.ToArray();
-        
+        writer.WriteUnmanagedArray(eftWriter.ToArray());
         WriterPoolManager.ReturnWriter(eftWriter);
-
-        writer.WriteUnmanagedArray(addressBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemAddress value)
@@ -86,6 +80,10 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             var descriptor = eftReader.ReadPolymorph<GClass1950>();
             value = player.InventoryController.ToItemAddress(descriptor);
         }
-        catch (Exception) { }
+        catch (Exception ex)
+        {
+            PacketWardenUtils.Log(ex.Message);
+            PacketWardenUtils.Log(ex.StackTrace);
+        }
     }
 }

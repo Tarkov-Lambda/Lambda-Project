@@ -109,7 +109,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             }
         }
 
-        if (H.Session.matchState is not MatchState.Cleanup)
+        if (H.Session.matchState is not MatchState.Cleanup && packet.type is EquipmentResyncRequestType.ClientRequest)
         {
             if (packet.Player.HandsController.Item is not null and Weapon weapon)
             {
@@ -146,8 +146,8 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
             if (slot.ContainedItem != null)
             {
                 var cachedItem = slot.ContainedItem;
+                var address = cachedItem.CurrentAddress;
                 slot.RemoveItemWithoutRestrictions();
-                var address = slot.CreateItemAddress();
                 address.RaiseForceRemove(cachedItem, player);
             }
 
@@ -175,7 +175,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                     player.SetEmptyHands(delegate { });
                 }
             });
-            
+
             return;
         }
 
