@@ -168,6 +168,11 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         }
         else
         {
+            // the following is a little bit iffy and strays away from ProcessApprovedPacket
+            // however sometimes the server might want to send information to a peer
+            // such as resynchronization without going through the hoops
+            // and also trying to cram this kind of logic into another overridable method is just
+            // so tiresome
             MutateApprovedPacket(ref packet, targetPeerId.Value);
             if (targetPeerId.Value != INetworkBackend.LocalPeerId)
             {

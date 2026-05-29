@@ -120,7 +120,7 @@ public static class InventoryGetterExtensions
     {
         CompoundItem plateCarrier = player.GetPlateCarrier();
 
-        return plateCarrier.GetArmorPlates();
+        return plateCarrier?.GetArmorPlates();
     }
 
     public static IEnumerable<ArmorPlateItemClass> GetArmorPlates(this CompoundItem plateCarrier)
@@ -137,7 +137,7 @@ public static class InventoryGetterExtensions
     {
         var weapons = player.GetAllWeapons();
 
-        HashSet<string> validMagIds = new HashSet<string>();
+        HashSet<string> validMagIds = new();
 
         foreach (var weapon in weapons)
         {
@@ -178,8 +178,6 @@ public static class InventoryGetterExtensions
             }
         }
 
-        // thanks bsg for putting two different g36 mag holder variations
-        // whoever is reading this fuck you
         WeaponBuildClass defaultPresetWeaponBuild = FU.Presets.FirstOrDefault(b => b.FromPreset && b.Item.TemplateId == weapon.TemplateId);
         Weapon defaultPresetWeapon = defaultPresetWeaponBuild.Item as Weapon;
 

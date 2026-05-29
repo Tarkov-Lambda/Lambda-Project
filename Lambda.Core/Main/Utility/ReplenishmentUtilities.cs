@@ -42,7 +42,7 @@ public static class ReplenishmentUtilities
         {
             ReplenishGun(weapon, ammo);
 
-            ReplenishMagazines(weapon, player);
+            ReplenishMagazines(weapon, player, ammo);
         }
     }
 
@@ -104,7 +104,8 @@ public static class ReplenishmentUtilities
         }
     }
 
-    public static void ReplenishMagazines(Weapon weapon, Player player, AmmoItemClass ammo = null)
+    // refactor this
+    public static void ReplenishMagazines(Weapon weapon, Player player, AmmoItemClass ammo)
     {
         if (player.GetSlotItem(EquipmentSlot.TacticalVest) is not CompoundItem vest) return;
 

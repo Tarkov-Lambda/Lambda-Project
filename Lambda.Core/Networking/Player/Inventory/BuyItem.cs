@@ -126,7 +126,12 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         if (packet.item is Weapon weapon)
         {
             IU.DowngradeMagIfNeeded(weapon);
-            RU.SetupWeapon(weapon, packet.Player); // will send off additional mag buyitem packets on its own for the client player
+            weapon.SwitchFullAutoIfNeeded();
+            if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            {
+                RU.ReplenishGun(weapon, ammo);
+                RU.ReplenishMagazines(weapon, packet.Player, ammo);
+            }
         }
         else if (packet.item is HeadwearItemClass headwear)
         {
