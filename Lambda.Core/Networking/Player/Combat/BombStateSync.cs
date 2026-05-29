@@ -58,15 +58,6 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
     {
         H.Session.bombState = packet.state;
 
-        if (!H.IsHeadless)
-        {
-            if (!packet.Player.IsYourPlayer)
-            {
-                H.BombHandler.PlayBombAudio(packet);
-            }
-
-        }
-
         if (packet.state is BombState.Planted)
         {
             H.Arena.LastObjectivePlayer = packet.Player;
@@ -101,6 +92,14 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
             }
 
 
+        }
+
+        if (!H.IsHeadless)
+        {
+            if (!packet.Player.IsYourPlayer)
+            {
+                H.BombHandler.PlayBombAudio(packet);
+            }
         }
 
         H.BombHandler.SetBombVisuals(packet);

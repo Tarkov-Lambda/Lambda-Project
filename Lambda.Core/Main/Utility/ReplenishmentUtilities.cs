@@ -104,7 +104,6 @@ public static class ReplenishmentUtilities
         }
     }
 
-    // Local only, sends spawn item packets
     public static void ReplenishMagazines(Weapon weapon, Player player, AmmoItemClass ammo = null)
     {
         if (player.GetSlotItem(EquipmentSlot.TacticalVest) is not CompoundItem vest) return;

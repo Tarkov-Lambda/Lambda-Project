@@ -194,10 +194,10 @@ public class PlayerContext
         context.Combat.IsAlive = false;
         _deathTimestamp = NetworkTime.ServerNowSeconds;
 
-        if (!H.IsHeadless && player == H.MainPlayer)
-        {
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(true);
-        }
+        // if (!H.IsHeadless && player.IsYourPlayer)
+        // {
+        //     H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(true);
+        // }
     }
 
     public void SetHardReset()
@@ -215,7 +215,7 @@ public class PlayerContext
         if (!H.IsHeadless && player == H.MainPlayer)
         {
             EventBus.OnSelfRespawn?.Invoke();
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(false);
+            // H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(false);
         }
     }
 
@@ -267,7 +267,7 @@ public class PlayerContext
         if (matchState
             is MatchState.WarmupEnd
             or MatchState.RoundPrepare
-            or MatchState.Pause
+            // or MatchState.Pause
             or MatchState.SideSwap
             or MatchState.Cleanup) return true;
 

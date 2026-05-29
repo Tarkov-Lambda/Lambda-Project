@@ -70,7 +70,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
             {
                 if (killer != null && killer.HandsController != null && killer.HandsController.Item is not null and Weapon weapon)
                 {
-                    packet.weaponId = weapon.TemplateId.ToString() ?? "";
+                    packet.weaponId = weapon.TemplateId.ToString() ?? string.Empty;
                 }
             }
         }
@@ -93,10 +93,10 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
     //     return base.ValidatePacket(packet, peerId, out rejectionReason);
     // }
 
-    protected override void ApplyOptimistically(PlayerKilledPacket packet)
-    {
-        HandleKill(packet);
-    }
+    // protected override void ApplyOptimistically(PlayerKilledPacket packet)
+    // {
+    //     HandleKill(packet);
+    // }
 
     protected override void Apply(PlayerKilledPacket packet, int peerId)
     {
@@ -108,7 +108,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
     private void HandleKill(PlayerKilledPacket packet)
     {
         PlayerContext victimScore = H.GetPlayerContext(packet.Player);
-        if (!victimScore.IsAlive) return;
+        // if (!victimScore.IsAlive) return;
 
         victimScore.Kill();
 
@@ -144,16 +144,19 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
             }
         }
 
-        if (packet.weaponId == null)
+        try
         {
-            try
+            if (packet.damageType is EDamageType.Bullet or EDamageType.Blunt)
             {
-                packet.weaponId = killerScore.player?.HandsController?.Item?.TemplateId ?? "";
+                if (packet.killer != null && packet.killer.HandsController != null && packet.killer.HandsController.Item is not null and Weapon weapon)
+                {
+                    packet.weaponId = weapon.TemplateId.ToString() ?? string.Empty;
+                }
             }
-            catch (Exception ex)
-            {
-                D.Log(ex.ToString());
-            }
+        }
+        catch (Exception ex)
+        {
+            D.Log(ex.ToString());
         }
 
         // if (H.IsHeadless)

@@ -222,6 +222,8 @@ public static class ItemUtilities
 
     public static void AttachNightVisionIfNeeded(HeadwearItemClass headwear)
     {
+        if (!H.IsNightTime) return;
+
         foreach (var slot in headwear.Slots)
         {
             if (slot.Name == "mod_nvg")
@@ -265,7 +267,7 @@ public static class ItemUtilities
         foreach (ObservedLootItem loot in allLoot)
         {
             if (!loot.isActiveAndEnabled) continue;
-            H.GameWorld.DestroyLoot(loot);
+            loot.Kill();
         }
 
         // foreach (ObservedSmokeGrenade smoke in allSmokes)
