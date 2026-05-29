@@ -19,6 +19,7 @@ public partial struct ChatMessagePacket : IPacket, IAuthoredPacket
 public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 {
     protected override bool ShouldNotifyAboutRejection => true;
+    protected override bool ShouldDisplayRejectionInChat => true;
 
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.25, RateLimitAction.Drop);
 
@@ -53,8 +54,6 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override void ProcessApprovedPacket(ref ChatMessagePacket packet, int peerId)
     {
-        // D.Log(packet.Player.GetContext()?.IsAdmin.ToString());
-        // all exclamation mark commands are serverside
         // the client sees their command message but others do not
         if (packet.msg.StartsWith("!"))
         {
@@ -66,6 +65,6 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         }
     }
 
-    /// Handled in ChatController
+    // Handled in ChatController
     protected override void Apply(ChatMessagePacket packet, int peerId) { }
 }

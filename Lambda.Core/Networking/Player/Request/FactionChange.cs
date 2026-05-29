@@ -24,6 +24,7 @@ public partial struct FactionChangePacket : IPacket, IAuthoredPacket
     public ItemAddress armbandAddress;
 }
 
+// scheduling logic perhaps should live in the server instead
 public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 {
     public CancellationTokenSource _cts { get; private set; }

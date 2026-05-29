@@ -23,6 +23,9 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
 
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(1, RateLimitAction.Reject);
 
+    protected override bool ShouldNotifyAboutRejection => true;
+    protected override bool ShouldDisplayRejectionInChat => true;
+
     public AskForBombPriorityPacketWarden()
     {
         EventBus.OnEnter += OnEnter;
@@ -62,7 +65,7 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
             rejectionReason = "This command is not accessible outside of Search And Destroy.";
             return false;
         }
-        else if (packet.Player.GetContext().Faction != Faction.T)
+        else if (packet.Player.GetContext().Faction is not Faction.T)
         {
             rejectionReason = "You have to be a terrorist to use this command.";
             return false;
@@ -92,7 +95,7 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
         }
 
         string announcement;
-        
+
         if (AssignedPlayer == null)
         {
             announcement = $"{packet.Player.Profile.Nickname} no longer wants the bomb.";

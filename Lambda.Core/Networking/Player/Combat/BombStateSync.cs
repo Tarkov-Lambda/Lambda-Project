@@ -92,8 +92,8 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
             };
             foreach (var player in H.AllPlayers)
             {
-                float distance = Vector3.Distance(packet.position, player.PlayerBody.transform.position);
-                if (distance <= 30f)
+                float distance = Vector3.Distance(packet.position, player.Position);
+                if (distance <= 32f)
                 {
                     Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, H.Arena.LastObjectivePlayer);
                 }

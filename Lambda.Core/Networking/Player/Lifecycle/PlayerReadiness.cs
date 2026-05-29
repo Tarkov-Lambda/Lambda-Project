@@ -91,7 +91,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     {
         if (!IsArenaReady) return;
 
-        // the mid session client will think that they are not new, but it doesn't really matter
+        // does not respect reconnects, todo later
         bool isNewPlayer = H.Session.matchState >= MatchState.WarmupEnd;
 
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
