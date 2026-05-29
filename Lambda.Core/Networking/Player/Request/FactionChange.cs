@@ -76,6 +76,17 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
         }
     }
 
+    public void SendForPlayer(Player player, Faction faction)
+    {
+        var packet = new FactionChangePacket
+        {
+            Player = player,
+            faction = faction
+        };
+
+        DispatchPacket(ref packet);
+    }
+
     protected override bool ValidatePacket(FactionChangePacket packet, int peerId, out string rejectionReason)
     {
         if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction))

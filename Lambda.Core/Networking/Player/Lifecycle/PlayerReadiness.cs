@@ -91,7 +91,9 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
     {
         if (!IsArenaReady) return;
 
-        bool isNewPlayer = !H.Scoreboard.ContainsKey(packet.Player.Id);
+        // the mid session client will think that they are not new, but it doesn't really matter
+        bool isNewPlayer = H.Session.matchState >= MatchState.WarmupEnd;
+
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
 
         if (packet.clanTag != null)
@@ -105,16 +107,6 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             handsBundleCollection.LoadBundles().Forget();
         }
 
-        if (isNewPlayer)
-        {
-            if (packet.readyState == PlayerReadinessState.Ready)
-            {
-                playerContext.ChangeProgress(100f);
-                playerContext.ChangeFaction(Faction.Spectator);
-                playerContext.SetHardReset();
-            }
-        }
-
         playerContext.ChangeReadiness(packet.readyState);
 
         if (H.IsServer)
@@ -125,15 +117,21 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             }
 
             // In case a player is reporting they are connected mid session (reconnects, new joins)
-            if (H.Arena.gamemode != null && H.Session.matchState != MatchState.None)
+            if (isNewPlayer)
             {
                 if (packet.readyState == PlayerReadinessState.Connected)
                 {
                     // get the player up to speed
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
+
+                    Singleton<FactionChangePacketWarden>.Instance.SendForPlayer(packet.Player, Faction.Spectator);
+                }
+                else if (packet.readyState == PlayerReadinessState.Ready)
+                {
+                    playerContext.SetHardReset();
                     Singleton<SessionManagerSyncPacketWarden>.Instance.SendToPeer(peerId);
                     Singleton<MatchStateSyncPacketWarden>.Instance.SendToLateJoiner(peerId);
-                    Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
+                    // Singleton<GameplayVariablesSyncPacketWarden>.Instance.SendToPeer(peerId);
                     // holy size but who gives a fuck
                     foreach (var player in H.AllPlayers)
                     {
