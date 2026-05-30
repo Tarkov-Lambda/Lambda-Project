@@ -10,7 +10,7 @@ namespace Lambda.Shared
         public Ladder ladder;
     }
 
-    public enum LadderMaterial
+    public enum LadderMaterial : byte
     {
         Metal,
         Wood

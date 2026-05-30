@@ -36,6 +36,42 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
         _cachedItems.Clear();
     }
 
+    public List<Item> AddToCacheAndGetDelta(Item item)
+    {
+        var addedItems = new List<Item>();
+
+        foreach (var part in item.GetAllItems())
+        {
+            if (_cachedItems.Add(part.TemplateId))
+            {
+                ItemsToLoad.Add(part);
+                addedItems.Add(part);
+            }
+        }
+
+        foreach (var subItem in item.GetAllItems())
+        {
+            if (subItem is Weapon weapon && FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            {
+                addedItems.AddRange(AddToCacheAndGetDelta(ammo));
+            }
+        }
+
+        return addedItems;
+    }
+
+    public List<Item> AddToCacheAndGetDelta(IEnumerable<Item> items)
+    {
+        var addedItems = new List<Item>();
+
+        foreach (var item in items)
+        {
+            addedItems.AddRange(AddToCacheAndGetDelta(item));
+        }
+
+        return addedItems;
+    }
+
     public void AddToCache(List<Item> items)
     {
         foreach (var item in items)

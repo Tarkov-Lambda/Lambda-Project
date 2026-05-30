@@ -2,12 +2,12 @@ using EFT;
 
 public class BaseInventoryManager : IInventoryManager
 {
-    public void ResupplyEquipment(Player player)
+    public void Ressuply(Player player)
     {
         
     }
 
-    public void SoftReset()
+    public void HardReset(Player player)
     {
         
     }

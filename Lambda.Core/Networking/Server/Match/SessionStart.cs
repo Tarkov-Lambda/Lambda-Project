@@ -109,9 +109,9 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         {
             Singleton<PlayerReadinessPacketWarden>.Instance.Send(PlayerReadinessState.Ready);
 
-            if (packet.isForLateJoiner && !H.MainPlayer.GetContext().IsAlive)
+            if (packet.isForLateJoiner)
             {
-                SpectatorManager.Instance.SwitchSpectatePlayer();
+                Singleton<FactionChangePacketWarden>.Instance.Send(Faction.Spectator);
             }
         }
     }

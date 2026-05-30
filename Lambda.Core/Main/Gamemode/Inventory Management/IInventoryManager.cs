@@ -1,6 +1,8 @@
+using EFT;
+
 public interface IInventoryManager
 {
-    public void HardReset() {}
+    public void Resupply(Player player) {}
 
-    public void SoftReset() {}
+    public void HardReset(Player player) {}
 }

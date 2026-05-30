@@ -111,13 +111,13 @@ namespace PhononSpatializerProxy
         private void OnEnable()
         {
             _steamSrc.enabled = true;
-            PhononUpdateManager.Instance.ActiveBridges.Add(this);
+            // PhononUpdateManager.Instance.ActiveBridges.Add(this);
         }
 
         private void OnDisable()
         {
             _steamSrc.enabled = false;
-            PhononUpdateManager.Instance.ActiveBridges.Remove(this);
+            // PhononUpdateManager.Instance.ActiveBridges.Remove(this);
         }
 
         public bool IsSourcePlaying() => _src.isPlaying;
@@ -127,7 +127,7 @@ namespace PhononSpatializerProxy
             // Safely restore AudioSource real state so we don't permanently break it
             if (_src != null)
             {
-                BepInEx.AudioSourceStateBypass.Bypass = true;
+                // BepInEx.AudioSourceStateBypass.Bypass = true;
                 try
                 {
                     _src.spatialBlend = _spatialBlend;
@@ -135,7 +135,7 @@ namespace PhononSpatializerProxy
                 }
                 finally
                 {
-                    BepInEx.AudioSourceStateBypass.Bypass = false;
+                    // BepInEx.AudioSourceStateBypass.Bypass = false;
                 }
             }
 

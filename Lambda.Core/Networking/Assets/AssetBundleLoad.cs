@@ -17,7 +17,7 @@ public partial struct AssetBundleLoadPacket : IPacket
     public string id;
 
     [MemoryPackAllowSerialize]
-    public List<Item> itemsToLoad;
+    public List<Item> itemsToLoad; // I think resourcekey is cheaper?
 
     public bool replyWhenLoaded;
 }
@@ -88,6 +88,18 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
         };
 
         DispatchPacket(ref packet, peerId);
+    }
+
+    public void BroadcastMidJoinersItems(List<Item> itemsToLoad)
+    {
+        var packet = new AssetBundleLoadPacket
+        {
+            id = Guid.NewGuid().ToString(),
+            itemsToLoad = itemsToLoad,
+            replyWhenLoaded = false
+        };
+
+        DispatchPacket(ref packet);
     }
 
     protected override async void Apply(AssetBundleLoadPacket packet, int peerId)

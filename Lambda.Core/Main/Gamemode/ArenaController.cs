@@ -105,17 +105,18 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         UnityTicker.OnUpdate += Update;
 
         Session = new SessionManager();
-        
+
+        await Singleton<MapAssetBundleLoader>.Instance.LoadMap("lobby");
+
         if (!H.IsHeadless)
         {
             // SteamAudioInitializer.AttachListenerIfNeeded();
 
-            await Singleton<MapAssetBundleLoader>.Instance.LoadMap("lobby");
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
 
             RuntimeBundleLoader.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
             ClientEquipmentManager.Instance.CapturePreset();
-            
+
             HU.ApplyPainkiller();
 
             H.BackendConfigSettingsClass.AimPunchMagnitude = 1f;

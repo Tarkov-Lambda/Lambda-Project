@@ -76,11 +76,25 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             pContext.SetDefaultItems(packet.defaultItems);
             pContext.SetBuySelection(packet.buySelection);
 
-            // we only need to add buy menu stuff into the cache
-            // because defaultItems is literally the equipment that player has spawned in the raid with
+            List<Item> playerShopItems = new();
             foreach (var shopItem in packet.buySelection)
             {
-                RuntimeBundleLoader.Instance.AddToCache(shopItem.Value);
+                playerShopItems.Add(shopItem.Value);
+            }
+
+            // this logic is here to save on bandwidth
+            bool isLateJoiner = H.Session.matchState >= MatchState.WarmupEnd;
+            if (isLateJoiner)
+            {
+                List<Item> unloadedItems = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(playerShopItems);
+                if (unloadedItems.Count > 0)
+                {
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(unloadedItems);
+                }
+            }
+            else
+            {
+                RuntimeBundleLoader.Instance.AddToCache(playerShopItems);
             }
 
             packet.buySelection = null;
@@ -92,7 +106,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
         if (!IsArenaReady) return;
 
         // does not respect reconnects, todo later
-        bool isNewPlayer = H.Session.matchState >= MatchState.WarmupEnd;
+        bool isLateJoiner = H.Session.matchState >= MatchState.WarmupEnd;
 
         PlayerContext playerContext = H.GetPlayerContext(packet.Player);
 
@@ -117,14 +131,14 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             }
 
             // In case a player is reporting they are connected mid session (reconnects, new joins)
-            if (isNewPlayer)
+            if (isLateJoiner)
             {
                 if (packet.readyState == PlayerReadinessState.Connected)
                 {
                     // get the player up to speed
                     Singleton<SessionStartPacketWarden>.Instance.SendToPeer(peerId);
 
-                    Singleton<FactionChangePacketWarden>.Instance.SendForPlayer(packet.Player, Faction.Spectator);
+                    // Singleton<FactionChangePacketWarden>.Instance.SendForPlayer(packet.Player, Faction.Spectator);
                 }
                 else if (packet.readyState == PlayerReadinessState.Ready)
                 {

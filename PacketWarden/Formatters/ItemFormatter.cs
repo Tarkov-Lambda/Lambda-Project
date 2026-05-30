@@ -46,10 +46,10 @@ public class ItemFormatter : MemoryPackFormatter<Item>
 
             value = EFTItemSerializerClass.DeserializeItem(descriptor, Singleton<ItemFactoryClass>.Instance, []);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            PacketWardenUtils.Log(ex.Message);
-            PacketWardenUtils.Log(ex.StackTrace);
+            // PacketWardenUtils.Log(ex.Message);
+            // PacketWardenUtils.Log(ex.StackTrace);
         }
     }
 }

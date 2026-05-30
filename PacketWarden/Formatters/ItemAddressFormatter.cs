@@ -80,10 +80,10 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             var descriptor = eftReader.ReadPolymorph<GClass1950>();
             value = player.InventoryController.ToItemAddress(descriptor);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            PacketWardenUtils.Log(ex.Message);
-            PacketWardenUtils.Log(ex.StackTrace);
+            // PacketWardenUtils.Log(ex.Message);
+            // PacketWardenUtils.Log(ex.StackTrace);
         }
     }
 }

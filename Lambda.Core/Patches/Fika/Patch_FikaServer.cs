@@ -45,7 +45,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         if (!shooterScore.IsAlive)
         {
-            if (NetworkTime.ServerNowSeconds - shooterScore.DeathTimestamp > 0.05)
+            if (NetworkTime.ServerNowSeconds - shooterScore.DeathTimestamp > 0.025)
                 return false;
         }
 

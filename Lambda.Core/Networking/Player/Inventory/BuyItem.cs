@@ -12,6 +12,7 @@ using MemoryPack;
 using System.Diagnostics;
 using UnityEngine;
 using Comfort.Common;
+using Lambda.Core.Main.Gamemode;
 
 namespace Lambda.Core.Networking;
 
@@ -31,8 +32,29 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
 // all the inventory add logic should just be rewritten from scratch
 public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 {
+    private readonly KeyedDebouncer<int> _resyncDebouncer = new();
+
     protected override bool ShouldNotifyAboutRejection => true;
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.15);
+
+    public BuyItemPacketWarden()
+    {
+        // EventBus.OnEnter += OnMatchStateEnter;
+    }
+
+    public override void Dispose()
+    {
+        // EventBus.OnEnter -= OnMatchStateEnter;
+
+        _resyncDebouncer.Dispose();
+        base.Dispose();
+    }
+
+    // public void OnMatchStateEnter(MatchState state)
+    // {
+    //     if (state is MatchState.Cleanup)
+    //         _resyncDebouncer.Dispose();
+    // }
 
     public void Send(Item item, ItemPlacement placement, Player player)
     {
@@ -113,70 +135,86 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, int peerId)
     {
-        packet.item = packet.item.CloneItem();
-        packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
-
-        if (packet.placement.Kind == PlacementKind.None)
+        try
         {
-            SendRejection(ref packet, peerId, "Can't find placement for your item");
-            return;
-        }
+            packet.item = packet.item.CloneItem();
+            packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
 
-        // this logic needs to be relocated
-        if (packet.item is Weapon weapon)
-        {
-            IU.DowngradeMagIfNeeded(weapon);
-            weapon.SwitchFullAutoIfNeeded();
-            if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            if (packet.placement.Kind == PlacementKind.None)
             {
-                RU.ReplenishGun(weapon, ammo);
-                RU.ReplenishMagazines(weapon, packet.Player, ammo);
+                SendRejection(ref packet, peerId, "Can't find placement for your item");
+                return;
+            }
+
+            // this logic needs to be relocated
+            if (packet.item is Weapon weapon)
+            {
+                IU.DowngradeMagIfNeeded(weapon);
+                RU.SetupWeapon(weapon, packet.Player); // will send off additional mag buyitem packets on its own for the client player
+            }
+            else if (packet.item is HeadwearItemClass headwear)
+            {
+                IU.AttachNightVisionIfNeeded(headwear);
+            }
+            else if (packet.item is ArmorPlateItemClass)
+            {
+                // int availablePlateSlots = packet.Player.CountAvailableArmorPlateSlots();
+                // for (int i = 0; i < availablePlateSlots - 1; i++)  // auto fill other plate slots (buy one plate get all)
+                // {
+                //     var anotherPlatePacket = new BuyItemPacket
+                //     {
+                //         Player = packet.Player,
+                //         item = packet.item,
+                //     };
+                //     DispatchPacket(ref anotherPlatePacket);
+                // }
             }
         }
-        else if (packet.item is HeadwearItemClass headwear)
+        catch (Exception ex)
         {
-            IU.AttachNightVisionIfNeeded(headwear);
-        }
-        else if (packet.item is ArmorPlateItemClass)
-        {
-            int availablePlateSlots = packet.Player.CountAvailableArmorPlateSlots();
-            for (int i = 0; i < availablePlateSlots - 1; i++)  // auto fill other plate slots (buy one plate get all)
-            {
-                var anotherPlatePacket = new BuyItemPacket
-                {
-                    Player = packet.Player,
-                    item = packet.item,
-                };
-                DispatchPacket(ref anotherPlatePacket);
-            }
+            D.Log(ex.StackTrace);
         }
     }
 
     protected override void Apply(BuyItemPacket packet, int peerId)
     {
-        if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+        try
         {
-            H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
-
-            packet.Player.GetContext().AddItemQuantity(itemData);
-        }
-
-        if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
-        {
-            if (packet.Player.HandsController != null)
+            if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
-                packet.Player.HandsController.FastForwardCurrentState();
+                // we deduct money before sending it as a client
+                if (!packet.Player.IsYourPlayer)
+                    H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+
+                packet.Player.GetContext().AddItemQuantity(itemData);
             }
-        }
 
-        var success = packet.Player.PlaceItem(packet.item, packet.placement);
-        if (!success && H.IsClient)
-        {
-            UniTask.RunOnThreadPool(async () =>
+            if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
             {
-                await UniTask.Delay(50);
-                Singleton<EquipmentResyncPacketWarden>.Instance.Send(packet.Player);
-            }).Forget();
+                if (packet.Player.HandsController != null)
+                {
+                    packet.Player.HandsController.FastForwardCurrentState();
+                }
+            }
+
+
+            var success = packet.Player.PlaceItem(packet.item, packet.placement);
+            // if (!success && H.IsClient)
+            // {
+            //     _resyncDebouncer.Debounce(
+            //         packet.Player.Id,
+            //         TimeSpan.FromMilliseconds(500),
+            //         () =>
+            //         {
+            //             D.Notify($"Resynchronizing {packet.Player.Profile.Nickname}'s inventory");
+            //             Singleton<EquipmentResyncPacketWarden>.Instance.Send(packet.Player);
+            //         }
+            //     );
+            // }
+        }
+        catch (Exception ex)
+        {
+            D.Log(ex.StackTrace);
         }
     }
 
@@ -185,89 +223,6 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
             H.GetPlayerScore(packet.Player.Id).AddMoney(itemData.price);
-        }
-    }
-}
-
-// Whilst buying items in raid is one of the most important parts of this mod
-// I do not have the expertise nor the time to learn Tarkov/Fika to correctly find a segment to hook into
-// because of this, I've made this very gnarly system that errors every now and then, but is solvable with equipment resynchronization
-public static class PlayerInventoryTimeGate
-{
-    private static readonly ConcurrentDictionary<int, PlayerQueue> _playerQueues = new();
-
-    public static void Enqueue(int playerId, Action action)
-    {
-        var queue = _playerQueues.GetOrAdd(playerId, id => new PlayerQueue(id));
-        queue.Enqueue(action);
-    }
-
-    public static void ClearAll()
-    {
-        _playerQueues.Clear();
-    }
-
-    private class PlayerQueue(int playerId)
-    {
-        private readonly int _playerId = playerId;
-        private readonly ConcurrentQueue<Action> _queue = new();
-        private int _isProcessing = 0; // 0/1 false/true
-
-        public void Enqueue(Action action)
-        {
-            _queue.Enqueue(action);
-
-            // if the loop isn't running - start it
-            if (Interlocked.Exchange(ref _isProcessing, 1) == 0)
-            {
-                ProcessQueueAsync().Forget();
-            }
-        }
-
-        private async UniTaskVoid ProcessQueueAsync()
-        {
-            try
-            {
-                while (_queue.TryDequeue(out var action))
-                {
-                    Player player = H.GetPlayer(_playerId);
-
-                    float timeout = 3.0f;
-                    while (player.InventoryController.HasActiveEvents && timeout > 0f)
-                    {
-                        await UniTask.DelayFrame(1);
-                        timeout -= Time.deltaTime;
-                    }
-
-                    await UniTask.DelayFrame(1);
-
-                    try
-                    {
-                        action?.Invoke();
-                    }
-                    catch (Exception ex)
-                    {
-                        D.LogError($"[PlayerInventoryTimeGate] Error processing packet: {ex}");
-                        if (H.IsClient) // nightmare fuel spaghetti out here
-                        {
-                            UniTask.RunOnThreadPool(async () =>
-                            {
-                                await UniTask.Delay(50);
-                                Singleton<EquipmentResyncPacketWarden>.Instance.Send(player);
-                            }).Forget();
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                Interlocked.Exchange(ref _isProcessing, 0);
-
-                if (!_queue.IsEmpty && Interlocked.Exchange(ref _isProcessing, 1) == 0)
-                {
-                    ProcessQueueAsync().Forget();
-                }
-            }
         }
     }
 }
