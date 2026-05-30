@@ -13,11 +13,13 @@ using System.Diagnostics;
 using UnityEngine;
 using Comfort.Common;
 using Lambda.Core.Main.Gamemode;
+using System.Collections.Generic;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
 [MemoryPackable]
-public partial struct BuyItemPacket : IPacket, IAuthoredPacket
+public partial struct BuyItemPacket : IPacket, IAuthoredPacket, ITrackablePacket, IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
@@ -27,34 +29,42 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket
 
     [MemoryPackAllowSerialize]
     public Item item;
+
+    public Guid ID { get; set; }
+    public double Timestamp { get; set; }
 }
 
 // all the inventory add logic should just be rewritten from scratch
 public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 {
-    private readonly KeyedDebouncer<int> _resyncDebouncer = new();
+    // private readonly KeyedDebouncer<int> _resyncDebouncer = new();
+
+    public Dictionary<Guid, List<BuyItemPacket>> RoundTransactions { get; private set; } = new();
 
     protected override bool ShouldNotifyAboutRejection => true;
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.15);
 
     public BuyItemPacketWarden()
     {
-        // EventBus.OnEnter += OnMatchStateEnter;
+        EventBus.OnEnter += OnMatchStateEnter;
     }
 
     public override void Dispose()
     {
-        // EventBus.OnEnter -= OnMatchStateEnter;
+        EventBus.OnEnter -= OnMatchStateEnter;
 
-        _resyncDebouncer.Dispose();
+        // _resyncDebouncer.Dispose();
         base.Dispose();
     }
 
-    // public void OnMatchStateEnter(MatchState state)
-    // {
-    //     if (state is MatchState.Cleanup)
-    //         _resyncDebouncer.Dispose();
-    // }
+    public void OnMatchStateEnter(MatchState state)
+    {
+        if (state is MatchState.Cleanup)
+        {
+            // RoundTransactions.Clear();
+            // _resyncDebouncer.Dispose();
+        }
+    }
 
     public void Send(Item item, ItemPlacement placement, Player player)
     {
@@ -139,6 +149,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             packet.item = packet.item.CloneItem();
             packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
+            packet.Timestamp = NetworkTime.ServerNowSeconds;
 
             if (packet.placement.Kind == PlacementKind.None)
             {
@@ -211,6 +222,8 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             //         }
             //     );
             // }
+
+            // SaveTransaction(packet);
         }
         catch (Exception ex)
         {
@@ -224,5 +237,17 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             H.GetPlayerScore(packet.Player.Id).AddMoney(itemData.price);
         }
+    }
+
+    // save the transaction in case the player requests a refund
+    private void SaveTransaction(BuyItemPacket packet)
+    {
+        if (!RoundTransactions.TryGetValue(packet.ID, out var transactions))
+        {
+            transactions = new List<BuyItemPacket>();
+            RoundTransactions[packet.ID] = transactions;
+        }
+
+        transactions.Add(packet);
     }
 }

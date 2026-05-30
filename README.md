@@ -1,6 +1,6 @@
 ## Credits
-- **ifp**: Core • Gamemodes • Equipment • Networking • Steam Audio
-- **tarkin**: Core • UI/UX • Map SDK • Mentor
+- **ifp**: Core • Gamemodes • Equipment • Networking • Maps • Steam Audio
+- **tarkin**: Core • UI/UX • Maps • Mentor
 
 ## Features
 

@@ -9,7 +9,10 @@ QOL
 3. Rework Inventory Resetter
 4. Implement overtime
 5. Work on side swap, match end UI
-6. 
+
+Steam Audio & Better Source
+1. Finalize Main Thread data collection
+2. Synchronize spatial/non-spatial audio sources
 
 Editor & Core
 1. Implement multi-scene workflow

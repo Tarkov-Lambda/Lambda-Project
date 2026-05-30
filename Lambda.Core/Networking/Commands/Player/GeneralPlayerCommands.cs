@@ -1,6 +1,7 @@
 using Comfort.Common;
 using EFT;
 using Lambda.Core;
+using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
 using Lambda.Core.Networking.Commands;
 using PacketWarden;
@@ -57,5 +58,11 @@ public static class GeneralPlayerCommands
         H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 1f);
         Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
         H.MainPlayer.GetComponent<EftGamePlayerOwner>().Mute(false);
+    }
+
+    [ChatCommand("unstuck", "Teleport yourself back into spawn", CommandTarget.ClientOnly, PacketAuthority.Anyone)]
+    public static void Unstuck(CommandContext ctx)
+    {
+        Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
     }
 }
