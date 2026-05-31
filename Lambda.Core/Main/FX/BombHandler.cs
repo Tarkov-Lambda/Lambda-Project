@@ -103,7 +103,6 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void PlayBombAudio(BombStatePacket packet)
     {
-
         Vector3 pos = Vector3.zero;
         AudioClip clip = null;
         bool shouldPlay = true;
@@ -189,7 +188,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                 if (token.IsCancellationRequested)
                     break;
 
-                H.AudioHandler.PlayAtPoint(pos, clip, 75);
+                H.AudioHandler.PlayAtPoint(pos, clip, 75, default, 0.5f);
             }
         }
         catch (OperationCanceledException)

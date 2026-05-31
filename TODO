@@ -18,6 +18,7 @@ Editor & Core
 1. Implement multi-scene workflow
 2. Rework MapAssetBundleHandler to load multiple bundles from one folder
 3. Rework smokes
+4. Implement Lambda Camera Manager
 
 Hardpoint
 1. Finish Respawn Manager

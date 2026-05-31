@@ -57,6 +57,7 @@ namespace Lambda.Shared.Models
     public partial struct PlayerCombat
     {
         public bool IsAlive;
+        public bool IsCarryingBomb;
 
         public int Kills;
         public int Damage;

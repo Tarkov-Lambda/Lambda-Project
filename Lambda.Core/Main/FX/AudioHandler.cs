@@ -29,6 +29,8 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
     public AudioHandler()
     {
         AudioBundle = AssetBundle.LoadFromFile(AudioBundlePath);
+        if (AudioBundle == null)
+            D.LogError("CRITICAL ERROR: Audio Bundle is missing!");
         PrefabSounds = AudioBundle.LoadAsset<LambdaSounds>(PREFAB_SOUNDS_PATH);
         MusicKitSounds = AudioBundle.LoadAsset<MusicKit>(MUSIC_KIT_SOUNDS_PATH);
     }
@@ -39,7 +41,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
         Release(this);
     }
 
-    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 75, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Weaponry)
+    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 75, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Weaponry, float volume = 1f)
     {
         return H.BetterAudio.PlayAtPoint(
             pos,
@@ -47,7 +49,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
             distance: CameraClass.Instance.Distance(pos),
             sourceGroup: overrideSourceGroup,
             rolloff: rolloff,
-            volume: 1f
+            volume: volume
         );
     }
 

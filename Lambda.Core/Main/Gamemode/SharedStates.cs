@@ -58,12 +58,11 @@ public class SharedWarmup : IGameState
 
         bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
 
-        if (allReady) return MatchState.WarmupEnd;
-        if (remaining <= 0)
-            return MatchState.WarmupEnd;
+        // if (allReady) return MatchState.WarmupEnd;
 
-        if (elapsed >= 15f && allReady)
-            return MatchState.WarmupEnd;
+        if (remaining <= 0) return MatchState.WarmupEnd;
+
+        if (elapsed >= 8f && allReady) return MatchState.WarmupEnd;
 
         return null;
     }
@@ -153,12 +152,6 @@ public class SharedCleanup : IGameState
     public MatchState StateType => MatchState.Cleanup;
     public virtual void OnEnter()
     {
-        // if (!H.IsHeadless)
-        // {
-        //     H.MainPlayer.SetEmptyHands(delegate { });
-        // }
-
-
         int totalRounds = H.Session.factionWins.Values.Sum();
         bool isHalfTime = false;
         if (H.Gamemode is IGMRound roundBased and IGMSideSwappable)
@@ -219,32 +212,29 @@ public class SharedCleanup : IGameState
             }
         }
 
-        if (!H.IsHeadless)
+        UniTask.Void(async () =>
         {
-            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+            await UniTask.Delay(250);
 
-            UniTask.Void(async () =>
+            IU.GarbageCollectWorldLoot();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            if (!H.IsHeadless)
             {
-                await UniTask.Delay(250);
-
-                IU.GarbageCollectWorldLoot();
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
+                H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
                 await UniTask.Delay(500);
 
                 HU.HealMe().Forget();
-                if (H.MainPlayer.MovementContext.IsInPronePose)
-                {
-                    H.MainPlayer.MovementContext.IsInPronePose = false;
-                }
+                if (H.MainPlayer.MovementContext.IsInPronePose) H.MainPlayer.MovementContext.IsInPronePose = false;
 
                 H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
                 await UniTask.Delay(750);
                 Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
-            });
-        }
+            }
+        });
     }
     public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public virtual void OnExit() { }
@@ -265,7 +255,7 @@ public class SharedPrepare : IGameState
     {
         if (!H.IsHeadless)
         {
-            Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
+            // Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
 
             PU.OpenEyes();
 

@@ -137,6 +137,11 @@ public class PlayerContext
         context.Identity.LoadingProgress = loadingProgress;
     }
 
+    public void ChangeBombCarryState(bool IsCarryingBomb)
+    {
+        context.Combat.IsCarryingBomb = IsCarryingBomb;
+    }
+
     public void SetClanTag(string newClanTag)
     {
         if (newClanTag.IsNullOrEmpty()) return;

@@ -126,10 +126,10 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_ActiveHealthController_ApplyDamage());              // Cache last damage packet, multiply flame damage, negate blacked out limbs damage
         RegisterPatch(new Patch_ActiveHealthController_Kill());                     // Bypass Dying entirely
 
-        RegisterPatch(new Patch_ActiveHealthController_DoFracture());              // Do not add fracture
-        RegisterPatch(new Patch_ActiveHealthController_DoBleedGeneric());          // Do not add bleeding
-        RegisterPatch(new Patch_ActiveHealthController_DoBleed_HeavyBleeding());   // Do not add bleeding
-        RegisterPatch(new Patch_ActiveHealthController_DoBleed_LightBleeding());   // Do not add bleeding
+        RegisterPatch(new Patch_ActiveHealthController_DoFracture());               // Do not add fracture
+        RegisterPatch(new Patch_ActiveHealthController_DoBleedGeneric());           // Do not add bleeding
+        RegisterPatch(new Patch_ActiveHealthController_DoBleed_HeavyBleeding());    // Do not add bleeding
+        RegisterPatch(new Patch_ActiveHealthController_DoBleed_LightBleeding());    // Do not add bleeding
 
         // Procedural BlindFire
         RegisterPatch(new Patch_ProceduralWeaponAnimation_ProcessEffectors());      // Reduce Bobbing/inertia motion for pistols
@@ -144,6 +144,8 @@ public class LambdaPlugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_Class1396_method_3());                           // In edge cases where the hands controller gets bugged out - we hard reset it
         // RegisterPatch(new Patch_GClass2037_Start());                             // In edge cases where the hands controller gets bugged out - we hard reset it
+
+        // RegisterPatch(new Patch_Player_OnItemAddedOrRemoved());                     // Track whether the player has a bomb
 
         RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
         RegisterPatch(new Patch_Player_UpdateTick());                               // If the item can't be picked up -> unlock the player movement

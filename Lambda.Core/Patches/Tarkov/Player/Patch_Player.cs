@@ -1,6 +1,7 @@
 ﻿using EFT;
 using EFT.Animations;
 using EFT.EnvironmentEffect;
+using EFT.InventoryLogic;
 using Fika.Core.Main.Players;
 using HarmonyLib;
 using SPT.Reflection.Patching;
@@ -93,7 +94,7 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
         bool didHitHelmet = shot.BlockedBy != null;
 
         AudioClip[] clips = didHitHelmet ? H.Sounds.HeadshotHelmet : H.Sounds.HeadshotFlesh;
-        H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 50, BetterAudio.AudioSourceGroupType.Character);
+        H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 50, BetterAudio.AudioSourceGroupType.Collisions);
     }
 
     public void Dispose()
@@ -140,6 +141,23 @@ public class Patch_Player_UpdateTick : ModulePatch
         {
             _lockTimer = 0f;
             _lastState = currentState;
+        }
+    }
+}
+
+public class Patch_Player_OnItemAddedOrRemoved : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.OnItemAddedOrRemoved));
+
+    [PatchPostfix]
+    public static void Postfix(Player __instance, Item item, ItemAddress location, bool added)
+    {
+        var pContext = __instance.GetContext();
+        if (pContext == null) return;
+
+        if (item.TemplateId == Hardcode.BOMB_BACKPACK)
+        {
+            pContext.ChangeBombCarryState(added);
         }
     }
 }
