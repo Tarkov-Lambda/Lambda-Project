@@ -17,7 +17,7 @@ internal class Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer : M
     {
         if (serverStatus.Status == EOperationStatus.Failed && serverStatus.Error.StartsWith("Could not find item"))
         {
-            Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer);
+            Singleton<EquipmentResyncPacketWarden>.Instance.Send(__instance.InventoryController.FikaPlayer); // maybe this works?
         }
     }
 }

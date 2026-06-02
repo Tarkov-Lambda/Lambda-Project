@@ -1,5 +1,4 @@
 using EFT;
-using EFT.AssetsManager;
 using EFT.InventoryLogic;
 using MemoryPack;
 using PacketWarden.RateLimiting;
@@ -35,7 +34,7 @@ public partial struct EquipmentResyncPacket : IPacket
     public Dictionary<EquipmentSlot, ItemAndAddress> Equipment;
 
     [MemoryPackAllowSerialize]
-    public Item WeaponInHands;
+    public Item WeaponInHands; // reduntant but idrc
 
     public EquipmentResyncRequestType type;
 }
@@ -56,9 +55,14 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         EquipmentSlot.Backpack,
         EquipmentSlot.Scabbard,
         EquipmentSlot.Pockets,
+        EquipmentSlot.ArmBand
     ];
 
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.1, RateLimitAction.Drop);
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.1, RateLimitAction.Reject);
+
+#if DEBUG
+    protected override bool ShouldLog => true;
+#endif
 
     public void Send(Player player, EquipmentResyncRequestType type = EquipmentResyncRequestType.ClientRequest)
     {
@@ -137,7 +141,14 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
     {
         Player player = packet.Player;
 
-        player.UnfuckHands();
+        try
+        {
+            // this has the ability to obliterate some callback shit that has to do either with movement context or procedural weapon animation
+            // but it doesn't seem to be fatal and idgaf atm
+            // god knows I need more hands
+            player.UnfuckHands();
+        }
+        catch (Exception) { }
 
         foreach (var slotType in resyncableSlots)
         {
@@ -156,9 +167,14 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                 slot.AddWithoutRestrictions(itemAndAddress.item);
                 itemAndAddress.address.RaiseForceAdd(itemAndAddress.item, player);
 
-                if (player.IsYourPlayer)
+                try
                 {
                     player.AutoExamineAndSearch(itemAndAddress.item);
+
+                }
+                catch (Exception ex)
+                {
+                    D.Log(ex.StackTrace);
                 }
             }
         }

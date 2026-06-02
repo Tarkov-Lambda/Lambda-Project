@@ -62,7 +62,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
             {
                 _lastTickSecond = currentSecond;
 
-                if (H.Sounds?.CountdownTick != null && H.Sounds.CountdownTick.Length > 0)
+                if (H.Sounds != null && H.Sounds.CountdownTick != null && H.Sounds.CountdownTick.Length > 0)
                 {
                     AudioClip tickClip = H.Sounds.CountdownTick.RandomElement();
                     PlaySFX(tickClip, 0.5f);

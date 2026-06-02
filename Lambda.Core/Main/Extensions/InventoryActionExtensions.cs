@@ -306,8 +306,10 @@ public static class InventoryActionExtensions
 
         foreach (var item in allItems)
         {
+            // continue if we already searched this item
             if (searchController.Dictionary_0.TryGetValue(item, out var value) && value.Equals(item.Parent))
                 continue;
+
             searchController.SetItemAsKnown(item, true);
             if (item is SearchableItemItemClass searchable)
             {

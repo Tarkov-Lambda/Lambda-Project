@@ -41,8 +41,12 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 
     public Dictionary<Guid, List<BuyItemPacket>> RoundTransactions { get; private set; } = new();
 
-    protected override bool ShouldNotifyAboutRejection => true;
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.15);
+
+#if DEBUG
+    protected override bool ShouldLog => true;
+#endif
+    protected override bool ShouldNotifyAboutRejection => true;
 
     public BuyItemPacketWarden()
     {
@@ -99,6 +103,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 }
             }
 
+            // TODO: better tracking for this
             // if (packet.item is HeadwearItemClass)
             // {
             //     if (packet.Player.CountAvailableArmorPlateSlots() > 0)
@@ -111,37 +116,6 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
-
-
-    // // SERVER: Wait for the host's representation of the player's inventory to settle, then mutate and broadcast.
-    // protected override void ProcessApprovedPacket(ref BuyItemPacket packet, int peerId)
-    // {
-    //     int playerId = packet.Player.Id;
-    //     var localPacket = packet;
-
-    //     PlayerInventoryTimeGate.Enqueue(playerId, () =>
-    //     {
-    //         MutateApprovedPacket(ref localPacket, peerId); // THIS CAN REJECT IF PLACEMENT IS NOT FOUND
-    //         if (localPacket.placement.Kind == PlacementKind.None)
-    //         {
-    //             SendRejection(ref localPacket, peerId, "Can't find placement for your item");
-    //             return;
-    //         }
-
-    //         PacketWardenUtils.Network.SendData(ref localPacket, DeliveryType, true);
-    //         ApplyInternal(localPacket, peerId);
-    //     });
-    // }
-
-    // // CLIENT: Wait for the observing client's representation of the player's inventory to settle, then apply locally.
-    // // I don't know if this will play nicely, but it's "good enough" for now
-    // protected override void WhenClientReceivesPacket(BuyItemPacket packet, int peerId)
-    // {
-    //     int playerId = packet.Player.Id;
-    //     var localPacket = packet;
-
-    //     PlayerInventoryTimeGate.Enqueue(playerId, () => base.WhenClientReceivesPacket(localPacket, peerId));
-    // }
 
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, int peerId)
     {
@@ -157,7 +131,6 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 return;
             }
 
-            // this logic needs to be relocated
             if (packet.item is Weapon weapon)
             {
                 IU.DowngradeMagIfNeeded(weapon);

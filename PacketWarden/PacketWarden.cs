@@ -43,13 +43,18 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     private readonly TokenBucketRateLimiter<int> _serverRateLimiter = new();
 
     #region Configuration
+    // Rate Limiting runs on the main thread
+    // this means that if LNL sees a packet coming in - out of order (in case it's ReliableOrdered)
+    // then it will await until the previous packets come in
+    // this will ultimately result in packets being incorrectly flagged as coming too fast, and be rejected
+    // in most cases this is fine, but FYI
     /// <summary>Defines the rate limiting policy for this packet on the server side. Defaults to Disabled.</summary>
     protected virtual RateLimitConfig ServerRateLimit => RateLimitPresets.Disabled;
 
     protected virtual DeliveryType DeliveryType => DeliveryType.ReliableOrdered;
     protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
-    protected virtual bool ShouldLog => true;
+    protected virtual bool ShouldLog => false;
     protected virtual bool ShouldNotifyAboutRejection => false;
     #endregion
 
@@ -150,7 +155,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         if (!Network.IsHeadless && IsUnauthorized(H.MainPlayer.Id)) return;
 
 #if DEBUG
-        if (ShouldLog) H.Log($"Sending {typeof(T).Name} at {DateTime.UtcNow}");
+        if (ShouldLog) H.Log($"[PacketWarden] Sending {typeof(T).Name} at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds} ");
 #endif
 
         ApplyOptimisticallyInternal(packet);
@@ -194,7 +199,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     protected void WhenServerReceivesPacket(T packet, int peerId)
     {
 #if DEBUG
-        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} from Peer {peerId}");
+        if (ShouldLog) H.Log($"[PacketWarden] Receiving {typeof(T).Name} from Peer {peerId} at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}");
 #endif
 
         if (!TryPassServerRateLimit(packet, peerId))
@@ -245,7 +250,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
             case RateLimitAction.Drop:
                 return false;
             case RateLimitAction.Reject:
-                if (canSendReject) SendRejection(ref packet, peerId, "You've been rate limited.");
+                if (canSendReject) SendRejection(ref packet, peerId, $"You've been rate limited. ({typeof(T).Name})");
                 return false;
             case RateLimitAction.Disconnect:
                 Network.DisconnectPeer(peerId);
@@ -339,7 +344,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     protected virtual void WhenClientReceivesPacket(T packet, int peerId)
     {
 #if DEBUG
-        if (ShouldLog) H.Log($"Receiving {typeof(T).Name} from Server");
+        if (ShouldLog) H.Log($"[PacketWarden] Receiving {typeof(T).Name} from Server at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}");
 #endif
         ApplyInternal(packet, peerId);
     }
