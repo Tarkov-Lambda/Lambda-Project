@@ -99,14 +99,14 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 }
             }
 
-            if (packet.item is HeadwearItemClass)
-            {
-                if (packet.Player.CountAvailableArmorPlateSlots() > 0)
-                {
-                    rejectionReason = $"You must buy armor first";
-                    return false;
-                }
-            }
+            // if (packet.item is HeadwearItemClass)
+            // {
+            //     if (packet.Player.CountAvailableArmorPlateSlots() > 0)
+            //     {
+            //         rejectionReason = $"You must buy armor first";
+            //         return false;
+            //     }
+            // }
         }
 
         return base.ValidatePacket(packet, peerId, out rejectionReason);
@@ -191,23 +191,30 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     {
         try
         {
-            if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
+            try
             {
-                // we deduct money before sending it as a client
-                if (!packet.Player.IsYourPlayer)
-                    H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
-
-                packet.Player.GetContext().AddItemQuantity(itemData);
-            }
-
-            if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
-            {
-                if (packet.Player.HandsController != null)
+                if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
                 {
-                    packet.Player.HandsController.FastForwardCurrentState();
+                    // we deduct money before sending it as a client
+                    if (!packet.Player.IsYourPlayer)
+                        H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+
+                    packet.Player.GetContext().AddItemQuantity(itemData);
+                }
+
+
+                if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
+                {
+                    if (packet.Player.HandsController != null)
+                    {
+                        packet.Player.HandsController.FastForwardCurrentState();
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                D.Log(ex.StackTrace);
+            }
 
             var success = packet.Player.PlaceItem(packet.item, packet.placement);
             // if (!success && H.IsClient)

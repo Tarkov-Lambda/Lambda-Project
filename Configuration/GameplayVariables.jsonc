@@ -22,4 +22,6 @@
   "TimeBetweenNodes": 0.15,
   "MaxStepHeight": 0.5,
   "MaxDropHeight": 2.0
+  
+  // "KillTradeWindow": 0.25
 }

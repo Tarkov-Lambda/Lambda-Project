@@ -49,7 +49,7 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     protected virtual DeliveryType DeliveryType => DeliveryType.ReliableOrdered;
     protected virtual PacketAuthority Authority => PacketAuthority.Anyone;
 
-    protected virtual bool ShouldLog => false;
+    protected virtual bool ShouldLog => true;
     protected virtual bool ShouldNotifyAboutRejection => false;
     #endregion
 

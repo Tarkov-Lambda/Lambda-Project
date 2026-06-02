@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Comfort.Common;
 using Lambda.Core;
-using MemoryPack;
+using Lambda.Core.Networking;
 using Newtonsoft.Json;
 
 public static class GameplayVariables

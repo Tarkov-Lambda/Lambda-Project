@@ -62,4 +62,14 @@ public static class AdminCommands
         };
         Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
     }
+
+    [ChatCommand("svar_set", "synchronize all variables", CommandTarget.ClientOnly, PacketAuthority.Admin)]
+    public static void GameplayVariableResynchronization(CommandContext ctx, string svar_name, string svar_value)
+    {
+        var success = GameplayVariables.SetFieldValue(svar_name, svar_value);
+        if (success)
+        {
+            Singleton<GameplayVariablesSyncPacketWarden>.Instance.Send();
+        }
+    }
 }

@@ -25,6 +25,8 @@ public partial struct GameplayVariablesStruct
     public float TimeBetweenNodes;
     public float MaxStepHeight;
     public float MaxDropHeight;
+
+    // public double KillTradeWindow;
 }
 
 [MemoryPackable]

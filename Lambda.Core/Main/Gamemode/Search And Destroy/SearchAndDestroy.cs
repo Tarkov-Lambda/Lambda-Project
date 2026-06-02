@@ -145,7 +145,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public bool CanBuyInActivePhase { get; set; } = true;
 
-    public int TimeInActivePhaseToBuy { get; set; } = 10;
+    public int TimeInActivePhaseToBuy { get; set; } = 20;
 
     public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
 
@@ -158,13 +158,9 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         {MatchState.None, 0},
         {MatchState.Warmup, 120},
         {MatchState.WarmupEnd, 5},
-        {MatchState.Cleanup, 3},
+        {MatchState.Cleanup, 5},
         {MatchState.Pause, 600},
-#if DEBUG
-        {MatchState.RoundPrepare, 5},
-#else
         {MatchState.RoundPrepare, 15},
-#endif
         {MatchState.RoundAction, 115},
         {MatchState.RoundEnd, 7},
         {MatchState.RoundPlanted, 45},

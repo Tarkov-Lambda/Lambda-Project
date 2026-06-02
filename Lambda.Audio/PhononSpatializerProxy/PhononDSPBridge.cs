@@ -4,6 +4,8 @@ using UnityEngine;
 using SteamAudio;
 using Unity.Profiling;
 
+#pragma warning disable IDE1006 // 
+
 namespace PhononSpatializerProxy
 {
     [RequireComponent(typeof(AudioSource))]

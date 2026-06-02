@@ -257,8 +257,7 @@ public static class InventoryActionExtensions
 
         player.AutoExamineAndSearch(item);
 
-        placement.Address.RaiseAddEvent(item, CommandStatus.Begin, player.InventoryController);
-        placement.Address.RaiseAddEvent(item, CommandStatus.Succeed, player.InventoryController);
+        placement.Address.RaiseForceAdd(item, player);
 
         if (placement.Kind == PlacementKind.ArmorPlate) player.TryRecalculateEquippedArmorComponents();
 

@@ -9,9 +9,10 @@ QOL
 3. Rework Inventory Resetter
 4. Implement overtime
 5. Work on side swap, match end UI
+6. Gifting and Refunding UI
 
 Steam Audio & Better Source
-1. Finalize Main Thread data collection
+1. Finalize Main Thread data collection rework
 2. Synchronize spatial/non-spatial audio sources
 
 Editor & Core
