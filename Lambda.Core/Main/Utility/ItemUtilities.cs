@@ -235,7 +235,7 @@ public static class ItemUtilities
                 togglableComponent?.ForceToggle(true);
 
                 slot.AddWithoutRestrictions(nvg);
-                break; // Added break: Once NVGs are attached to the slot, no need to keep checking other slots.
+                break;
             }
         }
     }

@@ -149,20 +149,20 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public bool IsNightTime => H.Session.GetRoundIndexOfTheCurrentHalf() >= 9;
 
-    public static float platingTime = 4.5f;
-    public static float defusingTime = 10f;
-    public static float defuseRadius = 2.5f;
+    public static float PlatingTime { get; } = 4.5f;
+    public static float DefusingTime { get; } = 10f;
+    public static float DefuseRadius { get; } = 2.5f;
 
     public override Dictionary<MatchState, float> StateTimerConfig { get; } = new()
     {
         {MatchState.None, 0},
         {MatchState.Warmup, 120},
         {MatchState.WarmupEnd, 5},
-        {MatchState.Cleanup, 5},
+        {MatchState.Cleanup, 6},
         {MatchState.Pause, 600},
         {MatchState.RoundPrepare, 15},
         {MatchState.RoundAction, 115},
-        {MatchState.RoundEnd, 7},
+        {MatchState.RoundEnd, 8},
         {MatchState.RoundPlanted, 45},
         {MatchState.SideSwap, 5},
         {MatchState.MatchEnd, 15}

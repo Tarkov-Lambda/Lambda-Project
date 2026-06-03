@@ -50,7 +50,7 @@ internal static class CustomInteractions
             if (H.MainPlayer.IsInPronePose) return true;
 
             bool hasKit = TryFindItem(Hardcode.DEFUSE_KIT, out Item defuseKit);
-            float time = hasKit ? SNDGamemode.defusingTime / 2 : SNDGamemode.defusingTime;
+            float time = hasKit ? SNDGamemode.DefusingTime / 2 : SNDGamemode.DefusingTime;
 
             actions.Actions.Add(new ActionsTypesClass
             {
@@ -67,7 +67,7 @@ internal static class CustomInteractions
             if (roundState != MatchState.RoundAction) return true;
             if (!TryFindItem(Hardcode.BOMB_BACKPACK, out Item bomb)) return true;
 
-            float time = SNDGamemode.platingTime;
+            float time = SNDGamemode.PlatingTime;
 
             actions.Actions.Add(new ActionsTypesClass
             {

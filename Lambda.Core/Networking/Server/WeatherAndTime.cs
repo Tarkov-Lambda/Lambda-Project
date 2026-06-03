@@ -60,8 +60,8 @@ public class WeatherAndTimeSyncPacketWarden : LambdaPacketWarden<WeatherAndTimeP
 
 public static class TimeOfDayHelper
 {
-    private const double DAY_START = 15 * 60;
-    private const double DAY_END = 18 * 60;
+    private const double DAY_START = 16 * 60;
+    private const double DAY_END = 19 * 60;
 
     private const double NIGHT_START = 0;      // 00:00
     private const double NIGHT_END = 3 * 60;   // 03:00

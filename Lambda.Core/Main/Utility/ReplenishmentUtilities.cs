@@ -92,7 +92,7 @@ public static class ReplenishmentUtilities
         }
     }
 
-    public static void SetupWeaponImmediate(Weapon weapon, Player player)
+    public static void SetupWeaponLocally(Weapon weapon, Player player)
     {
         weapon.SwitchFullAutoIfNeeded();
 

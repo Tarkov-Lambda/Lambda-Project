@@ -13,7 +13,7 @@ namespace Lambda.Core.Main.Gamemode;
 
 public class InventoryManager
 {
-    public static void EnforceOnePrimaryAtMost(Player player, ref List<Item> itemsToRemove)
+    public static void EnforceOnePrimaryWeaponAtMost(Player player, ref List<Item> itemsToRemove)
     {
         var firstPrimaryWeapon = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
         var secondPrimaryWeapon = player.GetSlotItem(EquipmentSlot.SecondPrimaryWeapon) as Weapon;
@@ -36,7 +36,7 @@ public class InventoryManager
         AddRange(ref itemsToRemove, player.GetNonMatchingMags());
         if (firstPrimaryWeapon != null)
         {
-            RU.SetupWeaponImmediate(firstPrimaryWeapon, player);
+            RU.SetupWeaponLocally(firstPrimaryWeapon, player);
             firstPrimaryWeapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
         }
     }
@@ -45,7 +45,7 @@ public class InventoryManager
     {
         List<Item> itemsToRemove = [];
 
-        EnforceOnePrimaryAtMost(player, ref itemsToRemove);
+        EnforceOnePrimaryWeaponAtMost(player, ref itemsToRemove);
 
         var backpack = player.GetSlotItem(EquipmentSlot.Backpack);
         AddItem(ref itemsToRemove, backpack);
@@ -65,7 +65,7 @@ public class InventoryManager
             pistol = defaultPistol;
         }
 
-        RU.SetupWeaponImmediate(pistol, player);
+        RU.SetupWeaponLocally(pistol, player);
 
         if (H.IsNightTime)
         {
@@ -73,8 +73,7 @@ public class InventoryManager
             var Headwear = player.GetSlotItem(EquipmentSlot.Headwear);
             if (Headwear != null && Headwear.TemplateId == Hardcode.HELMET)
             {
-                var HelmetWithNVGs = PresetItemsCache.Instance.GetPresetItem(Headwear.TemplateId).CloneItem() as HeadwearItemClass;
-                IU.AttachNightVisionIfNeeded(HelmetWithNVGs);
+                IU.AttachNightVisionIfNeeded(Headwear as HeadwearItemClass);
             }
             else
             {
@@ -105,6 +104,8 @@ public class InventoryManager
         }
 
         AddRange(ref itemsToRemove, player.GetVestAndPocketGridItems<Item>().ToList());
+
+        itemsToRemove.Reverse();
 
         foreach (var itemToRemove in itemsToRemove)
         {
@@ -143,7 +144,7 @@ public class InventoryManager
         PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
         var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
         pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-        RU.SetupWeaponImmediate(defaultPistol, player);
+        RU.SetupWeaponLocally(defaultPistol, player);
 
         IU.AddArmbandIfNeeded(player);
     }

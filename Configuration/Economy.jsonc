@@ -140,13 +140,13 @@
     "items": [
       {
         "bsgId": "5a367e5dc4a282000e49738f",
-        "ammoId": "5e023e53d4353e3302577c4c",
+        "ammoId": "58dd3ad986f77403051cba8f",
         "price": 1800,
         "faction": "T"
       },
       {
         "bsgId": "5a367e5dc4a282000e49738f",
-        "ammoId": "5e023e53d4353e3302577c4c",
+        "ammoId": "58dd3ad986f77403051cba8f",
         "price": 2050,
         "faction": "CT"
       },
@@ -164,7 +164,7 @@
       },
       {
         "bsgId": "5b0bbe4e5acfc40dc528a72d",
-        "ammoId": "5e023e53d4353e3302577c4c",
+        "ammoId": "58dd3ad986f77403051cba8f",
         "price": 3000,
         "faction": "T"
       },
@@ -176,7 +176,7 @@
       },
       {
         "bsgId": "65290f395ae2ae97b80fdf2d",
-        "ammoId": "6529302b8c26af6326029fb7",
+        "ammoId": "6529243824cbe3c74a05e5c1",
         "price": 4000
       },
       {
@@ -209,14 +209,14 @@
       },
       {
         "bsgId": "617fd91e5539a84ec44ce155",
-        "price": 400,
+        "price": 50000,
         "maxQuantity": 1,
         "maxBuy": 1,
         "faction": "T"
       },
       {
         "bsgId": "617fd91e5539a84ec44ce155",
-        "price": 500,
+        "price": 50000,
         "maxQuantity": 1,
         "maxBuy": 1,
         "faction": "CT"
