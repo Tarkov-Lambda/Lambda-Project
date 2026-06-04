@@ -39,7 +39,6 @@ public partial struct EquipmentResyncPacket : IPacket
     public EquipmentResyncRequestType type;
 }
 
-// TODO: include optional item in hands address for clients if this is requested in round
 public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPacket>
 {
     private readonly EquipmentSlot[] resyncableSlots = [

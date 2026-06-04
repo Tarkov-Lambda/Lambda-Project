@@ -109,6 +109,6 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
             announcement = $"{packet.Player.Profile.Nickname} asked for the bomb.";
         }
 
-        Singleton<ServerMessagePacketWarden>.Instance.SendToFaction(AssignedPlayer.GetContext().Faction, announcement);
+        Singleton<GenericMessagePacketWarden>.Instance.SendToFaction(AssignedPlayer.GetContext().Faction, announcement);
     }
 }

@@ -17,7 +17,7 @@ public partial struct ServerMessagePacket : IPacket
 }
 
 // Handles all server originated messages (Session, Economy, etc)
-public class ServerMessagePacketWarden : LambdaPacketWarden<ServerMessagePacket>
+public class GenericMessagePacketWarden : LambdaPacketWarden<ServerMessagePacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 

@@ -17,7 +17,7 @@ public partial struct SessionStartPacket : IPacket
 {
     public string level;
     public string gamemode;
-    public List<Item> itemsToLoad; // this needs to change to ResourceKeys
+    public List<Item> itemsToLoad; // this needs to change to ResourceKeys (если это ваще имеет смысл)
     public bool isForLateJoiner;
 }
 
@@ -134,6 +134,10 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         else if (gamemodeName == "HardpointGamemode")
         {
             return new HardpointGamemode();
+        }
+        else if (gamemodeName == "KnifeOnlyGamemode")
+        {
+            return new KnifeOnlyGamemode();
         }
         else
         {

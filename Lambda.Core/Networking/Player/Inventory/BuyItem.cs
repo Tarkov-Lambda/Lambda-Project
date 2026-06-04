@@ -34,7 +34,7 @@ public partial struct BuyItemPacket : IPacket, IAuthoredPacket, ITrackablePacket
     public double Timestamp { get; set; }
 }
 
-// all the inventory add logic should just be rewritten from scratch
+// да заебато все работает че доебался то
 public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 {
     // private readonly KeyedDebouncer<int> _resyncDebouncer = new();
@@ -142,6 +142,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             }
             else if (packet.item is ArmorPlateItemClass)
             {
+                // server crashes somehow because of this afaik
                 // int availablePlateSlots = packet.Player.CountAvailableArmorPlateSlots();
                 // for (int i = 0; i < availablePlateSlots - 1; i++)  // auto fill other plate slots (buy one plate get all)
                 // {

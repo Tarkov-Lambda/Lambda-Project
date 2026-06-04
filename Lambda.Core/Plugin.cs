@@ -260,7 +260,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterSingleton<AdminLoginPacketWarden>();                                // Allow clients to elevate their priviledges
         RegisterSingleton<SessionPausePacketWarden>();                              // Create a timeout
         RegisterSingleton<WeatherAndTimeSyncPacketWarden>();                        // Sync time of day between rounds
-        RegisterSingleton<ServerMessagePacketWarden>();                              // Server sends an announcement message
+        RegisterSingleton<GenericMessagePacketWarden>();                              // Server sends an announcement message
         RegisterSingleton<ShutdownAnnouncementPacketWarden>();                      // Server announces imminent shutdown
         RegisterSingleton<MoneyResyncPacketWarden>();                               // Server dictates new money amount for a specific player
         RegisterSingleton<ReconnectSnapshotterResetPacketWarden>();                 // Duct Tape

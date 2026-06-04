@@ -187,7 +187,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
         if (H.IsServer)
         {
-            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer($"Your priviledges have been elevated.", PacketWardenUtils.Network.GetPeerIdByPlayer(packet.Player));
+            Singleton<GenericMessagePacketWarden>.Instance.SendToPeer($"Your priviledges have been elevated.", PacketWardenUtils.Network.GetPeerIdByPlayer(packet.Player));
         }
     }
 

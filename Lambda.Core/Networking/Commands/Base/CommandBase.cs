@@ -31,7 +31,7 @@ public class CommandContext(Player sender, int peerId, string rawMessage, string
     {
         if (H.IsServer)
         {
-            Singleton<ServerMessagePacketWarden>.Instance.SendToPeer(message, PeerId);
+            Singleton<GenericMessagePacketWarden>.Instance.SendToPeer(message, PeerId);
         }
         else
         {
@@ -41,6 +41,6 @@ public class CommandContext(Player sender, int peerId, string rawMessage, string
 
     public void Announce(string message)
     {
-        Singleton<ServerMessagePacketWarden>.Instance.Send(message);
+        Singleton<GenericMessagePacketWarden>.Instance.Send(message);
     }
 }

@@ -11,6 +11,7 @@ using Lambda.Core.Main.UI;
 
 namespace Lambda.Core.Main.Gamemode;
 
+// TODO: make this gamemode specific
 public class InventoryManager
 {
     public static void EnforceOnePrimaryWeaponAtMost(Player player, ref List<Item> itemsToRemove)
@@ -55,17 +56,19 @@ public class InventoryManager
             itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
         }
 
-
         var pistol = player.GetSlotItem(EquipmentSlot.Holster) as Weapon;
-        if (pistol == null)
+        if (H.Gamemode is SNDGamemode)
         {
-            PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
-            var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
-            pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-            pistol = defaultPistol;
-        }
+            if (pistol == null)
+            {
+                PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
+                var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
+                pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
+                pistol = defaultPistol;
+            }
 
-        RU.SetupWeaponLocally(pistol, player);
+            RU.SetupWeaponLocally(pistol, player);
+        }
 
         if (H.IsNightTime)
         {
@@ -86,7 +89,7 @@ public class InventoryManager
             }
         }
 
-        pistol.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
+        pistol?.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
 
         IU.AddArmbandIfNeeded(player);
     }
@@ -140,11 +143,14 @@ public class InventoryManager
             placement.Address.AddWithoutRestrictions(NVGStrap);
         }
 
-        // Default Pistol
-        PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
-        var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
-        pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-        RU.SetupWeaponLocally(defaultPistol, player);
+        if (H.Gamemode is SNDGamemode)
+        {
+            // Default Pistol
+            PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
+            var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
+            pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
+            RU.SetupWeaponLocally(defaultPistol, player);
+        }
 
         IU.AddArmbandIfNeeded(player);
     }

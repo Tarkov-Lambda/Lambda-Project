@@ -47,7 +47,7 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
                 msg = rejectionReason
             };
             // not the cleanest pattern, but at least we pass it through the Packet Warden in a sense?
-            Singleton<ServerMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(RejectionReasonChatWrapperPacket);
+            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(RejectionReasonChatWrapperPacket);
         }
         else
         {
