@@ -83,7 +83,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         if (!H.IsClient)
         {
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
-            H.Arena.ServerChangeState(MatchState.Warmup);
+            H.Arena.ServerPostMatchState(MatchState.Warmup);
         }
 
         NetworkTime.Reset();

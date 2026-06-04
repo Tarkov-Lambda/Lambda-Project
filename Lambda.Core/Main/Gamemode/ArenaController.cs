@@ -15,6 +15,8 @@ using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using EFT.InventoryLogic;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -32,10 +34,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 {
     public SessionManager Session { get; private set; } = null;
     public LambdaGamemode gamemode = null;
-    public EconomyManager economyManager = new();
-    public RespawnManager respawnManager = new();
 
-    private GameObject _hideoutLight;
+    // the goal in future is to make these swappable between gamemodes
+    public EconomyManager economyManager = new();
+    public IRespawnManager respawnManager = new RespawnManager();
+    public IInventoryManager inventoryManager = new InventoryManager();
 
     public float StateTimer;
     public double ServerPhaseStartSeconds, PhaseDurationSeconds;
@@ -55,10 +58,11 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public ArenaController()
     {
-        if (H.IsInRaid()) StartSession();
         H.OnGameStarted += StartSession;
         H.OnGameDispose += EndSession;
         OnFikaEvent += ManageFikaEvents;
+
+        if (H.IsInRaid()) StartSession();
     }
 
     public void Dispose()
@@ -98,7 +102,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public async void StartSession()
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsInRaid()) return; // redundant?
 
         OnBeginInitializing?.Invoke();
 
@@ -114,7 +118,9 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
 
-            RuntimeBundleLoader.Instance.AddToCache(PresetItemsCache.Instance.GetAllPresetItems());
+            List<Item> allPresetitems = PresetItemsCache.Instance.GetAllPresetItems();
+            RuntimeBundleLoader.Instance.AddToCache(allPresetitems);
+
             ClientEquipmentManager.Instance.CapturePreset();
 
             HU.ApplyPainkiller();
@@ -142,11 +148,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         UnityTicker.OnUpdate -= Update;
 
-        if (_hideoutLight != null)
-        {
-            GameObject.Destroy(_hideoutLight);
-        }
-
         OnDisposed?.Invoke();
     }
 
@@ -163,12 +164,12 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             MatchState? nextState = _currentState.OnUpdate();
             if (nextState.HasValue)
             {
-                ServerChangeState(nextState.Value);
+                ServerPostMatchState(nextState.Value);
             }
         }
     }
 
-    public async void ServerChangeState(MatchState newStateType)
+    public async void ServerPostMatchState(MatchState newStateType)
     {
         if (H.IsClient) return;
 

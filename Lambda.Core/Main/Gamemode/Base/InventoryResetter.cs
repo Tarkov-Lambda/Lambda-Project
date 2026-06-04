@@ -12,7 +12,7 @@ using Lambda.Core.Main.UI;
 namespace Lambda.Core.Main.Gamemode;
 
 // TODO: make this gamemode specific
-public class InventoryManager
+public class InventoryManager : IInventoryManager
 {
     public static void EnforceOnePrimaryWeaponAtMost(Player player, ref List<Item> itemsToRemove)
     {
