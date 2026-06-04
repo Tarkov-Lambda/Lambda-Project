@@ -38,7 +38,7 @@ public static class AdminCommands
     [ChatCommand("givemoney", "Gives you money", CommandTarget.ServerOnly, PacketAuthority.Admin)]
     public static void GiveMoneyCommand(CommandContext ctx, Player player, int amount)
     {
-        var pContext = player.GetContext();
+        var pContext = player.Context;
         pContext.AddMoney(amount);
         Singleton<MoneyResyncPacketWarden>.Instance.Send(player, pContext.Money);
         ctx.Reply($"You've received {amount / 80}");

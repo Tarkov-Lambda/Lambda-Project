@@ -139,6 +139,10 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         {
             return new KnifeOnlyGamemode();
         }
+        else if (gamemodeName == "AwpOnlyGamemode")
+        {
+            return new AwpOnlyGamemode();
+        }
         else
         {
             return null;

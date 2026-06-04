@@ -111,8 +111,7 @@ public static class InventoryActionExtensions
             return false;
         }
 
-        itemAddress.RaiseRemoveEvent(item, CommandStatus.Begin, player.InventoryController);
-        itemAddress.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
+        itemAddress.RaiseForceRemove(item, player);
 
         if (item is ArmorPlateItemClass)
             player.TryRecalculateEquippedArmorComponents();
@@ -150,14 +149,12 @@ public static class InventoryActionExtensions
         Item item,
         Func<Item, InventoryController, GStruct154<T>> action, string actionName) where T : IRaiseEvents
     {
-#if DEBUG
-        D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
-#endif
+        if (H.ShouldLog) D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
 
         var address = item.CurrentAddress;
         var opResult = action(item, player.InventoryController);
 
-        if (opResult.Failed)
+        if (opResult.Failed && H.ShouldLog)
         {
             D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
             D.LogTransaction($"Reason: {opResult.Error}");
@@ -166,7 +163,7 @@ public static class InventoryActionExtensions
 
         IResult result = await player.InventoryController.TryRunNetworkTransaction(opResult);
 
-        if (result.Failed)
+        if (result.Failed && H.ShouldLog)
         {
             D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
             D.LogTransaction($"Reason: {result.Error}");

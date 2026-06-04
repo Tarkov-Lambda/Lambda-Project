@@ -59,7 +59,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         {
             Player = victim,
             killer = killer,
-            assist = H.GetPlayerScore(victim.Id)?.GetTopAssist(killer),
+            assist = H.GetPlayerContext(victim.Id)?.GetTopAssist(killer),
             damageType = damage.DamageType,
             bodyPartCollider = damage.BodyPartColliderType,
         };
@@ -84,7 +84,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
     // protected override bool ValidatePacket(PlayerKilledPacket packet, int peerId, out string rejectionReason)
     // {
-    //     if (!packet.Player.GetContext().IsAlive)
+    //     if (!packet.Player.Context.IsAlive)
     //     {
     //         rejectionReason = "";
     //         return false;
@@ -221,7 +221,7 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
             if (victim == null || victim.Destroyed) break;
 
-            var score = H.GetPlayerScore(victim.Id);
+            var score = H.GetPlayerContext(victim.Id);
             if (score != null && score.IsAlive) break;
 
             ForcePlayerPosition(victim, targetPos);

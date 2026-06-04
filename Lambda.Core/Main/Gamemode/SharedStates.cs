@@ -96,7 +96,7 @@ public class SharedWarmupEnd : IGameState
         foreach (var player in H.AllPlayers)
         {
             player.ForceUnlockInventory();
-            player.GetContext()?.SetHardReset();
+            player.Context?.SetHardReset();
         }
     }
 
@@ -168,15 +168,14 @@ public class SharedCleanup : IGameState
             {
                 Singleton<ReconnectSnapshotterResetPacketWarden>.Instance.Send(player);
 
-                var pContext = H.GetPlayerContext(player);
 
-                if (!pContext.ShouldHardReset && totalRounds > 0 && !isHalfTime)
+                if (!player.Context.ShouldHardReset && totalRounds > 0 && !isHalfTime)
                 {
-                    InventoryManager.Replenish(player);
+                    H.Arena.inventoryManager.Replenish(player);
                 }
                 else
                 {
-                    InventoryManager.HardReset(player);
+                    H.Arena.inventoryManager.HardReset(player);
                 }
             }
         }
@@ -192,7 +191,7 @@ public class SharedCleanup : IGameState
                 if (assignedPlayer != null)
                     selectedTerrorist = assignedPlayer;
                 else
-                    selectedTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.GetContext().ReadyState == PlayerReadinessState.Ready).RandomElement();
+                    selectedTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.Context.ReadyState == PlayerReadinessState.Ready).RandomElement();
 
                 var backpackSlot = selectedTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
 
@@ -266,7 +265,7 @@ public class SharedPrepare : IGameState
 
         foreach (var player in H.AllPlayingPlayers)
         {
-            player.GetContext().Spawn();
+            player.Context.Spawn();
         }
     }
 
@@ -275,6 +274,46 @@ public class SharedPrepare : IGameState
     public virtual void OnExit()
     {
 
+    }
+}
+
+public class GenericRoundBasedAction : IGameState
+{
+    public MatchState StateType => MatchState.RoundAction;
+    public void OnEnter() { }
+    public MatchState? OnUpdate()
+    {
+        Faction? winner = CheckWipe();
+        if (winner.HasValue)
+        {
+            H.Arena.Award(winner.Value, RoundWinReason.Elimination);
+            return MatchState.RoundEnd;
+        }
+
+        if (H.Arena.StateTimer <= 0)
+        {
+            Faction randomWinner = UnityEngine.Random.Range(0, 2) == 0 ? Faction.CT : Faction.T;
+            H.Arena.Award(randomWinner, RoundWinReason.Timeout);
+            return MatchState.RoundEnd;
+        }
+
+        return null;
+    }
+    public void OnExit() { }
+
+    private Faction? CheckWipe()
+    {
+        int aliveCT = 0;
+        int aliveT = 0;
+        foreach (var p in H.Scoreboard.Values)
+        {
+            if (p.IsAlive && p.Faction == Faction.CT) aliveCT++;
+            if (p.IsAlive && p.Faction == Faction.T) aliveT++;
+        }
+
+        if (aliveCT == 0) return Faction.T;
+        if (aliveT == 0) return Faction.CT;
+        return null;
     }
 }
 
@@ -350,7 +389,7 @@ public class SharedSideSwap : IGameState
             }
             foreach (var player in H.AllPlayers)
             {
-                var playerScore = H.GetPlayerScore(player.Id);
+                var playerScore = H.GetPlayerContext(player.Id);
                 var swappedFaction = playerScore.Faction == Faction.CT ? Faction.T : Faction.CT;
                 playerScore.ChangeFaction(swappedFaction);
             }

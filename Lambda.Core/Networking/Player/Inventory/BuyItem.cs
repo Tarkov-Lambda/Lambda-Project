@@ -88,7 +88,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         {
             if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
             {
-                var playerScore = packet.Player.GetContext();
+                var playerScore = packet.Player.Context;
 
                 if (playerScore.Money < itemData.price)
                 {
@@ -171,9 +171,9 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 {
                     // we deduct money before sending it as a client
                     if (!packet.Player.IsYourPlayer)
-                        H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
+                        H.GetPlayerContext(packet.Player.Id).SpendMoney(itemData.price);
 
-                    packet.Player.GetContext().AddItemQuantity(itemData);
+                    packet.Player.Context.AddItemQuantity(itemData);
                 }
 
 
@@ -216,7 +216,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     {
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
-            H.GetPlayerScore(packet.Player.Id).AddMoney(itemData.price);
+            H.GetPlayerContext(packet.Player.Id).AddMoney(itemData.price);
         }
     }
 

@@ -41,11 +41,18 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
 
         Player shooter = H.GetPlayer(damage.ProfileId);
-        PlayerContext shooterScore = shooter.GetContext();
+        PlayerContext shooterScore = shooter.Context;
 
         if (!shooterScore.IsAlive)
         {
-            if (NetworkTime.ServerNowSeconds - shooterScore.DeathTimestamp > 0.03)
+            double killTradeWindow = 0.03;
+
+            if (peer.Ping > 130)
+            {
+                killTradeWindow += 0.03;
+            }
+
+            if (NetworkTime.ServerNowSeconds - shooterScore.DeathTimestamp > killTradeWindow)
                 return false;
         }
 
@@ -64,7 +71,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
         Player shooter = H.GetPlayer(damage.ProfileId);
 
-        victim.GetContext()?.RecordDamageTaken(shooter, damage.Damage);
+        victim.Context?.RecordDamageTaken(shooter, damage.Damage);
 
         // we handle the server owner player natively through ActiveHealthController
         if (victim.IsYourPlayer) return;
@@ -87,12 +94,12 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         // to see if the damage is lethal and broadcast death before the client does
         Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
 
-        shooter.GetContext().AddDamage((int)Math.Round(damageInfo.Damage));
+        shooter.Context.AddDamage((int)Math.Round(damageInfo.Damage));
     }
 
     public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo, DamagePacket damagePacket)
     {
-        if (!H.GetPlayerScore(victim.Id).IsAlive) return 0f;
+        if (!H.GetPlayerContext(victim.Id).IsAlive) return 0f;
 
         ObservedHealthController healthController = victim.HealthController as ObservedHealthController;
 

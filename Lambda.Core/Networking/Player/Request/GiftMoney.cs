@@ -74,8 +74,8 @@ public class GiftMoneyPacketWarden : LambdaPacketWarden<GiveMoneyPacket>
     {
         if (BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData))
         {
-            H.GetPlayerScore(packet.Player.Id).SpendMoney(itemData.price);
-            H.GetPlayerScore(packet.TargetPlayer.Id).AddMoney(itemData.price);
+            H.GetPlayerContext(packet.Player.Id).SpendMoney(itemData.price);
+            H.GetPlayerContext(packet.TargetPlayer.Id).AddMoney(itemData.price);
 
             if (packet.TargetPlayer.IsYourPlayer)
             {

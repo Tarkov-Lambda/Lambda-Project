@@ -33,7 +33,7 @@ public class MoneyResyncPacketWarden : LambdaPacketWarden<MoneyResyncPacket>
 
     protected override void Apply(MoneyResyncPacket packet, int peerId)
     {
-        packet.Player.GetContext().SetMoney(packet.newMoney);
+        packet.Player.Context.SetMoney(packet.newMoney);
     }
 }
 

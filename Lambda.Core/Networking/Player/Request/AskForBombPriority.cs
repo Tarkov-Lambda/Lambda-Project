@@ -65,7 +65,7 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
             rejectionReason = "This command is not accessible outside of Search And Destroy.";
             return false;
         }
-        else if (packet.Player.GetContext().Faction is not Faction.T)
+        else if (packet.Player.Context.Faction is not Faction.T)
         {
             rejectionReason = "You have to be a terrorist to use this command.";
             return false;
@@ -109,6 +109,6 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
             announcement = $"{packet.Player.Profile.Nickname} asked for the bomb.";
         }
 
-        Singleton<GenericMessagePacketWarden>.Instance.SendToFaction(AssignedPlayer.GetContext().Faction, announcement);
+        Singleton<GenericMessagePacketWarden>.Instance.SendToFaction(AssignedPlayer.Context.Faction, announcement);
     }
 }

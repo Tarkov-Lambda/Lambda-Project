@@ -134,6 +134,11 @@ public class SND_RoundEnd : SharedRoundEnd
 
 public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable, IGMWithNightMode
 {
+    public SNDGamemode()
+    {
+        H.Arena.inventoryManager = new SNDInventoryManager();
+    }
+
     public override string Name { get; } = "Search And Destroy";
 
     public List<ILambdaObjective> Objectives { get; set; } = [];

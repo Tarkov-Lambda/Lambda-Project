@@ -29,6 +29,6 @@ public class LoadProgressPacketWarden : LambdaPacketWarden<LoadProgressPacket>
 
     protected override void Apply(LoadProgressPacket packet, int peerId)
     {
-        packet.Player.GetContext()?.ChangeProgress(packet.progress);
+        packet.Player.Context?.ChangeProgress(packet.progress);
     }
 }

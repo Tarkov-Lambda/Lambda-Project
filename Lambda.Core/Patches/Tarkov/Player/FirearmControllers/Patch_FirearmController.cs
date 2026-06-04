@@ -46,7 +46,7 @@ public class Patch_FirearmController_SetTriggerPressed : ModulePatch
         if (!____player.IsYourPlayer) return;
         if (!H.IsArenaReady) return;
         
-        if (____player.GetContext().IsControllerPartiallyLocked() || H.Session.matchState is MatchState.None or MatchState.Pause)
+        if (____player.Context.IsControllerPartiallyLocked() || H.Session.matchState is MatchState.None or MatchState.Pause)
         {
             pressed = false;
         }

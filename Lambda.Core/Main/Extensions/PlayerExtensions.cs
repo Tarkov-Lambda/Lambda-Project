@@ -11,16 +11,23 @@ using static EFT.PlayerAnimator;
 // class full of bruteforce player manipulations 
 public static class PlayerExtensions
 {
-    public static PlayerContext GetContext(this Player player)
+    extension(Player player)
     {
-        return H.GetPlayerContext(player);
+        public PlayerContext Context => H.GetPlayerContext(player);
+
+        // SERVER ONLY
+        public bool IsServerPlayer => !H.IsHeadless && H.IsServer && player.IsYourPlayer;
+    }
+
+    public static Slot GetSlot(this Player player, EquipmentSlot equipmentSlotType)
+    {
+        return player.Inventory.Equipment.GetSlot(equipmentSlotType);
     }
 
     // full retard nuclear hand resetting
     // this needs to go ASAP
     public static void UnfuckHands(this Player player)
     {
-        D.Log("unfucking hands controller");
         try
         {
             player.ProcessStatus = Player.EProcessStatus.None;

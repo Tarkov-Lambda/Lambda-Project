@@ -63,7 +63,7 @@ public class SessionPausePacketWarden : LambdaPacketWarden<PausePacket>
         }
         else
         {
-            if (!packet.Player.GetContext().IsAdmin)
+            if (!packet.Player.Context.IsAdmin)
             {
                 if (H.Session.matchState is not MatchState.RoundPrepare)
                 {

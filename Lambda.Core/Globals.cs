@@ -28,6 +28,8 @@ global using CameraManager = CameraClass;
 global using EftScreenManager = CurrentScreenSingletonClass;
 global using NotificationManager = NotificationManagerClass;
 
+// global using static Lambda.Core.Main.Helpers;
+
 // To log D.Dump object name
 namespace System.Runtime.CompilerServices
 {

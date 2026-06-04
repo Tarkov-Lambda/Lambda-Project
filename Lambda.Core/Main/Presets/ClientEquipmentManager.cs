@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Comfort.Common;
+using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using Lambda.Core.Main.AssetBundleHandling;
@@ -20,15 +21,13 @@ public struct PresetManagerSlotInfo
 
 // this manager deals with capturing the equipment that the player brings into the raid for inventory resetting
 // at the moment there is no server side validation for this, and ultimately it would be best if capture preset would be split into validation as well
-public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDisposable
+public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
 {
     private readonly string PresetDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "DefaultEquipment.jsonc");
 
-    private Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
+    private static Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 
-    public Dictionary<EquipmentSlot, Item> RecordedItems { get; private set; } = new(); // What is actually used
-
-    public ClientEquipmentManager()
+    public DefaultEquipmentManager()
     {
         LoadItems(File.ReadAllText(PresetDataPath));
     }
@@ -40,16 +39,16 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
         PresetInfoConfig = JsonConvert.DeserializeObject<Dictionary<EquipmentSlot, PresetManagerSlotInfo>>(json);
     }
 
-    public void CapturePreset()
+    public static Dictionary<EquipmentSlot, Item> CapturePreset(Player player)
     {
-        if (H.IsHeadless) return;
+        Dictionary<EquipmentSlot, Item> RecordedItems = new();
 
         foreach (var presetInfo in PresetInfoConfig)
         {
             Item equippedItem = null;
 
             // Whatever item the person brought in raid
-            Item existingItem = H.MainPlayer.GetSlotItem(presetInfo.Key);
+            Item existingItem = player.GetSlotItem(presetInfo.Key);
 
             if (existingItem != null)
             {
@@ -92,6 +91,8 @@ public class ClientEquipmentManager : Singleton<ClientEquipmentManager>, IDispos
                 RecordedItems[presetInfo.Key] = equippedItem;
             }
         }
+
+        return RecordedItems;
     }
 }
 

@@ -61,7 +61,7 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
             if (H.Session.matchState == MatchState.RoundPrepare)
             {
                 __instance.Player.MovementContext.ResetFlying();
-                var pContext = __instance.Player.GetContext();
+                var pContext = __instance.Player.Context;
 
                 if (pContext != null)
                 {
@@ -96,7 +96,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
         if (!H.IsArenaReady) return false;
-        if (__instance.Player == null || __instance.Player.GetContext() == null) return false; // mid raid connect protection
+        if (__instance.Player == null || __instance.Player.Context == null) return false; // mid raid connect protection
 
         long now = Stopwatch.GetTimestamp();
         long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;
@@ -106,7 +106,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
         _lastKillTime = now;
 
 
-        if (!__instance.Player.GetContext().IsAlive) return false;
+        if (!__instance.Player.Context.IsAlive) return false;
 
         var lastDamage = Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo;
 
@@ -117,7 +117,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
             // killer can be null for environmental damage (fall, bleed, etc.)
             Player killer = null;
             if (lastDamage.Player?.iPlayer?.Id != null)
-                killer = H.GetPlayerScore(lastDamage.Player.iPlayer.Id).player;
+                killer = H.GetPlayerContext(lastDamage.Player.iPlayer.Id).player;
 
             Player victim = null;
 

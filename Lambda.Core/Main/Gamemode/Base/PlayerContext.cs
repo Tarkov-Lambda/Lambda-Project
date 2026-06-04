@@ -57,7 +57,7 @@ public class PlayerContext
     {
         player = H.GetPlayer(id);
         context.Identity.Name = player.Profile.Nickname;
-        context.Identity.ClanTag = "";
+        context.Identity.ClanTag = string.Empty;
         context.Economy.Money = EconomyConstants.MAX_MONEY;
 
         ItemQuantityBoughtInRound = [];
@@ -263,6 +263,7 @@ public class PlayerContext
     }
 
     // Locking out the player from shooting/jumping/moving
+    // this needs to go elsewhere
     public bool IsControllerPartiallyLocked()
     {
         if (H.IsHeadless) return false;

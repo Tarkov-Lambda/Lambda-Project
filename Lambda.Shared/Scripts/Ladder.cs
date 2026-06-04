@@ -22,8 +22,8 @@ namespace Lambda.Shared
         , IPhysicsTrigger
 #endif
     {
-        public static Action<LadderEventPayload> onPlayerEnterLadder;
-        public static Action<LadderEventPayload> onPlayerExitLadder;
+        public static Action<LadderEventPayload> OnPlayerEnterLadder;
+        public static Action<LadderEventPayload> OnPlayerExitLadder;
 
         public LadderMaterial ladderMaterial = LadderMaterial.Metal;
 
@@ -57,7 +57,7 @@ namespace Lambda.Shared
             }
         }
 
-        public string Description => "eto ladder kstati btw";
+        public string Description => "eto ladder kstati btw"; // да ну нахуй кстати
 
         private void Awake()
         {
@@ -66,24 +66,24 @@ namespace Lambda.Shared
 
         public void OnTriggerEnter(Collider other)
         {
-            LadderEventPayload ladderEvent = new LadderEventPayload
+            LadderEventPayload ladderEvent = new()
             {
                 other = other,
                 ladder = this
             };
 
-            onPlayerEnterLadder?.Invoke(ladderEvent);
+            OnPlayerEnterLadder?.Invoke(ladderEvent);
         }
 
         public void OnTriggerExit(Collider other)
         {
-            LadderEventPayload ladderEvent = new LadderEventPayload
+            LadderEventPayload ladderEvent = new()
             {
                 other = other,
                 ladder = this
             };
 
-            onPlayerExitLadder?.Invoke(ladderEvent);
+            OnPlayerExitLadder?.Invoke(ladderEvent);
         }
     }
 }

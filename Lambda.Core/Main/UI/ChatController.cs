@@ -101,7 +101,7 @@ namespace Lambda.Core.Main.UI
 
             // await UniTask.DelayFrame(1);
 
-            if (chatPacket.scope == ChatMessageScope.Team && chatPacket.Player.GetContext().Faction != H.MainPlayerScore.Faction)
+            if (chatPacket.scope == ChatMessageScope.Team && chatPacket.Player.Context.Faction != H.MainPlayerScore.Faction)
                 return;
 
             _chat.PopMessage(

@@ -72,7 +72,7 @@ public class EconomyManager : IDisposable
         if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
         if (packet.killer == packet.Player) return;
 
-        if (killerScore.Faction == packet.Player.GetContext().Faction)
+        if (killerScore.Faction == packet.Player.Context.Faction)
         {
             killerScore.AddMoney(-300);
         }
@@ -93,7 +93,7 @@ public class EconomyManager : IDisposable
     {
         if (H.Arena.LastObjectivePlayer == null) return;
 
-        var score = H.Arena.LastObjectivePlayer.GetContext();
+        var score = H.Arena.LastObjectivePlayer.Context;
         if (score == null) return;
 
         if (state == BombState.Exploded)

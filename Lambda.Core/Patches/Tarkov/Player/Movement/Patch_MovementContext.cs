@@ -24,7 +24,7 @@ public class Patch_MovementContext_CanWalk : ModulePatch
         if (!H.IsArenaReady) return;
         if (!____player.IsYourPlayer) return;
 
-        if (____player.GetContext().IsControllerPartiallyLocked())
+        if (____player.Context.IsControllerPartiallyLocked())
         {
             __result = false;
             return;
@@ -61,7 +61,7 @@ public class Patch_MovementContext_CanJump : ModulePatch
         if (!H.IsArenaReady) return;
         if (!____player.IsYourPlayer) return;
 
-        if (____player.GetContext().IsControllerPartiallyLocked())
+        if (____player.Context.IsControllerPartiallyLocked())
         {
             __result = false;
             return;

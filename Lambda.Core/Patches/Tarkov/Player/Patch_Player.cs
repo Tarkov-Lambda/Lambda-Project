@@ -152,7 +152,7 @@ public class Patch_Player_OnItemAddedOrRemoved : ModulePatch
     [PatchPostfix]
     public static void Postfix(Player __instance, Item item, ItemAddress location, bool added)
     {
-        var pContext = __instance.GetContext();
+        var pContext = __instance.Context;
         if (pContext == null) return;
 
         if (item.TemplateId == Hardcode.BOMB_BACKPACK)

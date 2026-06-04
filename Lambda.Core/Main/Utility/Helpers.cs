@@ -26,7 +26,7 @@ namespace Lambda.Core.Main;
 public static class Helpers
 {
     // вертел я ваши анти паттерны
-    // EFT Singleton pointers
+    #region EFT Singleton pointers
     public static GameWorld GameWorld                                     => Singleton<GameWorld>.Instance;
     public static Class308 TarkovClientISession                           => Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
     public static TarkovApplication TarkovApp                             => Singleton<ClientApplication<ISession>>.Instance as TarkovApplication;
@@ -43,17 +43,22 @@ public static class Helpers
     public static CustomizationSolverClass CustomizationSolverClass       => Singleton<CustomizationSolverClass>.Instance;
     public static IEasyAssets IEasyAssets                                 => Singleton<IEasyAssets>.Instance;
     public static GUISounds EFTGUISounds                                  => Singleton<GUISounds>.Instance;
+    #endregion
 
+    #region EFT Main Player
     // EFT Main Player
     public static Player MainPlayer                                       => GetMainPlayer();
     public static Inventory MainInventory                                 => MainPlayer != null ? MainPlayer.Inventory : null;
     public static InventoryController MainInventoryController             => MainPlayer != null ? MainPlayer.InventoryController : null;
+    #endregion
 
+    #region Fika
     public static bool IsHeadless                                         => GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
     public static bool IsClient                                           => FikaBackendUtils.IsClient;
     public static bool IsServer                                           => GameWorld is HideoutGameWorld || FikaBackendUtils.IsServer;
+    #endregion
 
-    // Internal Pointers
+    #region Internal
     public static ArenaController Arena                                   => Singleton<ArenaController>.Instance;
     public static SessionManager Session                                  => Arena.Session;
     public static LambdaGamemode Gamemode                                 => Arena.gamemode;
@@ -77,7 +82,14 @@ public static class Helpers
     public static SpectatorManager SpectatorManager                       => IsArenaReady ? Singleton<SpectatorManager>.Instance : null;
     public static MapAssetBundleLoader MapAssetBundleHandler              => Singleton<MapAssetBundleLoader>.Instance;
     public static WeaponPresetManager WeaponPresetManager                 => Singleton<WeaponPresetManager>.Instance;
+    #endregion
 
+    #region 
+    public static bool ShouldLog { get; } = true;
+    #endregion
+
+
+    #region Hooks
     // When the player fully spawns into the raid; after raid spawn countdown timer is 0 (Geneburn - Countdown reference)
     public static event Action OnGameStarted
     {
@@ -98,7 +110,9 @@ public static class Helpers
         add => TarkovApp.AfterApplicationLoaded += value;
         remove => TarkovApp.AfterApplicationLoaded -= value;
     }
+    #endregion
 
+    #region Player Lookup
     // bro thinks he's the main character
     private static Player GetMainPlayer()
     {
@@ -136,9 +150,9 @@ public static class Helpers
         return AllPlayers?.FirstOrDefault(p => p.ProfileId == profileId);
     }
 
-    public static PlayerContext GetPlayerContext(Player player) => GetPlayerScore(player.Id);
+    public static PlayerContext GetPlayerContext(Player player) => GetPlayerContext(player.Id);
 
-    public static PlayerContext GetPlayerScore(int playerId)
+    public static PlayerContext GetPlayerContext(int playerId)
     {
         if (!IsInRaid()) return null;
         if (!Scoreboard.TryGetValue(playerId, out var playerScore))
@@ -164,8 +178,9 @@ public static class Helpers
     private static List<Player> GetAllPlayingPlayers()
     {
         if (!IsInRaid()) return null;
-        return GameWorld.AllAlivePlayersList.Where(player => player.GetContext().ReadyState != PlayerReadinessState.Disconnected && player.GetContext().Faction != Faction.Spectator).ToList();
+        return GameWorld.AllAlivePlayersList.Where(player => player.Context.ReadyState != PlayerReadinessState.Disconnected && player.Context.Faction != Faction.Spectator).ToList();
     }
+    #endregion
 
     public static bool IsMainMenuLoaded()
     {

@@ -14,7 +14,6 @@ using PacketWarden.TimeSync;
 using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
-using UnityEngine.UIElements;
 using System.Collections.Generic;
 using EFT.InventoryLogic;
 
@@ -36,6 +35,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public LambdaGamemode gamemode = null;
 
     // the goal in future is to make these swappable between gamemodes
+    // or perhaps these should just exist in the gamemode itself?
     public EconomyManager economyManager = new();
     public IRespawnManager respawnManager = new RespawnManager();
     public IInventoryManager inventoryManager = new InventoryManager();
@@ -48,7 +48,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public RoundActionPhaseEnd? LastRoundActionEnd;
     public Player LastObjectivePlayer;
     public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
-
+   
     private IGameState _currentState;
 
     public event Action OnBeginInitializing;
@@ -120,8 +120,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
             List<Item> allPresetitems = PresetItemsCache.Instance.GetAllPresetItems();
             RuntimeBundleLoader.Instance.AddToCache(allPresetitems);
-
-            ClientEquipmentManager.Instance.CapturePreset();
 
             HU.ApplyPainkiller();
 

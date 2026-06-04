@@ -90,7 +90,7 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 
     protected override bool ValidatePacket(FactionChangePacket packet, int peerId, out string rejectionReason)
     {
-        if (!CanChangeFaction(H.GetPlayerScore(packet.Player.Id), packet.faction))
+        if (!CanChangeFaction(H.GetPlayerContext(packet.Player.Id), packet.faction))
         {
             rejectionReason = "You can not swap factions in the current phase";
             return false;

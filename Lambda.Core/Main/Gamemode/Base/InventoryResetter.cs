@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Coffee.UIEffects;
 using Comfort.Common;
-using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.UI;
+
+#pragma warning disable IDE0019
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -42,7 +42,7 @@ public class InventoryManager : IInventoryManager
         }
     }
 
-    public static void Replenish(Player player)
+    public virtual void Replenish(Player player)
     {
         List<Item> itemsToRemove = [];
 
@@ -54,20 +54,6 @@ public class InventoryManager : IInventoryManager
         foreach (var itemToRemove in itemsToRemove)
         {
             itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
-        }
-
-        var pistol = player.GetSlotItem(EquipmentSlot.Holster) as Weapon;
-        if (H.Gamemode is SNDGamemode)
-        {
-            if (pistol == null)
-            {
-                PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
-                var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
-                pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-                pistol = defaultPistol;
-            }
-
-            RU.SetupWeaponLocally(pistol, player);
         }
 
         if (H.IsNightTime)
@@ -89,12 +75,10 @@ public class InventoryManager : IInventoryManager
             }
         }
 
-        pistol?.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
-
         IU.AddArmbandIfNeeded(player);
     }
 
-    public static void HardReset(Player player)
+    public virtual void HardReset(Player player)
     {
         List<Item> itemsToRemove = [];
 
@@ -116,7 +100,7 @@ public class InventoryManager : IInventoryManager
         }
 
         // GIVING
-        foreach (var kvp in player.GetContext().DefaultEquipment)
+        foreach (var kvp in player.Context.DefaultEquipment)
         {
             if (kvp.Value == null) continue;
 
@@ -143,20 +127,13 @@ public class InventoryManager : IInventoryManager
             placement.Address.AddWithoutRestrictions(NVGStrap);
         }
 
-        if (H.Gamemode is SNDGamemode)
-        {
-            // Default Pistol
-            PistolItemClass defaultPistol = GetDefaultPistol(player.GetContext()).CloneItem();
-            var pistolPlacement = AU.GetItemPlacement(defaultPistol, player);
-            pistolPlacement.Address.AddWithoutRestrictions(defaultPistol);
-            RU.SetupWeaponLocally(defaultPistol, player);
-        }
+
 
         IU.AddArmbandIfNeeded(player);
     }
 
 
-    public static PistolItemClass GetDefaultPistol(PlayerContext playerScore)
+    public static PistolItemClass GetDefaultPistol(PlayerContext pContext)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -165,11 +142,11 @@ public class InventoryManager : IInventoryManager
                 if (string.IsNullOrEmpty(shopItem.ammoId))
                     continue;
 
-                var immutable = playerScore.BuySelection[shopItem];
+                var immutable = pContext.BuySelection[shopItem];
                 if (immutable is not PistolItemClass pistolItem)
                     continue;
 
-                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
+                if (shopItem.faction == pContext.Faction || shopItem.faction == Faction.None)
                     return pistolItem;
             }
         }
@@ -177,7 +154,7 @@ public class InventoryManager : IInventoryManager
         return null;
     }
 
-    public static SniperRifleItemClass GetFirstSniperRifleItem(PlayerContext playerScore)
+    public static SniperRifleItemClass GetFirstSniperRifleItem(PlayerContext pContext)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
         {
@@ -190,7 +167,7 @@ public class InventoryManager : IInventoryManager
                 if (immutable is not SniperRifleItemClass assaultCarbine)
                     continue;
 
-                if (shopItem.faction == playerScore.Faction || shopItem.faction == Faction.None)
+                if (shopItem.faction == pContext.Faction || shopItem.faction == Faction.None)
                     return assaultCarbine;
             }
         }

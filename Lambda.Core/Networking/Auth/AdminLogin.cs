@@ -183,7 +183,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
     private void HandleSuccess(AdminAuthPacket packet, int peerId)
     {
-        packet.Player.GetContext()?.SetAdmin(true);
+        packet.Player.Context?.SetAdmin(true);
 
         if (H.IsServer)
         {

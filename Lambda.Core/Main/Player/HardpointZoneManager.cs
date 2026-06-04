@@ -81,7 +81,7 @@ public class HardpointZoneManager : Singleton<HardpointZoneManager>, IDisposable
                 Player player = H.GetPlayer(playerId);
                 if (player == null) continue;
 
-                Faction faction = player.GetContext().Faction;
+                Faction faction = player.Context.Faction;
 
                 if (!factionScores.ContainsKey(faction)) factionScores[faction] = 0;
 

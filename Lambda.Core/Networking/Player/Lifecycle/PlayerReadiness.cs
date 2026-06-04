@@ -25,9 +25,6 @@ public partial struct PlayerReadinessPacket : IPacket, IAuthoredPacket
 
     [MemoryPackAllowSerialize]
     public Dictionary<ShopItem, Item> buySelection;
-
-    [MemoryPackAllowSerialize]
-    public Dictionary<EquipmentSlot, Item> defaultItems;
 }
 
 public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPacket>
@@ -47,7 +44,6 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
         if (readyState is PlayerReadinessState.Connected)
         {
-            packet.defaultItems = ClientEquipmentManager.Instance.RecordedItems;
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
@@ -73,7 +69,8 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
         if (packet.buySelection != null)
         {
             PlayerContext pContext = H.GetPlayerContext(packet.Player);
-            pContext.SetDefaultItems(packet.defaultItems);
+            var defaultEquipment = DefaultEquipmentManager.CapturePreset(packet.Player);
+            pContext.SetDefaultItems(defaultEquipment);
             pContext.SetBuySelection(packet.buySelection);
 
             List<Item> playerShopItems = new();
