@@ -170,8 +170,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
                 {
                     // we deduct money before sending it as a client
-                    if (!packet.Player.IsYourPlayer)
-                        H.GetPlayerContext(packet.Player.Id).SpendMoney(itemData.price);
+                    if (!packet.Player.IsYourPlayer) packet.Player.Context.SpendMoney(itemData.price);
 
                     packet.Player.Context.AddItemQuantity(itemData);
                 }
@@ -184,6 +183,8 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                         packet.Player.HandsController.FastForwardCurrentState();
                     }
                 }
+
+                SaveTransaction(packet);
             }
             catch (Exception ex)
             {
@@ -204,7 +205,6 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             //     );
             // }
 
-            // SaveTransaction(packet);
         }
         catch (Exception ex)
         {
@@ -216,7 +216,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     {
         if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
         {
-            H.GetPlayerContext(packet.Player.Id).AddMoney(itemData.price);
+            packet.Player.Context.AddMoney(itemData.price);
         }
     }
 

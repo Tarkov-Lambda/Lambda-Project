@@ -5,6 +5,8 @@ using MemoryPack;
 using Comfort.Common;
 using System.Linq;
 using PacketWarden.TimeSync;
+using Lambda.Core.Main.Economy;
+using Lambda.Shared.Models;
 
 namespace Lambda.Core.Networking;
 
@@ -57,13 +59,6 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
                     return false;
                 }
 
-                var item = transaction.Player.FindItemById(transaction.item.Id);
-                if (item.Failed)
-                {
-                    rejectionReason = "One or more items linked to the transaction can not be found.";
-                    return false;
-                }
-
                 double ageInSeconds = NetworkTime.ServerNowSeconds - transaction.Timestamp;
 
                 bool hasEnoughTimePassed = ageInSeconds >= 2;
@@ -72,7 +67,19 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
                     rejectionReason = "You must wait before refunding this transaction.";
                     return false;
                 }
+
+                var item = transaction.Player.FindItemById(transaction.item.Id);
+                if (item.Failed)
+                {
+                    rejectionReason = "One or more items linked to the transaction can not be found.";
+                    return false;
+                }
             }
+        }
+        else
+        {
+            rejectionReason = "Can't find requested transaction";
+            return false;
         }
 
         return base.ValidatePacket(packet, peerId, out rejectionReason);
@@ -81,16 +88,22 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
     protected override void Apply(RefundItemPacket packet, int peerId)
     {
         var allRoundTransactions = Singleton<BuyItemPacketWarden>.Instance.RoundTransactions;
+
         if (allRoundTransactions.TryGetValue(packet.ID, out var transactions))
         {
+            var firstTransaction = transactions.FirstOrDefault();
+
+            if (BuyMenuSelection.TryGetItemData(firstTransaction.item.TemplateId, out ShopItem itemData))
+            {
+                packet.Player.Context.AddMoney(itemData.price);
+            }
+
             foreach (var transaction in transactions)
             {
                 var itemFindResult = transaction.Player.FindItemById(transaction.item.Id);
 
                 if (itemFindResult.Failed)
                 {
-                    // Singleton<EquipmentResyncPacketWarden>.Instance.Send(transaction.Player);
-                    // return;
                     continue;
                 }
 
