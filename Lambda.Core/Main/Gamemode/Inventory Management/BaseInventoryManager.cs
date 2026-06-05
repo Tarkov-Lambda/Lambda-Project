@@ -127,8 +127,6 @@ public class BaseInventoryManager : IInventoryManager
             placement.Address.AddWithoutRestrictions(NVGStrap);
         }
 
-
-
         IU.AddArmbandIfNeeded(player);
     }
 
