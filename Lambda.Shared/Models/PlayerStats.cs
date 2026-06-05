@@ -10,6 +10,7 @@ namespace Lambda.Shared.Models
         // public PlayerLoadingStatus Status;
         public PlayerCombat Combat;
         public PlayerEconomyData Economy;
+        // public IGamemodeData GamemodeData;
 
         // tech debt :C
         public readonly string Name                     => Identity.Name;
@@ -79,4 +80,6 @@ namespace Lambda.Shared.Models
         public int Money;
         public bool ShouldHardReset;
     }
+
+    public partial interface IGamemodeData {}
 }

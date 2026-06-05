@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
+using Lambda.Core.Main;
 using Lambda.Core.Main.Dying;
 using MemoryPack;
 using System;
