@@ -5,7 +5,7 @@ using Lambda.Core.Main.Gamemode;
 
 #pragma warning disable IDE0019
 
-public class SNDInventoryManager : InventoryManager
+public class SNDInventoryManager : BaseInventoryManager
 {
     public override void Replenish(Player player)
     {

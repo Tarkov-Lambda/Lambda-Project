@@ -38,7 +38,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     // or perhaps these should just exist in the gamemode itself?
     public EconomyManager economyManager = new();
     public IRespawnManager respawnManager = new RespawnManager();
-    public IInventoryManager inventoryManager = new InventoryManager();
+    public IInventoryManager inventoryManager = new BaseInventoryManager();
 
     public float StateTimer;
     public double ServerPhaseStartSeconds, PhaseDurationSeconds;
