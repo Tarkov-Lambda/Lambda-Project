@@ -80,7 +80,7 @@
     <ItemGroup>
       <Binaries Include="$(OutputPath)\Unitask.dll" />
       <Binaries Include="$(OutputPath)\Unitask.*.dll" />
-      <Binaries Include="./.Binaries/libraries/ScriptEngine.dll" />
+      <Binaries Include="../.Binaries/ScriptEngine.dll" />
 
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
