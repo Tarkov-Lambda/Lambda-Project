@@ -1,3 +1,13 @@
+# ALPHA NOTICE
+The project is currently in private testing phase and is not fully released yet.
+This repository contains code and only a portion of required asset bundles for gameplay.
+
+## On the shoulders of giants we stand
+This project wouldn't be possible without
+- **Battlestate Games** - Developing Escape From Tarkov for over 10 years.
+- **SPT Crew** - Creating and maintaining an exuberantly ambitious ecosystem.
+- **Lacyway** - Spearheading Fika, Dedicated Servers, and doing all the hard multiplayer work this project depends on.
+
 ## Credits
 - **ifp**: Core • Gamemodes • Equipment • Networking • Maps • Steam Audio
 - **tarkin**: Core • UI/UX • Maps • Mentor
@@ -6,8 +16,7 @@
 
 ### Gameplay
 - Personalized Buy Menu Equipment
-- Gamemode Framework (Including Search And Destroy, King Of the Hill, and Free For All)
-- Headless Server Support
+- Extensible Gamemode Framework
 - Kill Trading, Respawning, Looting
 - Mid-Session match joining
 - Molotovs
@@ -31,13 +40,15 @@
 - Sound Occlusion & Transmission overhaul  
 - Arena-like movement
 - Accurate Pistols
+- Lighter Sniper/Marksman rifle feel
 - No Unequip Animations
 - Blindfire in movement
 - Flash and Smoke changes
-- Health System and Player Controller streamlined for battle
+- Health System simplification
 
 ## For Nerds
 
+- Headless Server Support
 - Full hot-reload support via ScriptEngine
 - Unity Spatializer Engine bypass
 - PacketWarden
