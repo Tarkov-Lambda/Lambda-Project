@@ -7,14 +7,15 @@ using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace Lambda.Core.Main.Gamemode;
 
 // just kind of a "nothing is happening" state type beat
-public class SharedNone : IGameState
+public class SharedNone : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.None;
-    public virtual void OnEnter()
+    public override MatchState StateType => MatchState.None;
+    public override void OnEnter()
     {
         if (!H.IsHeadless)
         {
@@ -35,25 +36,25 @@ public class SharedNone : IGameState
         }
     }
 
-    public virtual MatchState? OnUpdate()
+    public override MatchState? OnUpdate()
     {
         return null;
     }
-    public virtual void OnExit() { }
+    public override void OnExit() { }
 }
 
-public class SharedWarmup : IGameState
+public class SharedWarmup : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.Warmup;
-    public virtual void OnEnter()
+    public override MatchState StateType => MatchState.Warmup;
+    public override void OnEnter()
     {
         IU.GarbageCollectWorldLoot();
     }
 
-    public virtual MatchState? OnUpdate()
+    public override MatchState? OnUpdate()
     {
         var remaining = H.Arena.StateTimer;
-        var total = H.Gamemode.StateTimerConfig[StateType];
+        var total = H.Arena.PhaseDurationSeconds;
         var elapsed = total - remaining;
 
         bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
@@ -67,22 +68,22 @@ public class SharedWarmup : IGameState
         return null;
     }
 
-    public virtual void OnExit()
+    public override void OnExit()
     {
 
     }
 }
 
-public class SharedWarmupEnd : IGameState
+public class SharedWarmupEnd : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.WarmupEnd;
-    public virtual void OnEnter()
+    public override MatchState StateType => MatchState.WarmupEnd;
+    public override void OnEnter()
     {
         if (!H.IsHeadless)
         {
             UniTask.Void(async () =>
             {
-                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000);
+                await UniTask.Delay((int)H.Arena.PhaseDurationSeconds * 1000 - 3000);
 
                 PU.CloseEyes(false, false).Forget();
 
@@ -100,8 +101,8 @@ public class SharedWarmupEnd : IGameState
         }
     }
 
-    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
-    public virtual void OnExit()
+    public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
+    public override void OnExit()
     {
         H.Session.InitializeScoreBoard();
         H.Arena.economyManager.ResetEconomy();
@@ -147,10 +148,10 @@ public class SharedWarmupEnd : IGameState
     }
 }
 
-public class SharedCleanup : IGameState
+public class SharedCleanup : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.Cleanup;
-    public virtual void OnEnter()
+    public override MatchState StateType => MatchState.Cleanup;
+    public override void OnEnter()
     {
         int totalRounds = H.Session.factionWins.Values.Sum();
         bool isHalfTime = false;
@@ -211,46 +212,50 @@ public class SharedCleanup : IGameState
             }
         }
 
-        UniTask.Void(async () =>
+        UniTask.Void(async ct =>
         {
-            await UniTask.Delay(250);
-
-            IU.GarbageCollectWorldLoot();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            if (!H.IsHeadless)
+            try
             {
-                H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+                await UniTask.Delay(250, cancellationToken: ct);
 
-                await UniTask.Delay(500);
+                IU.GarbageCollectWorldLoot();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
 
-                HU.HealMe().Forget();
-                if (H.MainPlayer.MovementContext.IsInPronePose) H.MainPlayer.MovementContext.IsInPronePose = false;
+                if (!H.IsHeadless)
+                {
+                    H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-                H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
-                await UniTask.Delay(750);
-                Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
+                    await UniTask.Delay(500, cancellationToken: ct);
+
+                    HU.HealMe().Forget();
+                    if (H.MainPlayer.MovementContext.IsInPronePose) H.MainPlayer.MovementContext.IsInPronePose = false;
+
+                    H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
+                    await UniTask.Delay(750, cancellationToken: ct);
+                    Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
+                }
             }
-        });
+            catch (OperationCanceledException) { }
+        }, cancellationToken: _cts.Token);
     }
-    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-    public virtual void OnExit() { }
+    public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public override void OnExit() { }
 }
 
-public class SharedPause : IGameState
+public class SharedPause : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.Pause;
-    public virtual void OnEnter() { }
-    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
-    public virtual void OnExit() { }
+    public override MatchState StateType => MatchState.Pause;
+    public override void OnEnter() { }
+    public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+    public override void OnExit() { }
 }
 
-public class SharedPrepare : IGameState
+public class SharedPrepare : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundPrepare;
-    public virtual void OnEnter()
+    public override MatchState StateType => MatchState.RoundPrepare;
+    public override void OnEnter()
     {
         if (!H.IsHeadless)
         {
@@ -269,19 +274,19 @@ public class SharedPrepare : IGameState
         }
     }
 
-    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
+    public override MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
 
-    public virtual void OnExit()
+    public override void OnExit()
     {
 
     }
 }
 
-public class GenericRoundBasedAction : IGameState
+public class GenericRoundBasedAction : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundAction;
-    public void OnEnter() { }
-    public MatchState? OnUpdate()
+    public override MatchState StateType => MatchState.RoundAction;
+    public override void OnEnter() { }
+    public override MatchState? OnUpdate()
     {
         Faction? winner = CheckWipe();
         if (winner.HasValue)
@@ -299,7 +304,7 @@ public class GenericRoundBasedAction : IGameState
 
         return null;
     }
-    public void OnExit() { }
+    public override void OnExit() { }
 
     private Faction? CheckWipe()
     {
@@ -317,10 +322,10 @@ public class GenericRoundBasedAction : IGameState
     }
 }
 
-public class SharedRoundEnd : IGameState
+public class SharedRoundEnd : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundEnd;
-    public virtual void OnEnter()
+    public override MatchState StateType => MatchState.RoundEnd;
+    public override void OnEnter()
     {
         if (H.IsServer)
         {
@@ -329,20 +334,24 @@ public class SharedRoundEnd : IGameState
 
         if (!H.IsHeadless)
         {
-            UniTask.Void(async () =>
+            UniTask.Void(async ct =>
             {
-                await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000);
+                try
+                {
+                    await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000, cancellationToken: ct);
 
-                PU.CloseEyes(false, false).Forget();
+                    PU.CloseEyes(false, false).Forget();
 
-                await UniTask.Delay(2250);
+                    await UniTask.Delay(2250, cancellationToken: ct);
 
-                H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
-            });
+                    H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
+                }
+                catch (OperationCanceledException) { }
+            }, cancellationToken: _cts.Token);
         }
     }
 
-    public virtual MatchState? OnUpdate()
+    public override MatchState? OnUpdate()
     {
         if (H.IsClient) return null;
 
@@ -367,7 +376,7 @@ public class SharedRoundEnd : IGameState
 
         return null;
     }
-    public virtual void OnExit()
+    public override void OnExit()
     {
         IU.GarbageCollectWorldLoot();
         H.RagdollCreator.ClearAllCorpses();
@@ -375,11 +384,11 @@ public class SharedRoundEnd : IGameState
     }
 }
 
-public class SharedSideSwap : IGameState
+public class SharedSideSwap : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.SideSwap;
+    public override MatchState StateType => MatchState.SideSwap;
 
-    public virtual void OnEnter()
+    public override void OnEnter()
     {
         if (H.Gamemode is IGMSideSwappable sideSwappable)
         {
@@ -398,19 +407,19 @@ public class SharedSideSwap : IGameState
         }
     }
 
-    public virtual MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
+    public override MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
 
-    public virtual void OnExit()
+    public override void OnExit()
     {
         (H.Gamemode as IGMSideSwappable).HasSideSwapped = true;
     }
 }
 
 // we go back to none and lobby here
-public class SharedMatchEnd : IGameState
+public class SharedMatchEnd : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.MatchEnd;
-    public virtual void OnEnter() { }
-    public virtual MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.None : null;
-    public virtual void OnExit() { }
+    public override MatchState StateType => MatchState.MatchEnd;
+    public override void OnEnter() { }
+    public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.None : null;
+    public override void OnExit() { }
 }

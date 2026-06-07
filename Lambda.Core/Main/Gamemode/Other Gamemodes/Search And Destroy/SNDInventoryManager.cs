@@ -1,9 +1,6 @@
 using EFT;
 using EFT.InventoryLogic;
-using Lambda.Core.Main;
 using Lambda.Core.Main.Gamemode;
-
-#pragma warning disable IDE0019
 
 public class SNDInventoryManager : BaseInventoryManager
 {
@@ -12,7 +9,7 @@ public class SNDInventoryManager : BaseInventoryManager
         base.Replenish(player);
 
         var pistol = player.GetSlotItem(EquipmentSlot.Holster) as Weapon;
-        if (pistol == null) pistol = GiveDefaultPistol(player);
+        pistol ??= GiveDefaultPistol(player);
 
         pistol.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
     }
@@ -33,4 +30,4 @@ public class SNDInventoryManager : BaseInventoryManager
 
         return defaultPistol;
     }
-}
+} 

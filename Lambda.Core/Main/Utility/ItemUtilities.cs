@@ -116,7 +116,7 @@ public static class ItemUtilities
 
             StripArmorPlatesIfNeeded(clonedItem);
 
-            Singleton<BuyItemPacketWarden>.Instance.Send(clonedItem, placement, H.MainPlayer);
+            Singleton<BuyItemPacketWarden>.Instance.Send(clonedItem, H.MainPlayer);
             return true;
         }
         finally

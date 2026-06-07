@@ -18,8 +18,6 @@ using UnityEngine;
 
 namespace Lambda.Core.Main.FX;
 
-// This class is absolute garbage and needs to be thrown out and rewritten from scratch
-// alongside all its implementation in ArenaController and the network transaction
 public class BombHandler : Singleton<BombHandler>, IDisposable
 {
     public BetterSource LastBombSource { get; private set; }

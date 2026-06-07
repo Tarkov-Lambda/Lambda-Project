@@ -19,7 +19,7 @@ public class AwpOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
 
     public int MaxRoundsToWin { get; set; } = 13;
 
-    public override IGameState CreateState(MatchState state) => state switch
+    public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),
         MatchState.Warmup => new SharedWarmup(),

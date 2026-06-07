@@ -29,8 +29,8 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
     public AudioHandler()
     {
         AudioBundle = AssetBundle.LoadFromFile(AudioBundlePath);
-        if (AudioBundle == null)
-            D.LogError("CRITICAL ERROR: Audio Bundle is missing!");
+        if (AudioBundle == null) throw new NullReferenceException("CRITICAL ERROR: Audio Bundle is missing!");
+
         PrefabSounds = AudioBundle.LoadAsset<LambdaSounds>(PREFAB_SOUNDS_PATH);
         MusicKitSounds = AudioBundle.LoadAsset<MusicKit>(MUSIC_KIT_SOUNDS_PATH);
     }

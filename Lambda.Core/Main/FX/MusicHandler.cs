@@ -13,7 +13,7 @@ namespace Lambda.Core.Main.FX;
 public class MusicHandler : Singleton<MusicHandler>, IDisposable
 {
     private MusicObject _musicObject;
-    private CancellationTokenSource _cts = new CancellationTokenSource();
+    private CancellationTokenSource _cts = new();
 
     // Tracks the last second we played a tick for, so we don't spam the sound every frame.
     private int _lastTickSecond = -1;

@@ -70,7 +70,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         }
     }
 
-    public void Send(Item item, ItemPlacement placement, Player player)
+    public void Send(Item item, Player player)
     {
         var packet = new BuyItemPacket
         {

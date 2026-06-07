@@ -11,8 +11,8 @@ public class KnifeOnlyInventoryManager : BaseInventoryManager
     {
         base.Replenish(player);
 
-        var existingKnife = player.GetSlotItem(EquipmentSlot.Scabbard) as Weapon;
-        if (existingKnife == null) GiveKnife(player);
+        var existingKnife = player.GetSlotItem(EquipmentSlot.Scabbard) as KnifeItemClass;
+        _ = existingKnife ?? GiveKnife(player);
     }
 
     public override void HardReset(Player player)
@@ -22,7 +22,7 @@ public class KnifeOnlyInventoryManager : BaseInventoryManager
         GiveKnife(player);
     }
 
-    private void GiveKnife(Player player)
+    private KnifeItemClass GiveKnife(Player player)
     {
         IU.TryCreateItem(Hardcode.KNIFE, out Item knifeItem);
         var knifePlacement = AU.GetItemPlacement(knifeItem, player);
@@ -31,5 +31,7 @@ public class KnifeOnlyInventoryManager : BaseInventoryManager
         {
             knifePlacement.Address.AddWithoutRestrictions(knifeItem);
         }
+
+        return knifeItem as KnifeItemClass;
     }
 }

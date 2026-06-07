@@ -25,7 +25,6 @@ public static class PlayerExtensions
         return player.Inventory.Equipment.GetSlot(equipmentSlotType);
     }
 
-    // full retard nuclear hand resetting
     // this needs to go ASAP
     public static void UnfuckHands(this Player player)
     {

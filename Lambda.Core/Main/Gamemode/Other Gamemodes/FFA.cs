@@ -3,24 +3,24 @@ using System.Linq;
 
 namespace Lambda.Core.Main.Gamemode;
 
-public class FFAAction : IGameState
+public class FFAAction : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundAction;
-    public void OnEnter() { }
-    public MatchState? OnUpdate()
+    public override MatchState StateType => MatchState.RoundAction;
+    public override void OnEnter() { }
+    public override MatchState? OnUpdate()
     {
         if (H.IsClient) return null;
         if (H.Arena.StateTimer <= 0 || H.Scoreboard.Values.Any(p => p.Kills >= 20)) return MatchState.MatchEnd;
         return null;
     }
-    public void OnExit() { }
+    public override void OnExit() { }
 }
 
 public class FFAGamemode : LambdaGamemode
 {
     public override string Name { get; } = "Free For All";
 
-    public override IGameState CreateState(MatchState state) => state switch
+    public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {
         MatchState.None         => new SharedNone(),
         MatchState.Warmup       => new SharedWarmup(),

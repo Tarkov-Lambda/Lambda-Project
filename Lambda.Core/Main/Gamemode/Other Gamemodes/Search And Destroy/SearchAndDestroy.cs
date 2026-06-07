@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using Lambda.Shared;
@@ -44,11 +45,11 @@ public class SND_Prepare : SharedPrepare
     }
 }
 
-public class SND_Action : IGameState
+public class SND_Action : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundAction;
-    public void OnEnter() { }
-    public MatchState? OnUpdate()
+    public override MatchState StateType => MatchState.RoundAction;
+    public override void OnEnter() { }
+    public override MatchState? OnUpdate()
     {
         if (!H.IsServer) return null;
         Faction? winner = CheckWipe();
@@ -70,7 +71,7 @@ public class SND_Action : IGameState
 
         return null;
     }
-    public void OnExit() { }
+    public override void OnExit() { }
 
     private Faction? CheckWipe()
     {
@@ -88,13 +89,13 @@ public class SND_Action : IGameState
     }
 }
 
-public class SND_Planted : IGameState
+public class SND_Planted : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundPlanted;
+    public override MatchState StateType => MatchState.RoundPlanted;
 
-    public void OnEnter() { }
+    public override void OnEnter() { }
 
-    public MatchState? OnUpdate()
+    public override MatchState? OnUpdate()
     {
         if (!H.IsServer) return null;
 
@@ -121,7 +122,7 @@ public class SND_Planted : IGameState
         return null;
     }
 
-    public void OnExit() { }
+    public override void OnExit() { }
 }
 
 public class SND_RoundEnd : SharedRoundEnd
@@ -134,9 +135,17 @@ public class SND_RoundEnd : SharedRoundEnd
 
 public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable, IGMWithNightMode
 {
+    // public EconomyManager economyManager = new();
+
     public SNDGamemode()
     {
         H.Arena.inventoryManager = new SNDInventoryManager();
+    }
+
+    public override void Dispose()
+    {
+        // economyManager.Dispose();
+        base.Dispose();
     }
 
     public override string Name { get; } = "Search And Destroy";
@@ -173,7 +182,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         {MatchState.MatchEnd, 15}
     };
 
-    public override IGameState CreateState(MatchState state) => state switch
+    public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),
         MatchState.Warmup => new SharedWarmup(),

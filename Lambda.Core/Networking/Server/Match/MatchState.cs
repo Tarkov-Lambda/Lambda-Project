@@ -9,7 +9,8 @@ namespace Lambda.Core.Networking;
 public partial struct MatchStateSyncPacket : IPacket, IServerTimestampedPacket
 {
     public double Timestamp { get; set; }  // Phase start time (server clock)
-    public double serverNowSeconds;        // Current server time at send — used for NTP bootstrap on late joiners
+    public double ServerNowSeconds;        // Current server time at send — used for NTP bootstrap on late joiners
+    public double PhaseDurationSeconds;
 
     public MatchState matchState;
     public RoundActionPhaseEnd? roundActionEnd;
@@ -25,7 +26,8 @@ public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacke
         {
             matchState = matchState,
             Timestamp = NetworkTime.ServerNowSeconds,           // phase start = right now
-            serverNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
+            ServerNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
+            PhaseDurationSeconds = phaseDurationSeconds,
             roundActionEnd = roundActionEnd
         };
         DispatchPacket(ref packet);
@@ -40,7 +42,7 @@ public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacke
         {
             matchState = H.Session.matchState,
             Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
-            serverNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
+            ServerNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
             roundActionEnd = H.Arena.PendingRoundActionEnd
         };
         DispatchPacket(ref packet, peerId);

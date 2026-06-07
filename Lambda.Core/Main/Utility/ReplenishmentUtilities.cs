@@ -148,13 +148,13 @@ public static class ReplenishmentUtilities
 
             var placement = AU.GetItemPlacement(newMag, player);
 
-            if (AU.GetItemPlacement(newMag, player).Kind == PlacementKind.None)
+            if (placement.Kind == PlacementKind.None)
             {
                 D.NotifyLong("Can't find space for a mag");
                 continue;
             }
 
-            Singleton<BuyItemPacketWarden>.Instance.Send(newItem, placement, player);
+            Singleton<BuyItemPacketWarden>.Instance.Send(newItem, player);
         }
     }
 

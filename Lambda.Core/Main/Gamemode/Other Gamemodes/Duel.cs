@@ -21,11 +21,11 @@ public class DuelPrepare : SharedPrepare
     }
 }
 
-public class DuelAction : IGameState
+public class DuelAction : AbstractMatchStateController
 {
-    public MatchState StateType => MatchState.RoundAction;
-    public void OnEnter() { }
-    public MatchState? OnUpdate()
+    public override MatchState StateType => MatchState.RoundAction;
+    public override void OnEnter() { }
+    public override MatchState? OnUpdate()
     {
         if (!H.IsServer) return null;
         Faction? winner = CheckWipe();
@@ -43,7 +43,7 @@ public class DuelAction : IGameState
 
         return null;
     }
-    public void OnExit() { }
+    public override void OnExit() { }
 
     private Faction? CheckWipe()
     {
@@ -67,17 +67,17 @@ public class DuelGamemode : LambdaGamemode, IGMRound, IGMTeam
 
     public int MaxRoundsToWin { get; set; } = 13;
 
-    public override IGameState CreateState(MatchState state) => state switch
+    public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {
-        MatchState.None         => new SharedNone(),
-        MatchState.Warmup       => new SharedWarmup(),
-        MatchState.WarmupEnd    => new SharedWarmupEnd(),
-        MatchState.Cleanup      => new SharedCleanup(),
-        MatchState.Pause        => new SharedPause(),
+        MatchState.None => new SharedNone(),
+        MatchState.Warmup => new SharedWarmup(),
+        MatchState.WarmupEnd => new SharedWarmupEnd(),
+        MatchState.Cleanup => new SharedCleanup(),
+        MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new DuelPrepare(),
-        MatchState.RoundAction  => new DuelAction(),
-        MatchState.RoundEnd     => new SharedRoundEnd(),
-        MatchState.MatchEnd     => new SharedMatchEnd(),
+        MatchState.RoundAction => new DuelAction(),
+        MatchState.RoundEnd => new SharedRoundEnd(),
+        MatchState.MatchEnd => new SharedMatchEnd(),
         _ => null
     };
 }

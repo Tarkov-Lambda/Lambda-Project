@@ -10,7 +10,6 @@ using Lambda.Shared.Models;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main;
 using Fika.Core.Main.Players;
-using Lambda.Core.Main.Gamemode;
 
 namespace Lambda.Core.Networking;
 
@@ -83,14 +82,11 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             bool isLateJoiner = H.Session.matchState >= MatchState.WarmupEnd;
             if (isLateJoiner)
             {
-                D.Log("isLateJoiner");
-                List<Item> unloadedItems = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(playerShopItems);
-                D.Log("List<Item> unloadedItems");
-                if (unloadedItems.Count > 0)
+                List<Item> uniqueItems = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(playerShopItems);
+                if (uniqueItems.Count > 0)
                 {
-                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(unloadedItems);
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(uniqueItems);
                 }
-                D.Log("Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems");
             }
             else
             {

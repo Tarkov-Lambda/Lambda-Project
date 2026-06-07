@@ -48,8 +48,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public RoundActionPhaseEnd? LastRoundActionEnd;
     public Player LastObjectivePlayer;
     public BombState LastObjectiveBombState = BombState.None; // Defused/Exploded (or None)
-   
-    private IGameState _currentState;
+
+    private AbstractMatchStateController _currentState;
 
     public event Action OnBeginInitializing;
     public event Action OnInitialized;
@@ -111,6 +111,13 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         Session = new SessionManager();
 
         await Singleton<MapAssetBundleLoader>.Instance.LoadMap("lobby");
+
+        var allHardcodedItemTemplateIDs = Hardcode.GetAllTemplateIDs();
+        foreach (var hardcodedItemTemplateID in allHardcodedItemTemplateIDs)
+        {
+            Item item = IU.CreateItemFromTemplateId(hardcodedItemTemplateID);
+            if (item != null) RuntimeBundleLoader.Instance.AddToCache(item);
+        }
 
         if (!H.IsHeadless)
         {
@@ -181,7 +188,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     {
         var previousState = _currentState;
 
-        PhaseDurationSeconds = H.Gamemode.StateTimerConfig[packet.matchState];
+        PhaseDurationSeconds = packet.PhaseDurationSeconds;
         ServerPhaseStartSeconds = packet.Timestamp;
 
         if (packet.roundActionEnd.HasValue)
@@ -197,6 +204,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
         if (previousState != null)
         {
+            // Cancel CancellationToken to signal any async sequence running in the OnEnter to do an early return
+            previousState.Dispose(); 
             previousState.OnExit();
             EventBus.OnExit?.Invoke(previousState.StateType);
         }

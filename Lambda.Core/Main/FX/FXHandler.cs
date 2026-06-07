@@ -33,8 +33,7 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
     public void Initialize()
     {
         FXBundle = AssetBundle.LoadFromFile(FXBundlePath);
-        if (FXBundle == null)
-            D.LogError("CRITICAL ERROR: Effects Bundle is missing!");
+        if (FXBundle == null) throw new NullReferenceException("CRITICAL ERROR: Effects Bundle is missing!");
             
         MolotovFirePrefab = FXBundle.LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH).GetComponent<MolotovFXController>();
         FireNodeEffectPrefab = FXBundle.LoadAsset<GameObject>(FIRE_NODE_EFFECT_PATH);

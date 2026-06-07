@@ -1,19 +1,28 @@
+using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Threading;
 
-public interface IGameState
+public abstract class AbstractMatchStateController : IDisposable
 {
-    MatchState StateType { get; }
-    void OnEnter();
-    MatchState? OnUpdate(); // Returns next state, or null to stay
-    void OnExit();
+    protected CancellationTokenSource _cts = new();
+
+    public abstract MatchState StateType { get; }
+    public abstract void OnEnter();
+    public abstract MatchState? OnUpdate(); // Returns next state, or null to stay
+    public abstract void OnExit();
+
+    public virtual void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
 }
 
-public abstract class LambdaGamemode
+public abstract class LambdaGamemode : IDisposable
 {
     public virtual string Name { get; } = "Generic Lambda Gamemode";
 
-    public abstract IGameState CreateState(MatchState state);
+    public abstract AbstractMatchStateController CreateState(MatchState state);
 
     public virtual Dictionary<MatchState, float> StateTimerConfig { get; } = new()
     {
@@ -29,6 +38,8 @@ public abstract class LambdaGamemode
         {MatchState.SideSwap, 10},
         {MatchState.MatchEnd, 15}
     };
+
+    public virtual void Dispose() { }
 }
 
 /// <summary>

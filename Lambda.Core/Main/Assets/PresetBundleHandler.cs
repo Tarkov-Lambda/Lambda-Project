@@ -66,7 +66,8 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 
         foreach (var item in items)
         {
-            addedItems.AddRange(AddToCacheAndGetDelta(item));
+            List<Item> uniqueItems = AddToCacheAndGetDelta(item);
+            addedItems.AddRange(uniqueItems);
         }
 
         return addedItems;

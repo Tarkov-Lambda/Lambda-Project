@@ -11,7 +11,6 @@ using Lambda.Core.Main.UI;
 
 namespace Lambda.Core.Main.Gamemode;
 
-// TODO: make this gamemode specific
 public class BaseInventoryManager : IInventoryManager
 {
     public static void EnforceOnePrimaryWeaponAtMost(Player player, ref List<Item> itemsToRemove)
@@ -35,6 +34,7 @@ public class BaseInventoryManager : IInventoryManager
         }
 
         AddRange(ref itemsToRemove, player.GetNonMatchingMags());
+        
         if (firstPrimaryWeapon != null)
         {
             RU.SetupWeaponLocally(firstPrimaryWeapon, player);
@@ -54,6 +54,15 @@ public class BaseInventoryManager : IInventoryManager
         foreach (var itemToRemove in itemsToRemove)
         {
             itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
+        }
+
+        GiveDefaultEquipment(player);
+
+        Slot tacRigSlot = player.GetSlot(EquipmentSlot.TacticalVest);
+        if (tacRigSlot.ContainedItem == null)
+        {
+            IU.TryCreateItem(Hardcode.DEFAULT_TAC_RIG, out Item BlackrockRig);
+            tacRigSlot.CreateItemAddress().AddWithoutRestrictions(BlackrockRig.CloneItem());
         }
 
         if (H.IsNightTime)
@@ -90,7 +99,7 @@ public class BaseInventoryManager : IInventoryManager
             AddItem(ref itemsToRemove, currentItem);
         }
 
-        AddRange(ref itemsToRemove, player.GetVestAndPocketGridItems<Item>().ToList());
+        AddRange(ref itemsToRemove, player.GetVestAndPocketGridItems<Item>());
 
         itemsToRemove.Reverse();
 
@@ -99,24 +108,8 @@ public class BaseInventoryManager : IInventoryManager
             itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
         }
 
-        // GIVING
-        foreach (var kvp in player.Context.DefaultEquipment)
-        {
-            if (kvp.Value == null) continue;
+        GiveDefaultEquipment(player);
 
-            var currentItem = player.GetSlotItem(kvp.Key);
-            if (currentItem == null || currentItem.TemplateId != kvp.Value.TemplateId)
-            {
-                var clonedItem = kvp.Value.CloneItem();
-                var placement = AU.GetItemPlacement(clonedItem, player);
-
-                IU.StripArmorPlatesIfNeeded(clonedItem);
-
-                placement.Address.AddWithoutRestrictions(clonedItem);
-            }
-        }
-
-        // NVG for night time
         if (H.IsNightTime)
         {
             var NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem() as HeadwearItemClass;
@@ -130,6 +123,29 @@ public class BaseInventoryManager : IInventoryManager
         IU.AddArmbandIfNeeded(player);
     }
 
+    // TODO: add check for when we are replenishing a player to avoid collision between an armor vest and armored tac rig
+    public static void GiveDefaultEquipment(Player player)
+    {
+        foreach (var kvp in player.Context.DefaultEquipment)
+        {
+            Item defaultItem = kvp.Value;
+            if (defaultItem == null) continue;
+
+            var currentItem = player.GetSlotItem(kvp.Key);
+            if (currentItem == null)
+            {
+                var clonedItem = defaultItem.CloneItem();
+                var placement = AU.GetItemPlacement(clonedItem, player);
+
+                IU.StripArmorPlatesIfNeeded(clonedItem);
+
+                var addResult = placement.Address.Add(clonedItem, simulate: true);
+                if (addResult.Failed) continue;
+
+                placement.Address.AddWithoutRestrictions(clonedItem);
+            }
+        }
+    }
 
     public static PistolItemClass GetDefaultPistol(PlayerContext pContext)
     {
@@ -177,7 +193,8 @@ public class BaseInventoryManager : IInventoryManager
     {
         if (itemList.Contains(item)) return;
         if (item == null) return;
-        D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+        if (H.ShouldLog) D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+
         itemList.Add(item);
     }
 
@@ -185,8 +202,9 @@ public class BaseInventoryManager : IInventoryManager
     {
         foreach (Item item in itemCollection)
         {
-            D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+            if (H.ShouldLog) D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
         }
+
         itemList.AddRange(itemCollection);
     }
 }

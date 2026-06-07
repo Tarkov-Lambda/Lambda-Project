@@ -11,18 +11,20 @@ public class AwpOnlyInventoryManager : BaseInventoryManager
     {
         base.Replenish(player);
 
-        var existingAWP = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
-        if (existingAWP == null) GiveAWP(player);
+        var AWP = player.GetSlotItem(EquipmentSlot.FirstPrimaryWeapon) as Weapon;
+        AWP ??= GiveAWP(player);
+        RU.SetupWeaponLocally(AWP, player);
     }
 
     public override void HardReset(Player player)
     {
         base.HardReset(player);
 
-        GiveAWP(player);
+        var AWP = GiveAWP(player);
+        RU.SetupWeaponLocally(AWP, player);
     }
 
-    private void GiveAWP(Player player)
+    private SniperRifleItemClass GiveAWP(Player player)
     {
         var AWP = GetFirstSniperRifleItem(player.Context);
         var AWPPlacement = AU.GetItemPlacement(AWP, player);
@@ -31,5 +33,7 @@ public class AwpOnlyInventoryManager : BaseInventoryManager
         {
             AWPPlacement.Address.AddWithoutRestrictions(AWP);
         }
+
+        return AWP;
     }
 }

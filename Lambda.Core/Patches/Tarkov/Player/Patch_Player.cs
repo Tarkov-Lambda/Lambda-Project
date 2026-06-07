@@ -94,7 +94,7 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
         bool didHitHelmet = shot.BlockedBy != null;
 
         AudioClip[] clips = didHitHelmet ? H.Sounds.HeadshotHelmet : H.Sounds.HeadshotFlesh;
-        H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 50, BetterAudio.AudioSourceGroupType.Collisions);
+        H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 80, BetterAudio.AudioSourceGroupType.Collisions);
     }
 
     public void Dispose()

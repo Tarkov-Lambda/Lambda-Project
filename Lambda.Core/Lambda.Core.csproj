@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <NoWarn>0649,0169,0414,NU1702</NoWarn>
+    <NoWarn>0649,0169,0414,NU1702,IDE0002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
