@@ -276,7 +276,7 @@ public class LambdaPlugin : BaseUnityPlugin
             RegisterSingleton<RagdollCreator>();                                    // Fake Corpse Creation
             RegisterSingleton<PresetItemsCache>();                                  // Caching gun presets
             RegisterSingleton<WeaponPresetManager>();                               // Initializes/Saves/Loads what gun preset is selected for in raid spawning
-            RegisterSingleton<DefaultEquipmentManager>();                            // 
+            RegisterSingleton<DefaultEquipmentManager>();                           // Select Player's Equipment that will carry over into the session
 
             RegisterSingleton<FXHandler>();                                         // Handler for Visual Effects (Mollies)
             RegisterSingleton<AudioHandler>();                                      // Handler for all custom Audio Effects (Ladder noise, headshots, music)

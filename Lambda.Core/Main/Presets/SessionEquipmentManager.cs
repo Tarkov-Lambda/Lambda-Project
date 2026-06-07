@@ -20,7 +20,6 @@ public struct PresetManagerSlotInfo
 }
 
 // this manager deals with capturing the equipment that the player brings into the raid for inventory resetting
-// at the moment there is no server side validation for this, and ultimately it would be best if capture preset would be split into validation as well
 public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
 {
     private readonly string PresetDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "DefaultEquipment.jsonc");
