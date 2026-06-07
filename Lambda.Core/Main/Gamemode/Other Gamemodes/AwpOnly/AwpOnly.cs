@@ -1,12 +1,34 @@
-﻿using Cysharp.Threading.Tasks;
-using EFT.InventoryLogic;
-using Lambda.Core.Main.Economy;
-using Lambda.Shared.Models;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lambda.Core.Main.Gamemode;
+
+public enum RoundGunType
+{
+    TRG,
+    MK18,
+    AK50
+}
+
+public class AwpOnlyCleanup : SharedCleanup
+{
+    public override void OnEnter()
+    {
+        if (H.Arena.gamemode is AwpOnlyGamemode awpGamemode)
+        {
+            float roll = Random.value;
+
+            awpGamemode.RoundGunType = roll switch
+            {
+                < 0.85f => RoundGunType.TRG,
+                < 0.925f => RoundGunType.MK18,
+                _ => RoundGunType.AK50
+            };
+        }
+
+        base.OnEnter();
+    }
+}
 
 public class AwpOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
 {
@@ -19,12 +41,14 @@ public class AwpOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
 
     public int MaxRoundsToWin { get; set; } = 13;
 
+    public RoundGunType RoundGunType = RoundGunType.TRG;
+
     public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),
         MatchState.Warmup => new SharedWarmup(),
         MatchState.WarmupEnd => new SharedWarmupEnd(),
-        MatchState.Cleanup => new SharedCleanup(),
+        MatchState.Cleanup => new AwpOnlyCleanup(),
         MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new SharedPrepare(),
         MatchState.RoundAction => new GenericTeamRoundBasedAction(),

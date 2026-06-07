@@ -51,7 +51,7 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
         if (!H.IsArenaReady) return;
         if (____firearmController is null) return;
 
-        if (____firearmController.Item is SniperRifleItemClass)
+        if (____firearmController.Item is SniperRifleItemClass or MarksmanRifleItemClass)
         {
             __instance.AimingDisplacementStr = 0f;
             __instance.MotionReact.SwayFactors = Vector3.zero;

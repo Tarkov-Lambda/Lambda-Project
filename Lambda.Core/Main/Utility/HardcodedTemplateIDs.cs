@@ -16,6 +16,8 @@ internal static class Hardcode
     public const string MOLOTOV_GRENADE = "617fd91e5539a84ec44ce155";
 
     public const string TRG = "673cab3e03c6a20581028bc1";
+    public const string MK18 = "5fc22d7c187fea44d52eda44";
+    public const string AK50 = "67d0576f29f580ebc10efd08";
     public const string DEAGLE = "669fa39b48fc9f8db6035a0c";
 
     public const string KNIFE = "5bffdd7e0db834001b734a1a";

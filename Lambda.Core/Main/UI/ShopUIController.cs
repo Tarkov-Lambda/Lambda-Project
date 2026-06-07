@@ -12,6 +12,9 @@ using Lambda.Shared;
 using System;
 using System.Reflection;
 using UnityEngine;
+using System.Collections.Generic;
+using Lambda.Shared.Models;
+using System.Linq;
 
 namespace Lambda.Core.Main.UI
 {
@@ -41,7 +44,7 @@ namespace Lambda.Core.Main.UI
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
 
-            shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
+            SetAssortment();
         }
 
         public void Dispose()
@@ -55,9 +58,18 @@ namespace Lambda.Core.Main.UI
                 GameObject.Destroy(shop.gameObject);
         }
 
+        private void SetAssortment()
+        {
+            List<BuyCategory> prunedBuySelection = BuyMenuSelection.buyCategories
+                .Where(category => category.name != "Hidden")
+                .ToList();
+
+            shop.SetAssortment(prunedBuySelection, itemInfoProvider, Purchasing.BuyItem);
+        }
+
         private void OnMatchStateEnter(MatchState state)
         {
-            if (state is MatchState.Warmup) shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
+            if (state is MatchState.Warmup) SetAssortment();
 
             shop.SetFaction(H.MainPlayerScore.Faction);
             SetInteractable();

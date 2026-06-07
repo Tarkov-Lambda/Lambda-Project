@@ -6,6 +6,7 @@ using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.UI;
+using Lambda.Shared.Models;
 
 #pragma warning disable IDE0019
 
@@ -159,6 +160,21 @@ public class BaseInventoryManager : IInventoryManager
         }
     }
 
+    public static Item GetBuySelectionItem(PlayerContext pContext, string bsgId)
+    {
+        foreach (var BuySelectionPair in pContext.BuySelection)
+        {
+            ShopItem playerShopItem = BuySelectionPair.Key;
+            Item item = BuySelectionPair.Value;
+
+            var isValidFaction = playerShopItem.faction is Faction.None || playerShopItem.faction == pContext.Faction;
+
+            if (playerShopItem.bsgId == bsgId && isValidFaction) return item;
+        }
+
+        return null;
+    }
+
     public static PistolItemClass GetDefaultPistol(PlayerContext pContext)
     {
         foreach (var category in BuyMenuSelection.buyCategories)
@@ -180,26 +196,7 @@ public class BaseInventoryManager : IInventoryManager
         return null;
     }
 
-    public static SniperRifleItemClass GetFirstSniperRifleItem(PlayerContext pContext)
-    {
-        foreach (var category in BuyMenuSelection.buyCategories)
-        {
-            foreach (var shopItem in category.items)
-            {
-                if (string.IsNullOrEmpty(shopItem.ammoId))
-                    continue;
 
-                var immutable = Singleton<PresetItemsCache>.Instance.GetPresetItem(shopItem.bsgId);
-                if (immutable is not SniperRifleItemClass assaultCarbine)
-                    continue;
-
-                if (shopItem.faction == pContext.Faction || shopItem.faction == Faction.None)
-                    return assaultCarbine;
-            }
-        }
-
-        return null;
-    }
 
     public static void AddItem(ref List<Item> itemList, Item item)
     {
