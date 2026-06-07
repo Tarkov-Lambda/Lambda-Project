@@ -27,7 +27,7 @@ public class AwpOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
         MatchState.Cleanup => new SharedCleanup(),
         MatchState.Pause => new SharedPause(),
         MatchState.RoundPrepare => new SharedPrepare(),
-        MatchState.RoundAction => new GenericRoundBasedAction(),
+        MatchState.RoundAction => new GenericTeamRoundBasedAction(),
         MatchState.RoundEnd => new SharedRoundEnd(),
         MatchState.MatchEnd => new SharedMatchEnd(),
         _ => null

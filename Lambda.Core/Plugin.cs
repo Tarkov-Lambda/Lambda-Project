@@ -163,6 +163,9 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_CanProne());                        // No proning allowed
         RegisterPatch(new Patch_FirearmController_SetTriggerPressed());             // For controller locking
 
+        RegisterPatch(new Patch_FirearmController_TotalErgonomics());             // For controller locking
+        RegisterPatch(new Patch_FirearmController_ErgonomicWeight());             // For controller locking
+
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
         RegisterPatch(new Patch_Effects_GetEmissionEffect());                       // Smoke tuning
 
@@ -192,8 +195,6 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot in raid
         RegisterPatch(new Patch_Class1841_method_0());                              // FOV slider overwrite
         RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV slider overwrite
-        // RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateLobbyLimit());          // Crank max lobby framerate to 120 fps
-        // RegisterPatch(new Patch_GameGraphicsTab_MaxFramerateGameLimit());           // Crank max game framerate to 345 fps (at 350 fps jumps break)
         GameGraphicsClass.MaxFramerateGameLimit = 345;
         GameGraphicsClass.MaxFramerateLobbyLimit = 120;
         RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
@@ -248,6 +249,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterSingleton<ChatMessagePacketWarden>();                               // Player sends a message
         RegisterSingleton<AskForBombPriorityPacketWarden>();                        // Player requesting to be the bomb carry for the foreseeable rounds
         RegisterSingleton<ClanTagResyncPacketWarden>();                             // Player sets new clan tag
+        RegisterSingleton<RefundItemPacketWarden>();                                // Buy Item Reversal
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map
@@ -296,15 +298,6 @@ public class LambdaPlugin : BaseUnityPlugin
             D.Dump(ex);
             D.Log(ex.StackTrace);
         }
-
-        // if (H.IsInRaid())
-        // {
-        //     H.MainPlayer.MovementContext.PlantState = H.MainPlayer.MovementContext.GetNewState(EPlayerState.Plant, false);
-        //     H.MainPlayer.MovementContext.PlantState.Name = EPlayerState.Plant;
-        //     H.MainPlayer.MovementContext.PlantState.AnimatorStateHash = -1;
-
-        //     // LambdaAudioRoomController.Instance.TriggerChange();
-        // }
 
         // TODO: make this initialization more in line with the rest of the project
         UniTask.RunOnThreadPool(async () =>

@@ -1,6 +1,6 @@
 [
   {
-    "_id": "69df06d7668a8d2956004073",
+    "_id": "6a0e2b9405bca72ebca8391f",
     "_tpl": "5fc3e272f8b6a877a729eac5",
     "upd": {
       "Repairable": {
@@ -16,13 +16,13 @@
     }
   },
   {
-    "_id": "69df06d7668a8d2956004074",
+    "_id": "6a0e2b9405bca72ebca83920",
     "_tpl": "5fc3e466187fea44d52eda90",
     "slotId": "mod_magazine",
-    "parentId": "69df06d7668a8d2956004073"
+    "parentId": "6a0e2b9405bca72ebca8391f"
   },
   {
-    "_id": "69df022c78a677bdb1000d8f",
+    "_id": "6a0e2b9405bca72ebca83921",
     "_tpl": "58491f3324597764bc48fa02",
     "slotId": "mod_scope",
     "upd": {
@@ -37,42 +37,42 @@
         "ScopeZoomValue": 0.0
       }
     },
-    "parentId": "69df06d7668a8d2956004073"
+    "parentId": "6a0e2b9405bca72ebca8391f"
   },
   {
-    "_id": "69df06d7668a8d2956004075",
+    "_id": "6a0e2b9405bca72ebca83922",
     "_tpl": "5fc3e4ee7283c4046c5814af",
     "slotId": "mod_stock",
-    "parentId": "69df06d7668a8d2956004073"
+    "parentId": "6a0e2b9405bca72ebca8391f"
   },
   {
-    "_id": "69df022c78a677bdb1000cec",
+    "_id": "6a0e2b9405bca72ebca83923",
     "_tpl": "6130c3dffaa1272e43151c7d",
     "slotId": "mod_barrel",
-    "parentId": "69df06d7668a8d2956004073"
+    "parentId": "6a0e2b9405bca72ebca8391f"
   },
   {
-    "_id": "69df06d7668a8d2956004077",
+    "_id": "6a0e2b9405bca72ebca83924",
     "_tpl": "5fc53954f8b6a877a729eaeb",
     "slotId": "mod_mount_000",
-    "parentId": "69df06d7668a8d2956004073"
+    "parentId": "6a0e2b9405bca72ebca8391f"
   },
   {
-    "_id": "69df022c78a677bdb1000d05",
+    "_id": "6a0e2b9405bca72ebca83925",
     "_tpl": "5fc4b992187fea44d52edaa9",
     "slotId": "mod_muzzle",
-    "parentId": "69df022c78a677bdb1000cec"
+    "parentId": "6a0e2b9405bca72ebca83923"
   },
   {
-    "_id": "69df022c78a677bdb1000d5b",
+    "_id": "6a0e2b9405bca72ebca83926",
     "_tpl": "5b057b4f5acfc4771e1bd3e9",
     "slotId": "mod_foregrip",
-    "parentId": "69df06d7668a8d2956004077"
+    "parentId": "6a0e2b9405bca72ebca83924"
   },
   {
-    "_id": "69df022c78a677bdb1000d36",
+    "_id": "6a0e2b9405bca72ebca83927",
     "_tpl": "5fc4b9b17283c4046c5814d7",
     "slotId": "mod_muzzle",
-    "parentId": "69df022c78a677bdb1000d05"
+    "parentId": "6a0e2b9405bca72ebca83925"
   }
 ]

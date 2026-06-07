@@ -45,10 +45,32 @@ public class Patch_FirearmController_SetTriggerPressed : ModulePatch
     {
         if (!____player.IsYourPlayer) return;
         if (!H.IsArenaReady) return;
-        
+
         if (____player.Context.IsControllerPartiallyLocked() || H.Session.matchState is MatchState.None or MatchState.Pause)
         {
             pressed = false;
         }
+    }
+}
+
+public class Patch_FirearmController_TotalErgonomics : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(Player.FirearmController), nameof(Player.FirearmController.TotalErgonomics));
+
+    [PatchPostfix]
+    static void Postfix(Player.FirearmController __instance, ref float __result)
+    {
+        if (__instance.Item is SniperRifleItemClass) __result = 100f;
+    }
+}
+
+public class Patch_FirearmController_ErgonomicWeight : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(Player.FirearmController), nameof(Player.FirearmController.ErgonomicWeight));
+
+    [PatchPostfix]
+    static void Postfix(Player.FirearmController __instance, ref float __result)
+    {
+        if (__instance.Item is SniperRifleItemClass) __result = 1f;
     }
 }

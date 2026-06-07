@@ -50,15 +50,25 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
     {
         if (!H.IsArenaReady) return;
         if (____firearmController is null) return;
-        if (____firearmController.Item is not PistolItemClass) return;
 
-        __instance.AimingDisplacementStr *= GameplayVariables.vars.PistolDisplacementStrScale;
-        __instance.MotionReact.SwayFactors *= GameplayVariables.vars.PistolDisplacementStrScale;
+        if (____firearmController.Item is SniperRifleItemClass)
+        {
+            __instance.AimingDisplacementStr = 0f;
+            __instance.MotionReact.SwayFactors = Vector3.zero;
 
-        ____displacementStr *= GameplayVariables.vars.PistolDisplacementStrScale;
-        ____swayStrength *= GameplayVariables.vars.PistolDisplacementStrScale;
-        ____aimSwayStrength *= GameplayVariables.vars.PistolDisplacementStrScale;
+            ____displacementStr = 0f;
+            ____swayStrength = 0f;
+            ____aimSwayStrength = 0f;
+        }
+        else if (____firearmController.Item is PistolItemClass)
+        {
+            __instance.AimingDisplacementStr *= GameplayVariables.vars.PistolDisplacementStrScale;
+            __instance.MotionReact.SwayFactors *= GameplayVariables.vars.PistolDisplacementStrScale;
 
+            ____displacementStr *= GameplayVariables.vars.PistolDisplacementStrScale;
+            ____swayStrength *= GameplayVariables.vars.PistolDisplacementStrScale;
+            ____aimSwayStrength *= GameplayVariables.vars.PistolDisplacementStrScale;
+        }
     }
 }
 

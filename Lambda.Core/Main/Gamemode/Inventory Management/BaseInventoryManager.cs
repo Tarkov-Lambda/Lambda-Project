@@ -34,7 +34,7 @@ public class BaseInventoryManager : IInventoryManager
         }
 
         AddRange(ref itemsToRemove, player.GetNonMatchingMags());
-        
+
         if (firstPrimaryWeapon != null)
         {
             RU.SetupWeaponLocally(firstPrimaryWeapon, player);
@@ -84,6 +84,8 @@ public class BaseInventoryManager : IInventoryManager
             }
         }
 
+        RU.Replenish(player, false);
+
         IU.AddArmbandIfNeeded(player);
     }
 
@@ -109,6 +111,16 @@ public class BaseInventoryManager : IInventoryManager
         }
 
         GiveDefaultEquipment(player);
+
+        // In DefaultEquipmentManager, we save the equipment as is
+        // because of this, the player will retain whatever was in the rig at that time.
+        // we have to manually remove it all here every time
+        List<Item> RigItems = new();
+        AddRange(ref RigItems, player.GetVestAndPocketGridItems<Item>());
+        foreach (var itemToRemove in RigItems)
+        {
+            itemToRemove.CurrentAddress.RemoveWithoutRestrictions(itemToRemove);
+        }
 
         if (H.IsNightTime)
         {

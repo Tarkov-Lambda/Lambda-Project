@@ -34,8 +34,9 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public SessionManager Session { get; private set; } = null;
     public LambdaGamemode gamemode = null;
 
-    // the goal in future is to make these swappable between gamemodes
-    // or perhaps these should just exist in the gamemode itself?
+    // These realistically should reside inside the gamemode
+    // however given that LambdaGamemode is in Lambda.Shared which does not have EFT assembly reference
+    // it's kind of difficult atm
     public EconomyManager economyManager = new();
     public IRespawnManager respawnManager = new RespawnManager();
     public IInventoryManager inventoryManager = new BaseInventoryManager();

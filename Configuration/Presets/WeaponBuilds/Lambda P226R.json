@@ -1,6 +1,6 @@
 [
   {
-    "_id": "69df0645668a8d2956003e59",
+    "_id": "6a0e2b9405bca72ebca8393a",
     "_tpl": "56d59856d2720bd8418b456a",
     "upd": {
       "Repairable": {
@@ -13,37 +13,37 @@
     }
   },
   {
-    "_id": "69df022c78a677bdb1000aec",
+    "_id": "6a0e2b9405bca72ebca8393b",
     "_tpl": "587de4282459771bca0ec90b",
     "slotId": "mod_barrel",
-    "parentId": "69df0645668a8d2956003e59"
+    "parentId": "6a0e2b9405bca72ebca8393a"
   },
   {
-    "_id": "69df022c78a677bdb1000b5f",
+    "_id": "6a0e2b9405bca72ebca8393c",
     "_tpl": "5b39ffbd5acfc47a8773fb06",
     "slotId": "mod_pistol_grip",
-    "parentId": "69df0645668a8d2956003e59"
+    "parentId": "6a0e2b9405bca72ebca8393a"
   },
   {
-    "_id": "69df022c78a677bdb1000b2d",
+    "_id": "6a0e2b9405bca72ebca8393d",
     "_tpl": "5bffe7c50db834001d23ece1",
     "slotId": "mod_reciever",
-    "parentId": "69df0645668a8d2956003e59"
+    "parentId": "6a0e2b9405bca72ebca8393a"
   },
   {
-    "_id": "69df0645668a8d2956003e5f",
+    "_id": "6a0e2b9405bca72ebca8393e",
     "_tpl": "56d59948d2720bb7418b4582",
     "slotId": "mod_magazine",
-    "parentId": "69df0645668a8d2956003e59"
+    "parentId": "6a0e2b9405bca72ebca8393a"
   },
   {
-    "_id": "69df022c78a677bdb1000af9",
+    "_id": "6a0e2b9405bca72ebca8393f",
     "_tpl": "5c6165902e22160010261b28",
     "slotId": "mod_muzzle",
-    "parentId": "69df022c78a677bdb1000aec"
+    "parentId": "6a0e2b9405bca72ebca8393b"
   },
   {
-    "_id": "69df022c78a677bdb1000b52",
+    "_id": "6a0e2b9405bca72ebca83940",
     "_tpl": "56ea7293d2720b8d4b8b45ba",
     "slotId": "mod_sight_rear",
     "upd": {
@@ -58,16 +58,16 @@
         "ScopeZoomValue": 0.0
       }
     },
-    "parentId": "69df022c78a677bdb1000b2d"
+    "parentId": "6a0e2b9405bca72ebca8393d"
   },
   {
-    "_id": "69df022c78a677bdb1000b56",
+    "_id": "6a0e2b9405bca72ebca83941",
     "_tpl": "577d128124597739d65d0e56",
     "slotId": "mod_scope",
-    "parentId": "69df022c78a677bdb1000b52"
+    "parentId": "6a0e2b9405bca72ebca83940"
   },
   {
-    "_id": "69df022c78a677bdb1000b58",
+    "_id": "6a0e2b9405bca72ebca83942",
     "_tpl": "577d141e24597739c5255e01",
     "slotId": "mod_scope",
     "upd": {
@@ -82,6 +82,6 @@
         "ScopeZoomValue": 0.0
       }
     },
-    "parentId": "69df022c78a677bdb1000b56"
+    "parentId": "6a0e2b9405bca72ebca83941"
   }
 ]

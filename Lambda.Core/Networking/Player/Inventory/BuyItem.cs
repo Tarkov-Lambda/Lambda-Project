@@ -3,15 +3,9 @@ using EFT.InventoryLogic;
 using Lambda.Core.Main;
 using Lambda.Core.Main.Economy;
 using Lambda.Shared.Models;
-using System.Collections.Concurrent;
-using Cysharp.Threading.Tasks;
 using System;
-using System.Threading;
 using PacketWarden.RateLimiting;
 using MemoryPack;
-using System.Diagnostics;
-using UnityEngine;
-using Comfort.Common;
 using Lambda.Core.Main.Gamemode;
 using System.Collections.Generic;
 using PacketWarden.TimeSync;
@@ -65,7 +59,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     {
         if (state is MatchState.Cleanup)
         {
-            // RoundTransactions.Clear();
+            RoundTransactions.Clear();
             // _resyncDebouncer.Dispose();
         }
     }

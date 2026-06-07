@@ -282,7 +282,7 @@ public class SharedPrepare : AbstractMatchStateController
     }
 }
 
-public class GenericRoundBasedAction : AbstractMatchStateController
+public class GenericTeamRoundBasedAction : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.RoundAction;
     public override void OnEnter() { }
@@ -353,17 +353,18 @@ public class SharedRoundEnd : AbstractMatchStateController
 
     public override MatchState? OnUpdate()
     {
-        if (H.IsClient) return null;
-
         if (H.Arena.StateTimer <= 0)
         {
             if (H.Gamemode is IGMRound roundBasedGamemode)
             {
                 var wins = H.Session.factionWins;
 
-                if (wins[Faction.CT] + wins[Faction.T] == roundBasedGamemode.MaxRoundsToWin - 1)
+                if (H.Gamemode is IGMSideSwappable)
                 {
-                    return MatchState.SideSwap;
+                    if (wins[Faction.CT] + wins[Faction.T] == roundBasedGamemode.MaxRoundsToWin - 1)
+                    {
+                        return MatchState.SideSwap;
+                    }
                 }
 
                 if (wins[Faction.CT] >= roundBasedGamemode.MaxRoundsToWin || wins[Faction.T] >= roundBasedGamemode.MaxRoundsToWin)

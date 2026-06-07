@@ -57,6 +57,8 @@ namespace Lambda.Core.Main.UI
 
         private void OnMatchStateEnter(MatchState state)
         {
+            if (state is MatchState.Warmup) shop.SetAssortment(BuyMenuSelection.buyCategories, itemInfoProvider, Purchasing.BuyItem);
+
             shop.SetFaction(H.MainPlayerScore.Faction);
             SetInteractable();
         }

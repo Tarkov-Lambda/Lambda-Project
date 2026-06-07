@@ -6,7 +6,6 @@ Fuck you eclips
 
 QOL
 2. Night Time lifecycle improvements
-3. Rework Inventory Resetter
 4. Implement overtime
 5. Work on side swap, match end UI
 6. Gifting and Refunding UI
@@ -20,7 +19,7 @@ Editor & Core
 2. Rework MapAssetBundleHandler to load multiple bundles from one folder
 3. Rework smokes
 4. Implement Lambda Camera Manager
-5. Rework ArenaController/Gamemode responsibilities
+5. Finalize Respawn Manager
 
 Hardpoint
 1. Finish Respawn Manager

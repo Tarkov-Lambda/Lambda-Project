@@ -64,14 +64,14 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
                 bool hasEnoughTimePassed = ageInSeconds >= 2;
                 if (!hasEnoughTimePassed)
                 {
-                    rejectionReason = "You must wait before refunding this transaction.";
+                    rejectionReason = "You must wait before refunding this transaction";
                     return false;
                 }
 
                 var item = transaction.Player.FindItemById(transaction.item.Id);
                 if (item.Failed)
                 {
-                    rejectionReason = "One or more items linked to the transaction can not be found.";
+                    rejectionReason = "One or more items linked to the transaction can not be found";
                     return false;
                 }
             }
