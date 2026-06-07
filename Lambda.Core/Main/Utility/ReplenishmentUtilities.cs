@@ -95,7 +95,8 @@ public static class ReplenishmentUtilities
     public static void SetupWeaponLocally(Weapon weapon, Player player)
     {
         weapon.SwitchFullAutoIfNeeded();
-
+        weapon.TurnOffAllLights();
+        
         if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
         {
             ReplenishGun(weapon, ammo);

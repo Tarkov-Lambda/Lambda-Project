@@ -160,6 +160,19 @@ public class BaseInventoryManager : IInventoryManager
         }
     }
 
+    protected KnifeItemClass GiveKnife(Player player)
+    {
+        IU.TryCreateItem(Hardcode.KNIFE, out Item knifeItem);
+        var knifePlacement = AU.GetItemPlacement(knifeItem, player);
+
+        if (knifePlacement.Kind != PlacementKind.None)
+        {
+            knifePlacement.Address.AddWithoutRestrictions(knifeItem);
+        }
+
+        return knifeItem as KnifeItemClass;
+    }
+
     public static Item GetBuySelectionItem(PlayerContext pContext, string bsgId)
     {
         foreach (var BuySelectionPair in pContext.BuySelection)

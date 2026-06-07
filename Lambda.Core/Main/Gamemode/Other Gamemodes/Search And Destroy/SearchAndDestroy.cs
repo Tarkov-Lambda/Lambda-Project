@@ -172,7 +172,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         {MatchState.None, 0},
         {MatchState.Warmup, 120},
         {MatchState.WarmupEnd, 5},
-        {MatchState.Cleanup, 6},
+        {MatchState.Cleanup, 3},
         {MatchState.Pause, 600},
         {MatchState.RoundPrepare, 15},
         {MatchState.RoundAction, 115},

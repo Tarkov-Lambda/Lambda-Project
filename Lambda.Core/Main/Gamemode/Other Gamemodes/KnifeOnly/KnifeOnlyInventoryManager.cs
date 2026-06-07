@@ -21,17 +21,4 @@ public class KnifeOnlyInventoryManager : BaseInventoryManager
 
         GiveKnife(player);
     }
-
-    private KnifeItemClass GiveKnife(Player player)
-    {
-        IU.TryCreateItem(Hardcode.KNIFE, out Item knifeItem);
-        var knifePlacement = AU.GetItemPlacement(knifeItem, player);
-
-        if (knifePlacement.Kind != PlacementKind.None)
-        {
-            knifePlacement.Address.AddWithoutRestrictions(knifeItem);
-        }
-
-        return knifeItem as KnifeItemClass;
-    }
 }

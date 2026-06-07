@@ -2,7 +2,7 @@ using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Gamemode;
 
-public class SNDInventoryManager : BaseInventoryManager
+public class SNDInventoryManager : KnifeOnlyInventoryManager
 {
     public override void Replenish(Player player)
     {

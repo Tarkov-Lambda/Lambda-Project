@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using EFT.InventoryLogic;
 
 // class full of bruteforce player manipulations 
 public static class WeaponExtensions
 {
-    public static void TurnOffLight(this Weapon weapon)
+    public static void TurnOffAllLights(this Weapon weapon)
     {
-        foreach (var slot in weapon.Slots)
+        IEnumerable<LightComponent> allLights = weapon.GetItemComponentsInChildren<LightComponent>();
+        foreach (var lightComponent in allLights)
         {
-
+            lightComponent.IsActive = false;
         }
     }
+
 }

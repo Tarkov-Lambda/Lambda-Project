@@ -6,7 +6,7 @@ using Lambda.Core.Main.Gamemode;
 
 #pragma warning disable IDE0019
 
-public class AwpOnlyInventoryManager : BaseInventoryManager
+public class AwpOnlyInventoryManager : KnifeOnlyInventoryManager
 {
     public override void Replenish(Player player)
     {

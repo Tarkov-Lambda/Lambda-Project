@@ -48,9 +48,18 @@ internal class PatchGroup_QuickAccessPanel_ModifyItemIcon : PatchGroup
     {
         if (___MainImage == null) return;
 
-        ___MainImage.transform.localRotation = Quaternion.identity;
+        if (__instance.Item is KnifeItemClass)
+        {
+            ___MainImage.transform.localRotation = Quaternion.Euler(0, 0, -81);
+            ___MainImage.rectTransform.pivot = new Vector2(0.175f, 0f);
+        }
+        else
+        {
+            ___MainImage.transform.localRotation = Quaternion.identity;
+            ___MainImage.rectTransform.pivot = new Vector2(0f, 0.5f);
+        }
+
         ___MainImage.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
-        ___MainImage.rectTransform.pivot = new Vector2(0f, 0.5f);
         ___MainImage.rectTransform.anchoredPosition = new Vector2(-20f, 0f);
 
         if (MatteMaterial != null)
