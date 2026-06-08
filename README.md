@@ -1,16 +1,18 @@
 # ALPHA NOTICE
-The project is currently in private testing phase and is not fully released yet.
-This repository contains code and only a portion of required asset bundles for gameplay.
+The project is currently in private testing phase and is not fully released yet.  
+This repository contains code and only a portion of required asset bundles for gameplay.  
+Issues and PRs are currently disabled while the project is in Alpha.  
+We're selectively looking for contributors. If you'd like to get involved - please message **ifp** on discord  
 
 ## On the shoulders of giants we stand
-This project wouldn't be possible without
-- **Battlestate Games** - Developing Escape From Tarkov for over 10 years.
-- **SPT Crew** - Creating and maintaining an exuberantly ambitious ecosystem.
-- **Lacyway** - Spearheading Fika, Dedicated Servers, and doing all the hard multiplayer work this project depends on.
+This project wouldn't be possible without:  
+**Battlestate Games** - Developing Escape From Tarkov for over 10 years.  
+**SPT Crew** - Creating and maintaining an exuberantly ambitious ecosystem.  
+**Lacyway** - Spearheading Fika, Dedicated Servers, and doing all the hard multiplayer work this project depends on.  
 
 ## Credits
-- **ifp**: Core • Gamemodes • Equipment • Networking • Maps • Steam Audio
-- **tarkin**: Core • UI/UX • Maps • Mentor
+**ifp**: Core • Gamemodes • Equipment • Networking • Maps • Steam Audio  
+**tarkin**: Core • UI/UX • Maps • Mentor
 
 ## Features
 
