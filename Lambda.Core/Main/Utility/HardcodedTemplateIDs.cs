@@ -15,6 +15,8 @@ internal static class Hardcode
     public const string SMOKE_GRENADE = "5c066e3a0db834001b7353f0";
     public const string MOLOTOV_GRENADE = "617fd91e5539a84ec44ce155";
 
+    public const string SALEWA = "544fb45d4bdc2dee738b4568";
+
     public const string TRG = "673cab3e03c6a20581028bc1";
     public const string MK18 = "5fc22d7c187fea44d52eda44";
     public const string AK50 = "67d0576f29f580ebc10efd08";

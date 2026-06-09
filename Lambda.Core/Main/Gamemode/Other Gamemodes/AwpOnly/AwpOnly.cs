@@ -20,8 +20,8 @@ public class AwpOnlyCleanup : SharedCleanup
 
             awpGamemode.RoundGunType = roll switch
             {
-                < 0.85f => RoundGunType.TRG,
-                < 0.925f => RoundGunType.MK18,
+                < 0.80f => RoundGunType.TRG,
+                < 0.9f => RoundGunType.MK18,
                 _ => RoundGunType.AK50
             };
         }

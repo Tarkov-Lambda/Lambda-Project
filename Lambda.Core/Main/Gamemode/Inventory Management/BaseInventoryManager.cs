@@ -134,6 +134,7 @@ public class BaseInventoryManager : IInventoryManager
         }
 
         IU.AddArmbandIfNeeded(player);
+        // GiveSalewa(player);
     }
 
     // TODO: add check for when we are replenishing a player to avoid collision between an armor vest and armored tac rig
@@ -158,6 +159,19 @@ public class BaseInventoryManager : IInventoryManager
                 placement.Address.AddWithoutRestrictions(clonedItem);
             }
         }
+    }
+
+    protected MedsItemClass GiveSalewa(Player player)
+    {
+        IU.TryCreateItem(Hardcode.SALEWA, out Item meds);
+        var medsPlacement = AU.GetItemPlacement(meds, player);
+
+        if (medsPlacement.Kind != PlacementKind.None)
+        {
+            medsPlacement.Address.AddWithoutRestrictions(meds);
+        }
+
+        return meds as MedsItemClass;
     }
 
     protected KnifeItemClass GiveKnife(Player player)

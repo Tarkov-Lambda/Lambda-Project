@@ -42,7 +42,8 @@ public static class AddressUtilities
         ArmorPlateItemClass _ => ResolveArmorPlatePlacement(player),
 
         MagazineItemClass _ => ResolveVestAddress(item, player),
-        MedicalItemClass _ => ResolveVestAddress(item, player),
+        MedicalItemClass _ => ResolveVestAddress(item, player, reverse: true),
+        MedsItemClass _ => ResolveVestAddress(item, player, reverse: true),
         ThrowWeapItemClass _ => ResolveVestAddress(item, player),
         BarterItemItemClass _ => ResolveVestAddress(item, player),
         KeycardItemClass _ => ResolveVestAddress(item, player), // in case we're on labs and the bomb site is in red room type beat
@@ -97,13 +98,15 @@ public static class AddressUtilities
         return ItemPlacement.ForSlot(slotType, player.Inventory.Equipment.GetSlot(slotType).CreateItemAddress());
     }
 
-    private static ItemPlacement ResolveVestAddress(Item item, Player player)
+    private static ItemPlacement ResolveVestAddress(Item item, Player player, bool reverse = false)
     {
         var vest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as SearchableItemItemClass;
         if (vest == null) return ItemPlacement.None;
 
         var pockets = player.GetPlayerPockets();
         var allContainers = pockets.Containers.Concat(vest.Containers);
+
+        if (reverse) allContainers = allContainers.Reverse();
 
         bool isOneByOne = item.Template.Width == 1 && item.Template.Height == 1;
 

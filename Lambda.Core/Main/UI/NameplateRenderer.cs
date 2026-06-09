@@ -9,11 +9,11 @@ internal class NameplateRenderer : MonoBehaviour
 {
     private static readonly Vector3 HEAD_OFFSET = new Vector3(0f, 0.2f, 0f);
 
-    float _textFadeStart = 4f;
-    float _textFadeEnd = 10f;
+    readonly float _textFadeStart = 4f;
+    readonly float _textFadeEnd = 12f;
 
-    float _triangleFadeStart = 10f;
-    float _triangleFadeEnd = 30f;
+    readonly float _triangleFadeStart = 12f;
+    readonly float _triangleFadeEnd = 36f;
 
     RectTransform RectTransform => transform as RectTransform;
 
@@ -55,10 +55,13 @@ internal class NameplateRenderer : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!H.IsInRaid())
+        if (!H.IsArenaReady)
         {
-            DisableAll();
-            gameObject.SetActive(false);
+            if (gameObject.activeSelf)
+            {
+                DisableAll();
+                gameObject.SetActive(false);
+            }
             return;
         }
 
@@ -68,6 +71,7 @@ internal class NameplateRenderer : MonoBehaviour
         int activeCount = 0;
 
         Camera cam = CameraClass.Instance.Camera;
+        Transform camTransform = cam.transform;
 
         foreach (var playerScore in H.Scoreboard.Values)
         {
@@ -77,7 +81,7 @@ internal class NameplateRenderer : MonoBehaviour
             if (playerScore.Faction != ownFaction)
                 continue;
 
-            if (playerScore.player == null || !playerScore.IsAlive)
+            if (!playerScore.IsAlive)
                 continue;
 
             Vector3 worldPos = playerScore.player.PlayerBones.Head.position + HEAD_OFFSET;
@@ -87,7 +91,9 @@ internal class NameplateRenderer : MonoBehaviour
                 continue;
 
             Nameplate nameplate = GetOrCreateNameplate(activeCount);
-            nameplate.gameObject.SetActive(true);
+
+            if (!nameplate.gameObject.activeSelf)
+                nameplate.gameObject.SetActive(true);
 
             RectTransform nameplateRect = nameplate.transform as RectTransform;
 
@@ -107,7 +113,7 @@ internal class NameplateRenderer : MonoBehaviour
 
             nameplate.Set(playerScore.player.Profile.Nickname, playerScore.Faction);
 
-            float sqrDistance = (cam.transform.position - worldPos).sqrMagnitude;
+            float sqrDistance = (camTransform.position - worldPos).sqrMagnitude;
             float distance = Mathf.Sqrt(sqrDistance);
 
             float textT = Mathf.InverseLerp(_textFadeStart, _textFadeEnd, distance);
@@ -122,9 +128,11 @@ internal class NameplateRenderer : MonoBehaviour
             activeCount++;
         }
 
-        // disable leftover
         for (int i = activeCount; i < nameplates.Count; i++)
-            nameplates[i].gameObject.SetActive(false);
+        {
+            if (nameplates[i].gameObject.activeSelf)
+                nameplates[i].gameObject.SetActive(false);
+        }
     }
 
     void OnDestroy()

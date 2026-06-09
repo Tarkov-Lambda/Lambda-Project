@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.AssetBundleHandling;
@@ -182,6 +183,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
         RegisterPatch(new Patch_Grenade_Init());                                    // Force explode mollies after delay
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Server Generates Molly BFS Pattern on Explosion
+        // RegisterPatch(new Patch_LightComponent_IsActive());                       // Server Generates Molly BFS Pattern on Explosion
 
         // Animation Patches
         // RegisterPatch(new Patch_GClass2963_Spawn());
@@ -189,6 +191,7 @@ public class LambdaPlugin : BaseUnityPlugin
         // RegisterPatch(new Patch_FirearmController_Spawn());
         RegisterPatch(new Patch_FirearmController_Drop());                          // Instant Weapon Unequip
         RegisterPatch(new Patch_EmptyHandsController_ExamineWeapon());              // Send Hands Examination Packet to other players
+        // RegisterPatch(new Patch_KnifeController_Drop());                            // Send Hands Examination Packet to other players
 
         // UI Patches
         UIPatches.Enable();

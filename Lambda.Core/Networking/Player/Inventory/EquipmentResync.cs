@@ -204,6 +204,17 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                     player.SetEmptyHands(delegate { });
                 }
             });
+
+            // IEnumerable<MedsItemClass> meds = player.GetVestAndPocketGridItems<MedsItemClass>();
+            // foreach (var medicalItem in meds)
+            // {
+
+            //     var bindResult = BindResult.Run(player.InventoryController, medicalItem, EBoundItem.Item4, true);
+            //     if (bindResult.Failed)
+            //         continue;
+
+            //     var bindTransactionResult = player.InventoryController.TryRunNetworkTransaction(bindResult);
+            // }
         }
         else
         {

@@ -262,7 +262,7 @@ public static class ItemUtilities
     public static void GarbageCollectWorldLoot()
     {
         ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
-        // ObservedSmokeGrenade[] allSmokes = GameObject.FindObjectsByType<ObservedSmokeGrenade>(FindObjectsSortMode.None);
+        ObservedSmokeGrenade[] allSmokes = GameObject.FindObjectsByType<ObservedSmokeGrenade>(FindObjectsSortMode.None);
 
         foreach (ObservedLootItem loot in allLoot)
         {
@@ -270,9 +270,9 @@ public static class ItemUtilities
             loot.Kill();
         }
 
-        // foreach (ObservedSmokeGrenade smoke in allSmokes)
-        // {
-        //     Object.Destroy(smoke);
-        // }
+        foreach (ObservedSmokeGrenade smoke in allSmokes)
+        {
+            Object.Destroy(smoke);
+        }
     }
 }

@@ -57,8 +57,20 @@ public class SharedWarmup : AbstractMatchStateController
         var total = H.Arena.PhaseDurationSeconds;
         var elapsed = total - remaining;
 
-        bool allReady = H.Scoreboard.Count > 0 && H.Scoreboard.Values.All(p => p.ReadyState != PlayerReadinessState.Connected);
+        bool allReady = H.Scoreboard.Count > 0;
 
+        if (allReady)
+        {
+            foreach (var p in H.Scoreboard.Values)
+            {
+                if (p.ReadyState == PlayerReadinessState.Connected)
+                {
+                    allReady = false;
+                    break;
+                }
+            }
+        }
+        
         // if (allReady) return MatchState.WarmupEnd;
 
         if (remaining <= 0) return MatchState.WarmupEnd;
@@ -153,6 +165,8 @@ public class SharedCleanup : AbstractMatchStateController
     public override MatchState StateType => MatchState.Cleanup;
     public override void OnEnter()
     {
+        if (!H.IsHeadless) H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+
         int totalRounds = H.Session.factionWins.Values.Sum();
         bool isHalfTime = false;
         if (H.Gamemode is IGMRound roundBased and IGMSideSwappable)
@@ -216,7 +230,7 @@ public class SharedCleanup : AbstractMatchStateController
         {
             try
             {
-                await UniTask.Delay(250, cancellationToken: ct);
+                await UniTask.Delay(250, cancellationToken: MatchStateCancellationToken);
 
                 IU.GarbageCollectWorldLoot();
                 GC.Collect();
@@ -225,20 +239,18 @@ public class SharedCleanup : AbstractMatchStateController
 
                 if (!H.IsHeadless)
                 {
-                    H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
-
-                    await UniTask.Delay(500, cancellationToken: ct);
+                    await UniTask.Delay(500, cancellationToken: MatchStateCancellationToken);
 
                     HU.HealMe().Forget();
                     if (H.MainPlayer.MovementContext.IsInPronePose) H.MainPlayer.MovementContext.IsInPronePose = false;
 
                     H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
-                    await UniTask.Delay(750, cancellationToken: ct);
+                    await UniTask.Delay(750, cancellationToken: MatchStateCancellationToken);
                     Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
                 }
             }
             catch (OperationCanceledException) { }
-        }, cancellationToken: _cts.Token);
+        }, cancellationToken: MatchStateCancellationToken);
     }
     public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
     public override void OnExit() { }
@@ -338,16 +350,16 @@ public class SharedRoundEnd : AbstractMatchStateController
             {
                 try
                 {
-                    await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000, cancellationToken: ct);
+                    await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000, cancellationToken: MatchStateCancellationToken);
 
                     PU.CloseEyes(false, false).Forget();
 
-                    await UniTask.Delay(2250, cancellationToken: ct);
+                    await UniTask.Delay(2250, cancellationToken: MatchStateCancellationToken);
 
                     H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
                 }
                 catch (OperationCanceledException) { }
-            }, cancellationToken: _cts.Token);
+            }, cancellationToken: MatchStateCancellationToken);
         }
     }
 

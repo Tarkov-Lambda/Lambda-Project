@@ -139,7 +139,7 @@ public class PlayerContextLookup(int maxId)
         // set => _items[id] = value;
     }
 
-    public IReadOnlyList<PlayerContext> Values => _activeContexts;
+    public List<PlayerContext> Values => _activeContexts;
 
     public IEnumerable<(int Id, PlayerContext Context)> Entries
     {

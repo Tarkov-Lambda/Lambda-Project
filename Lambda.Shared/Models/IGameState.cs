@@ -4,7 +4,11 @@ using System.Threading;
 
 public abstract class AbstractMatchStateController : IDisposable
 {
+    // This CTS is intended for cancelling asynchronous OnEnter events in case the server
+    // forcibly pulls us out of the current Match State Controller into another one
+    // for example during Session Stop Packet Application
     protected CancellationTokenSource _cts = new();
+    public CancellationToken MatchStateCancellationToken => _cts.Token;
 
     public abstract MatchState StateType { get; }
     public abstract void OnEnter();

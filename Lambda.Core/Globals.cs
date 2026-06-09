@@ -18,6 +18,7 @@ global using EquipmentBuildClass = GClass3953;
 global using InteractionContextHelper = GetActionsClass;
 global using AvailableInteractionState = ActionsReturnClass;
 global using LocalizationExtensions = GClass2348;
+global using BindResult = GClass3431;
 global using ArmorSlot = GClass3125;
 global using IInteractive = GInterface177;
 
