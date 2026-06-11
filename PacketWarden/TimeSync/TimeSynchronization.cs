@@ -15,7 +15,7 @@ public class TimeSynchronizationPacketWarden : PacketWarden<TimeSynchronizationP
 {
     protected override bool ShouldLog => false;
 
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(3, RateLimitAction.Drop);
+    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(2, RateLimitAction.Drop);
     protected override DeliveryType DeliveryType => DeliveryType.Sequenced;
 
     public void Send()

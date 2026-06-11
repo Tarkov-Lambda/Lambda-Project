@@ -113,33 +113,32 @@ namespace PhononSpatializerProxy
         private void OnEnable()
         {
             _steamSrc.enabled = true;
-            // PhononUpdateManager.Instance.ActiveBridges.Add(this);
+            PhononUpdateManager.Instance.ActiveBridges.Add(this);
         }
 
         private void OnDisable()
         {
             _steamSrc.enabled = false;
-            // PhononUpdateManager.Instance.ActiveBridges.Remove(this);
+            PhononUpdateManager.Instance.ActiveBridges.Remove(this);
         }
 
         public bool IsSourcePlaying() => _src.isPlaying;
 
         private void OnDestroy()
         {
-            // Safely restore AudioSource real state so we don't permanently break it
-            if (_src != null)
-            {
-                // BepInEx.AudioSourceStateBypass.Bypass = true;
-                try
-                {
-                    _src.spatialBlend = _spatialBlend;
-                    _src.spatialize = _spatialize;
-                }
-                finally
-                {
-                    // BepInEx.AudioSourceStateBypass.Bypass = false;
-                }
-            }
+            // if (_src != null)
+            // {
+            //     BepInEx.AudioSourceStateBypass.Bypass = true;
+            //     try
+            //     {
+            //         _src.spatialBlend = _spatialBlend;
+            //         _src.spatialize = _spatialize;
+            //     }
+            //     finally
+            //     {
+            //         BepInEx.AudioSourceStateBypass.Bypass = false;
+            //     }
+            // }
 
             lock (_lock)
             {
@@ -385,7 +384,7 @@ namespace PhononSpatializerProxy
 
         private unsafe void OnAudioFilterRead(float[] data, int channels)
         {
-            if (channels != 2) return;
+            // if (channels != 2) return;
 
             int currentState, nextState, r;
             do
@@ -518,7 +517,7 @@ namespace PhononSpatializerProxy
                         }
                     }
 
-                    // write out back to Unity buffer vectorization loop
+                    // writing back here
                     for (int i = 0; i < n; i++)
                     {
                         pData[i * 2] = pLeft[i];

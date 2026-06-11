@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda.Audio.SteamIntegrati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamAudioUnity", "Lambda.Audio\SteamAudioUnity\SteamAudioUnity.csproj", "{D17797A1-65CF-A44B-59D9-1E729008BC51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhononSpatializerProxy", "Lambda.Audio\PhononSpatializerProxy\PhononSpatializerProxy.csproj", "{514E7A14-42A9-A94E-BCAC-83215074D83D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhononSpatializerProxy.BepInEx", "Lambda.Audio\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj", "{00E69AC2-95A6-66C7-76D6-DEC832495588}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +117,30 @@ Global
 		{D17797A1-65CF-A44B-59D9-1E729008BC51}.Release|x64.Build.0 = Release|Any CPU
 		{D17797A1-65CF-A44B-59D9-1E729008BC51}.Release|x86.ActiveCfg = Release|Any CPU
 		{D17797A1-65CF-A44B-59D9-1E729008BC51}.Release|x86.Build.0 = Release|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Debug|x64.Build.0 = Debug|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Debug|x86.Build.0 = Debug|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Release|x64.ActiveCfg = Release|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Release|x64.Build.0 = Release|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Release|x86.ActiveCfg = Release|Any CPU
+		{514E7A14-42A9-A94E-BCAC-83215074D83D}.Release|x86.Build.0 = Release|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Debug|x64.Build.0 = Debug|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Debug|x86.Build.0 = Debug|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Release|x64.ActiveCfg = Release|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Release|x64.Build.0 = Release|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Release|x86.ActiveCfg = Release|Any CPU
+		{00E69AC2-95A6-66C7-76D6-DEC832495588}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,6 +148,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{BB4F5AF6-706F-2072-9C4E-FC8C84010A73} = {D5A0EC8D-8F7E-7AA3-148E-9E06D4B6E576}
 		{D17797A1-65CF-A44B-59D9-1E729008BC51} = {D5A0EC8D-8F7E-7AA3-148E-9E06D4B6E576}
+		{514E7A14-42A9-A94E-BCAC-83215074D83D} = {D5A0EC8D-8F7E-7AA3-148E-9E06D4B6E576}
+		{00E69AC2-95A6-66C7-76D6-DEC832495588} = {D5A0EC8D-8F7E-7AA3-148E-9E06D4B6E576}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4ECB0728-9099-4517-81C7-F41014F54A41}

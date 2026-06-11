@@ -72,11 +72,7 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
 
         if (PacketWardenUtils.Network.IsHeadless) return;
 
-        RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
-
-        // RegisterPatch(new Patch_BetterAudio_FadeMixerVolume());
-
-        // RegisterPatch(new Patch_BetterSource_CheckBinauralAllowed());               // Audio Source Routing
+        // RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
 
         RegisterPatch(new Patch_BetterSource_Init());                                   // do not let anything be occluded
 
@@ -93,13 +89,13 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_BetterSource_SetLowPassFilterParameters());         //
         RegisterPatch(new Patch_BetterSource_SetHighPassFilterParameters());        //
 
-        RegisterPatch(new Patch_SpatialAudioSystem_Update());                       // bypass high filter muffling
-        RegisterPatch(new Patch_SpatialAudioSystem_LateUpdate());                   // bypass high filter muffling
+        RegisterPatch(new Transpiler_SpatialAudioSystem_Update());                       // bypass high filter muffling
+        RegisterPatch(new Transpiler_SpatialAudioSystem_LateUpdate());                   // bypass high filter muffling
 
-        RegisterPatch(new Patch_SpatialAudioSystem_ListenerCurrentRoom());          // force audio room to always be Phantom Audio Room
-        RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_1());     // bypass occlusion containers
-        RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_2());     // bypass occlusion containers
-        RegisterPatch(new Patch_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ListenerCurrentRoom());          // force audio room to always be Phantom Audio Room
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1());     // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2());     // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
 
         RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();              // We invoke all audio room changes manually
 

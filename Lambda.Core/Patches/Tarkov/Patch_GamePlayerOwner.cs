@@ -17,6 +17,15 @@ public class Patch_GamePlayerOwner_TranslateCommand : ModulePatch
         {
             IsRessetingFreelook = true;
         }
+        // else if (command == ECommand.ToggleTacticalDevice)
+        // {
+        //     if (H.IsNightTime)
+        //     {
+        //         return false;
+        //     }
+        // }
+
+        // return true;
     }
 
     [PatchPostfix]

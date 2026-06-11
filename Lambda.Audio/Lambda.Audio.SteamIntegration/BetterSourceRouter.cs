@@ -83,27 +83,27 @@ public class BetterSourceProxyRouter : Singleton<BetterSourceProxyRouter>
 
     // }
 
-    // public static void LobotomizeBetterSource(BetterSource betterSource)
-    // {
-    //     betterSource.source1.enabled = true;
-    //     SteamSourceData data = SteamAudioSourceController.ProcessAudioSource(betterSource.source1);
+    public static void Attach(BetterSource betterSource)
+    {
+        // betterSource.source1.enabled = true;
+        // SteamSourceData data = SteamAudioSourceController.ProcessAudioSource(betterSource.source1);
 
-    //     if (betterSource is ReverbSimpleSource reverbSimpleSource)
-    //     {
-    //         ReverbSimpleSourceFieldRef(reverbSimpleSource).enabled = true;
-    //         SteamAudioSourceController.ProcessAudioSource(ReverbSimpleSourceFieldRef(reverbSimpleSource));
+        // if (betterSource is ReverbSimpleSource reverbSimpleSource)
+        // {
+        //     ReverbSimpleSourceFieldRef(reverbSimpleSource).enabled = true;
+        //     SteamAudioSourceController.ProcessAudioSource(ReverbSimpleSourceFieldRef(reverbSimpleSource));
 
-    //     }
-    //     else if (betterSource is SuperSource superSource)
-    //     {
-    //         superSource.source2.enabled = false;
+        // }
+        // else if (betterSource is SuperSource superSource)
+        // {
+        //     superSource.source2.enabled = false;
 
-    //         if (superSource is ReverbSuperSource reverbSuperSource)
-    //         {
-    //             ReverbSuperSourceAFieldRef(reverbSuperSource).enabled = false;
-    //             ReverbSuperSourceBFieldRef(reverbSuperSource).enabled = false;
-    //         }
-    //     }
+        //     if (superSource is ReverbSuperSource reverbSuperSource)
+        //     {
+        //         ReverbSuperSourceAFieldRef(reverbSuperSource).enabled = false;
+        //         ReverbSuperSourceBFieldRef(reverbSuperSource).enabled = false;
+        //     }
+        // }
 
-    // }
+    }
 }

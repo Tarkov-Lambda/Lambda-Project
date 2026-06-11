@@ -34,12 +34,12 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void Dispose()
     {
+        if (H.IsHeadless) return;
         UnityTicker.OnLateUpdate -= OnUpdate;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKilled;
         StopSpectating();
-        Release(this);
     }
 
     private void ChangeBattleUIPOV(Player player)

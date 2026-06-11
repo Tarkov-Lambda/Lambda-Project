@@ -1,7 +1,7 @@
 using BepInEx;
 using HarmonyLib;
-using Lambda.Audio.SteamIntegration;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 
 namespace PhononSpatializerProxy.BepInEx;

@@ -58,7 +58,7 @@ public class LambdaPlugin : BaseUnityPlugin
     private readonly List<IDisposable> _disposables = new();
     private readonly List<Action> _releases = new();
 
-    private CancellationTokenSource _cts;
+    private CancellationTokenSource HotReloadCancellationTokenSource;
 
     private UnityTicker _unityTickListner;
 
@@ -89,7 +89,7 @@ public class LambdaPlugin : BaseUnityPlugin
     {
         try
         {
-            await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: _cts.Token);
+            await UniTask.WaitUntil(() => H.IsInRaid(), cancellationToken: HotReloadCancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -99,8 +99,8 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterSingleton<T>();
     }
 
-    // Никому не верь кроме монолиту и братьям твоим, никому.
-    async void Start()
+    // да заебца все
+    void Start()
     {
         PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
         PlayerLoopHelper.Initialize(ref playerLoop);
@@ -110,7 +110,7 @@ public class LambdaPlugin : BaseUnityPlugin
         Logger.LogInfo("Load");
         InitConfiguration();
 
-        _cts = new CancellationTokenSource();
+        HotReloadCancellationTokenSource = new CancellationTokenSource();
 
         // unregisterCommands = ConsoleScreen.Processor.RegisterCommandGroup<LambdaConsoleCommands>();
 
@@ -143,16 +143,11 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
         RegisterPatch(new Patch_GamePlayerOwner_TranslateCommand());                // Prevent Resetting Freelook from cancelling BetterPlantStateClass
 
-        // RegisterPatch(new Patch_Class1396_method_3());                           // In edge cases where the hands controller gets bugged out - we hard reset it
-        // RegisterPatch(new Patch_GClass2037_Start());                             // In edge cases where the hands controller gets bugged out - we hard reset it
-
         // RegisterPatch(new Patch_Player_OnItemAddedOrRemoved());                     // Track whether the player has a bomb
 
         RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
         RegisterPatch(new Patch_Player_UpdateTick());                               // If the item can't be picked up -> unlock the player movement
         RegisterPatch(new Patch_MovementContext_ManualUpdate());                    // Something something old movement
-        // RegisterPatch(new NostalgiaPatrolFixExitPatch());
-        // RegisterPatch(new NostalgiaPatrolFixEnterPatch());
         RegisterPatch(new Patch_MovementContext_GetNewState());                     // Change Movement State Classes
         RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());               // move in ads slightly faster
         RegisterPatch(new Patch_MovementContext_method_15());                       // Faster Leaning
@@ -173,17 +168,24 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_MagazineItemClass_GetAmmoCountByLevel());           // Mags autosearched
         RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
-        RegisterPatch(new Patch_ThrowWeapItemClass_FragmentsCount());               // Molly no fragments
-        RegisterPatch(new Patch_ThrowWeapItemClass_MinFragmentDamage());            // Molly no fragments
-        RegisterPatch(new Patch_ThrowWeapItemClass_MaxFragmentDamage());            // Molly no fragments
-        RegisterPatch(new Patch_ThrowWeapItemClass_MinTimeToContactExplode());      // Molly no fragments
+        // RegisterPatch(new Patch_ThrowWeapItemClass_FragmentsCount());               // Molly no fragments
+        // RegisterPatch(new Patch_ThrowWeapItemClass_MinFragmentDamage());            // Molly no fragments
+        // RegisterPatch(new Patch_ThrowWeapItemClass_MaxFragmentDamage());            // Molly no fragments
+        // RegisterPatch(new Patch_ThrowWeapItemClass_MinTimeToContactExplode());      // Molly no fragments
 
-        RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
+        // RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
+        // RegisterPatch(new Patch_AmmoItemClass_FragmentationChance());               // Set ricochet chance to 0
+        // RegisterPatch(new Patch_AmmoItemClass_PenetrationChanceObstacle());         // Set ricochet chance to 0
+
+        RegisterPatch(new Transpiler_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
+        RegisterPatch(new Transpiler_AmmoItemClass_FragmentationChance());               // Set ricochet chance to 0
+        RegisterPatch(new Transpiler_AmmoItemClass_PenetrationChanceObstacle());         // Set ricochet chance to 0
+
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
-        RegisterPatch(new Patch_method_10());                                       // Fake Ragdoll error silencing
+        RegisterPatch(new Patch_Weapon_method_10());                                // Fake Ragdoll error silencing
         RegisterPatch(new Patch_Grenade_Init());                                    // Force explode mollies after delay
         RegisterPatch(new Patch_Grenade_InvokeBlowUpEvent());                       // Server Generates Molly BFS Pattern on Explosion
-        // RegisterPatch(new Patch_LightComponent_IsActive());                       // Server Generates Molly BFS Pattern on Explosion
+        // RegisterPatch(new Patch_LightComponent_IsActive());                         // Server Generates Molly BFS Pattern on Explosion
 
         // Animation Patches
         // RegisterPatch(new Patch_GClass2963_Spawn());
@@ -198,8 +200,6 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_SearchableView_Awake());                            // Remove Secured Container Slot in raid
         RegisterPatch(new Patch_Class1841_method_0());                              // FOV slider overwrite
         RegisterPatch(new Patch_GameSettingsTab_Show());                            // FOV slider overwrite
-        GameGraphicsClass.MaxFramerateGameLimit = 345;
-        GameGraphicsClass.MaxFramerateLobbyLimit = 120;
         RegisterPatch(new Patch_Button_set_enabled());                              // FIKA ONLY: Allow clients to connect mid raid
 
         // Camera Patches
@@ -215,8 +215,8 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_HostGameController_GetHostLootItems());             // no bytes for loot items (some nre fix idk)
         RegisterPatch(new Patch_FikaServer_OnNetworkSettingsPacketReceived());      // snapshotter timestamp reconnect fix
 
-        RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
-        RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
+        // RegisterPatch(new Patch_ItemPositionSyncer_FixedUpdate());                  // Null safe guard
+        // RegisterPatch(new Patch_ItemPositionSyncer_NotifyDone());                   // Null safe guard
         RegisterPatch(new Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer()); // failed operation triggers inventory controller resynchronization
 
         RegisterPatch(new Patch_FikaConfig_ToNumber());
@@ -307,7 +307,7 @@ public class LambdaPlugin : BaseUnityPlugin
         {
             await UniTask.WaitUntil(() => H.IsMainMenuLoaded());
             ChatCommandInterceptor.Initialize();
-        }, cancellationToken: _cts.Token).Forget();
+        }, cancellationToken: HotReloadCancellationTokenSource.Token).Forget();
     }
 
     private void InitConfiguration()
@@ -331,16 +331,16 @@ public class LambdaPlugin : BaseUnityPlugin
 
     private void Update()
     {
-        if (StartKey.Value.IsDown())
-        {
-            Singleton<SessionStartPacketWarden>.Instance.Send();
-        }
+        // if (StartKey.Value.IsDown())
+        // {
+        //     Singleton<SessionStartPacketWarden>.Instance.Send();
+        // }
 
-        if (DeathKey.Value.IsDown())
-        {
-            EDamageType type = EDamageType.Fall;
-            H.MainPlayer.ActiveHealthController.Kill(type);
-        }
+        // if (DeathKey.Value.IsDown())
+        // {
+        //     EDamageType type = EDamageType.Fall;
+        //     H.MainPlayer.ActiveHealthController.Kill(type);
+        // }
 
         if (MapReloadKey.Value.IsDown())
         {
@@ -364,19 +364,16 @@ public class LambdaPlugin : BaseUnityPlugin
             }
         }
 
-        if (Noclip.IsEnabled && H.IsInRaid() && H.MainPlayerScore?.IsAdmin != false)
-        {
-            Noclip.ProcessNoclipFrame();
-        }
+        if (Noclip.IsEnabled && H.IsInRaid() && H.MainPlayerScore?.IsAdmin != false) Noclip.ProcessNoclipFrame();
     }
 
     void OnDestroy()
     {
         Logger.LogInfo("Unload");
 
-        _cts?.Cancel();
-        _cts?.Dispose();
-        _cts = null;
+        HotReloadCancellationTokenSource?.Cancel();
+        HotReloadCancellationTokenSource?.Dispose();
+        HotReloadCancellationTokenSource = null;
 
         foreach (var patch in _patches)
         {
@@ -395,8 +392,7 @@ public class LambdaPlugin : BaseUnityPlugin
 
         _disposables.Clear();
 
-        if (_unityTickListner != null)
-            GameObject.Destroy(_unityTickListner.gameObject);
+        if (_unityTickListner != null) GameObject.Destroy(_unityTickListner.gameObject);
 
         // Release concrete singleton slots AFTER all Dispose() calls so that
         // singletons can still safely access each other's Instance during teardown.

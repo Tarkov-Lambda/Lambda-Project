@@ -133,35 +133,6 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
     }
 }
 
-public class Patch_Class1396_method_3 : ModulePatch
-{
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Class1396), nameof(Class1396.method_3));
-
-    [PatchPrefix]
-    private static bool Prefix(Class1396 __instance, Player player)
-    {
-        try
-        {
-            if (player.UsedSimplifiedSkeleton)
-            {
-                return false;
-            }
-            Quaternion handsRotation = player.HandsRotation;
-            player.HandsController.ControllerGameObject.transform.SetPositionAndRotation(player.PlayerBones.Ribcage.Original.position, handsRotation);
-            player.CameraContainer.transform.rotation = handsRotation;
-        }
-        catch (Exception)
-        {
-            D.Log("Error in MovementContext.method_3: This usually occurs when a player is trying to equip an item they are about to drop");
-            if (player != null && player.IsYourPlayer)
-            {
-                player.UnfuckHands();
-            }
-        }
-        return false;
-    }
-}
-
 public class Patch_MovementContext_ManualUpdate : ModulePatch
 {
     private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");

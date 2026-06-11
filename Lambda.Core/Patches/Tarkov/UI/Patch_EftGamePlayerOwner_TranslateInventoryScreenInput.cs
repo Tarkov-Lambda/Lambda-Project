@@ -69,32 +69,39 @@ public class Patch_EftGamePlayerOwner_BlockScrollDuringMagSelect : ModulePatch
         return true;
     }
 
-    // there has to be a cleaner way to do this
     private static bool IsReloadKeysDown()
     {
         var settings = Singleton<SharedGameSettingsClass>.Instance?.Control?.Settings;
         var keyBindings = settings?.UserKeyBindings?.Value;
-        if (keyBindings == null) return false;
+        if (keyBindings == null)
+            return false;
 
-        var reloadGroup = keyBindings.FirstOrDefault(x => x.keyName == EGameKey.ReloadWeapon);
-        if (reloadGroup == null) return false;
-
-        foreach (var variant in reloadGroup.variants)
+        foreach (var reloadGroup in keyBindings)
         {
-            if (variant.IsEmpty || variant.keyCode == null || variant.keyCode.Count == 0) continue;
+            if (reloadGroup.keyName != EGameKey.ReloadWeapon)
+                continue;
 
-            bool allKeysDown = true;
-            foreach (var key in variant.keyCode)
+            foreach (var variant in reloadGroup.variants)
             {
-                if (!Input.GetKey(key))
+                if (variant.IsEmpty || variant.keyCode == null || variant.keyCode.Count == 0)
+                    continue;
+
+                bool allKeysDown = true;
+
+                foreach (var key in variant.keyCode)
                 {
-                    allKeysDown = false;
-                    break;
+                    if (!Input.GetKey(key))
+                    {
+                        allKeysDown = false;
+                        break;
+                    }
                 }
+
+                if (allKeysDown)
+                    return true;
             }
 
-            if (allKeysDown)
-                return true;
+            break;
         }
 
         return false;

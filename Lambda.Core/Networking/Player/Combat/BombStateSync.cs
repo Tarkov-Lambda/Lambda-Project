@@ -5,6 +5,7 @@ using MemoryPack;
 using UnityEngine;
 using PacketWarden.TimeSync;
 using Comfort.Common;
+using System;
 
 namespace Lambda.Core.Networking;
 
@@ -69,7 +70,7 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
         if (packet.state is BombState.Planted)
         {
             H.Arena.LastObjectivePlayer = packet.Player;
-            foreach (var bombPlantZone in Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
+            foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
             {
                 bombPlantZone.GetComponent<BoxCollider>().enabled = false; // remove interaction triggers
             }
@@ -95,7 +96,12 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
                 float distance = Vector3.Distance(packet.position, player.Position);
                 if (distance <= 32f)
                 {
-                    Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, H.Arena.LastObjectivePlayer);
+                    try
+                    {
+                        Player BombPlanter = (H.Gamemode as SNDGamemode).BombPlanter;
+                        Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, BombPlanter);
+                    }
+                    catch (Exception) { }
                 }
             }
         }

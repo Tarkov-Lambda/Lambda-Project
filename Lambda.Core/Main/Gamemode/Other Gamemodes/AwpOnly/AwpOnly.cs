@@ -62,11 +62,11 @@ public class AwpOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
         {MatchState.None, 0},
         {MatchState.Warmup, 120},
         {MatchState.WarmupEnd, 5},
-        {MatchState.Cleanup, 3},
+        {MatchState.Cleanup, 2},
         {MatchState.Pause, 600},
-        {MatchState.RoundPrepare, 5},
+        {MatchState.RoundPrepare, 3},
         {MatchState.RoundAction, 115},
-        {MatchState.RoundEnd, 8},
+        {MatchState.RoundEnd, 3},
         {MatchState.SideSwap, 5},
         {MatchState.MatchEnd, 15}
     };

@@ -70,7 +70,7 @@ public class SharedWarmup : AbstractMatchStateController
                 }
             }
         }
-        
+
         // if (allReady) return MatchState.WarmupEnd;
 
         if (remaining <= 0) return MatchState.WarmupEnd;
@@ -177,21 +177,26 @@ public class SharedCleanup : AbstractMatchStateController
         // Replenish/Reset Inventories
         foreach (var player in H.AllPlayers)
         {
-            player.ForceUnlockInventory();
-
-            if (H.IsServer)
+            try
             {
-                Singleton<ReconnectSnapshotterResetPacketWarden>.Instance.Send(player);
+                player.ForceUnlockInventory();
 
-
-                if (!player.Context.ShouldHardReset && totalRounds > 0 && !isHalfTime)
+                if (H.IsServer)
                 {
-                    H.Arena.inventoryManager.Replenish(player);
+                    Singleton<ReconnectSnapshotterResetPacketWarden>.Instance.Send(player);
+                    if (!player.Context.ShouldHardReset && totalRounds > 0 && !isHalfTime)
+                    {
+                        H.Arena.inventoryManager.Replenish(player);
+                    }
+                    else
+                    {
+                        H.Arena.inventoryManager.HardReset(player);
+                    }
                 }
-                else
-                {
-                    H.Arena.inventoryManager.HardReset(player);
-                }
+            }
+            catch (Exception ex)
+            {
+                D.Log($"[SharedCleanup] Error occured during Inventory Management for {player.Profile.Nickname}");
             }
         }
 
@@ -271,13 +276,13 @@ public class SharedPrepare : AbstractMatchStateController
     {
         if (!H.IsHeadless)
         {
-            // Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
-
             PU.OpenEyes();
-
             H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, 0f, 0.5f);
 
             // H.MainPlayer.SetFirstAvailableItem((result) => { });
+
+            if (H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack) != null)
+                D.Notify("You have the bomb.");
         }
 
         foreach (var player in H.AllPlayingPlayers)

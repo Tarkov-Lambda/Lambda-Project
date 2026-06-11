@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using Cysharp.Threading.Tasks;
+using EFT;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
@@ -139,13 +140,31 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public SNDGamemode()
     {
+        Singleton<BombStatePacketWarden>.Instance.AfterPacketApplied += OnBombStatePacketReceived;
+        EventBus.OnEnter += OnMatchStateEnter;
+
         H.Arena.inventoryManager = new SNDInventoryManager();
     }
 
     public override void Dispose()
     {
+        Singleton<BombStatePacketWarden>.Instance.AfterPacketApplied -= OnBombStatePacketReceived;
+        EventBus.OnEnter -= OnMatchStateEnter;
+
         // economyManager.Dispose();
         base.Dispose();
+    }
+
+    void OnBombStatePacketReceived(BombStatePacket packet)
+    {
+        if (packet.state is BombState.Planted)
+            BombPlanter = packet.Player;
+    }
+
+    void OnMatchStateEnter(MatchState state)
+    {
+        if (state is MatchState.Cleanup)
+            BombPlanter = null;
     }
 
     public override string Name { get; } = "Search And Destroy";
@@ -166,6 +185,8 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
     public static float PlatingTime { get; } = 4.5f;
     public static float DefusingTime { get; } = 10f;
     public static float DefuseRadius { get; } = 2.5f;
+
+    public Player BombPlanter { get; private set; } = null;
 
     public override Dictionary<MatchState, float> StateTimerConfig { get; } = new()
     {

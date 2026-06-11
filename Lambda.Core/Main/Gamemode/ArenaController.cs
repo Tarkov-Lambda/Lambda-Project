@@ -103,8 +103,6 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public async void StartSession()
     {
-        if (!H.IsInRaid()) return; // redundant?
-
         OnBeginInitializing?.Invoke();
 
         UnityTicker.OnUpdate += Update;

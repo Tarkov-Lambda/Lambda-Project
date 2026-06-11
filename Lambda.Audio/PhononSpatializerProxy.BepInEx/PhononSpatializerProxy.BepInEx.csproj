@@ -34,15 +34,15 @@
     <Reference Include="..\..\.Binaries\*.dll" />
   </ItemGroup>
 
-  <!-- <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
-  </ItemGroup> -->
+  </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
 
     <ItemGroup>
-      <Binaries Include="../../.Binaries/audioplugin_phonon.dll" />
-      <Binaries Include="../../.Binaries/phonon.dll" />
+      <!-- <Binaries Include="../../.Binaries/audioplugin_phonon.dll" />
+      <Binaries Include="../../.Binaries/phonon.dll" /> -->
 
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>

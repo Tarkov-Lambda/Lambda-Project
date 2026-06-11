@@ -1,11 +1,10 @@
 using System.Diagnostics;
+using UnityEngine;
 
 namespace PacketWarden.TimeSync;
 
 public static class NetworkTime
 {
-    private static readonly Stopwatch _stopwatch = Stopwatch.StartNew();
-
     // Smoothed offset (serverTime - localTime)
     private static double _offsetSeconds;
     private static bool _hasSync;
@@ -16,8 +15,8 @@ public static class NetworkTime
     private const double OffsetEmaAlpha = 0.10;
 
     // A monotonic local clock.
-    public static double LocalNowSeconds => _stopwatch.Elapsed.TotalSeconds;
-
+    public static double LocalNowSeconds => Time.realtimeSinceStartupAsDouble;
+    
     // Server: LocalNowSeconds
     // Client: LocalNowSeconds + offset
     public static double ServerNowSeconds => LocalNowSeconds + _offsetSeconds;
