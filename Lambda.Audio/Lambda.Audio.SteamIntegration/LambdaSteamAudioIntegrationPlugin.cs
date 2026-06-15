@@ -78,24 +78,24 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
 
         // foreach (BetterSource source in FindObjectsByType<BetterSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
         // {
-        //     BetterSourceProxyRouter.LobotomizeBetterSource(source);
+        //     BetterSourceProxyRouter.Attach(source);
         // }
 
-        RegisterPatch(new Patch_BetterSource_SetOcclusionVolumeFactor());           // do not let anything be occluded
-        RegisterPatch(new Patch_BetterSource_SetOcclusionRolloffScale());
-        RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());         // bypass low filter muffling
-        RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());        // bypass high filter muffling
+        RegisterPatch(new Transpiler_BetterSource_SetOcclusionVolumeFactor());              // do not let anything be occluded
+        RegisterPatch(new Transpiler_BetterSource_SetOcclusionRolloffScale());
+        RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());                 // bypass low filter muffling
+        RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());                // bypass high filter muffling
 
-        RegisterPatch(new Patch_BetterSource_SetLowPassFilterParameters());         //
-        RegisterPatch(new Patch_BetterSource_SetHighPassFilterParameters());        //
+        RegisterPatch(new Transpiler_BetterSource_SetLowPassFilterParameters());            //
+        RegisterPatch(new Transpiler_BetterSource_SetHighPassFilterParameters());           //
 
-        RegisterPatch(new Transpiler_SpatialAudioSystem_Update());                       // bypass high filter muffling
-        RegisterPatch(new Transpiler_SpatialAudioSystem_LateUpdate());                   // bypass high filter muffling
+        RegisterPatch(new Transpiler_SpatialAudioSystem_Update());                          // bypass high filter muffling
+        RegisterPatch(new Transpiler_SpatialAudioSystem_LateUpdate());                      // bypass high filter muffling
 
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ListenerCurrentRoom());          // force audio room to always be Phantom Audio Room
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1());     // bypass occlusion containers
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2());     // bypass occlusion containers
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3());     // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ListenerCurrentRoom());             // force audio room to always be Phantom Audio Room
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1());        // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2());        // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3());        // bypass occlusion containers
 
         RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();              // We invoke all audio room changes manually
 

@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace PhononSpatializerProxy
 {
-    public class PhononUpdateManager : MonoBehaviour, IDisposable
+    public class ProxyDSPBridgeUpdateManager : MonoBehaviour, IDisposable
     {
-        public static PhononUpdateManager Instance { get; private set; }
+        public static ProxyDSPBridgeUpdateManager Instance { get; private set; }
         public readonly List<PhononDSPBridge> ActiveBridges = new();
 
         public static void Initialize()
@@ -15,7 +15,7 @@ namespace PhononSpatializerProxy
             if (Instance != null) return;
             var go = new GameObject("PhononUpdateManager");
             DontDestroyOnLoad(go);
-            Instance = go.AddComponent<PhononUpdateManager>();
+            Instance = go.AddComponent<ProxyDSPBridgeUpdateManager>();
         }
 
 #if UNITY_EDITOR

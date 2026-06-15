@@ -71,8 +71,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
-    <!-- <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
-    <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" /> -->
+    <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
+    <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" />
     <ProjectReference Include="..\..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
@@ -90,6 +90,6 @@
 
     <Copy SourceFiles="@(FilesToCopyToPlugins)"
     DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <!-- <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" /> -->
+    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
   </Target>
 </Project>

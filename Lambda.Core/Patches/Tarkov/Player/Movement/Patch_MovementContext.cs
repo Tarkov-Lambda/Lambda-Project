@@ -8,11 +8,10 @@ using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
 using UnityEngine;
-using static EFT.MovementContext;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_MovementContext_CanWalk : ModulePatch
+internal class Patch_MovementContext_CanWalk : ModulePatch
 {
     private static bool wasOnLadder = false;
 
@@ -51,7 +50,7 @@ public class Patch_MovementContext_CanWalk : ModulePatch
     }
 }
 
-public class Patch_MovementContext_CanJump : ModulePatch
+internal class Patch_MovementContext_CanJump : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
 
@@ -79,7 +78,7 @@ public class Patch_MovementContext_CanJump : ModulePatch
     }
 }
 
-public class Patch_MovementContext_CanProne : ModulePatch
+internal class Patch_MovementContext_CanProne : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanProne));
 
@@ -93,36 +92,28 @@ public class Patch_MovementContext_CanProne : ModulePatch
 
 
 // BLINDFIRE
-public class Patch_MovementContext_PlayerAnimatorSetBlindFire : ModulePatch
+internal class Patch_MovementContext_PlayerAnimatorSetBlindFire : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.PlayerAnimatorSetBlindFire));
 
     [PatchPrefix]
-    private static bool Prefix()
-    {
-        return false;
-    }
+    private static bool Prefix() => false;
 }
 
-public class Patch_MovementContext_SetBlindFire : ModulePatch
+internal class Patch_MovementContext_SetBlindFire : ModulePatch
 {
     private static int lastSentState;
-    private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), [typeof(int)]);
 
     [PatchPrefix]
-    private static bool Prefix(MovementContext __instance, int b)
+    private static bool Prefix(Player ____player, MovementContext __instance, int b)
     {
-        Player player = playerRef(__instance);
-
-        if (player.MovementContext.CurrentState is SprintStateClass) return true;
-
-        if (player != null && player.HandsController != null)
+        if (____player.MovementContext.CurrentState is SprintStateClass) return true;
+        if (____player != null && ____player.HandsController != null)
         {
-            player.HandsController.BlindFire(b);
-
-            if (player.IsYourPlayer && lastSentState != b)
+            ____player.HandsController.BlindFire(b);
+            if (____player.IsYourPlayer && lastSentState != b)
             {
                 Singleton<BlindFirePacketWarden>.Instance?.Send(b);
                 lastSentState = b;
@@ -133,18 +124,14 @@ public class Patch_MovementContext_SetBlindFire : ModulePatch
     }
 }
 
-public class Patch_MovementContext_ManualUpdate : ModulePatch
+internal class Patch_MovementContext_ManualUpdate : ModulePatch
 {
-    private static readonly AccessTools.FieldRef<MovementContext, Player> playerRef = AccessTools.FieldRefAccess<MovementContext, Player>("_player");
-
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
 
     [PatchPostfix]
-    private static void Prefix(MovementContext __instance, float deltaTime)
+    private static void Prefix(MovementContext __instance, Player ____player, float deltaTime)
     {
-        Player player = playerRef(__instance);
-
-        if (!player.Physical.Sprinting)
+        if (!____player.Physical.Sprinting)
         {
             float clampedSpeed = __instance.ClampedSpeed;
             float num = Math.Abs(__instance.SmoothedCharacterMovementSpeed - clampedSpeed);
@@ -164,7 +151,7 @@ public class Patch_MovementContext_ManualUpdate : ModulePatch
     }
 }
 
-public class Patch_MovementContext_GetNewState : ModulePatch
+internal class Patch_MovementContext_GetNewState : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.GetNewState));
 
@@ -186,7 +173,7 @@ public class Patch_MovementContext_GetNewState : ModulePatch
     }
 }
 
-public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
+internal class Patch_MovementContext_SetAimingSlowdown : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
 
@@ -198,7 +185,7 @@ public class Patch_MovementContext_SetAimingSlowdown : ModulePatch
     }
 }
 
-public class Patch_MovementContext_method_15 : ModulePatch
+internal class Patch_MovementContext_method_15 : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_15));
 
@@ -211,7 +198,7 @@ public class Patch_MovementContext_method_15 : ModulePatch
     }
 }
 
-public class Patch_MovementContext_ApplyDamageByVaulting : ModulePatch
+internal class Patch_MovementContext_ApplyDamageByVaulting : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ApplyDamageByVaulting));
 

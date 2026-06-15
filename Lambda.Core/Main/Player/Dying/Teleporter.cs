@@ -5,7 +5,7 @@ using Lambda.Shared;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Lambda.Core.Main.Dying;
+namespace Lambda.Core.Main;
 
 public class Teleporter
 {

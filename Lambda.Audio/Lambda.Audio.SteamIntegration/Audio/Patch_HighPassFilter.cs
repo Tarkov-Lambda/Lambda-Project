@@ -6,7 +6,7 @@ using Audio.SpatialSystem;
 
 namespace Lambda.Audio.SteamIntegration.Patches;
 
-public class Patch_SpatialHighPassFilter_CalculateFrequency : ModulePatch
+internal class Patch_SpatialHighPassFilter_CalculateFrequency : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialHighPassFilter), nameof(SpatialHighPassFilter.CalculateFrequency));
 

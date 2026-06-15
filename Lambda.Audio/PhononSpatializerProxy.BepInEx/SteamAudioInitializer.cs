@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace PhononSpatializerProxy.BepInEx;
 
-public static class SteamAudioInitializer
+public static class PhononInitializer
 {
     public static bool _initialized { get; private set; }
 

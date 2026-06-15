@@ -1,7 +1,7 @@
 using Comfort.Common;
 using EFT;
 using Lambda.Core;
-using Lambda.Core.Main.Dying;
+using Lambda.Core.Main;
 using Lambda.Core.Networking;
 using Lambda.Core.Networking.Commands;
 using PacketWarden;

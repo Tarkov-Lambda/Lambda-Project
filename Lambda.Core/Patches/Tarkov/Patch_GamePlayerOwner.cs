@@ -4,7 +4,7 @@ using EFT.InputSystem;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 
-public class Patch_GamePlayerOwner_TranslateCommand : ModulePatch
+internal class Patch_GamePlayerOwner_TranslateCommand : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GamePlayerOwner), nameof(GamePlayerOwner.TranslateCommand));
 

@@ -15,10 +15,10 @@ This project wouldn't be possible without:
 **tarkin**: Core • UI/UX • Maps • Mentor
 
 ## Building
-Rename Directory.Build.props.EXAMPLE and point SPTPath to your SPT Installation.  
-Use `dotnet build -c Debug`  
-Debug Building puts Lambda.Core assembly in BepInEx/scripts/ and supports hot-reloading (do not hot-reload during raid loading).  
-Warning: Debug Build requires [BepInEx ScriptEngine](https://github.com/BepInEx/BepInEx.Debug) in SPT runtime.
+Rename `Directory.Build.props.EXAMPLE` and point `SPTPath` to your SPT Installation.  
+Use `dotnet build -c Debug`
+Debug Building puts `Lambda.Core` assembly in `BepInEx/scripts/` and supports hot-reloading (do not hot-reload during raid loading).  
+Warning: `Debug Build` requires [BepInEx ScriptEngine](https://github.com/BepInEx/BepInEx.Debug) in SPT runtime.
 
 ## Features
 

@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_BaseGrenadeHandsController_Drop : ModulePatch
+internal class Patch_BaseGrenadeHandsController_Drop : ModulePatch
 {
     private const float DropAnimationSpeed = 1000f;
 

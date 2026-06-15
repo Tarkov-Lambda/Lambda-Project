@@ -2,9 +2,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using EFT;
-using EFT.InventoryLogic;
-using HarmonyLib;
 using Lambda.Core.Main;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Dying;
@@ -143,7 +140,7 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_ApplyDamageByVaulting());           // No vault damage on blacked out limbs
         RegisterPatch(new Patch_GamePlayerOwner_TranslateCommand());                // Prevent Resetting Freelook from cancelling BetterPlantStateClass
 
-        // RegisterPatch(new Patch_Player_OnItemAddedOrRemoved());                     // Track whether the player has a bomb
+        RegisterPatch(new Patch_Player_OnItemAddedOrRemoved());                     // Track whether the player has a bomb
 
         RegisterPatch(new Patch_Player_ShotReactions());                            // Headshot Audio
         RegisterPatch(new Patch_Player_UpdateTick());                               // If the item can't be picked up -> unlock the player movement
@@ -152,34 +149,49 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterPatch(new Patch_MovementContext_SetAimingSlowdown());               // move in ads slightly faster
         RegisterPatch(new Patch_MovementContext_method_15());                       // Faster Leaning
 
-        // RegisterPatch(new Patch_RunStateClass_Jump());                           // Just jump or whatever (il error for some reason)
-
         RegisterPatch(new Patch_MovementContext_CanWalk());                         // For controller locking (Also allow running during meds)
         RegisterPatch(new Patch_MovementContext_CanJump());                         // For controller locking (Also allow running during meds)
         RegisterPatch(new Patch_MovementContext_CanProne());                        // No proning allowed
         RegisterPatch(new Patch_FirearmController_SetTriggerPressed());             // For controller locking
 
-        RegisterPatch(new Patch_FirearmController_TotalErgonomics());             // For controller locking
-        RegisterPatch(new Patch_FirearmController_ErgonomicWeight());             // For controller locking
+        RegisterPatch(new Patch_FirearmController_TotalErgonomics());               // Sniper and Marksman Rifles are lightweight 
+        RegisterPatch(new Patch_FirearmController_ErgonomicWeight());               // Sniper and Marksman Rifles are lightweight
 
         RegisterPatch(new Patch_SmokeGrenade_Init());                               // Smoke tuning
         RegisterPatch(new Patch_Effects_GetEmissionEffect());                       // Smoke tuning
 
+        // RegisterPatch(new Patch_GameObject_TryGetComponent());                       // Smoke tuning
+
+        // RegisterPatch(new Patch_ReverbSuperSource_Play());                               // Mags autosearched
+        // RegisterPatch(new Patch_ReverbSuperSource_PlayScheduled());                      // Mags autosearched
+        // RegisterPatch(new Patch_BetterSource_Play());                               // Mags autosearched
+        // RegisterPatch(new Patch_BetterSource_PlayScheduled());                      // Mags autosearched
+        // RegisterPatch(new Patch_BallisticsCalculator_CreateShot());                                    // Mags autosearched
+        // RegisterPatch(new Patch_Player_FirearmController_InitiateShot());                                    // Mags autosearched
+
+        // RegisterPatch(new Patch_EftBulletClass_smethod_0());                        // Mags autosearched
+        // RegisterPatch(new Patch_EftBulletClass_smethod_1());                        // Mags autosearched
+        // RegisterPatch(new Transpiler_EftBulletClass_method_1());                    // All bullets have simplified ballistics (Optimization)
+        RegisterPatch(new Transpiler_EftBulletClass_method_2());                    // All bullets have simplified ballistics (Optimization)
+        // RegisterPatch(new Patch_EftBulletClass_CalculateG1DragCoefficient());        // Mags autosearched
+        // RegisterPatch(new Patch_BallisticsCalculator_method_2());                    // Mags autosearched
+
+        // RegisterPatch(new Patch_Shell_Update());                                    // Mags autosearched
+
+        RegisterPatch(new Patch_MuzzleManager_Play_Optimize());                     // Remove LINQ
+        // RegisterPatch(new Patch_WeaponManager_PlayShotEffects_Optimize());          // Bullet Optimization
+
         RegisterPatch(new Patch_MagazineItemClass_GetAmmoCountByLevel());           // Mags autosearched
-        RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have space
+        RegisterPatch(new Patch_BackpackItemClass_Constructor());                   // Bomb doesn't have a container
         RegisterPatch(new Patch_VisorsItemClass_Constructor());                     // Blindness protection out the wazoo
         // RegisterPatch(new Patch_ThrowWeapItemClass_FragmentsCount());               // Molly no fragments
         // RegisterPatch(new Patch_ThrowWeapItemClass_MinFragmentDamage());            // Molly no fragments
         // RegisterPatch(new Patch_ThrowWeapItemClass_MaxFragmentDamage());            // Molly no fragments
         // RegisterPatch(new Patch_ThrowWeapItemClass_MinTimeToContactExplode());      // Molly no fragments
 
-        // RegisterPatch(new Patch_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
-        // RegisterPatch(new Patch_AmmoItemClass_FragmentationChance());               // Set ricochet chance to 0
-        // RegisterPatch(new Patch_AmmoItemClass_PenetrationChanceObstacle());         // Set ricochet chance to 0
-
-        RegisterPatch(new Transpiler_AmmoItemClass_RicochetChance());                    // Set ricochet chance to 0
-        RegisterPatch(new Transpiler_AmmoItemClass_FragmentationChance());               // Set ricochet chance to 0
-        RegisterPatch(new Transpiler_AmmoItemClass_PenetrationChanceObstacle());         // Set ricochet chance to 0
+        RegisterPatch(new Transpiler_AmmoItemClass_RicochetChance());               // Set ricochet chance to 0
+        RegisterPatch(new Transpiler_AmmoItemClass_FragmentationChance());          // Set ricochet chance to 0
+        RegisterPatch(new Transpiler_AmmoItemClass_PenetrationChanceObstacle());    // Set ricochet chance to 0
 
         RegisterPatch(new Patch_InteractionContextHelper_GetAvailableActions());    // Looting Fake Corpses, Planting, Defusing
         RegisterPatch(new Patch_Weapon_method_10());                                // Fake Ragdoll error silencing
@@ -226,10 +238,9 @@ public class LambdaPlugin : BaseUnityPlugin
         // RegisterPatch(new Patch_PlayerSnapshotter_AddSnapshot());                   // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
         // RegisterPatch(new Patch_PlayerSnapshotter_GetInterpolationIndices());       // Increase Player Snapshotter's packet capacity to 64 (TRANSPILER)
 
-        // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                        //
+        // RegisterPatch(new ObservedPlayer_POV_Getter_Patch());                       //
         // RegisterPatch(new ObservedPlayer_VisualPass_Patch());                       // Player camera leans with the observed player during spectation
         // RegisterPatch(new Patch_Player_FindItemById());                             // Player camera leans with the observed player during spectation
-
 
         // Memory Pack Formatters
         RegisterMemoryPackFormatter(new ItemPlacementFormatter());
@@ -253,6 +264,9 @@ public class LambdaPlugin : BaseUnityPlugin
         RegisterSingleton<AskForBombPriorityPacketWarden>();                        // Player requesting to be the bomb carry for the foreseeable rounds
         RegisterSingleton<ClanTagResyncPacketWarden>();                             // Player sets new clan tag
         RegisterSingleton<RefundItemPacketWarden>();                                // Buy Item Reversal
+
+        // Admin Packets
+        RegisterSingleton<TeleportToMePacketPacketWarden>();                                // Teleports every player to you
 
         // Session Related Packets
         RegisterSingleton<PlayerReadinessPacketWarden>();                           // Reporting whether the player is disconnected, connected, or ready to play on the map

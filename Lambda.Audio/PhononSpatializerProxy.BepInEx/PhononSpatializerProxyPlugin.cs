@@ -17,19 +17,18 @@ public class PhononSpatializerProxyPlugin : BaseUnityPlugin
     {
         Logger.LogInfo("Loading PhononSpatializerProxyPlugin");
         
-        // _harmony = new Harmony("com.ifp.PhononSpatializerProxy");
-        // _harmony.PatchAll(Assembly.GetExecutingAssembly());
+        _harmony = new Harmony("com.ifp.PhononSpatializerProxy");
+        _harmony.PatchAll(Assembly.GetExecutingAssembly());
 
-        // SteamAudioInitializer.Initialize();
-
-        // PhononUpdateManager.Initialize();
+        PhononInitializer.Initialize();
+        ProxyDSPBridgeUpdateManager.Initialize();
     }
 
     void OnDestroy()
     {
         Logger.LogInfo("Unloading PhononSpatializerProxyPlugin");
 
-        PhononUpdateManager.Instance.Dispose();
+        ProxyDSPBridgeUpdateManager.Instance.Dispose();
 
         _harmony.UnpatchSelf();
     }

@@ -32,17 +32,15 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void Dispose()
     {
-        EventBus.OnEnter -= OnEnter;
-        EventBus.OnExit -= OnEnd;
-        UnityTicker.OnUpdate -= Update;
-
         _cts.Cancel();
         _cts.Dispose();
 
-        if (_musicObject != null)
-            GameObject.Destroy(_musicObject.gameObject);
+        if (_musicObject != null) GameObject.Destroy(_musicObject.gameObject);
 
-        Release(this);
+        if (H.IsHeadless) return;
+        EventBus.OnEnter -= OnEnter;
+        EventBus.OnExit -= OnEnd;
+        UnityTicker.OnUpdate -= Update;
     }
 
     public void ChangeVolume()

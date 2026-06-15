@@ -110,36 +110,25 @@ namespace PhononSpatializerProxy
             InitEffects();
         }
 
+        public static event Action<PhononDSPBridge> OnBridgeEnabled;
+        public static event Action<PhononDSPBridge> OnBridgeDisabled;
+
         private void OnEnable()
         {
             _steamSrc.enabled = true;
-            PhononUpdateManager.Instance.ActiveBridges.Add(this);
+            OnBridgeEnabled?.Invoke(this);
         }
 
         private void OnDisable()
         {
             _steamSrc.enabled = false;
-            PhononUpdateManager.Instance.ActiveBridges.Remove(this);
+            OnBridgeDisabled?.Invoke(this);
         }
 
         public bool IsSourcePlaying() => _src.isPlaying;
 
         private void OnDestroy()
         {
-            // if (_src != null)
-            // {
-            //     BepInEx.AudioSourceStateBypass.Bypass = true;
-            //     try
-            //     {
-            //         _src.spatialBlend = _spatialBlend;
-            //         _src.spatialize = _spatialize;
-            //     }
-            //     finally
-            //     {
-            //         BepInEx.AudioSourceStateBypass.Bypass = false;
-            //     }
-            // }
-
             lock (_lock)
             {
                 if (_binaural != IntPtr.Zero) PhononNative.iplBinauralEffectRelease(ref _binaural); _binaural = IntPtr.Zero;

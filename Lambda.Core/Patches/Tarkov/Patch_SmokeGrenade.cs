@@ -5,7 +5,7 @@ using Lambda.Core.Main;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_SmokeGrenade_Init : ModulePatch
+internal class Patch_SmokeGrenade_Init : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SmokeGrenade), nameof(SmokeGrenade.Init), 
     [typeof(GrenadeSettings), typeof(string), typeof(ThrowWeapItemClass), typeof(float), typeof(ISharedBallisticsCalculator), typeof(bool)]);

@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_ArmorPlateCollider_RicochetChance : ModulePatch
+internal class Patch_ArmorPlateCollider_RicochetChance : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(BallisticCollider), nameof(BallisticCollider.RicochetChance));
 
@@ -17,7 +17,7 @@ public class Patch_ArmorPlateCollider_RicochetChance : ModulePatch
     }
 }
 
-public class Patch_BodyPartCollider_RicochetChance : ModulePatch
+internal class Patch_BodyPartCollider_RicochetChance : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(BodyPartCollider), nameof(BodyPartCollider.RicochetChance));
 

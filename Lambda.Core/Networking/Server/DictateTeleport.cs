@@ -52,13 +52,13 @@ public class DictateTeleportPacketWarden : LambdaPacketWarden<DictateTeleportPac
             packet.Player.Teleport(packet.position);
 
             Vector3 euler = packet.rotation.eulerAngles;
-            Vector2 lookRotation = new Vector2(euler.y, Mathf.DeltaAngle(0f, euler.x));
+            Vector2 lookRotation = new(euler.y, Mathf.DeltaAngle(0f, euler.x));
 
             packet.Player.Transform.rotation = Quaternion.Euler(0f, euler.y, 0f);
             packet.Player.Rotation = lookRotation;
             packet.Player.MovementContext.CachedRotation = lookRotation;
 
-            UniTask.RunOnThreadPool(async () =>
+            UniTask.Void(async () =>
             {
                 await UniTask.Delay(1500);
                 if (!packet.Player.MovementContext.IsGrounded)

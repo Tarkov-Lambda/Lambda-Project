@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_FirearmController_Drop : ModulePatch
+internal class Patch_FirearmController_Drop : ModulePatch
 {
     private const float DropAnimationSpeed = 1000f;
 
@@ -22,7 +22,7 @@ public class Patch_FirearmController_Drop : ModulePatch
     }
 }
 
-public class Patch_FirearmController_Spawn : ModulePatch
+internal class Patch_FirearmController_Spawn : ModulePatch
 {
     private const float DropAnimationSpeed = 3f;
 
@@ -36,7 +36,7 @@ public class Patch_FirearmController_Spawn : ModulePatch
     }
 }
 
-public class Patch_FirearmController_SetTriggerPressed : ModulePatch
+internal class Patch_FirearmController_SetTriggerPressed : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.SetTriggerPressed));
 
@@ -53,7 +53,7 @@ public class Patch_FirearmController_SetTriggerPressed : ModulePatch
     }
 }
 
-public class Patch_FirearmController_TotalErgonomics : ModulePatch
+internal class Patch_FirearmController_TotalErgonomics : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(Player.FirearmController), nameof(Player.FirearmController.TotalErgonomics));
 
@@ -64,7 +64,7 @@ public class Patch_FirearmController_TotalErgonomics : ModulePatch
     }
 }
 
-public class Patch_FirearmController_ErgonomicWeight : ModulePatch
+internal class Patch_FirearmController_ErgonomicWeight : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(Player.FirearmController), nameof(Player.FirearmController.ErgonomicWeight));
 

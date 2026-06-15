@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Lambda.Core.Patches.Tarkov;
 
 // Whenever we spawn a fake ragdoll this method throws an error so we just skip it idk
-public class Patch_Weapon_method_10 : ModulePatch
+internal class Patch_Weapon_method_10 : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Weapon), nameof(Weapon.method_10));
 

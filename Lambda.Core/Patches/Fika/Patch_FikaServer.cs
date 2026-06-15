@@ -362,7 +362,7 @@ internal class Patch_FikaServer_OnDestroy : ModulePatch
 
 // we do not have any loot items in the mod ig?
 // for some reason it errors
-public class Patch_HostGameController_GetHostLootItems : ModulePatch
+internal class Patch_HostGameController_GetHostLootItems : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(HostGameController), nameof(HostGameController.GetHostLootItems));
 
@@ -399,7 +399,7 @@ public class Patch_HostGameController_GetHostLootItems : ModulePatch
 // causing the player to be motionless until their reconnected timestamp state reaches the old timestamp
 // as a result we are checking if the observed player already exists OnNetworkSettingsPacketReceived
 // and clearing the snapshotter manually 
-public class Patch_FikaServer_OnNetworkSettingsPacketReceived : ModulePatch
+internal class Patch_FikaServer_OnNetworkSettingsPacketReceived : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnNetworkSettingsPacketReceived");
 

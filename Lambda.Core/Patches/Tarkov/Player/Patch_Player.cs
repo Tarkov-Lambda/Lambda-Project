@@ -1,22 +1,15 @@
 ﻿using EFT;
-using EFT.Animations;
-using EFT.EnvironmentEffect;
 using EFT.InventoryLogic;
-using Fika.Core.Main.Players;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using static EFT.Player;
-using static EFT.Player.FirearmController;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_Player_ShotReactions : ModulePatch, IDisposable
+internal class Patch_Player_ShotReactions : ModulePatch, IDisposable
 {
     private static Dictionary<int, double> _lastShotTimeDict = new();
     private const double CooldownSeconds = 0.015;
@@ -60,7 +53,7 @@ public class Patch_Player_ShotReactions : ModulePatch, IDisposable
     }
 }
 
-public class Patch_Player_UpdateTick : ModulePatch
+internal class Patch_Player_UpdateTick : ModulePatch
 {
     private static float _lockTimer = 0f;
     private static EPlayerState _lastState = EPlayerState.Idle;
@@ -102,7 +95,7 @@ public class Patch_Player_UpdateTick : ModulePatch
     }
 }
 
-public class Patch_Player_OnItemAddedOrRemoved : ModulePatch
+internal class Patch_Player_OnItemAddedOrRemoved : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.OnItemAddedOrRemoved));
 
@@ -118,3 +111,4 @@ public class Patch_Player_OnItemAddedOrRemoved : ModulePatch
         }
     }
 }
+

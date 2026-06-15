@@ -5,7 +5,7 @@ using System.Reflection;
 namespace Lambda.Core.Patches.Tarkov;
 
 
-public class Patch_ThrowWeapItemClass_FragmentsCount : ModulePatch
+internal class Patch_ThrowWeapItemClass_FragmentsCount : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.FragmentsCount));
 
@@ -22,7 +22,7 @@ public class Patch_ThrowWeapItemClass_FragmentsCount : ModulePatch
 }
 
 
-public class Patch_ThrowWeapItemClass_MinFragmentDamage : ModulePatch
+internal class Patch_ThrowWeapItemClass_MinFragmentDamage : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MinFragmentDamage));
 
@@ -38,7 +38,7 @@ public class Patch_ThrowWeapItemClass_MinFragmentDamage : ModulePatch
     }
 }
 
-public class Patch_ThrowWeapItemClass_MaxFragmentDamage : ModulePatch
+internal class Patch_ThrowWeapItemClass_MaxFragmentDamage : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MaxFragmentDamage));
 
@@ -54,7 +54,7 @@ public class Patch_ThrowWeapItemClass_MaxFragmentDamage : ModulePatch
     }
 }
 
-public class Patch_ThrowWeapItemClass_MinTimeToContactExplode : ModulePatch
+internal class Patch_ThrowWeapItemClass_MinTimeToContactExplode : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MinTimeToContactExplode));
 

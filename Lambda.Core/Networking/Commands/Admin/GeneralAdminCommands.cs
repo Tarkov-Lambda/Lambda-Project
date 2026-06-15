@@ -72,4 +72,22 @@ public static class AdminCommands
             Singleton<GameplayVariablesSyncPacketWarden>.Instance.Send();
         }
     }
+
+    [ChatCommand("tptome", "teleports everyone to you", CommandTarget.ClientOnly, PacketAuthority.Admin)]
+    public static void TeleportEveryoneToMe(CommandContext ctx)
+    {
+        Singleton<TeleportToMePacketPacketWarden>.Instance.Send(H.MainPlayer.Position);
+    }
+
+    [ChatCommand("replenish", "replenishes you", CommandTarget.ClientOnly, PacketAuthority.Admin)]
+    public static void ReplenishMe(CommandContext ctx)
+    {
+        Singleton<ReplenishPacketWarden>.Instance.Send();
+    }
+
+    [ChatCommand("noclip", "replenishes you", CommandTarget.ClientOnly, PacketAuthority.Admin)]
+    public static void NoclipCommand(CommandContext ctx)
+    {
+        Noclip.ToggleNoclip();
+    }
 }

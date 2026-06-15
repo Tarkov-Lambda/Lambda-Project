@@ -197,6 +197,7 @@ public class SharedCleanup : AbstractMatchStateController
             catch (Exception ex)
             {
                 D.Log($"[SharedCleanup] Error occured during Inventory Management for {player.Profile.Nickname}");
+                D.Log(ex.StackTrace);
             }
         }
 

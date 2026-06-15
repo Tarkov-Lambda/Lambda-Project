@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_BackpackItemClass_Constructor : ModulePatch
+internal class Patch_BackpackItemClass_Constructor : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Constructor(typeof(BackpackItemClass), [typeof(string), typeof(BackpackTemplateClass)]);
 

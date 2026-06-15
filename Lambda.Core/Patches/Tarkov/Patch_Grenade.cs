@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_Grenade_Init : ModulePatch
+internal class Patch_Grenade_Init : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Grenade), nameof(Grenade.Init), [typeof(GrenadeSettings), typeof(string), typeof(ThrowWeapItemClass), typeof(float), typeof(ISharedBallisticsCalculator), typeof(bool)]);
 
@@ -29,7 +29,7 @@ public class Patch_Grenade_Init : ModulePatch
     }
 }
 
-public class Patch_Grenade_InvokeBlowUpEvent : ModulePatch
+internal class Patch_Grenade_InvokeBlowUpEvent : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Grenade), nameof(Grenade.InvokeBlowUpEvent));
 

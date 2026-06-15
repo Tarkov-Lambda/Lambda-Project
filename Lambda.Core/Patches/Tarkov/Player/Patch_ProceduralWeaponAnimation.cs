@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
+internal class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
 
@@ -38,7 +38,7 @@ public class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
     }
 }
 
-public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
+internal class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.UpdateSwayFactors));
 
@@ -72,7 +72,7 @@ public class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
     }
 }
 
-public class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePatch
+internal class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePatch
 {
     protected override MethodBase GetTargetMethod() =>
     AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.CalculateCameraPosition));
@@ -92,7 +92,7 @@ public class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePat
 
 
 // Do blindfire procedure manually
-public class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
+internal class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ZeroAdjustments));
 

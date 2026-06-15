@@ -32,7 +32,8 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         }
 
         writer.WriteObjectHeader(2);
-        writer.WriteUnmanaged(addressPlayerOwner.Id);
+        // writer.WriteUnmanaged(addressPlayerOwner.Id);
+        writer.WriteString(addressPlayerOwner.ProfileId);
 
         var eftWriter = WriterPoolManager.GetWriter();
         var descriptor = value.ToDescriptor();
@@ -49,7 +50,8 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
             return;
         }
 
-        int playerId = reader.ReadUnmanaged<int>();
+        // int playerId = reader.ReadUnmanaged<int>();
+        string profileId = reader.ReadString();
         byte[] addressBytes = reader.ReadUnmanagedArray<byte>();
 
         if (!Singleton<GameWorld>.Instantiated)
@@ -61,7 +63,7 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
         Player player = null;
         foreach (Player alivePlayer in Singleton<GameWorld>.Instance.AllAlivePlayersList)
         {
-            if (alivePlayer.Id == playerId)
+            if (alivePlayer.ProfileId == profileId)
             {
                 player = alivePlayer;
                 break;

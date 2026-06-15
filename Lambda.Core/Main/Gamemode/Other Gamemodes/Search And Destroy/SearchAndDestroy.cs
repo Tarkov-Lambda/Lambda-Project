@@ -76,6 +76,7 @@ public class SND_Action : AbstractMatchStateController
 
     private Faction? CheckWipe()
     {
+        // return null;
         int aliveCT = 0;
         int aliveT = 0;
         foreach (var p in H.Scoreboard.Values)

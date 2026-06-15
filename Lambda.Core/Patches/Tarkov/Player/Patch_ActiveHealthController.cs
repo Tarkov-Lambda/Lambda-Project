@@ -5,6 +5,7 @@ using EFT.HealthSystem;
 using Fika.Core;
 using Fika.Core.Main.Utils;
 using HarmonyLib;
+using Lambda.Core.Main;
 using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
@@ -16,7 +17,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
+internal class Patch_ActiveHealthController_ApplyDamage : ModulePatch
 {
     public static DamageInfoStruct LastReceivedDamageInfo { get; private set; }
 
@@ -85,7 +86,7 @@ public class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     }
 }
 
-public class Patch_ActiveHealthController_Kill : ModulePatch
+internal class Patch_ActiveHealthController_Kill : ModulePatch
 {
     private static long _lastKillTime;
     private const int CooldownMs = 500;
@@ -148,7 +149,7 @@ public class Patch_ActiveHealthController_Kill : ModulePatch
 }
 
 
-public class Patch_ActiveHealthController_DoFracture : ModulePatch
+internal class Patch_ActiveHealthController_DoFracture : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoFracture));
 
@@ -156,7 +157,7 @@ public class Patch_ActiveHealthController_DoFracture : ModulePatch
     static bool Prefix() => false;
 }
 
-public class Patch_ActiveHealthController_DoBleedGeneric : ModulePatch
+internal class Patch_ActiveHealthController_DoBleedGeneric : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(bool), typeof(EBodyPart)]);
 
@@ -164,7 +165,7 @@ public class Patch_ActiveHealthController_DoBleedGeneric : ModulePatch
     static bool Prefix() => false;
 }
 
-public class Patch_ActiveHealthController_DoBleed_HeavyBleeding : ModulePatch
+internal class Patch_ActiveHealthController_DoBleed_HeavyBleeding : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(EBodyPart)])
             .MakeGenericMethod(AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+HeavyBleeding"));
@@ -173,7 +174,7 @@ public class Patch_ActiveHealthController_DoBleed_HeavyBleeding : ModulePatch
     static bool Prefix() => false;
 }
 
-public class Patch_ActiveHealthController_DoBleed_LightBleeding : ModulePatch
+internal class Patch_ActiveHealthController_DoBleed_LightBleeding : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(EBodyPart)])
             .MakeGenericMethod(AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+LightBleeding"));

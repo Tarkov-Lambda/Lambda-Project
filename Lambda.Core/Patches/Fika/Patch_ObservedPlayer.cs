@@ -53,7 +53,7 @@ public class ObservedPlayer_VisualPass_Patch : ModulePatch
     }
 }
 
-public class Patch_Player_FindItemById : ModulePatch
+internal class Patch_Player_FindItemById : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.FindItemById));
 

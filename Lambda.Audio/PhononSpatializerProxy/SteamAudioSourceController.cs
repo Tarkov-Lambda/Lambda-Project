@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using SteamAudio;
 using UnityEngine;
 
-namespace PhononSpatializerProxy.BepInEx
+namespace PhononSpatializerProxy
 {
     public struct SteamSourceData
     {
@@ -11,7 +11,7 @@ namespace PhononSpatializerProxy.BepInEx
         public PhononDSPBridge proxy;
     }
 
-    internal static class AudioSourceStateBypass
+    public static class AudioSourceStateBypass
     {
         [ThreadStatic]
         public static bool Bypass;
@@ -19,7 +19,23 @@ namespace PhononSpatializerProxy.BepInEx
 
     public static class SteamAudioSourceController
     {
+        static SteamAudioSourceController()
+        {
+            PhononDSPBridge.OnBridgeEnabled += OnBridgeEnabled;
+            PhononDSPBridge.OnBridgeDisabled += OnBridgeDisabled;
+        }
+
         public static readonly ConditionalWeakTable<AudioSource, StrongBox<SteamSourceData>> cache = new();
+
+        public static void OnBridgeEnabled(PhononDSPBridge bridge)
+        {
+
+        }
+
+        public static void OnBridgeDisabled(PhononDSPBridge bridge)
+        {
+
+        }
 
         public static SteamSourceData GetOrAdd(AudioSource audioSource)
         {
@@ -34,6 +50,17 @@ namespace PhononSpatializerProxy.BepInEx
                 proxy = audioSource.gameObject.GetOrAddComponent<PhononDSPBridge>()
             };
 
+            RerouteSpatialValues(data, audioSource);
+
+            cache.Add(audioSource, new StrongBox<SteamSourceData>(data));
+
+            ApplyDefaultConfiguration(data.steam);
+
+            return data;
+        }
+
+        public static void RerouteSpatialValues(SteamSourceData data, AudioSource audioSource)
+        {
             AudioSourceStateBypass.Bypass = true;
             try
             {
@@ -47,11 +74,24 @@ namespace PhononSpatializerProxy.BepInEx
             {
                 AudioSourceStateBypass.Bypass = false;
             }
+        }
 
-            cache.Add(audioSource, new StrongBox<SteamSourceData>(data));
+        public static void RestoreSpatialValues(SteamSourceData data, AudioSource audioSource)
+        {
+            AudioSourceStateBypass.Bypass = true;
+            try
+            {
+                audioSource.spatialBlend = data.proxy.spatialBlend;
+                audioSource.spatialize = data.proxy.spatialize;
+            }
+            finally
+            {
+                AudioSourceStateBypass.Bypass = false;
+            }
+        }
 
-            SteamAudioSource steamAudio = data.steam;
-
+        public static void ApplyDefaultConfiguration(SteamAudioSource steamAudio)
+        {
             steamAudio.occlusion = true;
             steamAudio.transmission = true;
 
@@ -70,13 +110,6 @@ namespace PhononSpatializerProxy.BepInEx
             steamAudio.transmissionHigh = 0.25f;
             steamAudio.transmissionMid = 0.3f;
             steamAudio.transmissionLow = 0.4f;
-
-            return data;
-        }
-
-        public static SteamSourceData ProcessAudioSource(AudioSource src)
-        {
-            return GetOrAdd(src);
         }
     }
 }

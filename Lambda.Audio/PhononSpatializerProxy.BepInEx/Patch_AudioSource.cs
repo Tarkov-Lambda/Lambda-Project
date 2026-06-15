@@ -1,5 +1,4 @@
 using HarmonyLib;
-using PhononSpatializerProxy.BepInEx;
 using UnityEngine;
 
 namespace PhononSpatializerProxy.BepInEx.Patches

@@ -3,10 +3,12 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
 using Systems.Effects;
+using EFT;
+using System;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-public class Patch_Effects_GetEmissionEffect : ModulePatch
+internal class Patch_Effects_GetEmissionEffect : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Effects), nameof(Effects.GetEmissionEffect));
 
@@ -103,4 +105,3 @@ public class Patch_Effects_GetEmissionEffect : ModulePatch
         }
     }
 }
-

@@ -13,7 +13,8 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
         }
 
         writer.WriteObjectHeader(1);
-        writer.WriteUnmanaged(value.Id);
+        // writer.WriteUnmanaged(value.Id);
+        writer.WriteString(value.ProfileId);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Player value)
@@ -24,7 +25,7 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
             return;
         }
 
-        int id = reader.ReadUnmanaged<int>();
+        string profileId = reader.ReadString();
 
         if (!Singleton<GameWorld>.Instantiated)
         {
@@ -34,7 +35,7 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
         
         foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
         {
-            if (player.Id == id)
+            if (player.ProfileId == profileId)
             {
                 value = player;
                 break;

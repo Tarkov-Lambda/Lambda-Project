@@ -22,7 +22,7 @@ public class PhantomAudioRoom : ISpatialAudioRoom
     public RoomAmbientData RoomAmbientData { get; set; } = new RoomAmbientData
     {
         PrecipitationVolume = 1f,
-        OutdoorAmbientVolume = 0f,
+        OutdoorAmbientVolume = 0.3f,
         RoomToneVolume = 1f
     };
 

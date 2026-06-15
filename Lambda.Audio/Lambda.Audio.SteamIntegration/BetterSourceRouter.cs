@@ -4,6 +4,7 @@ using Audio.ReverbSubsystem;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
+using PhononSpatializerProxy;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -85,25 +86,22 @@ public class BetterSourceProxyRouter : Singleton<BetterSourceProxyRouter>
 
     public static void Attach(BetterSource betterSource)
     {
-        // betterSource.source1.enabled = true;
-        // SteamSourceData data = SteamAudioSourceController.ProcessAudioSource(betterSource.source1);
+        SteamAudioSourceController.GetOrAdd(betterSource.source1);
 
-        // if (betterSource is ReverbSimpleSource reverbSimpleSource)
-        // {
-        //     ReverbSimpleSourceFieldRef(reverbSimpleSource).enabled = true;
-        //     SteamAudioSourceController.ProcessAudioSource(ReverbSimpleSourceFieldRef(reverbSimpleSource));
+        if (betterSource is ReverbSimpleSource reverbSimpleSource)
+        {
+            SteamAudioSourceController.GetOrAdd(ReverbSimpleSourceFieldRef(reverbSimpleSource));
+        }
+        else if (betterSource is SuperSource superSource)
+        {
+            SteamAudioSourceController.GetOrAdd(superSource.source2);
 
-        // }
-        // else if (betterSource is SuperSource superSource)
-        // {
-        //     superSource.source2.enabled = false;
-
-        //     if (superSource is ReverbSuperSource reverbSuperSource)
-        //     {
-        //         ReverbSuperSourceAFieldRef(reverbSuperSource).enabled = false;
-        //         ReverbSuperSourceBFieldRef(reverbSuperSource).enabled = false;
-        //     }
-        // }
+            if (superSource is ReverbSuperSource reverbSuperSource)
+            {
+                SteamAudioSourceController.GetOrAdd(ReverbSuperSourceAFieldRef(reverbSuperSource));
+                SteamAudioSourceController.GetOrAdd(ReverbSuperSourceBFieldRef(reverbSuperSource));
+            }
+        }
 
     }
 }

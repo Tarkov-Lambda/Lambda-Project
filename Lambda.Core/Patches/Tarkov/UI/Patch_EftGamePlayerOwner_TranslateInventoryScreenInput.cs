@@ -52,7 +52,7 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
     }
 }
 
-public class Patch_EftGamePlayerOwner_BlockScrollDuringMagSelect : ModulePatch
+internal class Patch_EftGamePlayerOwner_BlockScrollDuringMagSelect : ModulePatch
 {
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftGamePlayerOwner), nameof(EftGamePlayerOwner.TranslateCommand));
 
