@@ -46,8 +46,8 @@ namespace PhononSpatializerProxy
             }
             var data = new SteamSourceData
             {
-                steam = audioSource.gameObject.GetOrAddComponent<SteamAudioSource>(),
-                proxy = audioSource.gameObject.GetOrAddComponent<PhononDSPBridge>()
+                steam = audioSource.gameObject.GetComponent<SteamAudioSource>(),
+                proxy = audioSource.gameObject.GetComponent<PhononDSPBridge>()
             };
 
             RerouteSpatialValues(data, audioSource);

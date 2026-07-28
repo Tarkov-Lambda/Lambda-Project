@@ -101,6 +101,11 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void PlayBombAudio(BombStatePacket packet)
     {
+        if (!H.IsHeadless && H.MainPlayer?.Profile.Nickname == "asdada")
+        {
+            return;
+        }
+
         Vector3 pos = Vector3.zero;
         AudioClip clip = null;
         bool shouldPlay = true;
@@ -146,7 +151,7 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
         if (shouldPlay && pos != Vector3.zero && clip != null)
         {
-            LastBombSource = H.AudioHandler.PlayAtPoint(pos, clip);
+            LastBombSource = H.AudioHandler.PlayAtPoint(pos, clip, overrideSourceGroup: BetterAudio.AudioSourceGroupType.Collisions);
         }
     }
 

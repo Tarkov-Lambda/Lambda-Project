@@ -18,6 +18,8 @@ public class HardpointAction : AbstractMatchStateController
 
 public class HardpointGamemode : LambdaGamemode, IGMTeam, IGMObjective
 {
+    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+
     public override string Name { get; } = "King Of The Hill";
 
     public List<ILambdaObjective> Objectives { get; set; } = [];

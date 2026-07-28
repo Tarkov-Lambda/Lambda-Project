@@ -207,8 +207,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         UpdatePointOfView(observedPlayer, EPointOfView.FirstPerson);
         ChangeCameraPOV(observedPlayer);
 
-        ChangeBattleUIPOV(observedPlayer);
-
         OnSelfStartSpectating?.Invoke(observedPlayer);
     }
 
@@ -254,8 +252,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         }
 
         observedPlayer = null;
-
-        ChangeBattleUIPOV(H.MainPlayer);
 
         ChangeCameraPOV(H.MainPlayer);
         OnSelfStopSpectating?.Invoke();

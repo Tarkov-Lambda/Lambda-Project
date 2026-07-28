@@ -18,6 +18,8 @@ public class GunGameAction : AbstractMatchStateController
 
 public class GunGameGamemode : LambdaGamemode, IGMRespawnable
 {
+    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+
     public override string Name { get; } = "Gun Game";
 
     public int RespawnCost { get; set; } = 0;

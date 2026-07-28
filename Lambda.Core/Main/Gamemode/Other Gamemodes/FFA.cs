@@ -18,6 +18,8 @@ public class FFAAction : AbstractMatchStateController
 
 public class FFAGamemode : LambdaGamemode
 {
+    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+    
     public override string Name { get; } = "Free For All";
 
     public override AbstractMatchStateController CreateState(MatchState state) => state switch

@@ -142,10 +142,8 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
         try
         {
-            // this has the ability to obliterate some callback shit that has to do either with movement context or procedural weapon animation
-            // but it doesn't seem to be fatal and idgaf atm
-            // god knows I need more hands
-            player.UnfuckHands();
+            // this has the ability to obliterate some callback that has to do either with movement context or procedural weapon animation
+            player.PolitelyNukeHands();
         }
         catch (Exception) { }
 

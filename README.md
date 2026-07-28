@@ -1,7 +1,6 @@
-# ALPHA NOTICE
+# BETA NOTICE
 The project is currently in private testing phase and is not fully released yet.  
 This repository contains code and only a portion of required asset bundles for gameplay.  
-Issues and PRs are currently disabled while the project is in Alpha.  
 We're selectively looking for contributors. If you'd like to get involved - please message **ifp** on discord  
 
 ## On the shoulders of giants we stand

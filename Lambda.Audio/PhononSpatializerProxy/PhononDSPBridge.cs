@@ -31,7 +31,8 @@ namespace PhononSpatializerProxy
             public float SpatialBlend;
         }
 
-        private int _paramsLock = 0;
+        public static event Action<PhononDSPBridge> OnBridgeEnabled;
+        public static event Action<PhononDSPBridge> OnBridgeDisabled;
 
         private IntPtr _binaural = IntPtr.Zero;
         private IntPtr _direct = IntPtr.Zero;
@@ -57,7 +58,7 @@ namespace PhononSpatializerProxy
 
         private IntPtr _cachedContext = IntPtr.Zero;
 
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         private float[] _monoIn;
         private float[] _monoOut;
@@ -81,18 +82,6 @@ namespace PhononSpatializerProxy
 
         private volatile bool _bufferOverflowed;
 
-        private void EnterParamsLock()
-        {
-            var spinWait = new SpinWait();
-            while (Interlocked.CompareExchange(ref _paramsLock, 1, 0) != 0)
-                spinWait.SpinOnce();
-        }
-
-        private void ExitParamsLock()
-        {
-            Volatile.Write(ref _paramsLock, 0);
-        }
-
         private void Awake()
         {
             _src = GetComponent<AudioSource>();
@@ -110,9 +99,6 @@ namespace PhononSpatializerProxy
             InitEffects();
         }
 
-        public static event Action<PhononDSPBridge> OnBridgeEnabled;
-        public static event Action<PhononDSPBridge> OnBridgeDisabled;
-
         private void OnEnable()
         {
             _steamSrc.enabled = true;
@@ -124,8 +110,6 @@ namespace PhononSpatializerProxy
             _steamSrc.enabled = false;
             OnBridgeDisabled?.Invoke(this);
         }
-
-        public bool IsSourcePlaying() => _src.isPlaying;
 
         private void OnDestroy()
         {

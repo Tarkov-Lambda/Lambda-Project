@@ -76,7 +76,8 @@ public class SND_Action : AbstractMatchStateController
 
     private Faction? CheckWipe()
     {
-        // return null;
+        if (H.AllPlayingPlayers.Count == 1) return null;
+
         int aliveCT = 0;
         int aliveT = 0;
         foreach (var p in H.Scoreboard.Values)
@@ -138,13 +139,13 @@ public class SND_RoundEnd : SharedRoundEnd
 public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable, IGMWithNightMode
 {
     // public EconomyManager economyManager = new();
+    
+    public override IInventoryManager InventoryManager => new SNDInventoryManager();
 
     public SNDGamemode()
     {
         Singleton<BombStatePacketWarden>.Instance.AfterPacketApplied += OnBombStatePacketReceived;
         EventBus.OnEnter += OnMatchStateEnter;
-
-        H.Arena.inventoryManager = new SNDInventoryManager();
     }
 
     public override void Dispose()
@@ -199,10 +200,11 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
         {MatchState.RoundPrepare, 15},
         {MatchState.RoundAction, 115},
         {MatchState.RoundEnd, 8},
-        {MatchState.RoundPlanted, 45},
+        {MatchState.RoundPlanted, 7},
         {MatchState.SideSwap, 5},
         {MatchState.MatchEnd, 15}
     };
+
 
     public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {

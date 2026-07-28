@@ -3,11 +3,9 @@ using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core;
-using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
 using System;
 using System.Linq;
-using System.Threading;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -75,7 +73,7 @@ public class SharedWarmup : AbstractMatchStateController
 
         if (remaining <= 0) return MatchState.WarmupEnd;
 
-        if (elapsed >= 8f && allReady) return MatchState.WarmupEnd;
+        if (elapsed >= 1f && allReady) return MatchState.WarmupEnd;
 
         return null;
     }
@@ -285,6 +283,12 @@ public class SharedPrepare : AbstractMatchStateController
             if (H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack) != null)
                 D.Notify("You have the bomb.");
         }
+        
+        D.Log($"Dumping Player Metadata:");
+        foreach (var player in H.AllPlayers)
+        {
+            D.Log($"{player.Id}: {player.Profile.Nickname}");
+        }
 
         foreach (var player in H.AllPlayingPlayers)
         {
@@ -421,6 +425,7 @@ public class SharedSideSwap : AbstractMatchStateController
                 var swappedFaction = playerScore.Faction == Faction.CT ? Faction.T : Faction.CT;
                 playerScore.ChangeFaction(swappedFaction);
             }
+
             (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
         }

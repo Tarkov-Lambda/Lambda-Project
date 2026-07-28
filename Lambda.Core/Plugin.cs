@@ -345,10 +345,10 @@ public class LambdaPlugin : BaseUnityPlugin
 
     private void Update()
     {
-        // if (StartKey.Value.IsDown())
-        // {
-        //     Singleton<SessionStartPacketWarden>.Instance.Send();
-        // }
+        if (StartKey.Value.IsDown())
+        {
+            Singleton<SessionStartPacketWarden>.Instance.Send();
+        }
 
         // if (DeathKey.Value.IsDown())
         // {

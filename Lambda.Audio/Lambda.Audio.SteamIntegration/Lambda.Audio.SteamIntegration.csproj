@@ -72,7 +72,8 @@
   <ItemGroup>
     <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
     <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
-    <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" />
+    <ProjectReference
+      Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" />
     <ProjectReference Include="..\..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
@@ -81,15 +82,26 @@
   </PropertyGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-    <ItemGroup>
 
-      <!-- <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" /> -->
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+      <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <FilesToDelete Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).dll" />
+      <FilesToDelete Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopyToPlugins)"
-    DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <ItemGroup Condition="'$(Configuration)' != 'Release'">
+      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <FilesToDelete Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).dll" />
+      <FilesToDelete Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).pdb" />
+    </ItemGroup>
+
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="@(FilesToCopyToPlugins)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <Copy Condition="'$(Configuration)' != 'Release'" SourceFiles="@(FilesToCopyToScripts)"
+      DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+
+    <Delete Files="@(FilesToDelete)" />
+
   </Target>
 </Project>

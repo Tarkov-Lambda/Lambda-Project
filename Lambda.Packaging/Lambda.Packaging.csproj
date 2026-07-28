@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lambda.Core\Lambda.Core.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Lambda.Audio.SteamIntegration\Lambda.Audio.SteamIntegration.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="ZipReleaseBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    
+    <XmlPeek XmlInputPath="..\Lambda.Core\Lambda.Core.csproj" Query="/Project/PropertyGroup/Version/text()">
+      <Output TaskParameter="Result" ItemName="ExtractedVersion" />
+    </XmlPeek>
+    
+    <PropertyGroup>
+      <LambdaVersion>@(ExtractedVersion)</LambdaVersion>
+      <ZipOutputFile>$(MSBuildProjectDirectory)\bin\Release\Lambda_v$(LambdaVersion).zip</ZipOutputFile>
+      
+      <StagingDir>$(MSBuildProjectDirectory)\obj\Staging</StagingDir>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Packaging Lambda Version: $(LambdaVersion)..." />
+
+    <RemoveDir Directories="$(StagingDir)" />
+    <MakeDir Directories="$(MSBuildProjectDirectory)\bin\Release" />
+    
+    <ItemGroup>
+      <PluginFiles Include="$(SPTPath)\BepInEx\plugins\ifp\**\*.*" />
+      
+      <ConfigFiles Include="$(SPTPath)\BepInEx\config\Lambda*.cfg" /> 
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(StagingDir)\BepInEx\plugins\ifp\%(RecursiveDir)" />
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(StagingDir)\BepInEx\config\%(RecursiveDir)" />
+
+    <ZipDirectory SourceDirectory="$(StagingDir)" DestinationFile="$(ZipOutputFile)" Overwrite="true" />
+        
+    <Message Importance="High" Text="Successfully created Release zip at: $(ZipOutputFile)" />
+    
+    <RemoveDir Directories="$(StagingDir)" />
+  </Target>
+
+</Project>

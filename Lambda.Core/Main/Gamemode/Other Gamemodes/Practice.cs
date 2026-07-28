@@ -1,17 +1,9 @@
-﻿using Fika.Core.Main.Utils;
-using Lambda.Core.GameTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace Lambda.Core.Main.Gamemode;
-
+﻿namespace Lambda.Core.Main.Gamemode;
 
 public class PracticeModeRules : LambdaGamemode
 {
-    
+    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+
     public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {
         MatchState.None => new SharedNone(),

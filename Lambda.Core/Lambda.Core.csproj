@@ -70,8 +70,9 @@
     <ProjectReference Include="..\Lambda.Shared\Lambda.Shared.csproj" />
 
     <ProjectReference Include="..\PacketWarden\PacketWarden.csproj" />
-    
-    <!-- <ProjectReference Include="..\Lambda.Audio\Lambda.Audio.SteamIntegration\Lambda.Audio.SteamIntegration.csproj" /> -->
+
+    <!-- <ProjectReference
+    Include="..\Lambda.Audio\Lambda.Audio.SteamIntegration\Lambda.Audio.SteamIntegration.csproj" /> -->
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
@@ -79,23 +80,32 @@
     <ItemGroup>
       <Binaries Include="$(OutputPath)\Unitask.dll" />
       <Binaries Include="$(OutputPath)\Unitask.*.dll" />
-
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
-      <FilesToCopyToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
-
       <Configs Include="../Configuration/*.cfg" />
       <Presets Include="../Configuration/Presets/WeaponBuilds/*.json" />
       <JSON Include="../Configuration/*.jsonc" />
     </ItemGroup>
 
-
     <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\" />
-
     <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
 
-    <Copy SourceFiles="@(FilesToCopyToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+      <MainFilesToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <MainFilesToDelete Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).dll" />
+      <MainFilesToDelete Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).pdb" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' != 'Release'">
+      <MainFilesToScripts Include="$(OutputPath)\$(MSBuildProjectName).dll" />
+      <MainFilesToScripts Include="$(OutputPath)\$(MSBuildProjectName).pdb" />
+      <MainFilesToDelete Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).dll" />
+      <MainFilesToDelete Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).pdb" />
+    </ItemGroup>
+
+    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="@(MainFilesToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
+    <Copy Condition="'$(Configuration)' != 'Release'" SourceFiles="@(MainFilesToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+
+    <Delete Files="@(MainFilesToDelete)" />
   </Target>
 </Project>

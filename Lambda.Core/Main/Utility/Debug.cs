@@ -18,16 +18,16 @@ public static class Debugging
 
     // #if DEBUG
     public static void Log(string msg) => LambdaPlugin.Logger.LogInfo(msg);
-    // public static void LogTransaction(string msg) => Plugin.Logger.LogInfo(msg); // for stuff that goes over the wire
+    public static void LogTransaction(string msg) => LambdaPlugin.Logger.LogInfo(msg); // for stuff that goes over the wire
     public static void LogArenaController(string msg) => LambdaPlugin.Logger.LogInfo(msg);
-    // public static void LogInventory(string msg) => Plugin.Logger.LogInfo(msg); // for inventory item tracking
+    public static void LogInventory(string msg) => LambdaPlugin.Logger.LogInfo(msg); // for inventory item tracking
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
     public static void DumpFile(object obj, string fileName = "Unknown Log", int depth = 0, [CallerArgumentExpression("obj")] string name = null) => _dumpFile(obj, fileName, depth);
 
     //     // public static void Log(string msg) => null;
-    public static void LogTransaction(string msg) { }
+    // public static void LogTransaction(string msg) { }
     //     // public static void LogArenaController(string msg) { }
-    public static void LogInventory(string msg) { }
+    // public static void LogInventory(string msg) { }
     //     // public static void Dump(object obj, int depth = 0, string msg = "", [CallerArgumentExpression("obj")] string name = null) {}};
     // #else
     //         public static void Log(string msg) {}

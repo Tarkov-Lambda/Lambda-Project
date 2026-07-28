@@ -74,7 +74,7 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
 
         // RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
 
-        RegisterPatch(new Patch_BetterSource_Init());                                   // do not let anything be occluded
+        // RegisterPatch(new Patch_BetterSource_Init());                                // attach SteamAudioSource on initalization of the audio source
 
         // foreach (BetterSource source in FindObjectsByType<BetterSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
         // {

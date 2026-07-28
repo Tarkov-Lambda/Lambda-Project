@@ -22,9 +22,11 @@ public abstract class AbstractMatchStateController : IDisposable
     }
 }
 
-public abstract class LambdaGamemode : IDisposable
+public abstract class LambdaGamemode : IGamemode
 {
     public virtual string Name { get; } = "Generic Lambda Gamemode";
+
+    public abstract IInventoryManager InventoryManager { get; }
 
     public abstract AbstractMatchStateController CreateState(MatchState state);
 
@@ -44,6 +46,14 @@ public abstract class LambdaGamemode : IDisposable
     };
 
     public virtual void Dispose() { }
+}
+
+public interface IGamemode : IDisposable
+{
+    public string Name { get; }
+    public abstract AbstractMatchStateController CreateState(MatchState state);
+    public Dictionary<MatchState, float> StateTimerConfig { get; }
+    public IInventoryManager InventoryManager { get; }
 }
 
 /// <summary>

@@ -210,7 +210,7 @@ public static class InventoryActionExtensions
         {
             if (player.HandsController.Item == player.GetSlotItem(equipmentSlot))
             {
-                player.UnfuckHands();
+                player.PolitelyNukeHands();
                 await UniTask.Delay(50);
             }
         }

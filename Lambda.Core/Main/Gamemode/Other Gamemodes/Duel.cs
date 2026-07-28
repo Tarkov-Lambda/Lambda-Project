@@ -63,6 +63,8 @@ public class DuelAction : AbstractMatchStateController
 
 public class DuelGamemode : LambdaGamemode, IGMRound, IGMTeam
 {
+    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+
     public override string Name { get; } = "Duel";
 
     public int MaxRoundsToWin { get; set; } = 13;

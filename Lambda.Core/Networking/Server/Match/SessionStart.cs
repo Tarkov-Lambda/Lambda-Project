@@ -79,7 +79,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         PrepareForStart(packet);
 
         H.Arena.gamemode = GetGamemodeByName(packet.gamemode);
-
+        H.Arena.inventoryManager = H.Arena.gamemode.InventoryManager;
+        
         if (!H.IsClient)
         {
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();

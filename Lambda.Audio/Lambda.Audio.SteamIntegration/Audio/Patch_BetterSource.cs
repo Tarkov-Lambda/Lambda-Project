@@ -82,6 +82,6 @@ internal class Patch_BetterSource_Init : ModulePatch
     [PatchPostfix]
     static void Postfix(BetterSource __instance)
     {
-        // BetterSourceProxyRouter.Attach(__instance);
+        BetterSourceProxyRouter.Attach(__instance);
     }
 }

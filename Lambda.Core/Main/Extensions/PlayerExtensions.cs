@@ -26,7 +26,7 @@ public static class PlayerExtensions
     }
 
     // this needs to go ASAP
-    public static void UnfuckHands(this Player player)
+    public static void PolitelyNukeHands(this Player player)
     {
         try
         {
