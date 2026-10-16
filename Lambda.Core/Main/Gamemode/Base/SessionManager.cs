@@ -3,7 +3,6 @@ using Lambda.Core.Main;
 using Lambda.Shared;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Lambda.Core.GameTypes;
 
@@ -78,11 +77,18 @@ public class SessionManager
         if (H.Gamemode is not IGMRound roundMode || H.Gamemode is not IGMSideSwappable sideMode)
             return 0;
 
-        int totalRoundsPlayed = factionWins.Values.Sum();
+        int totalRoundsPlayed = TotalRoundsPlayed();
 
         int roundsPerSide = roundMode.RoundsPerSide;
 
         return totalRoundsPlayed % roundsPerSide;
+    }
+
+    public int TotalRoundsPlayed()
+    {
+        int total = 0;
+        foreach (int wins in factionWins.Values) total += wins;
+        return total;
     }
 
     public List<Player> GetPlayersFromFaction(Faction faction)
@@ -122,64 +128,52 @@ public class SessionManager
 
 #nullable enable
 
-// sloppy and crude
-public class PlayerContextLookup(int maxId)
+// Indexed by Player.Id (Fika NetId), grows when an id exceeds the current capacity
+public class PlayerContextLookup(int capacity)
 {
-    private readonly PlayerContext?[] _items = new PlayerContext?[maxId + 1];
+    private PlayerContext?[] _items = new PlayerContext?[capacity + 1];
 
     private readonly List<PlayerContext> _activeContexts = new();
 
-    private int _count;
+    public int Count => _activeContexts.Count;
 
-    public int Count => _count;
-
-    public PlayerContext? this[int id]
-    {
-        get => _items[id];
-        // set => _items[id] = value;
-    }
+    public PlayerContext? this[int id] => IsInRange(id) ? _items[id] : null;
 
     public List<PlayerContext> Values => _activeContexts;
 
-    public IEnumerable<(int Id, PlayerContext Context)> Entries
-    {
-        get
-        {
-            for (int i = 0; i < _items.Length; i++)
-            {
-                var item = _items[i];
-
-                if (item is not null)
-                    yield return (i, item);
-            }
-        }
-    }
-
     public bool TryGetValue(int id, out PlayerContext? value)
     {
-        value = _items[id];
+        value = this[id];
         return value is not null;
     }
 
-    public bool ContainsKey(int id) => _items[id] is not null;
+    public bool ContainsKey(int id) => this[id] is not null;
 
     public void Add(int id, PlayerContext value)
     {
+        if (id < 0) return;
+
+        if (id >= _items.Length)
+            Array.Resize(ref _items, Math.Max(id + 1, _items.Length * 2));
+
+        if (_items[id] is { } existing)
+            _activeContexts.Remove(existing);
+
         _items[id] = value;
         _activeContexts.Add(value);
-        _count++;
     }
 
     public bool Remove(int id)
     {
-        var item = _items[id];
+        var item = this[id];
 
         if (item is null)
             return false;
 
         _activeContexts.Remove(item);
-        _items[id] = default;
-        _count--;
+        _items[id] = null;
         return true;
     }
+
+    private bool IsInRange(int id) => (uint)id < (uint)_items.Length;
 }

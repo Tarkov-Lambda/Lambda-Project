@@ -2,7 +2,6 @@
 using Lambda.Core.Main.AssetBundleHandling;
 using PacketWarden;
 using MemoryPack;
-using EFT.InventoryLogic;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Lambda.Core.Main.Gamemode;
@@ -17,7 +16,7 @@ public partial struct SessionStartPacket : IPacket
 {
     public string level;
     public string gamemode;
-    public List<Item> itemsToLoad; // this needs to change to ResourceKeys (если это ваще имеет смысл)
+    public List<string> templateIds;
     public bool isForLateJoiner;
 }
 
@@ -71,13 +70,14 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)
     {
-        packet.itemsToLoad = RuntimeBundleLoader.Instance.ItemsToLoad;
+        packet.templateIds = RuntimeBundleLoader.Instance.TemplateIdsToLoad;
     }
 
     protected override async void Apply(SessionStartPacket packet, int peerId)
     {
         PrepareForStart(packet);
 
+        H.Arena.gamemode?.Dispose();
         H.Arena.gamemode = GetGamemodeByName(packet.gamemode);
         H.Arena.inventoryManager = H.Arena.gamemode.InventoryManager;
         
@@ -89,7 +89,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         NetworkTime.Reset();
 
-        RuntimeBundleLoader.Instance.AddToCache(packet.itemsToLoad);
+        RuntimeBundleLoader.Instance.AddToCache(packet.templateIds);
 
         List<ResourceKey> firstPersonHands = new();
         foreach (var player in H.AllPlayers)

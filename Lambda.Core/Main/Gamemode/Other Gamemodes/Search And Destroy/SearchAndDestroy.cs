@@ -6,7 +6,6 @@ using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using Lambda.Shared;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Lambda.Core.Main.Gamemode;
@@ -76,7 +75,7 @@ public class SND_Action : AbstractMatchStateController
 
     private Faction? CheckWipe()
     {
-        if (H.AllPlayingPlayers.Count == 1) return null;
+        if (H.CountPlayingPlayers() == 1) return null;
 
         int aliveCT = 0;
         int aliveT = 0;
@@ -103,7 +102,7 @@ public class SND_Planted : AbstractMatchStateController
         if (!H.IsServer) return null;
 
         // If all CT are dead before timer runs out
-        if (!H.Scoreboard.Values.Any(p => p.IsAlive && p.Faction == Faction.CT))
+        if (!IsAnyCTAlive())
         {
             H.Arena.Award(Faction.T, RoundWinReason.Elimination);
             return MatchState.RoundEnd;
@@ -126,6 +125,16 @@ public class SND_Planted : AbstractMatchStateController
     }
 
     public override void OnExit() { }
+
+    private static bool IsAnyCTAlive()
+    {
+        foreach (var p in H.Scoreboard.Values)
+        {
+            if (p.IsAlive && p.Faction == Faction.CT) return true;
+        }
+
+        return false;
+    }
 }
 
 public class SND_RoundEnd : SharedRoundEnd
@@ -140,7 +149,7 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 {
     // public EconomyManager economyManager = new();
     
-    public override IInventoryManager InventoryManager => new SNDInventoryManager();
+    public override IInventoryManager InventoryManager { get; } = new SNDInventoryManager();
 
     public SNDGamemode()
     {

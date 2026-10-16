@@ -1,17 +1,13 @@
-using Lambda.Core.Main;
 using PacketWarden;
 using MemoryPack;
 using UnityEngine;
-using System.Collections.Generic;
-using System;
 using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
 [MemoryPackable]
-public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket, ITrackablePacket
+public partial struct SmokeExplosionPacket : IPacket, IServerTimestampedPacket
 {
-    public Guid ID { get; set; }
     public double Timestamp { get; set; }
     public Vector3 explosionPos;
 }
@@ -22,11 +18,8 @@ public class SmokeExplosionPacketWarden : LambdaPacketWarden<SmokeExplosionPacke
 
     public void Send(Vector3 explosionPos)
     {
-        List<FireNode> generatedNodes = MolotovController.GenerateFireSpread(explosionPos);
-
         var packet = new SmokeExplosionPacket
         {
-            ID = Guid.NewGuid(),
             Timestamp = NetworkTime.ServerNowSeconds,
             explosionPos = explosionPos,
         };
@@ -34,8 +27,5 @@ public class SmokeExplosionPacketWarden : LambdaPacketWarden<SmokeExplosionPacke
         DispatchPacket(ref packet);
     }
 
-    protected override async void Apply(SmokeExplosionPacket packet, int peerId)
-    {
-        
-    }
+    protected override void Apply(SmokeExplosionPacket packet, int peerId) { }
 }

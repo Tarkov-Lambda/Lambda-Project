@@ -37,7 +37,7 @@ public class DictateTeleportPacketWarden : LambdaPacketWarden<DictateTeleportPac
         MutateApprovedPacket(ref packet, peerId);
         if (!packet.Player.IsAI)
         {
-            PacketWardenUtils.Network.SendData(ref packet, DeliveryType, true);
+            Network.SendData(ref packet, DeliveryType);
         }
         ApplyInternal(packet, peerId);
     }

@@ -3,96 +3,55 @@ using System.Collections.Generic;
 
 namespace PacketWarden.RateLimiting;
 
-// Not thread-safe; intended to be used on the network thread.
 public sealed class TokenBucketRateLimiter<TKey> where TKey : notnull
 {
     private struct Bucket
     {
         public double Tokens;
         public double LastRefillSeconds;
-        public double LastSeenSeconds;
-        public double LastRejectSentSeconds;
+        public double LastNotifySeconds;
     }
 
     private readonly Dictionary<TKey, Bucket> _buckets = new();
 
     public void Clear() => _buckets.Clear();
 
-    public bool TryConsume(TKey key, double nowSeconds, in RateLimitConfig config, out bool canSendReject)
+    public void Remove(TKey key) => _buckets.Remove(key);
+
+    // notify: the key was limited and has not been told for RejectCooldownSeconds
+    public bool TryConsume(TKey key, double nowSeconds, in RateLimitConfig config, out bool notify)
     {
-        canSendReject = false;
+        notify = false;
 
         if (!config.Enabled)
             return true;
 
-        double refill = Math.Max(0, config.RefillPerSecond);
-        double burst = Math.Max(0, config.Burst);
-        int cost = Math.Max(1, config.CostPerPacket);
-
-        if (!_buckets.TryGetValue(key, out var b))
+        if (!_buckets.TryGetValue(key, out Bucket bucket))
         {
-            b = new Bucket
+            bucket = new Bucket
             {
-                Tokens = burst,
+                Tokens = config.Burst,
                 LastRefillSeconds = nowSeconds,
-                LastSeenSeconds = nowSeconds,
-                LastRejectSentSeconds = double.NegativeInfinity
+                LastNotifySeconds = double.NegativeInfinity,
             };
         }
 
-        // Refill
-        var elapsed = Math.Max(0, nowSeconds - b.LastRefillSeconds);
-        if (elapsed > 0 && refill > 0)
+        bucket.Tokens = Math.Min(config.Burst, bucket.Tokens + Math.Max(0, nowSeconds - bucket.LastRefillSeconds) * config.RefillPerSecond);
+        bucket.LastRefillSeconds = nowSeconds;
+
+        bool allowed = bucket.Tokens >= config.CostPerPacket;
+
+        if (allowed)
         {
-            b.Tokens = Math.Min(burst, b.Tokens + elapsed * refill);
-            b.LastRefillSeconds = nowSeconds;
+            bucket.Tokens -= config.CostPerPacket;
+        }
+        else if (nowSeconds - bucket.LastNotifySeconds >= config.RejectCooldownSeconds)
+        {
+            bucket.LastNotifySeconds = nowSeconds;
+            notify = true;
         }
 
-        b.LastSeenSeconds = nowSeconds;
-
-        if (b.Tokens >= cost)
-        {
-            b.Tokens -= cost;
-            _buckets[key] = b;
-            return true;
-        }
-
-        // Rate-limited.
-        if (config.Action == RateLimitAction.Reject)
-        {
-            canSendReject = (nowSeconds - b.LastRejectSentSeconds) >= config.RejectCooldownSeconds;
-            if (canSendReject)
-                b.LastRejectSentSeconds = nowSeconds;
-        }
-
-        _buckets[key] = b;
-        return false;
-    }
-
-    public void Prune(double nowSeconds, double ttlSeconds)
-    {
-        if (_buckets.Count == 0)
-            return;
-
-        ttlSeconds = Math.Max(0, ttlSeconds);
-        if (ttlSeconds <= 0)
-            return;
-
-        // Avoid allocations by doing a single pass with a temp list only when needed.
-        List<TKey> toRemove = null;
-        foreach (var kvp in _buckets)
-        {
-            if ((nowSeconds - kvp.Value.LastSeenSeconds) > ttlSeconds)
-            {
-                toRemove ??= new List<TKey>();
-                toRemove.Add(kvp.Key);
-            }
-        }
-
-        if (toRemove == null)
-            return;
-
-        foreach (var key in toRemove)
-            _buckets.Remove(key);
+        _buckets[key] = bucket;
+        return allowed;
     }
 }

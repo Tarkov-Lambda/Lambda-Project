@@ -14,8 +14,6 @@ public partial struct BlindFirePacket : IPacket, IAuthoredPacket
 
 public class BlindFirePacketWarden : LambdaPacketWarden<BlindFirePacket>
 {
-    protected override bool ShouldLog => false;
-
     public void Send(int value)
     {
         var packet = new BlindFirePacket

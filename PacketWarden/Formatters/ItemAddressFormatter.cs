@@ -1,5 +1,5 @@
 using System;
-using Comfort.Common;
+using System.Collections.Generic;
 using EFT;
 using EFT.InventoryLogic;
 using MemoryPack;
@@ -9,83 +9,55 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
 {
     public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ItemAddress value)
     {
-        if (value == null)
-        {
-            writer.WriteNullObjectHeader();
-            return;
-        }
+        Player owner = value != null ? FindOwner(value) : null;
 
-        Player addressPlayerOwner = null;
-        foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
-        {
-            if (value.GetOwner().RootItem == player.InventoryController.RootItem)
-            {
-                addressPlayerOwner = player;
-                break;
-            }
-        }
-
-        if (addressPlayerOwner == null)
+        if (owner == null)
         {
             writer.WriteNullObjectHeader();
             return;
         }
 
         writer.WriteObjectHeader(2);
-        // writer.WriteUnmanaged(addressPlayerOwner.Id);
-        writer.WriteString(addressPlayerOwner.ProfileId);
+        writer.WriteUnmanaged(owner.Id);
 
         var eftWriter = WriterPoolManager.GetWriter();
-        var descriptor = value.ToDescriptor();
-        eftWriter.WritePolymorph(descriptor);
-        writer.WriteUnmanagedArray(eftWriter.ToArray());
+        eftWriter.WritePolymorph(value.ToDescriptor());
+        WriterPoolManager.WriteBlob(ref writer, eftWriter);
         WriterPoolManager.ReturnWriter(eftWriter);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref ItemAddress value)
     {
-        if (!reader.TryReadObjectHeader(out var count))
-        {
-            value = null;
-            return;
-        }
+        value = null;
 
-        // int playerId = reader.ReadUnmanaged<int>();
-        string profileId = reader.ReadString();
-        byte[] addressBytes = reader.ReadUnmanagedArray<byte>();
+        if (!reader.TryReadObjectHeader(out _)) return;
 
-        if (!Singleton<GameWorld>.Instantiated)
-        {
-            value = null;
-            return;
-        }
+        Player player = PlayerFormatter.Find(reader.ReadUnmanaged<int>());
 
-        Player player = null;
-        foreach (Player alivePlayer in Singleton<GameWorld>.Instance.AllAlivePlayersList)
-        {
-            if (alivePlayer.ProfileId == profileId)
-            {
-                player = alivePlayer;
-                break;
-            }
-        }
-
-        if (addressBytes == null || addressBytes.Length == 0 || player == null)
-        {
-            value = null;
-            return;
-        }
+        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob) || player == null) return;
 
         try
         {
-            using var eftReader = PacketToEFTReaderAbstractClass.Get(addressBytes);
-            var descriptor = eftReader.ReadPolymorph<GClass1950>();
-            value = player.InventoryController.ToItemAddress(descriptor);
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(blob);
+            value = player.InventoryController.ToItemAddress(eftReader.ReadPolymorph<GClass1950>());
         }
-        catch (Exception)
+        catch (Exception) { }
+    }
+
+    private static Player FindOwner(ItemAddress address)
+    {
+        if (!H.IsInRaid()) return null;
+
+        Item rootItem = address.GetOwner()?.RootItem;
+        if (rootItem == null) return null;
+
+        List<Player> players = H.GameWorld.AllAlivePlayersList;
+
+        for (int i = 0; i < players.Count; i++)
         {
-            // PacketWardenUtils.Log(ex.Message);
-            // PacketWardenUtils.Log(ex.StackTrace);
+            if (players[i].InventoryController.RootItem == rootItem) return players[i];
         }
+
+        return null;
     }
 }

@@ -183,7 +183,7 @@ public static class RespawnUtilities
 
         if (!scene.isLoaded)
         {
-            D.LogError($"Trying to find spawn points in a scene that is not LOADED!"); // bro what the fuck are we logging
+            D.LogError($"Trying to find spawn points in a scene that is not LOADED!");
             return false;
         }
 

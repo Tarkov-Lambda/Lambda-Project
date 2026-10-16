@@ -1,133 +1,162 @@
 ﻿using System;
-using Comfort.Common;
+using System.Collections.Generic;
 using EFT;
-using Fika.Core.Main.Players;
+using Comfort.Common;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
+using MemoryPack;
 using static Fika.Core.Modding.FikaEventDispatcher;
 
-public class FikaBackend : INetworkBackend, IDisposable
+public class FikaBackend : INetworkBackend
 {
     public bool IsServer => FikaBackendUtils.IsServer;
     public bool IsClient => FikaBackendUtils.IsClient;
     public bool IsHeadless => FikaBackendUtils.IsHeadless;
     public bool IsOnline => true;
 
-    public int NetId => Singleton<IFikaNetworkManager>.Instance.NetId;
-
     public Action OnNetworkCreated { get; set; }
     public Action OnNetworkDestroyed { get; set; }
 
     public Action<int> OnPeerConnected { get; set; }
-    public Action<int> OnDisconnected { get; set; }
+    public Action<int> OnPeerDisconnected { get; set; }
 
-    private readonly Action<FikaNetworkManagerCreatedEvent> OnFikaNetworkManagerCreatedEvent;
-    private readonly Action<FikaNetworkManagerDestroyedEvent> OnFikaNetworkManagerDestroyedEvent;
-    private readonly Action<PeerConnectedEvent> OnPeerConnectedEvent;
-    private readonly Action<PeerDisconnectedEvent> OnPeerDisconnectedEvent;
+    private static IFikaNetworkManager Manager => Singleton<IFikaNetworkManager>.Instance;
+
+    private readonly Dictionary<uint, (Type Type, Action<ArraySegment<byte>, int> Receive)> _receivers = new();
+    private IFikaNetworkManager _registeredManager;
+
+    private readonly Action<FikaNetworkManagerCreatedEvent> _onNetworkCreated;
+    private readonly Action<FikaNetworkManagerDestroyedEvent> _onNetworkDestroyed;
+    private readonly Action<PeerConnectedEvent> _onPeerConnected;
+    private readonly Action<PeerDisconnectedEvent> _onPeerDisconnected;
 
     public FikaBackend()
     {
-        OnFikaNetworkManagerCreatedEvent = new Action<FikaNetworkManagerCreatedEvent>(TriggerNetworkCreated);
-        SubscribeEvent(OnFikaNetworkManagerCreatedEvent);
+        _onNetworkCreated = _ =>
+        {
+            RegisterWrapper();
+            OnNetworkCreated?.Invoke();
+        };
+        _onNetworkDestroyed = _ =>
+        {
+            OnNetworkDestroyed?.Invoke();
+            UnregisterWrapper();
+        };
+        _onPeerConnected = ev => OnPeerConnected?.Invoke(ev.Peer.Id);
+        _onPeerDisconnected = ev => OnPeerDisconnected?.Invoke(ev.Peer.Id);
 
-        OnFikaNetworkManagerDestroyedEvent = new Action<FikaNetworkManagerDestroyedEvent>(TriggerNetworkDestroyed);
-        SubscribeEvent(OnFikaNetworkManagerDestroyedEvent);
-
-        OnPeerConnectedEvent = new Action<PeerConnectedEvent>(TriggerPeerConnected);
-        SubscribeEvent(OnPeerConnectedEvent);
-
-        OnPeerDisconnectedEvent = new Action<PeerDisconnectedEvent>(TriggerPeerDisconnected);
-        SubscribeEvent(OnPeerDisconnectedEvent);
+        SubscribeEvent(_onNetworkCreated);
+        SubscribeEvent(_onNetworkDestroyed);
+        SubscribeEvent(_onPeerConnected);
+        SubscribeEvent(_onPeerDisconnected);
     }
 
     public void Dispose()
     {
-        UnsubscribeEvent(OnFikaNetworkManagerCreatedEvent);
-        UnsubscribeEvent(OnFikaNetworkManagerDestroyedEvent);
-        UnsubscribeEvent(OnPeerConnectedEvent);
-        UnsubscribeEvent(OnPeerDisconnectedEvent);
+        UnsubscribeEvent(_onNetworkCreated);
+        UnsubscribeEvent(_onNetworkDestroyed);
+        UnsubscribeEvent(_onPeerConnected);
+        UnsubscribeEvent(_onPeerDisconnected);
+
+        UnregisterWrapper();
+        _receivers.Clear();
     }
 
-    void TriggerNetworkCreated(FikaNetworkManagerCreatedEvent ev) => OnNetworkCreated?.Invoke();
-    void TriggerNetworkDestroyed(FikaNetworkManagerDestroyedEvent ev) => OnNetworkDestroyed?.Invoke();
-    void TriggerPeerConnected(PeerConnectedEvent ev) => OnPeerConnected?.Invoke(ev.Peer.Id);
-    void TriggerPeerDisconnected(PeerDisconnectedEvent ev) => OnDisconnected?.Invoke(ev.Peer.Id);
+    private void RegisterWrapper()
+    {
+        IFikaNetworkManager manager = Manager;
+        if (manager == null || manager == _registeredManager) return;
+
+        manager.RegisterPacket<LiteNetLibWrapper, NetPeer>(OnWrapperReceived);
+        _registeredManager = manager;
+    }
+
+    private void UnregisterWrapper()
+    {
+        if (_registeredManager == null) return;
+
+        if (Manager == _registeredManager) _registeredManager.UnregisterPacket<LiteNetLibWrapper>();
+        _registeredManager = null;
+    }
+
+    // Exceptions must not escape into Fika's receive loop, it would drop the rest of the batch.
+    private void OnWrapperReceived(LiteNetLibWrapper wrapper, NetPeer peer)
+    {
+        if (!wrapper.IsValid || !_receivers.TryGetValue(wrapper.Id, out var receiver)) return;
+
+        try
+        {
+            receiver.Receive(wrapper.Payload, peer.Id);
+        }
+        catch (Exception ex)
+        {
+            PacketWardenUtils.Log($"PacketWarden failed to handle packet {wrapper.Id} from peer {peer.Id}: {ex}");
+        }
+    }
 
     public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket
     {
-        Singleton<IFikaNetworkManager>.Instance.RegisterPacket<LiteNetLibWrapper<T>, NetPeer>((wrapper, peer) => onReceive(wrapper.Payload, peer.Id));
+        RegisterWrapper();
+
+        uint id = PacketId<T>.Value;
+
+        if (_receivers.TryGetValue(id, out var existing) && existing.Type != typeof(T))
+            PacketWardenUtils.Log($"PacketWarden: {typeof(T)} and {existing.Type} share packet id {id}");
+
+        _receivers[id] = (typeof(T), (payload, peerId) => onReceive(MemoryPackSerializer.Deserialize<T>(payload.AsSpan()), peerId));
     }
 
     public void UnregisterPacketWarden<T>() where T : IPacket
     {
-        Singleton<IFikaNetworkManager>.Instance.UnregisterPacket<LiteNetLibWrapper<T>>();
+        _receivers.Remove(PacketId<T>.Value);
     }
 
-    public void DisconnectPeer(int peerId) { }
-
-    public void SendData<T>(ref T packet, DeliveryType method, bool broadcast) where T : IPacket
+    public void SendData<T>(ref T packet, DeliveryType method) where T : IPacket
     {
-        LiteNetLibWrapper<T> wrapper = new()
-        {
-            Payload = packet
-        };
+        IFikaNetworkManager manager = Manager;
+        if (manager == null) return;
 
-        Singleton<IFikaNetworkManager>.Instance.SendData(ref wrapper, (DeliveryMethod)method, broadcast);
+        var wrapper = LiteNetLibWrapper.Create(ref packet);
+        manager.SendData(ref wrapper, (DeliveryMethod)method);
     }
 
-    public void SendDataToPeer<T>(ref T packet, DeliveryType method, int id) where T : IPacket
+    public void SendDataToPeer<T>(ref T packet, DeliveryType method, int peerId) where T : IPacket
     {
-        LiteNetLibWrapper<T> wrapper = new()
-        {
-            Payload = packet
-        };
+        IFikaNetworkManager manager = Manager;
+        NetPeer peer = manager?.GetPeerById(peerId);
+        if (peer == null) return;
 
-        Singleton<IFikaNetworkManager>.Instance.SendDataToPeer(ref wrapper, (DeliveryMethod)method, Singleton<IFikaNetworkManager>.Instance.GetPeerById(id));
+        var wrapper = LiteNetLibWrapper.Create(ref packet);
+        manager.SendDataToPeer(ref wrapper, (DeliveryMethod)method, peer);
+    }
+
+    public void DisconnectPeer(int peerId)
+    {
+        if (IsServer) Manager?.GetPeerById(peerId)?.Disconnect();
     }
 
     public Player GetPlayerByPeerId(int peerId)
     {
-        if (peerId == INetworkBackend.LocalPeerId) return Singleton<GameWorld>.Instance.MainPlayer;
-        return Singleton<IFikaNetworkManager>.Instance.GetPeerById(peerId)?.Player;
+        if (peerId == INetworkBackend.LocalPeerId) return PacketWardenUtils.IsInRaid() ? PacketWardenUtils.GameWorld.MainPlayer : null;
+
+        return IsServer ? Manager?.GetPeerById(peerId)?.Player : null;
     }
 
     public int GetPeerIdByPlayer(Player player)
     {
-        try
-        {
-            // if it's us, return local net id
-            if (player.IsYourPlayer) return INetworkBackend.LocalPeerId;
+        if (player == null) return INetworkBackend.InvalidPeerId;
+        if (player.IsYourPlayer) return INetworkBackend.LocalPeerId;
 
-            // if we are the server and 
-            if (IsServer && Singleton<IFikaNetworkManager>.Instance is FikaServer server)
+        if (Manager is FikaServer server && server.NetServer != null)
+        {
+            foreach (NetPeer peer in server.NetServer)
             {
-                if (server.NetServer != null)
-                {
-                    foreach (NetPeer peer in server.NetServer)
-                    {
-                        if (peer.Player != null && peer.Player.ProfileId == player.ProfileId)
-                        {
-                            return peer.Id;
-                        }
-                    }
-                }
+                if (peer.Player == player) return peer.Id;
             }
-
-            if (IsClient)
-                throw new Exception("Client is trying to find a peer, this is not supposed to happen.");
-            else
-                throw new Exception($"Server can not find the peer responsible for {player.Profile.Nickname}");
-        }
-        catch (Exception ex)
-        {
-            PacketWardenUtils.Log(ex.Message);
-            PacketWardenUtils.Log(ex.StackTrace);
         }
 
-        return -2;
-
+        return INetworkBackend.InvalidPeerId;
     }
 }

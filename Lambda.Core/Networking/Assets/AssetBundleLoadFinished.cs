@@ -1,8 +1,7 @@
 ﻿using MemoryPack;
 using EFT;
-using Cysharp.Threading.Tasks;
 using Comfort.Common;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace Lambda.Core.Networking;
 
@@ -36,20 +35,15 @@ public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundl
         ApplyInternal(packet, peerId);
     }
 
-    protected override async void Apply(AssetBundleLoadFinishedPacket packet, int peerId)
+    protected override void Apply(AssetBundleLoadFinishedPacket packet, int peerId)
     {
-        var assetBundleLoadProgressDictionary = Singleton<AssetBundleLoadPacketWarden>.Instance.AssetBundleLoadProgress;
-        var assetBundleLoadProgress = assetBundleLoadProgressDictionary[packet.id];
+        var pendingLoads = Singleton<AssetBundleLoadPacketWarden>.Instance.PendingLoads;
 
-        if (assetBundleLoadProgress != null)
-        {
-            var playerLoadState = assetBundleLoadProgress.FirstOrDefault(p => p.player == packet.Player);
-            playerLoadState.hasLoaded = true;
+        if (packet.id == null || !pendingLoads.TryGetValue(packet.id, out HashSet<Player> pending)) return;
 
-            if (assetBundleLoadProgress.All(p => p.hasLoaded == true))
-            {
-                assetBundleLoadProgressDictionary.Remove(packet.id);
-            }
-        }
+        pending.Remove(packet.Player);
+
+        if (pending.Count == 0)
+            pendingLoads.Remove(packet.id);
     }
 }

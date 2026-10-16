@@ -5,7 +5,6 @@ using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using MemoryPack;
 using PacketWarden.TimeSync;
-using SPT.Reflection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,12 +49,12 @@ internal class Plugin : BaseUnityPlugin
         MemoryPackFormatterProvider.Register(new ItemFormatter());
         MemoryPackFormatterProvider.Register(new InventoryDescriptorClassFormatter());
         MemoryPackFormatterProvider.Register(new ItemAddressFormatter());
-        MemoryPackFormatterProvider.Register(new WorldInteractiveObjectFormatter()); // WorldInteractiveObject.NetId
+        MemoryPackFormatterProvider.Register(new ResourceKeyFormatter());
+        MemoryPackFormatterProvider.Register(new WorldInteractiveObjectFormatter()); // WorldInteractiveObject.Id
 
         if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
         {
             InitFikaBackend();
-            RegisterSingleton<TimeSynchronizationPacketWarden>();
         }
         else
         {
@@ -63,10 +62,9 @@ internal class Plugin : BaseUnityPlugin
             Logger.LogInfo("PacketWarden running in Local Mode.");
         }
 
-        H.OnNetworkCreated += NetworkTime.Reset;
+        Network.OnNetworkCreated += NetworkTime.Reset;
 
-        RegisterSingleton<TestPacketWarden>();
-        Singleton<TestPacketWarden>.Instance.Send();
+        RegisterSingleton<TimeSynchronizationPacketWarden>();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -88,7 +86,6 @@ internal class Plugin : BaseUnityPlugin
         catch (Exception ex)
         {
             Logger.LogError($"Failed to load Fika Integration: {ex}");
-            Logger.LogError(ex.StackTrace);
             Network = new LocalBackend();
         }
     }
@@ -109,6 +106,7 @@ internal class Plugin : BaseUnityPlugin
 
         _releases.Clear();
 
-        H.OnNetworkCreated -= NetworkTime.Reset;
+        Network.OnNetworkCreated -= NetworkTime.Reset;
+        Network.Dispose();
     }
 }

@@ -51,10 +51,8 @@ public partial class PlayerContext
     {
         if (attacker == null || attacker == player) return;
 
-        if (!_damageContributors.ContainsKey(attacker.Id))
-            _damageContributors[attacker.Id] = 0f;
-
-        _damageContributors[attacker.Id] += damage;
+        _damageContributors.TryGetValue(attacker.Id, out float total);
+        _damageContributors[attacker.Id] = total + damage;
     }
 
     public Player GetTopAssist(Player killer)

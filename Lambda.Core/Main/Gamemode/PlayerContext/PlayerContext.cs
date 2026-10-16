@@ -13,6 +13,7 @@ namespace Lambda.Core.Main;
 
 public partial class PlayerContext
 {
+    public readonly int Id;
     public readonly Player player;
 
     private PlayerContextInfo context;
@@ -57,6 +58,7 @@ public partial class PlayerContext
 
     public PlayerContext(int id)
     {
+        Id = id;
         player = H.GetPlayer(id);
         context.Identity.Name = player.Profile.Nickname;
         context.Identity.ClanTag = string.Empty;

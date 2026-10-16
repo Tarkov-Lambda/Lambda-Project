@@ -48,7 +48,7 @@ public class LambdaPlugin : BaseUnityPlugin
     private ConfigEntry<KeyboardShortcut> StartKey;
     private ConfigEntry<KeyboardShortcut> DeathKey;
     private ConfigEntry<KeyboardShortcut> MapReloadKey;
-    private ConfigEntry<KeyboardShortcut> UnfuckKey;
+    private ConfigEntry<KeyboardShortcut> ResetKey;
     private ConfigEntry<KeyboardShortcut> NoclipKey;
 
     private readonly List<ModulePatch> _patches = new();
@@ -338,7 +338,7 @@ public class LambdaPlugin : BaseUnityPlugin
         StartKey = Config.Bind("Debug", "Start key", new KeyboardShortcut(KeyCode.F1));
         DeathKey = Config.Bind("Debug", "Suicide Key", new KeyboardShortcut(KeyCode.F2));
         MapReloadKey = Config.Bind("Debug", "Map Hot-Reload Key", new KeyboardShortcut(KeyCode.F3));
-        UnfuckKey = Config.Bind("Debug", "Hands Unfucking Key", new KeyboardShortcut(KeyCode.F4));
+        ResetKey = Config.Bind("Debug", "Reset Key", new KeyboardShortcut(KeyCode.F4));
         NoclipKey = Config.Bind("Noclip", "", new KeyboardShortcut(KeyCode.CapsLock));
     }
 
@@ -361,7 +361,7 @@ public class LambdaPlugin : BaseUnityPlugin
             MapAssetBundleLoader.Instance.ReloadMap(H.Session.level).Forget();
         }
 
-        if (UnfuckKey.Value.IsDown())
+        if (ResetKey.Value.IsDown())
         {
             PU.OpenEyes();
             Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.MainPlayer, EquipmentResyncRequestType.ClientRequest);

@@ -3,7 +3,7 @@ using System;
 using PacketWarden.RateLimiting;
 using MemoryPack;
 using Comfort.Common;
-using System.Linq;
+using System.Collections.Generic;
 using PacketWarden.TimeSync;
 using Lambda.Core.Main.Economy;
 using Lambda.Shared.Models;
@@ -27,23 +27,34 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
 
     public void Send(Player player, string templateId)
     {
-        var packet = new RefundItemPacket
-        {
-            Player = player
-        };
-
-        var allRoundTransactions = Singleton<BuyItemPacketWarden>.Instance.RoundTransactions;
-        var foundTransaction = allRoundTransactions.FirstOrDefault(transaction => transaction.Value?[0].item.TemplateId == templateId);
-
-        if (foundTransaction.Value == null)
+        if (!TryFindLatestTransaction(player, templateId, out Guid transactionId))
         {
             D.Notify("Can't find this transaction");
             return;
         }
 
-        packet.ID = foundTransaction.Key;
+        var packet = new RefundItemPacket
+        {
+            Player = player,
+            ID = transactionId
+        };
 
         DispatchPacket(ref packet);
+    }
+
+    private static bool TryFindLatestTransaction(Player player, string templateId, out Guid transactionId)
+    {
+        transactionId = Guid.Empty;
+
+        foreach (var transaction in Singleton<BuyItemPacketWarden>.Instance.RoundTransactions)
+        {
+            List<BuyItemPacket> packets = transaction.Value;
+
+            if (packets.Count > 0 && packets[0].Player == player && packets[0].item.TemplateId == templateId)
+                transactionId = transaction.Key;
+        }
+
+        return transactionId != Guid.Empty;
     }
 
     protected override bool ValidatePacket(RefundItemPacket packet, int peerId, out string rejectionReason)
@@ -89,11 +100,11 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
     {
         var allRoundTransactions = Singleton<BuyItemPacketWarden>.Instance.RoundTransactions;
 
-        if (allRoundTransactions.TryGetValue(packet.ID, out var transactions))
+        if (allRoundTransactions.TryGetValue(packet.ID, out var transactions) && transactions.Count > 0)
         {
-            var firstTransaction = transactions.FirstOrDefault();
+            allRoundTransactions.Remove(packet.ID);
 
-            if (BuyMenuSelection.TryGetItemData(firstTransaction.item.TemplateId, out ShopItem itemData))
+            if (BuyMenuSelection.TryGetItemData(transactions[0].item.TemplateId, out ShopItem itemData))
             {
                 packet.Player.Context.AddMoney(itemData.price);
             }

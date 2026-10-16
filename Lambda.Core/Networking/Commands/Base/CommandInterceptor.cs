@@ -41,13 +41,19 @@ namespace Lambda.Core.Networking.Commands
 
         public static bool TryHandleLocal(string message)
         {
-            if (!message.StartsWith("!")) return false;
+            if (string.IsNullOrEmpty(message) || message[0] != '!') return false;
 
             var (cmdName, args) = ParseRawMessage(message);
             if (!Commands.TryGetValue(cmdName, out var cmdInfo)) return false;
 
             if (cmdInfo.Attribute.Target == CommandTarget.ClientOnly)
             {
+                if (cmdInfo.Attribute.Authority == PacketAuthority.Admin && H.MainPlayerScore?.IsAdmin != true)
+                {
+                    D.Notify("You do not have permission to use this command.");
+                    return true;
+                }
+
                 ExecuteCommand(cmdInfo, H.MainPlayer, INetworkBackend.LocalPeerId, message, args);
                 return true;
             }
@@ -124,6 +130,8 @@ namespace Lambda.Core.Networking.Commands
         {
             // strings in quotes are not supported
             var parts = message.Substring(1).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) return (string.Empty, Array.Empty<string>());
+
             return (parts[0].ToLowerInvariant(), parts.Skip(1).ToArray());
         }
     }

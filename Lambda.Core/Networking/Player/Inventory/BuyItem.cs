@@ -111,19 +111,32 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
+    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, int peerId)
+    {
+        MutateApprovedPacket(ref packet, peerId);
+
+        if (packet.placement.Kind == PlacementKind.None)
+        {
+            SendRejection(ref packet, peerId, "Can't find placement for your item");
+            return;
+        }
+
+        Network.SendData(ref packet, DeliveryType);
+        ApplyInternal(packet, peerId);
+    }
+
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, int peerId)
     {
         try
         {
+            if (packet.ID == Guid.Empty) packet.ID = Guid.NewGuid();
+
             packet.item = packet.item.CloneItem();
             packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
             packet.Timestamp = NetworkTime.ServerNowSeconds;
 
             if (packet.placement.Kind == PlacementKind.None)
-            {
-                SendRejection(ref packet, peerId, "Can't find placement for your item");
                 return;
-            }
 
             if (packet.item is Weapon weapon)
             {
@@ -151,7 +164,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         }
         catch (Exception ex)
         {
-            D.Log(ex.StackTrace);
+            D.Log(ex.ToString());
         }
     }
 
@@ -182,7 +195,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             }
             catch (Exception ex)
             {
-                D.Log(ex.StackTrace);
+                D.Log(ex.ToString());
             }
 
             var success = packet.Player.PlaceItem(packet.item, packet.placement);
@@ -202,7 +215,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         }
         catch (Exception ex)
         {
-            D.Log(ex.StackTrace);
+            D.Log(ex.ToString());
         }
     }
 

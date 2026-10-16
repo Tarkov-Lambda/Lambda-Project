@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -10,7 +9,13 @@ public class GunGameAction : AbstractMatchStateController
     public override MatchState? OnUpdate()
     {
         if (H.IsClient) return null;
-        if (H.Arena.StateTimer <= 0 || H.Scoreboard.Values.Any(p => p.Kills >= 20)) return MatchState.MatchEnd;
+        if (H.Arena.StateTimer <= 0) return MatchState.MatchEnd;
+
+        foreach (var p in H.Scoreboard.Values)
+        {
+            if (p.Kills >= 20) return MatchState.MatchEnd;
+        }
+
         return null;
     }
     public override void OnExit() { }
@@ -18,7 +23,7 @@ public class GunGameAction : AbstractMatchStateController
 
 public class GunGameGamemode : LambdaGamemode, IGMRespawnable
 {
-    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+    public override IInventoryManager InventoryManager { get; } = new BaseInventoryManager();
 
     public override string Name { get; } = "Gun Game";
 

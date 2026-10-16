@@ -4,7 +4,7 @@ namespace Lambda.Core.Main.Gamemode;
 
 public class KnifeOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
 {
-    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+    public override IInventoryManager InventoryManager { get; } = new BaseInventoryManager();
 
     public override string Name { get; } = "Knife Only";
 

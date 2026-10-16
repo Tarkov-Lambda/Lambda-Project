@@ -87,7 +87,7 @@ namespace Lambda.Core.Main.UI
             Singleton<ChatMessagePacketWarden>.Instance.Send(scope, msg);
         }
 
-        private async void OnAnnouncementReceived(ServerMessagePacket serverMessagePacket)
+        private void OnAnnouncementReceived(ServerMessagePacket serverMessagePacket)
         {
             if (serverMessagePacket.specificFaction != null && serverMessagePacket.specificFaction.Value == H.MainPlayerScore.Faction)
                 _chat.PopAnnouncementMessage(serverMessagePacket.msg);
@@ -95,7 +95,7 @@ namespace Lambda.Core.Main.UI
                 _chat.PopAnnouncementMessage(serverMessagePacket.msg);
         }
 
-        private async void OnMessageReceived(ChatMessagePacket chatPacket)
+        private void OnMessageReceived(ChatMessagePacket chatPacket)
         {
             PlayerContext playerScore = H.GetPlayerContext(chatPacket.Player);
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -137,26 +136,54 @@ public static class Helpers
 
     public static Player GetPlayer(int playerId)
     {
-        return AllPlayers?.FirstOrDefault(p => p.Id == playerId);
+        List<Player> players = AllPlayers;
+        if (players == null) return null;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].Id == playerId) return players[i];
+        }
+
+        return null;
     }
 
     public static Player GetPlayer(string profileId)
     {
-        return AllPlayers?.FirstOrDefault(p => p.Profile.ProfileId == profileId);
+        List<Player> players = AllPlayers;
+        if (players == null) return null;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].ProfileId == profileId) return players[i];
+        }
+
+        return null;
     }
 
-    public static Player GetPlayerByName(string profileId)
+    // Nickname (case insensitive) or profile id
+    public static Player GetPlayerByName(string name)
     {
-        return AllPlayers?.FirstOrDefault(p => p.ProfileId == profileId);
+        List<Player> players = AllPlayers;
+        if (players == null) return null;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player player = players[i];
+            if (string.Equals(player.Profile.Nickname, name, StringComparison.OrdinalIgnoreCase) || player.ProfileId == name) return player;
+        }
+
+        return null;
     }
 
-    public static PlayerContext GetPlayerContext(Player player) => GetPlayerContext(player.Id);
+    public static PlayerContext GetPlayerContext(Player player) => player != null ? GetPlayerContext(player.Id) : null;
 
     public static PlayerContext GetPlayerContext(int playerId)
     {
-        if (!IsInRaid()) return null;
+        if (!IsInRaid() || !IsArenaReady) return null;
         if (!Scoreboard.TryGetValue(playerId, out var playerScore))
         {
+            if (GetPlayer(playerId) == null) return null;
+
             playerScore = new PlayerContext(playerId);
             Scoreboard.Add(playerId, playerScore);
         }
@@ -165,8 +192,12 @@ public static class Helpers
 
     public static PlayerContext GetMainPlayerScore()
     {
-        if (!IsInRaid()) return null;
-        Scoreboard.TryGetValue(MainPlayer.Id, out var playerScore);
+        if (!IsInRaid() || !IsArenaReady || IsHeadless) return null;
+
+        Player mainPlayer = MainPlayer;
+        if (mainPlayer == null) return null;
+
+        Scoreboard.TryGetValue(mainPlayer.Id, out var playerScore);
         return playerScore;
     }
 
@@ -177,8 +208,34 @@ public static class Helpers
 
     private static List<Player> GetAllPlayingPlayers()
     {
-        if (!IsInRaid()) return null;
-        return GameWorld.AllAlivePlayersList.Where(player => player.Context.ReadyState != PlayerReadinessState.Disconnected && player.Context.Faction != Faction.Spectator).ToList();
+        var result = new List<Player>();
+        if (!IsInRaid()) return result;
+
+        foreach (Player player in GameWorld.AllAlivePlayersList)
+        {
+            if (IsPlaying(player)) result.Add(player);
+        }
+
+        return result;
+    }
+
+    public static int CountPlayingPlayers()
+    {
+        if (!IsInRaid()) return 0;
+
+        int count = 0;
+        foreach (Player player in GameWorld.AllAlivePlayersList)
+        {
+            if (IsPlaying(player)) count++;
+        }
+
+        return count;
+    }
+
+    private static bool IsPlaying(Player player)
+    {
+        PlayerContext context = player.Context;
+        return context.ReadyState != PlayerReadinessState.Disconnected && context.Faction != Faction.Spectator;
     }
     #endregion
 

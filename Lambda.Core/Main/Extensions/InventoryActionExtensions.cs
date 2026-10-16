@@ -205,7 +205,6 @@ public static class InventoryActionExtensions
 
     public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
     {
-        // TODO: stop being a retard
         if (H.IsServer && player.IsYourPlayer)
         {
             if (player.HandsController.Item == player.GetSlotItem(equipmentSlot))

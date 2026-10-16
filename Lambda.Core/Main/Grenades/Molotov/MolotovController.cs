@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Lambda.Core.Networking;
 using UnityEngine;
 
@@ -12,15 +11,13 @@ public static class MolotovController
     // maximum absolute distance from the origin the fire is allowed to travel
     public static float maxSpreadDistance = 12.0f; 
 
-    public static async UniTask Spawn(MolotovExplosionPacket packet)
+    public static void Spawn(MolotovExplosionPacket packet)
     {
-        GameObject molotovRoot = new($"MolotovExplosion_{packet.Timestamp}");
+        GameObject molotovRoot = new("MolotovExplosion");
         molotovRoot.transform.position = packet.explosionPos;
 
         MolotovInstance spawner = molotovRoot.AddComponent<MolotovInstance>();
         spawner.Initialize(packet);
-
-        await UniTask.CompletedTask;
     }
 
     // 6 directions for hexagonal packing
@@ -33,7 +30,8 @@ public static class MolotovController
         new(0.5f, 0, -0.866f)
     };
 
-    public static List<FireNode> GenerateFireSpread(Vector3 origin)
+    // Breadth first, so TimeOffset never decreases along the returned array
+    public static FireNode[] GenerateFireSpread(Vector3 origin)
     {
         List<FireNode> resultNodes = new List<FireNode>(GameplayVariables.vars.MaxNodes);
 
@@ -46,7 +44,7 @@ public static class MolotovController
             queue.Enqueue((startPos, startNormal, 0));
             visitedGrid.Add(Quantize(startPos, GameplayVariables.vars.SpreadRadius));
         }
-        else return resultNodes;
+        else return resultNodes.ToArray();
 
         while (queue.Count > 0 && resultNodes.Count < GameplayVariables.vars.MaxNodes)
         {
@@ -55,8 +53,7 @@ public static class MolotovController
             resultNodes.Add(new FireNode
             {
                 Position = current.pos,
-                Rotation = Quaternion.FromToRotation(Vector3.up, current.normal),
-                Radius = GameplayVariables.vars.FireRadius,
+                Normal = current.normal,
                 TimeOffset = current.depth * GameplayVariables.vars.TimeBetweenNodes
             });
 
@@ -107,7 +104,7 @@ public static class MolotovController
                 }
             }
         }
-        return resultNodes;
+        return resultNodes.ToArray();
     }
 
     private static bool TryFindGround(Vector3 origin, out Vector3 hitPoint, out Vector3 normal)

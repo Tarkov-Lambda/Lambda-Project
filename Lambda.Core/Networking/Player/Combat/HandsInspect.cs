@@ -16,8 +16,6 @@ public class HandsInspectPacketWarden : LambdaPacketWarden<HandsInspectPacket>
 {
     protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(2);
 
-    protected override bool ShouldLog => false;
-
     public void Send()
     {
         var packet = new HandsInspectPacket { Player = H.MainPlayer };

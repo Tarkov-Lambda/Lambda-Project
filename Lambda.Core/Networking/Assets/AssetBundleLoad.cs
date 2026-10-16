@@ -2,7 +2,6 @@
 using MemoryPack;
 using Lambda.Core.Main.AssetBundleHandling;
 using System.Collections.Generic;
-using EFT.InventoryLogic;
 using EFT;
 using Cysharp.Threading.Tasks;
 using Comfort.Common;
@@ -15,18 +14,8 @@ namespace Lambda.Core.Networking;
 public partial struct AssetBundleLoadPacket : IPacket
 {
     public string id;
-
-    [MemoryPackAllowSerialize]
-    public List<Item> itemsToLoad; // I think resourcekey is cheaper?
-
+    public List<string> templateIds;
     public bool replyWhenLoaded;
-}
-
-// SERVER ONLY
-public struct PlayerAssetBundleLoadState
-{
-    public Player player;
-    public bool hasLoaded;
 }
 
 // Currently this is only used for loading asset bundles for late joining player's buy menu
@@ -47,55 +36,52 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
     protected override bool ShouldApplyBeforeArenaInitialized => true;
 
-    public Dictionary<string, List<PlayerAssetBundleLoadState>> AssetBundleLoadProgress = new();
+    // SERVER ONLY: batch id -> players that have not reported back yet
+    public Dictionary<string, HashSet<Player>> PendingLoads = new();
 
-    public async UniTask SendAndAwaitFullReadiness(List<Item> itemsToLoad)
+    public async UniTask SendAndAwaitFullReadiness(List<string> templateIds)
     {
+        string id = Guid.NewGuid().ToString();
+
+        var pending = new HashSet<Player>();
+        foreach (var player in H.AllPlayers)
+        {
+            if (H.IsHeadless && player.IsYourPlayer) continue;
+            pending.Add(player);
+        }
+
+        PendingLoads[id] = pending;
+
         var packet = new AssetBundleLoadPacket
         {
-            id = Guid.NewGuid().ToString(),
-            itemsToLoad = itemsToLoad,
+            id = id,
+            templateIds = templateIds,
             replyWhenLoaded = true
         };
 
-        AssetBundleLoadProgress[packet.id] = new List<PlayerAssetBundleLoadState>();
-
-        foreach (var player in H.AllPlayers)
-        {
-            AssetBundleLoadProgress[packet.id].Add(new PlayerAssetBundleLoadState
-            {
-                player = player,
-                hasLoaded = false
-            });
-        }
-
         DispatchPacket(ref packet);
 
-        await UniTask.WaitUntil(() => !AssetBundleLoadProgress.ContainsKey(packet.id), cancellationToken: _cts.Token);
-
-        return;
+        await UniTask.WaitUntil(() => !PendingLoads.ContainsKey(id), cancellationToken: _cts.Token);
     }
 
-    public void SendToLateJoiner(Player player, List<Item> itemsToLoad) => SendToLateJoiner(Network.GetPeerIdByPlayer(player), itemsToLoad);
+    public void SendToLateJoiner(Player player, List<string> templateIds) => SendToLateJoiner(Network.GetPeerIdByPlayer(player), templateIds);
 
-    public void SendToLateJoiner(int peerId, List<Item> itemsToLoad)
+    public void SendToLateJoiner(int peerId, List<string> templateIds)
     {
         var packet = new AssetBundleLoadPacket
         {
-            id = Guid.NewGuid().ToString(),
-            itemsToLoad = itemsToLoad,
+            templateIds = templateIds,
             replyWhenLoaded = false
         };
 
         DispatchPacket(ref packet, peerId);
     }
 
-    public void BroadcastMidJoinersItems(List<Item> itemsToLoad)
+    public void BroadcastMidJoinersItems(List<string> templateIds)
     {
         var packet = new AssetBundleLoadPacket
         {
-            id = Guid.NewGuid().ToString(),
-            itemsToLoad = itemsToLoad,
+            templateIds = templateIds,
             replyWhenLoaded = false
         };
 
@@ -104,7 +90,7 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
 
     protected override async void Apply(AssetBundleLoadPacket packet, int peerId)
     {
-        RuntimeBundleLoader.Instance.AddToCache(packet.itemsToLoad);
+        RuntimeBundleLoader.Instance.AddToCache(packet.templateIds);
         await RuntimeBundleLoader.Instance.LoadEverythingInCache();
 
         if (!H.IsHeadless && packet.replyWhenLoaded)

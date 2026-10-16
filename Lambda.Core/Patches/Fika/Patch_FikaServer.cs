@@ -42,9 +42,9 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
 
         Player shooter = H.GetPlayer(damage.ProfileId);
-        PlayerContext shooterScore = shooter.Context;
+        PlayerContext shooterScore = shooter?.Context;
 
-        if (!shooterScore.IsAlive)
+        if (shooterScore != null && !shooterScore.IsAlive)
         {
             double killTradeWindow = 0.03;
 
@@ -95,7 +95,7 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         // to see if the damage is lethal and broadcast death before the client does
         Predict_ApplyDamage(victim, damage.BodyPartType, damage.Damage, damageInfo, damage);
 
-        shooter.Context.AddDamage((int)Math.Round(damageInfo.Damage));
+        shooter?.Context?.AddDamage((int)Math.Round(damageInfo.Damage));
     }
 
     public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo, DamagePacket damagePacket)

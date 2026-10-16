@@ -97,7 +97,7 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         else if (fikaEvent is PeerConnectedEvent peerConnectedEvent && H.IsArenaReady)
         {
             // notify 
-            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, RuntimeBundleLoader.Instance.ItemsToLoad);
+            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, RuntimeBundleLoader.Instance.TemplateIdsToLoad);
         }
     }
 

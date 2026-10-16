@@ -43,7 +43,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
 
     protected override bool ValidatePacket(ChatMessagePacket packet, int peerId, out string rejectionReason)
     {
-        if (packet.msg.Length > 132)
+        if (string.IsNullOrEmpty(packet.msg) || packet.msg.Length > 132)
         {
             rejectionReason = "Character Limit Exceeded";
             return false;
@@ -55,7 +55,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
     protected override void ProcessApprovedPacket(ref ChatMessagePacket packet, int peerId)
     {
         // the client sees their command message but others do not
-        if (packet.msg.StartsWith("!"))
+        if (packet.msg[0] == '!')
         {
             ChatCommandInterceptor.HandleServer(packet.Player, peerId, packet.msg);
         }

@@ -26,6 +26,7 @@ namespace Lambda.UI.Nameplate
             {
                 textName.text = name;
                 _cachedName = name;
+                _cachedFaction = faction;
 
                 Color newColor = factionColors.Get(faction);
                 foreach (var graphic in coloredGraphic)

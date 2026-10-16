@@ -2,7 +2,7 @@
 
 public class PracticeModeRules : LambdaGamemode
 {
-    public override IInventoryManager InventoryManager => new BaseInventoryManager();
+    public override IInventoryManager InventoryManager { get; } = new BaseInventoryManager();
 
     public override AbstractMatchStateController CreateState(MatchState state) => state switch
     {

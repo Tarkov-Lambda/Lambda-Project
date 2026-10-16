@@ -1,4 +1,3 @@
-using System.Linq;
 using EFT;
 using MemoryPack;
 using PacketWarden.RateLimiting;
@@ -33,23 +32,23 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
 
     protected override bool ValidatePacket(ClanTagResyncPacket packet, int peerId, out string rejectionReason)
     {
-        packet.newClanTag = packet.newClanTag?.Trim();
+        string clanTag = packet.newClanTag?.Trim();
 
-        if (packet.newClanTag.IsNullOrEmpty())
+        if (clanTag.IsNullOrEmpty())
         {
             rejectionReason = "Clan Tag cannot be empty";
             return false;
         }
 
-        if (packet.newClanTag.Length > 3)
+        if (clanTag.Length > 3)
         {
             rejectionReason = "Clan Tag cannot exceed 3 characters";
             return false;
         }
 
-        for (int i = 0; i < packet.newClanTag.Length; i++)
+        for (int i = 0; i < clanTag.Length; i++)
         {
-            if (!char.IsLetter(packet.newClanTag[i]))
+            if (!char.IsLetter(clanTag[i]))
             {
                 rejectionReason = "Clan Tag can only contain letters";
                 return false;
@@ -61,7 +60,7 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
 
     protected override void MutateApprovedPacket(ref ClanTagResyncPacket packet, int peerId)
     {
-        packet.newClanTag = packet.newClanTag.ToUpper();
+        packet.newClanTag = packet.newClanTag.Trim().ToUpperInvariant();
         base.MutateApprovedPacket(ref packet, peerId);
     }
 

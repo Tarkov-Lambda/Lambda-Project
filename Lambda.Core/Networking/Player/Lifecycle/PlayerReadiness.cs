@@ -82,10 +82,10 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             bool isLateJoiner = H.Session.matchState >= MatchState.WarmupEnd;
             if (isLateJoiner)
             {
-                List<Item> uniqueItems = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(playerShopItems);
-                if (uniqueItems.Count > 0)
+                List<string> newTemplateIds = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(playerShopItems);
+                if (newTemplateIds.Count > 0)
                 {
-                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(uniqueItems);
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(newTemplateIds);
                 }
             }
             else

@@ -1,5 +1,5 @@
 using Comfort.Common;
-using Lambda.Core.Main;
+using EFT;
 using Lambda.Core.Networking;
 using PacketWarden;
 
@@ -22,21 +22,12 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
         base.WhenClientReceivesPacket(packet, peerId);
     }
 
-    protected override bool IsUnauthorized(int id)
+    protected override bool IsAdmin(int peerId)
     {
-        if (H.IsServer) return false;
+        if (base.IsAdmin(peerId)) return true;
 
-        if (Authority == PacketAuthority.Admin)
-        {
-            PlayerContext score = H.GetPlayerContext(id);
-            return score == null || !score.IsAdmin; // unauthorized only if NOT admin
-        }
-        else if (Authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
-        {
-            return true;
-        }
-
-        return false;
+        Player player = Network.GetPlayerByPeerId(peerId);
+        return player != null && player.Context?.IsAdmin == true;
     }
 
     protected override void Notify(string rejectionReason)

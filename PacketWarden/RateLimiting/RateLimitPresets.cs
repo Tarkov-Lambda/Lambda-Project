@@ -12,7 +12,6 @@ public static class RateLimitPresets
         burst: 40,
         costPerPacket: 1,
         action: RateLimitAction.Reject,
-        stateTtlSeconds: 30,
         rejectCooldownSeconds: 0.25);
 
 

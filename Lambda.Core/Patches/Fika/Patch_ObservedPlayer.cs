@@ -67,7 +67,9 @@ internal class Patch_Player_FindItemById : ModulePatch
             {
                 __result = gstruct.Error;
                 Singleton<EquipmentResyncPacketWarden>.Instance.Send(__instance);
+                return false;
             }
+
             __result = gstruct.Value.Item1;
 
             return false;

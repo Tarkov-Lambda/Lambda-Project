@@ -5,13 +5,16 @@ using EFT.InventoryLogic;
 using Lambda.Core.Networking;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Lambda.Core.Main.AssetBundleHandling;
 
 public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 {
     public List<Item> ItemsToLoad { get; private set; }
+
+    // Every template in ItemsToLoad, in insertion order. This is what goes over the wire.
+    public List<string> TemplateIdsToLoad { get; private set; }
+
     private readonly HashSet<string> _cachedItems;
 
     // TODO: this has to be up before OnGameStarted (for late joiners)
@@ -19,6 +22,7 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
     public RuntimeBundleLoader()
     {
         ItemsToLoad = [];
+        TemplateIdsToLoad = [];
         _cachedItems = [];
 
         H.OnGameDispose += ResetCache;
@@ -33,44 +37,30 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
     private void ResetCache()
     {
         ItemsToLoad.Clear();
+        TemplateIdsToLoad.Clear();
         _cachedItems.Clear();
     }
 
-    public List<Item> AddToCacheAndGetDelta(Item item)
+    private bool TryCache(Item part)
     {
-        var addedItems = new List<Item>();
+        if (!_cachedItems.Add(part.TemplateId)) return false;
 
-        foreach (var part in item.GetAllItems())
-        {
-            if (_cachedItems.Add(part.TemplateId))
-            {
-                ItemsToLoad.Add(part);
-                addedItems.Add(part);
-            }
-        }
-
-        foreach (var subItem in item.GetAllItems())
-        {
-            if (subItem is Weapon weapon && FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
-            {
-                addedItems.AddRange(AddToCacheAndGetDelta(ammo));
-            }
-        }
-
-        return addedItems;
+        ItemsToLoad.Add(part);
+        TemplateIdsToLoad.Add(part.TemplateId);
+        return true;
     }
 
-    public List<Item> AddToCacheAndGetDelta(IEnumerable<Item> items)
+    // Returns the template ids that were not cached yet
+    public List<string> AddToCacheAndGetDelta(IEnumerable<Item> items)
     {
-        var addedItems = new List<Item>();
+        int start = TemplateIdsToLoad.Count;
 
         foreach (var item in items)
         {
-            List<Item> uniqueItems = AddToCacheAndGetDelta(item);
-            addedItems.AddRange(uniqueItems);
+            AddToCache(item);
         }
 
-        return addedItems;
+        return TemplateIdsToLoad.GetRange(start, TemplateIdsToLoad.Count - start);
     }
 
     public void AddToCache(List<Item> items)
@@ -83,52 +73,53 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 
     public void AddToCache(Item item)
     {
-        var disassembledItem = item.GetAllItems();
-
-        foreach (var part in disassembledItem)
+        foreach (var part in item.GetAllItems())
         {
-            if (_cachedItems.Add(part.TemplateId))
-            {
-                ItemsToLoad.Add(part);
-            }
-        }
+            TryCache(part);
 
-        foreach (var subItem in item.GetAllItems())
-        {
-            if (subItem is Weapon weapon && FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            if (part is Weapon weapon && FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
             {
                 AddToCache(ammo);
             }
         }
     }
 
+    public void AddToCache(List<string> templateIds)
+    {
+        if (templateIds == null) return;
+
+        foreach (string templateId in templateIds)
+        {
+            if (_cachedItems.Contains(templateId)) continue;
+
+            if (IU.TryCreateItem(templateId, out Item item))
+            {
+                TryCache(item);
+            }
+        }
+    }
+
     public async UniTask LoadEverythingInCache()
     {
-        var prefabsToLoad = new List<ResourceKey>();
+        var prefabsToLoad = new HashSet<ResourceKey>();
 
         foreach (var item in ItemsToLoad)
         {
-            // D.LogInventory(item.LocalizedName());
             foreach (var i in item.GetAllItems())
             {
-                if (i.Template == null)
-                    continue;
-
-                if (i.Template.AllResources != null)
+                if (i.Template?.AllResources != null)
                 {
-                    prefabsToLoad.AddRange(i.Template.AllResources);
+                    prefabsToLoad.UnionWith(i.Template.AllResources);
                 }
             }
         }
 
         if (prefabsToLoad.Count > 0)
         {
-            var distinctPrefabs = prefabsToLoad.Distinct().ToList();
-
             await H.PoolManagerClass.LoadBundlesAndCreatePools(
                 PoolManagerClass.PoolsCategory.Raid,
                 PoolManagerClass.AssemblyType.Local,
-                distinctPrefabs,
+                new List<ResourceKey>(prefabsToLoad),
                 JobPriorityClass.Immediate,
                 null,
                 default

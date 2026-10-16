@@ -4,7 +4,6 @@ using Lambda.Core.Main.Gamemode;
 using Lambda.Shared.Models;
 using MemoryPack;
 using PacketWarden.RateLimiting;
-using UnityEngine.UIElements;
 
 namespace Lambda.Core.Networking;
 
@@ -80,35 +79,31 @@ public class AskForBombPriorityPacketWarden : LambdaPacketWarden<AskForBombPrior
         ApplyInternal(packet, peerId);
     }
 
-    // Handled in ChatController
+    // Server only (see ProcessApprovedPacket)
     protected override void Apply(AskForBombPriorityPacket packet, int peerId)
     {
-        var previousAssignedPlayer = packet.Player;
+        Player previousAssignedPlayer = AssignedPlayer;
+        string nickname = packet.Player.Profile.Nickname;
+        string announcement;
 
         if (packet.isAsking)
         {
             AssignedPlayer = packet.Player;
+
+            announcement = previousAssignedPlayer != null && previousAssignedPlayer != packet.Player
+                ? $"{nickname} is now first in line for the bomb."
+                : $"{nickname} asked for the bomb.";
         }
-        else if (!packet.isAsking && packet.Player == AssignedPlayer)
+        else if (packet.Player == AssignedPlayer)
         {
             AssignedPlayer = null;
-        }
-
-        string announcement;
-
-        if (AssignedPlayer == null)
-        {
-            announcement = $"{packet.Player.Profile.Nickname} no longer wants the bomb.";
-        }
-        else if (previousAssignedPlayer != null && previousAssignedPlayer != packet.Player)
-        {
-            announcement = $"{packet.Player.Profile.Nickname} is now first in line for the bomb.";
+            announcement = $"{nickname} no longer wants the bomb.";
         }
         else
         {
-            announcement = $"{packet.Player.Profile.Nickname} asked for the bomb.";
+            return;
         }
 
-        Singleton<GenericMessagePacketWarden>.Instance.SendToFaction(AssignedPlayer.Context.Faction, announcement);
+        Singleton<GenericMessagePacketWarden>.Instance.SendToFaction(packet.Player.Context.Faction, announcement);
     }
 }

@@ -32,7 +32,7 @@ public class AwpOnlyCleanup : SharedCleanup
 
 public class AwpOnlyGamemode : LambdaGamemode, IGMRound, IGMTeam
 {
-    public override IInventoryManager InventoryManager => new AwpOnlyInventoryManager();
+    public override IInventoryManager InventoryManager { get; } = new AwpOnlyInventoryManager();
 
     public override string Name { get; } = "AWP Only";
 

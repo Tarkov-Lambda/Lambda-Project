@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -10,43 +8,11 @@ using EFT;
 public static class PacketWardenUtils
 {
     public static INetworkBackend Network           => Plugin.Network;
-
-    public static event Action OnNetworkCreated;
-    public static event Action OnNetworkDestroyed;
-
-    public static void TriggerNetworkCreated()      => OnNetworkCreated?.Invoke();
-    public static void TriggerNetworkDestroyed()    => OnNetworkDestroyed?.Invoke();
-
     public static GameWorld GameWorld               => Singleton<GameWorld>.Instance;
-    public static Player MainPlayer                 => GetMainPlayer();
 
-    public static bool HasGameStarted               = false;
-
-    public static void Log(string msg)            => Plugin.Logger.LogInfo(msg);
+    public static void Log(string msg)              => Plugin.Logger.LogInfo(msg);
     public static void Notify(object msg)           => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
     public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
-
-    // bro thinks he's the main character
-    private static Player GetMainPlayer()
-    {
-        try
-        {
-            if (Plugin.Network.IsHeadless)
-            {
-                Log("Headless trying to access MainPlayer. This is not supposed to happen.");
-                Log(Environment.StackTrace);
-                return null;
-            }
-            return IsInRaid() ? GameWorld.MainPlayer : null;
-        }
-        catch (Exception ex)
-        {
-            Dump(ex);
-            Log(ex.StackTrace);
-        }
-
-        return null;
-    }
 
     public static bool IsInRaid()
     {

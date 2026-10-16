@@ -1,15 +1,18 @@
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Shared.Models;
 using Lambda.Core.Main.Gamemode;
+using MemoryPack;
 
 namespace Lambda.Core.Networking;
 
-public struct AskForMoneyPacket : IPacket, IAuthoredPacket
+[MemoryPackable]
+public partial struct AskForMoneyPacket : IPacket, IAuthoredPacket
 {
+    [MemoryPackAllowSerialize]
     public Player Player { get; set; }
+
     public string ItemBsgId;
     // if true, the player asking for this item
     // if false, the player is saying "I don't want anything at all anymore"
@@ -18,25 +21,23 @@ public struct AskForMoneyPacket : IPacket, IAuthoredPacket
 
 public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
 {
-    public Dictionary<Player, string> playerToItem;
+    public readonly Dictionary<Player, string> playerToItem = [];
 
     public AskForMoneyPacketWarden()
     {
-        playerToItem = [];
-
         EventBus.OnEnter += OnEnter;
     }
 
     public void OnEnter(MatchState matchState)
     {
-        if (matchState == MatchState.Cleanup) playerToItem = [];
+        if (matchState == MatchState.Cleanup) playerToItem.Clear();
     }
 
     public override void Dispose()
     {
         EventBus.OnEnter -= OnEnter;
 
-        playerToItem = [];
+        playerToItem.Clear();
         base.Dispose();
     }
 
@@ -48,35 +49,41 @@ public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
     {
         if (H.Gamemode is not IGMTeam) return;
 
+        // asking for the same item again cancels the request
+        bool isRequesting = !playerToItem.TryGetValue(H.MainPlayer, out string requestedItem) || requestedItem != itemBsgId;
+
         var packet = new AskForMoneyPacket
         {
             Player = H.MainPlayer,
             ItemBsgId = itemBsgId,
-            IsRequesting = playerToItem[H.MainPlayer] != itemBsgId ? true : false
+            IsRequesting = isRequesting
         };
 
         DispatchPacket(ref packet);
     }
 
-    protected override async void ApplyOptimistically(AskForMoneyPacket packet)
+    protected override void ApplyOptimistically(AskForMoneyPacket packet)
     {
-        playerToItem[packet.Player] = packet.ItemBsgId;
+        UpdateRequest(packet);
     }
 
-    protected override async void Apply(AskForMoneyPacket packet, int peerId)
+    protected override void Apply(AskForMoneyPacket packet, int peerId)
     {
         if (packet.Player.IsYourPlayer) return;
 
-        if (packet.IsRequesting)
-        {
-            playerToItem[packet.Player] = packet.ItemBsgId;
-            EventBus.OnBuyAskStarted?.Invoke(packet.Player);
-        }
-        else
-        {
-            playerToItem.Remove(packet.Player);
-            EventBus.OnBuyAskCancelled?.Invoke(packet.Player);
-        }
+        UpdateRequest(packet);
 
+        if (packet.IsRequesting)
+            EventBus.OnBuyAskStarted?.Invoke(packet.Player);
+        else
+            EventBus.OnBuyAskCancelled?.Invoke(packet.Player);
+    }
+
+    private void UpdateRequest(AskForMoneyPacket packet)
+    {
+        if (packet.IsRequesting)
+            playerToItem[packet.Player] = packet.ItemBsgId;
+        else
+            playerToItem.Remove(packet.Player);
     }
 }

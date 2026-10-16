@@ -87,6 +87,12 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
     protected override bool ValidatePacket(EquipmentResyncPacket packet, int peerId, out string rejectionReason)
     {
+        if (packet.Player == null)
+        {
+            rejectionReason = "Unknown player";
+            return false;
+        }
+
         if (packet.type is EquipmentResyncRequestType.CleanupBroadcast)
         {
             rejectionReason = "Action Unauthorized";
@@ -114,7 +120,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
         if (H.Session.matchState is not MatchState.Cleanup && packet.type is EquipmentResyncRequestType.ClientRequest)
         {
-            if (packet.Player.HandsController.Item is not null and Weapon weapon)
+            if (packet.Player.HandsController?.Item is Weapon weapon)
             {
                 packet.WeaponInHands = weapon;
             }
@@ -127,10 +133,14 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
         if (packet.type is EquipmentResyncRequestType.CleanupBroadcast)
         {
-            Network.SendData(ref packet, DeliveryType, true);
+            Network.SendData(ref packet, DeliveryType);
             ApplyInternal(packet, peerId);
         }
-        else if (peerId is not INetworkBackend.LocalPeerId)
+        else if (peerId is INetworkBackend.LocalPeerId)
+        {
+            ApplyInternal(packet, peerId); // hosting player asked for its own resync
+        }
+        else
         {
             Network.SendDataToPeer(ref packet, DeliveryType, peerId);
         }
@@ -139,6 +149,7 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
     protected override void Apply(EquipmentResyncPacket packet, int peerId)
     {
         Player player = packet.Player;
+        if (player == null || packet.Equipment == null) return;
 
         try
         {

@@ -11,7 +11,7 @@ namespace Lambda.Core.Patches.Tarkov;
 
 internal class Patch_Player_ShotReactions : ModulePatch, IDisposable
 {
-    private static Dictionary<int, double> _lastShotTimeDict = new();
+    private static readonly Dictionary<int, double> _lastShotTimeDict = new();
     private const double CooldownSeconds = 0.015;
 
     protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.ShotReactions));
@@ -49,7 +49,7 @@ internal class Patch_Player_ShotReactions : ModulePatch, IDisposable
 
     public void Dispose()
     {
-        _lastShotTimeDict = null;
+        _lastShotTimeDict.Clear();
     }
 }
 

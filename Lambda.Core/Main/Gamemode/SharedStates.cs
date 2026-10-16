@@ -165,7 +165,7 @@ public class SharedCleanup : AbstractMatchStateController
     {
         if (!H.IsHeadless) H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
-        int totalRounds = H.Session.factionWins.Values.Sum();
+        int totalRounds = H.Session.TotalRoundsPlayed();
         bool isHalfTime = false;
         if (H.Gamemode is IGMRound roundBased and IGMSideSwappable)
         {

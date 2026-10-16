@@ -1,7 +1,8 @@
-using Comfort.Common;
+using System.Collections.Generic;
 using EFT;
 using MemoryPack;
 
+// Player.Id is the Fika NetId and is identical on every peer.
 public class PlayerFormatter : MemoryPackFormatter<Player>
 {
     public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref Player value)
@@ -13,33 +14,31 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
         }
 
         writer.WriteObjectHeader(1);
-        // writer.WriteUnmanaged(value.Id);
-        writer.WriteString(value.ProfileId);
+        writer.WriteUnmanaged(value.Id);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref Player value)
     {
-        if (!reader.TryReadObjectHeader(out var count))
+        if (!reader.TryReadObjectHeader(out _))
         {
             value = null;
             return;
         }
 
-        string profileId = reader.ReadString();
+        value = Find(reader.ReadUnmanaged<int>());
+    }
 
-        if (!Singleton<GameWorld>.Instantiated)
+    public static Player Find(int id)
+    {
+        if (!H.IsInRaid()) return null;
+
+        List<Player> players = H.GameWorld.AllAlivePlayersList;
+
+        for (int i = 0; i < players.Count; i++)
         {
-            value = null;
-            return;
+            if (players[i].Id == id) return players[i];
         }
-        
-        foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
-        {
-            if (player.ProfileId == profileId)
-            {
-                value = player;
-                break;
-            }
-        }
+
+        return null;
     }
 }

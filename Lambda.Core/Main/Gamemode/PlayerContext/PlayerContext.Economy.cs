@@ -54,14 +54,8 @@ public partial class PlayerContext
 
     public void AddItemQuantity(ShopItem shopItem)
     {
-        if (ItemQuantityBoughtInRound.ContainsKey(shopItem))
-        {
-            ItemQuantityBoughtInRound[shopItem]++;
-        }
-        else
-        {
-            ItemQuantityBoughtInRound[shopItem] = 1;
-        }
+        ItemQuantityBoughtInRound.TryGetValue(shopItem, out int count);
+        ItemQuantityBoughtInRound[shopItem] = count + 1;
     }
 
 

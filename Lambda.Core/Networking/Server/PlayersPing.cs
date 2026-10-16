@@ -1,6 +1,5 @@
 using PacketWarden;
 using MemoryPack;
-using System.Linq;
 
 namespace Lambda.Core.Networking;
 
@@ -38,6 +37,8 @@ public class PlayersPingPacketWarden : LambdaPacketWarden<PlayersPingPacket>
 
     protected override void Apply(PlayersPingPacket packet, int peerId)
     {
+        if (packet.scores == null) return;
+
         foreach (var syncScore in packet.scores)
         {
             if (H.Scoreboard.TryGetValue(syncScore.playerId, out var playerScore))

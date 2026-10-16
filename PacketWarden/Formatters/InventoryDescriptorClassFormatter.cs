@@ -14,35 +14,21 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
         writer.WriteObjectHeader(1);
 
         var eftWriter = WriterPoolManager.GetWriter();
-        
         eftWriter.WriteEFTItemDescriptor(value);
-
-        byte[] itemBytes = eftWriter.ToArray();
-        
+        WriterPoolManager.WriteBlob(ref writer, eftWriter);
         WriterPoolManager.ReturnWriter(eftWriter);
-
-        writer.WriteUnmanagedArray(itemBytes);
     }
 
     public override void Deserialize(ref MemoryPackReader reader, scoped ref InventoryDescriptorClass value)
     {
-        if (!reader.TryReadObjectHeader(out var count))
-        {
-            value = null;
-            return;
-        }
+        value = null;
 
-        byte[] itemBytes = reader.ReadUnmanagedArray<byte>();
-
-        if (itemBytes == null || itemBytes.Length == 0)
-        {
-            value = null;
-            return;
-        }
+        if (!reader.TryReadObjectHeader(out _)) return;
+        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob)) return;
 
         try
         {
-            using var eftReader = PacketToEFTReaderAbstractClass.Get(itemBytes);
+            using var eftReader = PacketToEFTReaderAbstractClass.Get(blob);
             value = eftReader.ReadEFTItemDescriptor();
         }
         catch (Exception) { }

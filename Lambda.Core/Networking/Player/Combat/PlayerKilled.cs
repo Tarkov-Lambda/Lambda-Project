@@ -56,6 +56,8 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
+        if (victim == null) return;
+
         var packet = new PlayerKilledPacket
         {
             Player = victim,
@@ -136,12 +138,9 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
             {
                 victimScore.SetHardReset();
             }
-            else if (H.Session.matchState is MatchState.RoundEnd)
+            else if (killerScore == null || killerScore == victimScore || killerScore.Faction != victimScore.Faction)
             {
-                if (killerScore != victimScore && killerScore.Faction != victimScore.Faction || killerScore == victimScore)
-                {
-                    victimScore.SetHardReset();
-                }
+                victimScore.SetHardReset();
             }
         }
 
