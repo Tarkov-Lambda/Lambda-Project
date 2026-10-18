@@ -1,24 +1,30 @@
+using System.Linq;
+using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
-using Lambda.Shared;
 using EFT.Interactive;
 using EFT.InventoryLogic;
-using System.Linq;
-using Lambda.Core.Main.Gamemode;
-using Comfort.Common;
-using Lambda.Core.Networking;
-using UnityEngine;
-using Lambda.Core.Main.FX;
 using Lambda.Core.Main;
-using Cysharp.Threading.Tasks;
+using Lambda.Core.Main.FX;
+using Lambda.Core.Main.Gamemode;
+using Lambda.Core.Networking;
+using Lambda.Shared;
+using UnityEngine;
 
 internal static class CustomInteractions
 {
-    public static bool TryHandleInteraction(GamePlayerOwner owner, IInteractive interactive, ref ActionsReturnClass result)
+    public static bool TryHandleInteraction(
+        GamePlayerOwner owner,
+        IInteractive interactive,
+        ref ActionsReturnClass result
+    )
     {
-        if (interactive == null) return true;
+        if (interactive == null)
+            return true;
 
         Player player = owner.Player;
-        if (player == null) return true;
+        if (player == null)
+            return true;
 
         var roundState = H.Session.matchState;
         if (roundState != MatchState.RoundAction && roundState != MatchState.RoundPlanted)
@@ -46,17 +52,21 @@ internal static class CustomInteractions
 
         if (interactive is Bombasik)
         {
-            if (roundState != MatchState.RoundPlanted) return true;
-            if (H.MainPlayer.IsInPronePose) return true;
+            if (roundState != MatchState.RoundPlanted)
+                return true;
+            if (H.MainPlayer.IsInPronePose)
+                return true;
 
             bool hasKit = TryFindItem(Hardcode.DEFUSE_KIT, out Item defuseKit);
             float time = hasKit ? SNDGamemode.DefusingTime / 2 : SNDGamemode.DefusingTime;
 
-            actions.Actions.Add(new ActionsTypesClass
-            {
-                Name = "DEFUSE",
-                Action = () => HandleDefuse(owner, player, time)
-            });
+            actions.Actions.Add(
+                new ActionsTypesClass
+                {
+                    Name = "DEFUSE",
+                    Action = () => HandleDefuse(owner, player, time),
+                }
+            );
 
             result = actions;
             return false;
@@ -64,16 +74,20 @@ internal static class CustomInteractions
 
         if (interactive is BombPlantZone)
         {
-            if (roundState != MatchState.RoundAction) return true;
-            if (!TryFindItem(Hardcode.BOMB_BACKPACK, out Item bomb)) return true;
+            if (roundState != MatchState.RoundAction)
+                return true;
+            if (!TryFindItem(Hardcode.BOMB_BACKPACK, out Item bomb))
+                return true;
 
             float time = SNDGamemode.PlatingTime;
 
-            actions.Actions.Add(new ActionsTypesClass
-            {
-                Name = "PLANT",
-                Action = () => HandlePlant(owner, player, time)
-            });
+            actions.Actions.Add(
+                new ActionsTypesClass
+                {
+                    Name = "PLANT",
+                    Action = () => HandlePlant(owner, player, time),
+                }
+            );
 
             result = actions;
             return false;
@@ -95,19 +109,28 @@ internal static class CustomInteractions
 
             owner.ShowObjectivesPanel("Defusing {0:F1}", time);
 
-            player.CurrentManagedState.Plant(true, false, time, async (success) =>
-            {
-                owner.CloseObjectivesPanel();
-
-                if (!success)
+            player.CurrentManagedState.Plant(
+                true,
+                false,
+                time,
+                async (success) =>
                 {
-                    Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Planted, pos);
-                    return;
-                }
+                    owner.CloseObjectivesPanel();
 
-                Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Defused, pos);
-                owner.ClearInteractionState();
-            });
+                    if (!success)
+                    {
+                        Singleton<BombStatePacketWarden>.Instance.Send(
+                            player,
+                            BombState.Planted,
+                            pos
+                        );
+                        return;
+                    }
+
+                    Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Defused, pos);
+                    owner.ClearInteractionState();
+                }
+            );
         }
         else
         {
@@ -125,21 +148,26 @@ internal static class CustomInteractions
 
             owner.ShowObjectivesPanel("Planting {0:F1}", time);
 
-            player.CurrentManagedState.Plant(true, false, time, async (success) =>
-            {
-                owner.CloseObjectivesPanel();
-
-                if (!success)
+            player.CurrentManagedState.Plant(
+                true,
+                false,
+                time,
+                async (success) =>
                 {
-                    Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.None, pos);
-                    return;
+                    owner.CloseObjectivesPanel();
+
+                    if (!success)
+                    {
+                        Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.None, pos);
+                        return;
+                    }
+
+                    Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Planted, pos);
+                    player.TryPopContainedItem(EquipmentSlot.Backpack, false).Forget();
+
+                    owner.ClearInteractionState();
                 }
-
-                Singleton<BombStatePacketWarden>.Instance.Send(player, BombState.Planted, pos);
-                player.TryPopContainedItem(EquipmentSlot.Backpack, false).Forget();
-
-                owner.ClearInteractionState();
-            });
+            );
         }
         else
         {
@@ -149,8 +177,8 @@ internal static class CustomInteractions
 
     private static bool TryFindItem(string templateId, out Item item)
     {
-        item = H.MainPlayer.Profile.Inventory
-            .GetPlayerItems(EPlayerItems.InRaidItems)
+        item = H
+            .MainPlayer.Profile.Inventory.GetPlayerItems(EPlayerItems.InRaidItems)
             .FirstOrDefault(i => i.TemplateId == templateId);
 
         return item != null;

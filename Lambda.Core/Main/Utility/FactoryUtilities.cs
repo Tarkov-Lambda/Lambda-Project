@@ -20,18 +20,22 @@ public static class FactoryUtilities
 {
     public static ItemFactoryClass ItemFactory => Singleton<ItemFactoryClass>.Instance;
 
-    public static WeaponBuildsStorageClass WeaponBuildsStorage => Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
-    public static EquipmentBuildsStorageClass EquipmentBuildsStorage => Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
+    public static WeaponBuildsStorageClass WeaponBuildsStorage =>
+        Singleton<ClientApplication<ISession>>.Instance.Session.WeaponBuildsStorage;
+    public static EquipmentBuildsStorageClass EquipmentBuildsStorage =>
+        Singleton<ClientApplication<ISession>>.Instance.Session.EquipmentBuildsStorage;
 
     // I assume this is like armor/headwear type shit
-    public static IEnumerable<EquipmentBuildClass> EquipmentPresets => EquipmentBuildsStorage.EquipmentBuilds.Values;
+    public static IEnumerable<EquipmentBuildClass> EquipmentPresets =>
+        EquipmentBuildsStorage.EquipmentBuilds.Values;
+
     // BSG or user made weapon presets.
     public static IEnumerable<WeaponBuildClass> Presets => WeaponBuildsStorage.Dictionary_0.Values;
 
     public static List<string> GetAllWeaponTemplateIds()
     {
-        List<string> weaponTemplateIds = ItemFactory.ItemTemplates.Values
-            .OfType<WeaponTemplate>()
+        List<string> weaponTemplateIds = ItemFactory
+            .ItemTemplates.Values.OfType<WeaponTemplate>()
             .Select(template => template._id.ToString())
             .ToList();
 
@@ -44,7 +48,9 @@ public static class FactoryUtilities
     {
         if (BuyMenuSelection.TryGetItemData(weapon.TemplateId, out ShopItem weaponData))
         {
-            ammo = Singleton<PresetItemsCache>.Instance.GetPresetItem(weaponData.ammoId) as AmmoItemClass;
+            ammo =
+                Singleton<PresetItemsCache>.Instance.GetPresetItem(weaponData.ammoId)
+                as AmmoItemClass;
             return true;
         }
 
@@ -52,17 +58,21 @@ public static class FactoryUtilities
         return false;
     }
 
-    public static async UniTaskVoid SendDelayed(string serializedItem, string presetName, int delayMs = 3000)
+    public static async UniTaskVoid SendDelayed(
+        string serializedItem,
+        string presetName,
+        int delayMs = 3000
+    )
     {
         await UniTask.Delay(delayMs);
         Singleton<WeaponPresetManager>.Instance.UpdateSelectedPreset(serializedItem, presetName);
     }
 
-
     public static async UniTask CreateAndSaveWeaponPreset(Item weapon, string presetName)
     {
         var existingPreset = WeaponBuildsStorage.FindByName(presetName);
-        if (existingPreset != null) return;
+        if (existingPreset != null)
+            return;
 
         MongoID newPresetId = new MongoID(Guid.NewGuid().ToString("N").Substring(0, 24));
 
@@ -97,7 +107,8 @@ public static class FactoryUtilities
     public static Item InstantiatePreset(string json)
     {
         var flatItems = JsonConvert.DeserializeObject<FlatItemsDataClass[]>(json);
-        if (flatItems == null || flatItems.Length == 0) return null;
+        if (flatItems == null || flatItems.Length == 0)
+            return null;
 
         // 1. Remap IDs
         var idMap = new Dictionary<string, string>();
@@ -146,10 +157,12 @@ public static class FactoryUtilities
             return rootItem;
         }
 
-        // If we reach here, the root item failed to create. 
+        // If we reach here, the root item failed to create.
         // Let's find out why by checking if the template exists in the factory.
         string originalTpl = flatItems.FirstOrDefault(x => x._id == rootId)?._tpl;
-        D.LogError($"Failed to find root item {rootId} in created items. Template was: {originalTpl}");
+        D.LogError(
+            $"Failed to find root item {rootId} in created items. Template was: {originalTpl}"
+        );
 
         return null;
     }

@@ -7,7 +7,8 @@ using SPT.Reflection.Patching;
 
 public class Transpiler_AmmoItemClass_RicochetChance : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(AmmoItemClass), nameof(AmmoItemClass.RicochetChance));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(typeof(AmmoItemClass), nameof(AmmoItemClass.RicochetChance));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -19,7 +20,11 @@ public class Transpiler_AmmoItemClass_RicochetChance : ModulePatch
 
 public class Transpiler_AmmoItemClass_FragmentationChance : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(AmmoItemClass), nameof(AmmoItemClass.FragmentationChance));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(AmmoItemClass),
+            nameof(AmmoItemClass.FragmentationChance)
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -31,7 +36,11 @@ public class Transpiler_AmmoItemClass_FragmentationChance : ModulePatch
 
 public class Transpiler_AmmoItemClass_PenetrationChanceObstacle : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(AmmoItemClass), nameof(AmmoItemClass.PenetrationChanceObstacle));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(AmmoItemClass),
+            nameof(AmmoItemClass.PenetrationChanceObstacle)
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

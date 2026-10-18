@@ -22,40 +22,40 @@ namespace SteamAudio
 {
     public abstract class AudioEngineState
     {
-        public virtual void Initialize(IntPtr context, IntPtr defaultHRTF, SimulationSettings simulationSettings, PerspectiveCorrection correction)
-        { }
+        public virtual void Initialize(
+            IntPtr context,
+            IntPtr defaultHRTF,
+            SimulationSettings simulationSettings,
+            PerspectiveCorrection correction
+        ) { }
 
-        public virtual void Destroy()
-        { }
+        public virtual void Destroy() { }
 
-        public virtual void SetHRTF(IntPtr hrtf)
-        { }
+        public virtual void SetHRTF(IntPtr hrtf) { }
 
-        public virtual void SetPerspectiveCorrection(PerspectiveCorrection correction)
-        { }
+        public virtual void SetPerspectiveCorrection(PerspectiveCorrection correction) { }
 
-        public virtual void SetReverbSource(Source reverbSource)
-        { }
+        public virtual void SetReverbSource(Source reverbSource) { }
 
         public static AudioEngineState Create(AudioEngineType type)
         {
             switch (type)
             {
-            case AudioEngineType.Unity:
-                return new UnityAudioEngineState();
-            case AudioEngineType.FMODStudio:
-                return CreateFMODStudioAudioEngineState();
-            case AudioEngineType.Wwise:
-                return CreateWwiseAudioEngineState();
-            default:
-                return null;
+                case AudioEngineType.Unity:
+                    return new UnityAudioEngineState();
+                case AudioEngineType.FMODStudio:
+                    return CreateFMODStudioAudioEngineState();
+                case AudioEngineType.Wwise:
+                    return CreateWwiseAudioEngineState();
+                default:
+                    return null;
             }
         }
 
         private static AudioEngineState CreateFMODStudioAudioEngineState()
         {
             var type = Type.GetType("SteamAudio.FMODStudioAudioEngineState,SteamAudioFMODStudio");
-            return (type != null) ? (AudioEngineState) Activator.CreateInstance(type) : null;
+            return (type != null) ? (AudioEngineState)Activator.CreateInstance(type) : null;
         }
 
         private static AudioEngineState CreateWwiseAudioEngineState()
@@ -64,11 +64,10 @@ namespace SteamAudio
             if (type == null)
                 return null;
 
-            return (AudioEngineState) Activator.CreateInstance(type);
+            return (AudioEngineState)Activator.CreateInstance(type);
         }
 
-        public virtual void SetHRTFDisabled(bool disabled) 
-        { }
+        public virtual void SetHRTFDisabled(bool disabled) { }
     }
 
     public abstract class AudioEngineStateHelpers
@@ -94,8 +93,10 @@ namespace SteamAudio
 
         private static AudioEngineStateHelpers CreateFMODStudioAudioEngineStateHelpers()
         {
-            var type = Type.GetType("SteamAudio.FMODStudioAudioEngineStateHelpers,SteamAudioFMODStudio");
-            return (type != null) ? (AudioEngineStateHelpers) Activator.CreateInstance(type) : null;
+            var type = Type.GetType(
+                "SteamAudio.FMODStudioAudioEngineStateHelpers,SteamAudioFMODStudio"
+            );
+            return (type != null) ? (AudioEngineStateHelpers)Activator.CreateInstance(type) : null;
         }
 
         private static AudioEngineStateHelpers CreateWwiseAudioEngineStateHelpers()
@@ -104,7 +105,7 @@ namespace SteamAudio
             if (type == null)
                 return null;
 
-            return (AudioEngineStateHelpers) Activator.CreateInstance(type);
+            return (AudioEngineStateHelpers)Activator.CreateInstance(type);
         }
     }
 }

@@ -1,13 +1,12 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI.DragAndDrop;
 using Lambda.Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-
 using ItemIcon = GClass929;
 
 namespace Lambda.Core.Main.UI;
@@ -56,7 +55,12 @@ internal class BSGItemInfoProvider : IItemInfoProvider
         if (string.IsNullOrEmpty(bsgId))
         {
             if (emptySprite == null)
-                emptySprite = Sprite.Create(Texture2D.blackTexture, new Rect(0, 0, 1, 1), Vector2.zero, 100);
+                emptySprite = Sprite.Create(
+                    Texture2D.blackTexture,
+                    new Rect(0, 0, 1, 1),
+                    Vector2.zero,
+                    100
+                );
             onRendered?.Invoke(emptySprite);
             return;
         }
@@ -67,7 +71,12 @@ internal class BSGItemInfoProvider : IItemInfoProvider
         {
             LambdaPlugin.Logger.LogWarning($"error creating immutable item for template '{bsgId}'");
             if (emptySprite == null)
-                emptySprite = Sprite.Create(Texture2D.blackTexture, new Rect(0, 0, 1, 1), Vector2.zero, 100);
+                emptySprite = Sprite.Create(
+                    Texture2D.blackTexture,
+                    new Rect(0, 0, 1, 1),
+                    Vector2.zero,
+                    100
+                );
             onRendered?.Invoke(emptySprite);
             return;
         }
@@ -82,4 +91,3 @@ internal class BSGItemInfoProvider : IItemInfoProvider
         itemIcon.Changed.Bind(() => onRendered?.Invoke(itemIcon.Sprite));
     }
 }
-

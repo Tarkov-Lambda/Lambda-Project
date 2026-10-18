@@ -1,18 +1,23 @@
-﻿using DG.Tweening;
+﻿using System.Reflection;
+using DG.Tweening;
 using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lambda.Core.Patches.Tarkov.UI.QuickAccess;
 
 internal class Patch_QuickSlotView_SwitchVisualSelection : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.SwitchVisualSelection));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.SwitchVisualSelection));
 
     [PatchPostfix]
-    private static void PatchPostfix(QuickSlotView __instance, bool selected, CustomTextMeshProUGUI ___Caption)
+    private static void PatchPostfix(
+        QuickSlotView __instance,
+        bool selected,
+        CustomTextMeshProUGUI ___Caption
+    )
     {
         Color color = selected ? Color.white : new Color(0, 0, 0, 0f);
 

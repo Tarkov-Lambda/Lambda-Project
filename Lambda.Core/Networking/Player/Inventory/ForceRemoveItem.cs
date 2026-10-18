@@ -1,6 +1,6 @@
+using System;
 using EFT;
 using EFT.InventoryLogic;
-using System;
 using Fika.Core.Main.Players;
 using MemoryPack;
 using PacketWarden.RateLimiting;

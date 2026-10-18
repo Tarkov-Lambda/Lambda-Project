@@ -16,17 +16,14 @@ public class BlindFirePacketWarden : LambdaPacketWarden<BlindFirePacket>
 {
     public void Send(int value)
     {
-        var packet = new BlindFirePacket
-        {
-            Player = H.MainPlayer,
-            value  = value
-        };
+        var packet = new BlindFirePacket { Player = H.MainPlayer, value = value };
         DispatchPacket(ref packet);
     }
 
     protected override void Apply(BlindFirePacket packet, int peerId)
     {
-        if (packet.Player == null || packet.Player.IsYourPlayer) return;
+        if (packet.Player == null || packet.Player.IsYourPlayer)
+            return;
 
         packet.Player.HandsController?.BlindFire(packet.value);
     }

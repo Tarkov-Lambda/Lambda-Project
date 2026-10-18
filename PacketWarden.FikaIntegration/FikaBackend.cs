@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using EFT;
 using Comfort.Common;
+using EFT;
 using Fika.Core.Main.Utils;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking;
@@ -24,7 +24,10 @@ public class FikaBackend : INetworkBackend
 
     private static IFikaNetworkManager Manager => Singleton<IFikaNetworkManager>.Instance;
 
-    private readonly Dictionary<uint, (Type Type, Action<ArraySegment<byte>, int> Receive)> _receivers = new();
+    private readonly Dictionary<
+        uint,
+        (Type Type, Action<ArraySegment<byte>, int> Receive)
+    > _receivers = new();
     private IFikaNetworkManager _registeredManager;
 
     private readonly Action<FikaNetworkManagerCreatedEvent> _onNetworkCreated;
@@ -67,7 +70,8 @@ public class FikaBackend : INetworkBackend
     private void RegisterWrapper()
     {
         IFikaNetworkManager manager = Manager;
-        if (manager == null || manager == _registeredManager) return;
+        if (manager == null || manager == _registeredManager)
+            return;
 
         manager.RegisterPacket<LiteNetLibWrapper, NetPeer>(OnWrapperReceived);
         _registeredManager = manager;
@@ -75,16 +79,19 @@ public class FikaBackend : INetworkBackend
 
     private void UnregisterWrapper()
     {
-        if (_registeredManager == null) return;
+        if (_registeredManager == null)
+            return;
 
-        if (Manager == _registeredManager) _registeredManager.UnregisterPacket<LiteNetLibWrapper>();
+        if (Manager == _registeredManager)
+            _registeredManager.UnregisterPacket<LiteNetLibWrapper>();
         _registeredManager = null;
     }
 
     // Exceptions must not escape into Fika's receive loop, it would drop the rest of the batch.
     private void OnWrapperReceived(LiteNetLibWrapper wrapper, NetPeer peer)
     {
-        if (!wrapper.IsValid || !_receivers.TryGetValue(wrapper.Id, out var receiver)) return;
+        if (!wrapper.IsValid || !_receivers.TryGetValue(wrapper.Id, out var receiver))
+            return;
 
         try
         {
@@ -92,41 +99,55 @@ public class FikaBackend : INetworkBackend
         }
         catch (Exception ex)
         {
-            PacketWardenUtils.Log($"PacketWarden failed to handle packet {wrapper.Id} from peer {peer.Id}: {ex}");
+            PacketWardenUtils.Log(
+                $"PacketWarden failed to handle packet {wrapper.Id} from peer {peer.Id}: {ex}"
+            );
         }
     }
 
-    public void RegisterPacketWarden<T>(Action<T, int> onReceive) where T : IPacket
+    public void RegisterPacketWarden<T>(Action<T, int> onReceive)
+        where T : IPacket
     {
         RegisterWrapper();
 
         uint id = PacketId<T>.Value;
 
         if (_receivers.TryGetValue(id, out var existing) && existing.Type != typeof(T))
-            PacketWardenUtils.Log($"PacketWarden: {typeof(T)} and {existing.Type} share packet id {id}");
+            PacketWardenUtils.Log(
+                $"PacketWarden: {typeof(T)} and {existing.Type} share packet id {id}"
+            );
 
-        _receivers[id] = (typeof(T), (payload, peerId) => onReceive(MemoryPackSerializer.Deserialize<T>(payload.AsSpan()), peerId));
+        _receivers[id] = (
+            typeof(T),
+            (payload, peerId) =>
+                onReceive(MemoryPackSerializer.Deserialize<T>(payload.AsSpan()), peerId)
+        );
     }
 
-    public void UnregisterPacketWarden<T>() where T : IPacket
+    public void UnregisterPacketWarden<T>()
+        where T : IPacket
     {
         _receivers.Remove(PacketId<T>.Value);
     }
 
-    public void SendData<T>(ref T packet, DeliveryType method) where T : IPacket
+    public void SendData<T>(ref T packet, DeliveryType method)
+        where T : IPacket
     {
         IFikaNetworkManager manager = Manager;
-        if (manager == null) return;
+        if (manager == null)
+            return;
 
         var wrapper = LiteNetLibWrapper.Create(ref packet);
         manager.SendData(ref wrapper, (DeliveryMethod)method);
     }
 
-    public void SendDataToPeer<T>(ref T packet, DeliveryType method, int peerId) where T : IPacket
+    public void SendDataToPeer<T>(ref T packet, DeliveryType method, int peerId)
+        where T : IPacket
     {
         IFikaNetworkManager manager = Manager;
         NetPeer peer = manager?.GetPeerById(peerId);
-        if (peer == null) return;
+        if (peer == null)
+            return;
 
         var wrapper = LiteNetLibWrapper.Create(ref packet);
         manager.SendDataToPeer(ref wrapper, (DeliveryMethod)method, peer);
@@ -134,26 +155,31 @@ public class FikaBackend : INetworkBackend
 
     public void DisconnectPeer(int peerId)
     {
-        if (IsServer) Manager?.GetPeerById(peerId)?.Disconnect();
+        if (IsServer)
+            Manager?.GetPeerById(peerId)?.Disconnect();
     }
 
     public Player GetPlayerByPeerId(int peerId)
     {
-        if (peerId == INetworkBackend.LocalPeerId) return PacketWardenUtils.IsInRaid() ? PacketWardenUtils.GameWorld.MainPlayer : null;
+        if (peerId == INetworkBackend.LocalPeerId)
+            return PacketWardenUtils.IsInRaid() ? PacketWardenUtils.GameWorld.MainPlayer : null;
 
         return IsServer ? Manager?.GetPeerById(peerId)?.Player : null;
     }
 
     public int GetPeerIdByPlayer(Player player)
     {
-        if (player == null) return INetworkBackend.InvalidPeerId;
-        if (player.IsYourPlayer) return INetworkBackend.LocalPeerId;
+        if (player == null)
+            return INetworkBackend.InvalidPeerId;
+        if (player.IsYourPlayer)
+            return INetworkBackend.LocalPeerId;
 
         if (Manager is FikaServer server && server.NetServer != null)
         {
             foreach (NetPeer peer in server.NetServer)
             {
-                if (peer.Player == player) return peer.Id;
+                if (peer.Player == player)
+                    return peer.Id;
             }
         }
 

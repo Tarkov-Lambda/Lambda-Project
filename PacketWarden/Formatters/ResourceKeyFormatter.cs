@@ -3,7 +3,10 @@ using MemoryPack;
 
 public class ResourceKeyFormatter : MemoryPackFormatter<ResourceKey>
 {
-    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ResourceKey value)
+    public override void Serialize<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        scoped ref ResourceKey value
+    )
     {
         if (value == null)
         {
@@ -24,10 +27,6 @@ public class ResourceKeyFormatter : MemoryPackFormatter<ResourceKey>
             return;
         }
 
-        value = new ResourceKey
-        {
-            path = reader.ReadString(),
-            rcid = reader.ReadString()
-        };
+        value = new ResourceKey { path = reader.ReadString(), rcid = reader.ReadString() };
     }
 }

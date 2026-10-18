@@ -20,10 +20,7 @@ public class ShutdownAnnouncementPacketWarden : LambdaPacketWarden<ShutdownAnnou
 
     public void Send(string msg)
     {
-        var packet = new ShutdownAnnouncementPacket
-        {
-            msg = msg
-        };
+        var packet = new ShutdownAnnouncementPacket { msg = msg };
         DispatchPacket(ref packet);
     }
 

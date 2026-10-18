@@ -1,15 +1,23 @@
-﻿using Lambda.UI;
+﻿using System;
 using EFT.InputSystem;
 using EFT.UI.Screens;
-using System;
+using Lambda.UI;
 
 namespace Lambda.Core.Main.UI
 {
-    internal class FactionSelectionEftScreen : EftScreen<FactionSelectionEftScreen.FactionSelectionEftScreenController, FactionSelectionEftScreen>
+    internal class FactionSelectionEftScreen
+        : EftScreen<
+            FactionSelectionEftScreen.FactionSelectionEftScreenController,
+            FactionSelectionEftScreen
+        >
     {
         public const EEftScreenType FAKETYPE = EEftScreenType.DressRoom; // unused for screen register
 
-        internal class FactionSelectionEftScreenController : EftScreenManager.GClass3861<FactionSelectionEftScreenController, FactionSelectionEftScreen>
+        internal class FactionSelectionEftScreenController
+            : EftScreenManager.GClass3861<
+                FactionSelectionEftScreenController,
+                FactionSelectionEftScreen
+            >
         {
             public override EEftScreenType ScreenType => FAKETYPE;
             public override EStateSwitcher UnrestrictedFrameRate => EStateSwitcher.Enabled;
@@ -23,7 +31,8 @@ namespace Lambda.Core.Main.UI
 
             readonly Action<Faction> onSelected;
 
-            internal FactionSelectionEftScreenController(Action<Faction> selectionCallback) : base()
+            internal FactionSelectionEftScreenController(Action<Faction> selectionCallback)
+                : base()
             {
                 onSelected = selectionCallback;
             }
@@ -59,6 +68,7 @@ namespace Lambda.Core.Main.UI
             ScreenController?.CloseScreen();
         }
 
-        public override ETranslateResult TranslateCommand(ECommand command) => ETranslateResult.BlockAll;
+        public override ETranslateResult TranslateCommand(ECommand command) =>
+            ETranslateResult.BlockAll;
     }
 }

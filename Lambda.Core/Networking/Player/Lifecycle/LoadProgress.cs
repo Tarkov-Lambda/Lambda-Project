@@ -16,13 +16,10 @@ public class LoadProgressPacketWarden : LambdaPacketWarden<LoadProgressPacket>
 {
     public void Send(float progress)
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
 
-        var packet = new LoadProgressPacket
-        {
-            Player = H.MainPlayer,
-            progress = progress
-        };
+        var packet = new LoadProgressPacket { Player = H.MainPlayer, progress = progress };
 
         // DispatchPacket(ref packet);
     }

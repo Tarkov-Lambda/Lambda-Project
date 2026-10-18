@@ -7,21 +7,35 @@ using EFT;
 
 public static class PacketWardenUtils
 {
-    public static INetworkBackend Network           => Plugin.Network;
-    public static GameWorld GameWorld               => Singleton<GameWorld>.Instance;
+    public static INetworkBackend Network => Plugin.Network;
+    public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
 
-    public static void Log(string msg)              => Plugin.Logger.LogInfo(msg);
-    public static void Notify(object msg)           => NotificationManagerClass.DisplayMessageNotification(msg.ToString());
-    public static string Dump(object obj, int depth = 0, bool log = true, [CallerArgumentExpression("obj")] string name = null) => _dump(obj, depth, log, name);
+    public static void Log(string msg) => Plugin.Logger.LogInfo(msg);
+
+    public static void Notify(object msg) =>
+        NotificationManagerClass.DisplayMessageNotification(msg.ToString());
+
+    public static string Dump(
+        object obj,
+        int depth = 0,
+        bool log = true,
+        [CallerArgumentExpression("obj")] string name = null
+    ) => _dump(obj, depth, log, name);
 
     public static bool IsInRaid()
     {
         return GameWorld != null && GameWorld is not HideoutGameWorld;
     }
 
-    private static string _dump(object obj, int depth = 1, bool log = true, [CallerArgumentExpression("obj")] string name = null)
+    private static string _dump(
+        object obj,
+        int depth = 1,
+        bool log = true,
+        [CallerArgumentExpression("obj")] string name = null
+    )
     {
-        if (obj == null) return "";
+        if (obj == null)
+            return "";
 
         var sb = new StringBuilder();
 
@@ -35,12 +49,21 @@ public static class PacketWardenUtils
         return sb.ToString();
     }
 
-    private static void DumpObject(object obj, StringBuilder sb, string name, int currentDepth, int maxDepth)
+    private static void DumpObject(
+        object obj,
+        StringBuilder sb,
+        string name,
+        int currentDepth,
+        int maxDepth
+    )
     {
-        if (obj == null) return;
+        if (obj == null)
+            return;
 
         var type = obj.GetType();
-        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var fields = type.GetFields(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
 
         sb.Append(name).Append(" : ").Append(type.Name).Append("\n{");
 

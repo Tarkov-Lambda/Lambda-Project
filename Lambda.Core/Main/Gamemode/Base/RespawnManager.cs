@@ -1,11 +1,5 @@
 ﻿namespace Lambda.Core.GameTypes;
 
-public interface IRespawnManager
-{
-    
-}
+public interface IRespawnManager { }
 
-public class RespawnManager : IRespawnManager
-{
-
-}
+public class RespawnManager : IRespawnManager { }

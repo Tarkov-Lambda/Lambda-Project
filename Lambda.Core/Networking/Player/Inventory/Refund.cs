@@ -1,12 +1,12 @@
-using EFT;
 using System;
-using PacketWarden.RateLimiting;
-using MemoryPack;
-using Comfort.Common;
 using System.Collections.Generic;
-using PacketWarden.TimeSync;
+using Comfort.Common;
+using EFT;
 using Lambda.Core.Main.Economy;
 using Lambda.Shared.Models;
+using MemoryPack;
+using PacketWarden.RateLimiting;
+using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
@@ -33,16 +33,16 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
             return;
         }
 
-        var packet = new RefundItemPacket
-        {
-            Player = player,
-            ID = transactionId
-        };
+        var packet = new RefundItemPacket { Player = player, ID = transactionId };
 
         DispatchPacket(ref packet);
     }
 
-    private static bool TryFindLatestTransaction(Player player, string templateId, out Guid transactionId)
+    private static bool TryFindLatestTransaction(
+        Player player,
+        string templateId,
+        out Guid transactionId
+    )
     {
         transactionId = Guid.Empty;
 
@@ -50,14 +50,22 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
         {
             List<BuyItemPacket> packets = transaction.Value;
 
-            if (packets.Count > 0 && packets[0].Player == player && packets[0].item.TemplateId == templateId)
+            if (
+                packets.Count > 0
+                && packets[0].Player == player
+                && packets[0].item.TemplateId == templateId
+            )
                 transactionId = transaction.Key;
         }
 
         return transactionId != Guid.Empty;
     }
 
-    protected override bool ValidatePacket(RefundItemPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        RefundItemPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         var allRoundTransactions = Singleton<BuyItemPacketWarden>.Instance.RoundTransactions;
         if (allRoundTransactions.TryGetValue(packet.ID, out var transactions))
@@ -82,7 +90,8 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
                 var item = transaction.Player.FindItemById(transaction.item.Id);
                 if (item.Failed)
                 {
-                    rejectionReason = "One or more items linked to the transaction can not be found";
+                    rejectionReason =
+                        "One or more items linked to the transaction can not be found";
                     return false;
                 }
             }
@@ -100,11 +109,19 @@ public class RefundItemPacketWarden : LambdaPacketWarden<RefundItemPacket>
     {
         var allRoundTransactions = Singleton<BuyItemPacketWarden>.Instance.RoundTransactions;
 
-        if (allRoundTransactions.TryGetValue(packet.ID, out var transactions) && transactions.Count > 0)
+        if (
+            allRoundTransactions.TryGetValue(packet.ID, out var transactions)
+            && transactions.Count > 0
+        )
         {
             allRoundTransactions.Remove(packet.ID);
 
-            if (BuyMenuSelection.TryGetItemData(transactions[0].item.TemplateId, out ShopItem itemData))
+            if (
+                BuyMenuSelection.TryGetItemData(
+                    transactions[0].item.TemplateId,
+                    out ShopItem itemData
+                )
+            )
             {
                 packet.Player.Context.AddMoney(itemData.price);
             }

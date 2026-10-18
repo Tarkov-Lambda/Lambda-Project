@@ -12,7 +12,11 @@ namespace Lambda.Core.Main;
 public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 {
     private string _playerSelectionFilePath = Path.Combine(LambdaPlugin.pathToConfigs, "Presets");
-    private readonly string _buildsDirectoryPath = Path.Combine(LambdaPlugin.pathToConfigs, "Presets", "WeaponBuilds");
+    private readonly string _buildsDirectoryPath = Path.Combine(
+        LambdaPlugin.pathToConfigs,
+        "Presets",
+        "WeaponBuilds"
+    );
 
     // template bsgId -> WeaponBuildClass.MongoID_0
     public Dictionary<string, string> SelectedGunPresetMap = new();
@@ -24,9 +28,11 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
     {
         H.AfterApplicationLoaded += InitializeOnApplicationLoad;
 
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         // Hot-reload
-        if (H.TarkovClientISession?.Profile_1?.Id != null) InitializeOnApplicationLoad();
+        if (H.TarkovClientISession?.Profile_1?.Id != null)
+            InitializeOnApplicationLoad();
     }
 
     public void Dispose()
@@ -37,9 +43,14 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
 
     public async void InitializeOnApplicationLoad()
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
 
-        _playerSelectionFilePath = Path.Combine(LambdaPlugin.pathToConfigs, "Presets", $"{H.TarkovClientISession.Profile_1.Id}.jsonc");
+        _playerSelectionFilePath = Path.Combine(
+            LambdaPlugin.pathToConfigs,
+            "Presets",
+            $"{H.TarkovClientISession.Profile_1.Id}.jsonc"
+        );
 
         // Wait for all custom presets to finish importing and saving
         await ImportExternalPresetsFromDisk();
@@ -72,7 +83,9 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
                 return matchByMongo;
         }
 
-        var userBuild = FU.Presets.FirstOrDefault(b => !b.FromPreset && b.Item?.TemplateId == bsgId);
+        var userBuild = FU.Presets.FirstOrDefault(b =>
+            !b.FromPreset && b.Item?.TemplateId == bsgId
+        );
         if (userBuild != null)
         {
             // var build = FU.SerializeItem(userBuild.Item);
@@ -93,7 +106,8 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
         {
             var preferredBuild = GetPreferredBuildForTemplate(weaponTemplateId);
 
-            if (preferredBuild == null) continue;
+            if (preferredBuild == null)
+                continue;
 
             SelectedGunPresetMap[weaponTemplateId] = preferredBuild.MongoID_0;
         }
@@ -172,7 +186,11 @@ public class WeaponPresetManager : Singleton<WeaponPresetManager>, IDisposable
                 return;
             }
 
-            string[] files = Directory.GetFiles(_buildsDirectoryPath, "*.json", SearchOption.TopDirectoryOnly);
+            string[] files = Directory.GetFiles(
+                _buildsDirectoryPath,
+                "*.json",
+                SearchOption.TopDirectoryOnly
+            );
 
             // Track all of our registration tasks
             List<UniTask> importTasks = new List<UniTask>();

@@ -9,9 +9,8 @@ public enum CameraOwnership
     Ragdoll,
     Spectator,
     SpectatorRagdoll,
-    Cinematic
+    Cinematic,
 }
-
 
 public class CameraOwnershipManager : Singleton<CameraOwnershipManager>, IDisposable
 {
@@ -21,7 +20,6 @@ public class CameraOwnershipManager : Singleton<CameraOwnershipManager>, IDispos
     {
         EventBus.OnEnter += OnMatchStateEnter;
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied += OnPlayerKilled;
-
     }
 
     public void Dispose()
@@ -30,13 +28,7 @@ public class CameraOwnershipManager : Singleton<CameraOwnershipManager>, IDispos
         Singleton<PlayerKilledPacketWarden>.Instance.AfterPacketApplied -= OnPlayerKilled;
     }
 
-    void OnMatchStateEnter(MatchState state)
-    {
+    void OnMatchStateEnter(MatchState state) { }
 
-    }
-
-    void OnPlayerKilled(PlayerKilledPacket packet)
-    {
-
-    }
+    void OnPlayerKilled(PlayerKilledPacket packet) { }
 }

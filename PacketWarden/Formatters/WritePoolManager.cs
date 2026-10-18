@@ -21,11 +21,16 @@ public static class WriterPoolManager
     public static void ReturnWriter(EFTWriterClass writer) => _writers.Push(writer);
 
     // Writes what the EFT writer holds as a length prefixed byte blob (wire compatible with WriteUnmanagedArray<byte>).
-    public static void WriteBlob<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, EFTWriterClass eftWriter)
+    public static void WriteBlob<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        EFTWriterClass eftWriter
+    )
         where TBufferWriter : class, IBufferWriter<byte>
     {
         ArraySegment<byte> written = eftWriter.ToArraySegment();
-        writer.WriteUnmanagedSpan(new ReadOnlySpan<byte>(written.Array, written.Offset, written.Count));
+        writer.WriteUnmanagedSpan(
+            new ReadOnlySpan<byte>(written.Array, written.Offset, written.Count)
+        );
     }
 
     // The returned segment is only valid until the next TryReadBlob.

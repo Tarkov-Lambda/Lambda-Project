@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using EFT.UI;
+using Fika.Core.Main.GameMode;
+using Fika.Core.Main.Utils;
 using Fika.Core.Networking;
 using Fika.Core.Networking.LiteNetLib;
 using Fika.Core.Networking.LiteNetLib.Utils;
 using HarmonyLib;
-using Lambda.Core.Main.Gamemode;
 using Lambda.Core.GameTypes;
-using Lambda.Core.Patches.Tarkov;
-using EFT.UI;
-using Lambda.Core.Main.FX;
-using Fika.Core.Main.Utils;
-using Systems.Effects;
-using Lambda.Core.Main.Dying;
 using Lambda.Core.Main.AssetBundleHandling;
-using Fika.Core.Main.GameMode;
-
+using Lambda.Core.Main.Dying;
+using Lambda.Core.Main.FX;
+using Lambda.Core.Main.Gamemode;
+using Lambda.Core.Patches.Tarkov;
+using Systems.Effects;
 
 namespace Lambda.Core.Main;
 
@@ -26,64 +25,80 @@ public static class Helpers
 {
     // вертел я ваши анти паттерны
     #region EFT Singleton pointers
-    public static GameWorld GameWorld                                     => Singleton<GameWorld>.Instance;
-    public static Class308 TarkovClientISession                           => Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
-    public static TarkovApplication TarkovApp                             => Singleton<ClientApplication<ISession>>.Instance as TarkovApplication;
+    public static GameWorld GameWorld => Singleton<GameWorld>.Instance;
+    public static Class308 TarkovClientISession =>
+        Singleton<ClientApplication<ISession>>.Instance.Session as Class308;
+    public static TarkovApplication TarkovApp =>
+        Singleton<ClientApplication<ISession>>.Instance as TarkovApplication;
 
-    public static PoolManagerClass PoolManagerClass                       => Singleton<PoolManagerClass>.Instance;
-    public static Effects Effects                                         => Singleton<Effects>.Instance;
-    public static RagdollCreator RagdollCreator                           => Singleton<RagdollCreator>.Instance;
-    public static BetterAudio BetterAudio                                 => Singleton<BetterAudio>.Instance;
-    public static CommonUI CommonUI                                       => Singleton<CommonUI>.Instance;
-    public static PreloaderUI PreloaderUI                                 => Singleton<PreloaderUI>.Instance;
-    public static BackendConfigSettingsClass BackendConfigSettingsClass   => Singleton<BackendConfigSettingsClass>.Instance;
-    public static IFikaGame IFikaGame                                     => Singleton<IFikaGame>.Instance;
-    public static SharedGameSettingsClass SharedGameSettingsClass         => Singleton<SharedGameSettingsClass>.Instance;
-    public static CustomizationSolverClass CustomizationSolverClass       => Singleton<CustomizationSolverClass>.Instance;
-    public static IEasyAssets IEasyAssets                                 => Singleton<IEasyAssets>.Instance;
-    public static GUISounds EFTGUISounds                                  => Singleton<GUISounds>.Instance;
+    public static PoolManagerClass PoolManagerClass => Singleton<PoolManagerClass>.Instance;
+    public static Effects Effects => Singleton<Effects>.Instance;
+    public static RagdollCreator RagdollCreator => Singleton<RagdollCreator>.Instance;
+    public static BetterAudio BetterAudio => Singleton<BetterAudio>.Instance;
+    public static CommonUI CommonUI => Singleton<CommonUI>.Instance;
+    public static PreloaderUI PreloaderUI => Singleton<PreloaderUI>.Instance;
+    public static BackendConfigSettingsClass BackendConfigSettingsClass =>
+        Singleton<BackendConfigSettingsClass>.Instance;
+    public static IFikaGame IFikaGame => Singleton<IFikaGame>.Instance;
+    public static SharedGameSettingsClass SharedGameSettingsClass =>
+        Singleton<SharedGameSettingsClass>.Instance;
+    public static CustomizationSolverClass CustomizationSolverClass =>
+        Singleton<CustomizationSolverClass>.Instance;
+    public static IEasyAssets IEasyAssets => Singleton<IEasyAssets>.Instance;
+    public static GUISounds EFTGUISounds => Singleton<GUISounds>.Instance;
     #endregion
 
     #region EFT Main Player
     // EFT Main Player
-    public static Player MainPlayer                                       => GetMainPlayer();
-    public static Inventory MainInventory                                 => MainPlayer != null ? MainPlayer.Inventory : null;
-    public static InventoryController MainInventoryController             => MainPlayer != null ? MainPlayer.InventoryController : null;
+    public static Player MainPlayer => GetMainPlayer();
+    public static Inventory MainInventory => MainPlayer != null ? MainPlayer.Inventory : null;
+    public static InventoryController MainInventoryController =>
+        MainPlayer != null ? MainPlayer.InventoryController : null;
     #endregion
 
     #region Fika
-    public static bool IsHeadless                                         => GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
-    public static bool IsClient                                           => FikaBackendUtils.IsClient;
-    public static bool IsServer                                           => GameWorld is HideoutGameWorld || FikaBackendUtils.IsServer;
+    public static bool IsHeadless =>
+        GameWorld is not HideoutGameWorld && FikaBackendUtils.IsHeadless;
+    public static bool IsClient => FikaBackendUtils.IsClient;
+    public static bool IsServer => GameWorld is HideoutGameWorld || FikaBackendUtils.IsServer;
     #endregion
 
     #region Internal
-    public static ArenaController Arena                                   => Singleton<ArenaController>.Instance;
-    public static SessionManager Session                                  => Arena.Session;
-    public static LambdaGamemode Gamemode                                 => Arena.gamemode;
-    public static bool IsArenaReady                                       => Arena?.Session != null;
+    public static ArenaController Arena => Singleton<ArenaController>.Instance;
+    public static SessionManager Session => Arena.Session;
+    public static LambdaGamemode Gamemode => Arena.gamemode;
+    public static bool IsArenaReady => Arena?.Session != null;
 
-    public static bool IsNightTime                                        => Gamemode is IGMWithNightMode nm && nm.IsNightTime;
+    public static bool IsNightTime => Gamemode is IGMWithNightMode nm && nm.IsNightTime;
 
-    public static PlayerContextLookup Scoreboard                          => Singleton<ArenaController>.Instance.Session.scoreboard;
-    public static PlayerContext MainPlayerScore                           => GetMainPlayerScore();
-    public static List<Player> AllTeammates                               => Session.GetPlayersFromFaction(MainPlayerScore.Faction);
-    public static List<PlayerContext> AllTeammateScores                   => Session.GetPlayerScoresFromFaction(MainPlayerScore.Faction);
-    public static List<Player> AllPlayers                                 => GetAllPlayers();
-    public static List<Player> AllPlayingPlayers                          => IsArenaReady ? GetAllPlayingPlayers() : new();
+    public static PlayerContextLookup Scoreboard =>
+        Singleton<ArenaController>.Instance.Session.scoreboard;
+    public static PlayerContext MainPlayerScore => GetMainPlayerScore();
+    public static List<Player> AllTeammates =>
+        Session.GetPlayersFromFaction(MainPlayerScore.Faction);
+    public static List<PlayerContext> AllTeammateScores =>
+        Session.GetPlayerScoresFromFaction(MainPlayerScore.Faction);
+    public static List<Player> AllPlayers => GetAllPlayers();
+    public static List<Player> AllPlayingPlayers => IsArenaReady ? GetAllPlayingPlayers() : new();
 
-    public static AudioHandler AudioHandler                               => IsArenaReady ? Singleton<AudioHandler>.Instance : null;
-    public static LambdaSounds Sounds                                     => IsArenaReady ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
-    public static MusicKit MusicKit                                       => IsArenaReady ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
+    public static AudioHandler AudioHandler =>
+        IsArenaReady ? Singleton<AudioHandler>.Instance : null;
+    public static LambdaSounds Sounds =>
+        IsArenaReady ? Singleton<AudioHandler>.Instance.PrefabSounds : null;
+    public static MusicKit MusicKit =>
+        IsArenaReady ? Singleton<AudioHandler>.Instance.MusicKitSounds : null;
 
-    public static BombHandler BombHandler                                 => IsArenaReady ? Singleton<BombHandler>.Instance : null;
-    public static FXHandler FXHandler                                     => IsArenaReady ? Singleton<FXHandler>.Instance : null;
-    public static SpectatorManager SpectatorManager                       => IsArenaReady ? Singleton<SpectatorManager>.Instance : null;
-    public static MapAssetBundleLoader MapAssetBundleHandler              => Singleton<MapAssetBundleLoader>.Instance;
-    public static WeaponPresetManager WeaponPresetManager                 => Singleton<WeaponPresetManager>.Instance;
+    public static BombHandler BombHandler => IsArenaReady ? Singleton<BombHandler>.Instance : null;
+    public static FXHandler FXHandler => IsArenaReady ? Singleton<FXHandler>.Instance : null;
+    public static SpectatorManager SpectatorManager =>
+        IsArenaReady ? Singleton<SpectatorManager>.Instance : null;
+    public static MapAssetBundleLoader MapAssetBundleHandler =>
+        Singleton<MapAssetBundleLoader>.Instance;
+    public static WeaponPresetManager WeaponPresetManager =>
+        Singleton<WeaponPresetManager>.Instance;
     #endregion
 
-    #region 
+    #region
     public static bool ShouldLog { get; } = true;
     #endregion
 
@@ -137,11 +152,13 @@ public static class Helpers
     public static Player GetPlayer(int playerId)
     {
         List<Player> players = AllPlayers;
-        if (players == null) return null;
+        if (players == null)
+            return null;
 
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].Id == playerId) return players[i];
+            if (players[i].Id == playerId)
+                return players[i];
         }
 
         return null;
@@ -150,11 +167,13 @@ public static class Helpers
     public static Player GetPlayer(string profileId)
     {
         List<Player> players = AllPlayers;
-        if (players == null) return null;
+        if (players == null)
+            return null;
 
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].ProfileId == profileId) return players[i];
+            if (players[i].ProfileId == profileId)
+                return players[i];
         }
 
         return null;
@@ -164,25 +183,33 @@ public static class Helpers
     public static Player GetPlayerByName(string name)
     {
         List<Player> players = AllPlayers;
-        if (players == null) return null;
+        if (players == null)
+            return null;
 
         for (int i = 0; i < players.Count; i++)
         {
             Player player = players[i];
-            if (string.Equals(player.Profile.Nickname, name, StringComparison.OrdinalIgnoreCase) || player.ProfileId == name) return player;
+            if (
+                string.Equals(player.Profile.Nickname, name, StringComparison.OrdinalIgnoreCase)
+                || player.ProfileId == name
+            )
+                return player;
         }
 
         return null;
     }
 
-    public static PlayerContext GetPlayerContext(Player player) => player != null ? GetPlayerContext(player.Id) : null;
+    public static PlayerContext GetPlayerContext(Player player) =>
+        player != null ? GetPlayerContext(player.Id) : null;
 
     public static PlayerContext GetPlayerContext(int playerId)
     {
-        if (!IsInRaid() || !IsArenaReady) return null;
+        if (!IsInRaid() || !IsArenaReady)
+            return null;
         if (!Scoreboard.TryGetValue(playerId, out var playerScore))
         {
-            if (GetPlayer(playerId) == null) return null;
+            if (GetPlayer(playerId) == null)
+                return null;
 
             playerScore = new PlayerContext(playerId);
             Scoreboard.Add(playerId, playerScore);
@@ -192,10 +219,12 @@ public static class Helpers
 
     public static PlayerContext GetMainPlayerScore()
     {
-        if (!IsInRaid() || !IsArenaReady || IsHeadless) return null;
+        if (!IsInRaid() || !IsArenaReady || IsHeadless)
+            return null;
 
         Player mainPlayer = MainPlayer;
-        if (mainPlayer == null) return null;
+        if (mainPlayer == null)
+            return null;
 
         Scoreboard.TryGetValue(mainPlayer.Id, out var playerScore);
         return playerScore;
@@ -209,11 +238,13 @@ public static class Helpers
     private static List<Player> GetAllPlayingPlayers()
     {
         var result = new List<Player>();
-        if (!IsInRaid()) return result;
+        if (!IsInRaid())
+            return result;
 
         foreach (Player player in GameWorld.AllAlivePlayersList)
         {
-            if (IsPlaying(player)) result.Add(player);
+            if (IsPlaying(player))
+                result.Add(player);
         }
 
         return result;
@@ -221,12 +252,14 @@ public static class Helpers
 
     public static int CountPlayingPlayers()
     {
-        if (!IsInRaid()) return 0;
+        if (!IsInRaid())
+            return 0;
 
         int count = 0;
         foreach (Player player in GameWorld.AllAlivePlayersList)
         {
-            if (IsPlaying(player)) count++;
+            if (IsPlaying(player))
+                count++;
         }
 
         return count;
@@ -235,7 +268,8 @@ public static class Helpers
     private static bool IsPlaying(Player player)
     {
         PlayerContext context = player.Context;
-        return context.ReadyState != PlayerReadinessState.Disconnected && context.Faction != Faction.Spectator;
+        return context.ReadyState != PlayerReadinessState.Disconnected
+            && context.Faction != Faction.Spectator;
     }
     #endregion
 
@@ -248,10 +282,10 @@ public static class Helpers
     {
         return GameWorld != null && GameWorld is not HideoutGameWorld;
 
-// #if DEBUG
-//         return GameWorld != null;
-// #else
-//         return GameWorld != null && GameWorld is not HideoutGameWorld;
-// #endif
+        // #if DEBUG
+        //         return GameWorld != null;
+        // #else
+        //         return GameWorld != null && GameWorld is not HideoutGameWorld;
+        // #endif
     }
 }

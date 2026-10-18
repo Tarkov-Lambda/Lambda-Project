@@ -1,17 +1,22 @@
-using Lambda.UI;
 using System.Collections;
 using System.Collections.Generic;
+using Lambda.UI;
 using UnityEngine;
 
 public class ChatTester : MonoBehaviour
 {
-    [SerializeField] private Chat chat;
-    [SerializeField] private string sender = "EditorPlayer";
-    [SerializeField] private string message = "test message";
+    [SerializeField]
+    private Chat chat;
+
+    [SerializeField]
+    private string sender = "EditorPlayer";
+
+    [SerializeField]
+    private string message = "test message";
 
     void Start()
     {
-        chat.OnSubmit += Chat_OnSubmit;  
+        chat.OnSubmit += Chat_OnSubmit;
     }
 
     private void Chat_OnSubmit(Lambda.Shared.Models.ChatMessageScope arg1, string arg2)

@@ -1,4 +1,9 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.HealthSystem;
@@ -9,11 +14,6 @@ using Lambda.Core.Main;
 using Lambda.Core.Main.Dying;
 using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Lambda.Core.Patches.Tarkov;
 
@@ -40,23 +40,34 @@ internal class Patch_ActiveHealthController_ApplyDamage : ModulePatch
         }
     }
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.ApplyDamage));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ActiveHealthController),
+            nameof(ActiveHealthController.ApplyDamage)
+        );
 
     [PatchPrefix]
-    static bool Prefix(ref float __result, ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, ref DamageInfoStruct damageInfo)
+    static bool Prefix(
+        ref float __result,
+        ActiveHealthController __instance,
+        EBodyPart bodyPart,
+        ref float damage,
+        ref DamageInfoStruct damageInfo
+    )
     {
-        if (!H.IsArenaReady) return false;
+        if (!H.IsArenaReady)
+            return false;
 
         if (damageInfo.DamageType == EDamageType.Flame)
         {
             damageInfo.Damage *= 2.5f;
             damage *= 2.5f;
         }
-
         else if (damageInfo.DamageType == EDamageType.Fall)
         {
             // blacked out legs don't cause damage
-            if (damage <= 3f) return false;
+            if (damage <= 3f)
+                return false;
 
             // if somehow the player falls through the map on roundprepare
             if (H.Session.matchState == MatchState.RoundPrepare)
@@ -80,10 +91,7 @@ internal class Patch_ActiveHealthController_ApplyDamage : ModulePatch
     }
 
     [PatchPostfix]
-    static void Postfix(ref float __result, ActiveHealthController __instance)
-    {
-
-    }
+    static void Postfix(ref float __result, ActiveHealthController __instance) { }
 }
 
 internal class Patch_ActiveHealthController_Kill : ModulePatch
@@ -91,27 +99,35 @@ internal class Patch_ActiveHealthController_Kill : ModulePatch
     private static long _lastKillTime;
     private const int CooldownMs = 500;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.Kill));
 
     [PatchPrefix]
     static bool Prefix(ActiveHealthController __instance, EDamageType damageType)
     {
-        if (!H.IsArenaReady) return false;
-        if (__instance.Player == null || __instance.Player.Context == null) return false; // mid raid connect protection
+        if (!H.IsArenaReady)
+            return false;
+        if (__instance.Player == null || __instance.Player.Context == null)
+            return false; // mid raid connect protection
 
         long now = Stopwatch.GetTimestamp();
         long elapsedMs = (now - _lastKillTime) * 1000 / Stopwatch.Frequency;
 
-        if (elapsedMs < CooldownMs) return false;
+        if (elapsedMs < CooldownMs)
+            return false;
 
         _lastKillTime = now;
 
-
-        if (!__instance.Player.Context.IsAlive) return false;
+        if (!__instance.Player.Context.IsAlive)
+            return false;
 
         var lastDamage = Patch_ActiveHealthController_ApplyDamage.LastReceivedDamageInfo;
 
-        if (H.IsServer || lastDamage.Player?.iPlayer?.Id == 1 || !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer)
+        if (
+            H.IsServer
+            || lastDamage.Player?.iPlayer?.Id == 1
+            || !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer
+        )
         {
             D.Log($"{__instance.Player.Profile.Nickname} died");
 
@@ -126,7 +142,10 @@ internal class Patch_ActiveHealthController_Kill : ModulePatch
             {
                 victim = __instance.Player;
 
-                if (!Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer && killer == null)
+                if (
+                    !Patch_ActiveHealthController_ApplyDamage.IsLastDamageByOtherPlayer
+                    && killer == null
+                )
                     killer = __instance.Player;
             }
 
@@ -148,10 +167,13 @@ internal class Patch_ActiveHealthController_Kill : ModulePatch
     }
 }
 
-
 internal class Patch_ActiveHealthController_DoFracture : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoFracture));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ActiveHealthController),
+            nameof(ActiveHealthController.DoFracture)
+        );
 
     [PatchPrefix]
     static bool Prefix() => false;
@@ -159,7 +181,12 @@ internal class Patch_ActiveHealthController_DoFracture : ModulePatch
 
 internal class Patch_ActiveHealthController_DoBleedGeneric : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(bool), typeof(EBodyPart)]);
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ActiveHealthController),
+            nameof(ActiveHealthController.DoBleed),
+            [typeof(bool), typeof(EBodyPart)]
+        );
 
     [PatchPrefix]
     static bool Prefix() => false;
@@ -167,8 +194,16 @@ internal class Patch_ActiveHealthController_DoBleedGeneric : ModulePatch
 
 internal class Patch_ActiveHealthController_DoBleed_HeavyBleeding : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(EBodyPart)])
-            .MakeGenericMethod(AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+HeavyBleeding"));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools
+            .Method(
+                typeof(ActiveHealthController),
+                nameof(ActiveHealthController.DoBleed),
+                [typeof(EBodyPart)]
+            )
+            .MakeGenericMethod(
+                AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+HeavyBleeding")
+            );
 
     [PatchPrefix]
     static bool Prefix() => false;
@@ -176,8 +211,16 @@ internal class Patch_ActiveHealthController_DoBleed_HeavyBleeding : ModulePatch
 
 internal class Patch_ActiveHealthController_DoBleed_LightBleeding : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.DoBleed), [typeof(EBodyPart)])
-            .MakeGenericMethod(AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+LightBleeding"));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools
+            .Method(
+                typeof(ActiveHealthController),
+                nameof(ActiveHealthController.DoBleed),
+                [typeof(EBodyPart)]
+            )
+            .MakeGenericMethod(
+                AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+LightBleeding")
+            );
 
     [PatchPrefix]
     static bool Prefix() => false;

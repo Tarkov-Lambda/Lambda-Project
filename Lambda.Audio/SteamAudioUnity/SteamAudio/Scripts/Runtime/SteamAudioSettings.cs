@@ -25,7 +25,7 @@ namespace SteamAudio
     {
         Unity,
         FMODStudio,
-        Wwise
+        Wwise,
     }
 
     [CreateAssetMenu(menuName = "Steam Audio/Steam Audio Settings")]
@@ -37,8 +37,10 @@ namespace SteamAudio
         [Header("HRTF Settings")]
         public bool hrtfDisabled = false;
         public bool perspectiveCorrection = false;
+
         [Range(.25f, 4.0f)]
         public float perspectiveCorrectionFactor = 1.0f;
+
         [Range(-12.0f, 12.0f)]
         public float hrtfVolumeGainDB = 0.0f;
         public HRTFNormType hrtfNormalizationType = HRTFNormType.None;
@@ -58,46 +60,63 @@ namespace SteamAudio
         [Header("Real-time Reflections Settings")]
         [Range(1024, 65536)]
         public int realTimeRays = 4096;
+
         [Range(1, 64)]
         public int realTimeBounces = 4;
+
         [Range(0.1f, 10.0f)]
         public float realTimeDuration = 1.0f;
+
         [Range(0, 3)]
         public int realTimeAmbisonicOrder = 1;
+
         [Range(1, 128)]
         public int realTimeMaxSources = 32;
+
         [Range(0, 100)]
         public int realTimeCPUCoresPercentage = 5;
+
         [Range(0.1f, 10.0f)]
         public float realTimeIrradianceMinDistance = 1.0f;
 
         [Header("Baked Reflections Settings")]
         public bool bakeConvolution = true;
         public bool bakeParametric = false;
+
         [Range(1024, 65536)]
         public int bakingRays = 16384;
+
         [Range(1, 64)]
         public int bakingBounces = 16;
+
         [Range(0.1f, 10.0f)]
         public float bakingDuration = 1.0f;
+
         [Range(0, 3)]
         public int bakingAmbisonicOrder = 1;
+
         [Range(0, 100)]
         public int bakingCPUCoresPercentage = 50;
+
         [Range(0.1f, 10.0f)]
         public float bakingIrradianceMinDistance = 1.0f;
 
         [Header("Baked Pathing Settings")]
         [Range(1, 32)]
         public int bakingVisibilitySamples = 4;
+
         [Range(0.0f, 2.0f)]
         public float bakingVisibilityRadius = 1.0f;
+
         [Range(0.0f, 1.0f)]
         public float bakingVisibilityThreshold = 0.1f;
+
         [Range(0.0f, 1000.0f)]
         public float bakingVisibilityRange = 1000.0f;
+
         [Range(0.0f, 1000.0f)]
         public float bakingPathRange = 1000.0f;
+
         [Range(0, 100)]
         public int bakedPathingCPUCoresPercentage = 50;
 
@@ -111,13 +130,16 @@ namespace SteamAudio
         [Header("Hybrid Reverb Settings")]
         [Range(0.1f, 2.0f)]
         public float hybridReverbTransitionTime = 1.0f;
+
         [Range(0, 100)]
         public int hybridReverbOverlapPercent = 25;
 
         [Header("OpenCL Settings")]
         public OpenCLDeviceType deviceType = OpenCLDeviceType.GPU;
+
         [Range(0, 16)]
         public int maxReservedComputeUnits = 8;
+
         [Range(0.0f, 1.0f)]
         public float fractionComputeUnitsForIRUpdate = 0.5f;
 
@@ -128,8 +150,10 @@ namespace SteamAudio
         [Header("TrueAudio Next Settings")]
         [Range(0.1f, 10.0f)]
         public float TANDuration = 1.0f;
+
         [Range(0, 3)]
         public int TANAmbisonicOrder = 1;
+
         [Range(1, 128)]
         public int TANMaxSources = 32;
 
@@ -151,9 +175,16 @@ namespace SteamAudio
                         sSingleton.name = "Steam Audio Settings";
 
 #if UNITY_EDITOR
-                        sSingleton.defaultMaterial = (SteamAudioMaterial) AssetDatabase.LoadAssetAtPath("Assets/Plugins/SteamAudio/Resources/Materials/Default.asset", typeof(SteamAudioMaterial));
+                        sSingleton.defaultMaterial = (SteamAudioMaterial)
+                            AssetDatabase.LoadAssetAtPath(
+                                "Assets/Plugins/SteamAudio/Resources/Materials/Default.asset",
+                                typeof(SteamAudioMaterial)
+                            );
 
-                        AssetDatabase.CreateAsset(sSingleton, "Assets/Plugins/SteamAudio/Resources/SteamAudioSettings.asset");
+                        AssetDatabase.CreateAsset(
+                            sSingleton,
+                            "Assets/Plugins/SteamAudio/Resources/SteamAudioSettings.asset"
+                        );
 #endif
                     }
                 }

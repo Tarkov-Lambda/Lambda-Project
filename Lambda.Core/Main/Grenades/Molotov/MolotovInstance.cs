@@ -87,9 +87,14 @@ public class MolotovInstance : MonoBehaviour
     }
 
     // Nodes arrive sorted by TimeOffset, so a single sequential wait covers all of them
-    private async UniTaskVoid SpawnNodesAsync(FireNode[] nodes, float radius, double packetTimestamp)
+    private async UniTaskVoid SpawnNodesAsync(
+        FireNode[] nodes,
+        float radius,
+        double packetTimestamp
+    )
     {
-        if (nodes == null) return;
+        if (nodes == null)
+            return;
 
         foreach (var node in nodes)
         {

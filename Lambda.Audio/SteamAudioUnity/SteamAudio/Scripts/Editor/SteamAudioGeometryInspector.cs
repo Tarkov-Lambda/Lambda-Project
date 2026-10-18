@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace SteamAudio
 {
@@ -32,7 +32,9 @@ namespace SteamAudio
         {
             mMaterial = serializedObject.FindProperty("material");
             mExportAllChildren = serializedObject.FindProperty("exportAllChildren");
-            mTerrainSimplificationLevel = serializedObject.FindProperty("terrainSimplificationLevel");
+            mTerrainSimplificationLevel = serializedObject.FindProperty(
+                "terrainSimplificationLevel"
+            );
         }
 
         public override void OnInspectorGUI()
@@ -63,7 +65,10 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
     }

@@ -31,14 +31,18 @@ namespace Coffee.UIEffects
         [Range(0, 1)]
         float m_BlurFactor = 1;
 
-        [Tooltip("Shadow effect style.")] [SerializeField]
+        [Tooltip("Shadow effect style.")]
+        [SerializeField]
         ShadowStyle m_Style = ShadowStyle.Shadow;
 
-        [SerializeField] private Color m_EffectColor = new Color(0f, 0f, 0f, 0.5f);
+        [SerializeField]
+        private Color m_EffectColor = new Color(0f, 0f, 0f, 0.5f);
 
-        [SerializeField] private Vector2 m_EffectDistance = new Vector2(1f, -1f);
+        [SerializeField]
+        private Vector2 m_EffectDistance = new Vector2(1f, -1f);
 
-        [SerializeField] private bool m_UseGraphicAlpha = true;
+        [SerializeField]
+        private bool m_UseGraphicAlpha = true;
 
         private const float kMaxEffectDistance = 600f;
 
@@ -47,7 +51,8 @@ namespace Coffee.UIEffects
             get { return m_EffectColor; }
             set
             {
-                if (m_EffectColor == value) return;
+                if (m_EffectColor == value)
+                    return;
                 m_EffectColor = value;
                 SetVerticesDirty();
             }
@@ -68,7 +73,8 @@ namespace Coffee.UIEffects
                 if (value.y < -kMaxEffectDistance)
                     value.y = -kMaxEffectDistance;
 
-                if (m_EffectDistance == value) return;
+                if (m_EffectDistance == value)
+                    return;
                 m_EffectDistance = value;
                 SetEffectParamsDirty();
             }
@@ -79,7 +85,8 @@ namespace Coffee.UIEffects
             get { return m_UseGraphicAlpha; }
             set
             {
-                if (m_UseGraphicAlpha == value) return;
+                if (m_UseGraphicAlpha == value)
+                    return;
                 m_UseGraphicAlpha = value;
                 SetEffectParamsDirty();
             }
@@ -94,7 +101,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 2);
-                if (Mathf.Approximately(m_BlurFactor, value)) return;
+                if (Mathf.Approximately(m_BlurFactor, value))
+                    return;
                 m_BlurFactor = value;
                 SetEffectParamsDirty();
             }
@@ -108,7 +116,8 @@ namespace Coffee.UIEffects
             get { return m_Style; }
             set
             {
-                if (m_Style == value) return;
+                if (m_Style == value)
+                    return;
                 m_Style = value;
                 SetEffectParamsDirty();
             }
@@ -129,7 +138,8 @@ namespace Coffee.UIEffects
             base.OnEnable();
 
             _uiEffect = GetComponent<UIEffect>();
-            if (!_uiEffect) return;
+            if (!_uiEffect)
+                return;
 
             paramTex = _uiEffect.paramTex;
             paramTex.Register(this);
@@ -140,20 +150,20 @@ namespace Coffee.UIEffects
             base.OnDisable();
 
             _uiEffect = null;
-            if (paramTex == null) return;
+            if (paramTex == null)
+                return;
 
             paramTex.Unregister(this);
             paramTex = null;
         }
 
-
-// #if UNITY_EDITOR
-//         protected override void OnValidate()
-//         {
-//             effectDistance = m_EffectDistance;
-//             base.OnValidate();
-//         }
-// #endif
+        // #if UNITY_EDITOR
+        //         protected override void OnValidate()
+        //         {
+        //             effectDistance = m_EffectDistance;
+        //             base.OnValidate();
+        //         }
+        // #endif
 
         // #if TMP_PRESENT
         // protected void OnCullStateChanged (bool state)
@@ -194,7 +204,8 @@ namespace Coffee.UIEffects
 
             foreach (var s in tmpShadows)
             {
-                if (!s.isActiveAndEnabled) continue;
+                if (!s.isActiveAndEnabled)
+                    continue;
                 if (s == this)
                 {
                     foreach (var s2 in tmpShadows)
@@ -223,7 +234,15 @@ namespace Coffee.UIEffects
                     paramTex.SetData(this, 2, m_BlurFactor); // param.z : blur factor
                 }
 
-                ApplyShadow(s_Verts, effectColor, ref start, ref end, effectDistance, style, useGraphicAlpha);
+                ApplyShadow(
+                    s_Verts,
+                    effectColor,
+                    ref start,
+                    ref end,
+                    effectDistance,
+                    style,
+                    useGraphicAlpha
+                );
             }
 
             vh.Clear();
@@ -236,8 +255,15 @@ namespace Coffee.UIEffects
         /// Append shadow vertices.
         /// * It is similar to Shadow component implementation.
         /// </summary>
-        private void ApplyShadow(List<UIVertex> verts, Color color, ref int start, ref int end, Vector2 distance,
-            ShadowStyle style, bool alpha)
+        private void ApplyShadow(
+            List<UIVertex> verts,
+            Color color,
+            ref int start,
+            ref int end,
+            Vector2 distance,
+            ShadowStyle style,
+            bool alpha
+        )
         {
             if (style == ShadowStyle.None || color.a <= 0)
                 return;
@@ -277,8 +303,15 @@ namespace Coffee.UIEffects
         /// Append shadow vertices.
         /// * It is similar to Shadow component implementation.
         /// </summary>
-        private void ApplyShadowZeroAlloc(List<UIVertex> verts, Color color, ref int start, ref int end, float x,
-            float y, bool alpha)
+        private void ApplyShadowZeroAlloc(
+            List<UIVertex> verts,
+            Color color,
+            ref int start,
+            ref int end,
+            float x,
+            float y,
+            bool alpha
+        )
         {
             // Check list capacity.
             var count = end - start;
@@ -286,9 +319,10 @@ namespace Coffee.UIEffects
             if (verts.Capacity < neededCapacity)
                 verts.Capacity *= 2;
 
-            var normalizedIndex = paramTex != null && _uiEffect && _uiEffect.isActiveAndEnabled
-                ? paramTex.GetNormalizedIndex(this)
-                : -1;
+            var normalizedIndex =
+                paramTex != null && _uiEffect && _uiEffect.isActiveAndEnabled
+                    ? paramTex.GetNormalizedIndex(this)
+                    : -1;
 
             // Add
             var vt = default(UIVertex);
@@ -316,14 +350,10 @@ namespace Coffee.UIEffects
                 vertColor.a = alpha ? color.a * vt.color.a / 255 : color.a;
                 vt.color = vertColor;
 
-
                 // Set UIEffect parameters
                 if (0 <= normalizedIndex)
                 {
-                    vt.uv0 = new Vector2(
-                        vt.uv0.x,
-                        normalizedIndex
-                    );
+                    vt.uv0 = new Vector2(vt.uv0.x, normalizedIndex);
                 }
 
                 verts[i] = vt;
@@ -343,41 +373,41 @@ namespace Coffee.UIEffects
         //         graphic.SetVerticesDirty();
         // }
 
-// #if UNITY_EDITOR
-//         public void OnBeforeSerialize()
-//         {
-//         }
-//
-//         public void OnAfterDeserialize()
-//         {
-//             EditorApplication.delayCall += UpgradeIfNeeded;
-//         }
-//
-//
-// #pragma warning disable 0612
-//         void UpgradeIfNeeded()
-//         {
-//             if (0 < m_AdditionalShadows.Count)
-//             {
-//                 foreach (var s in m_AdditionalShadows)
-//                 {
-//                     if (s.style == ShadowStyle.None)
-//                     {
-//                         continue;
-//                     }
-//
-//                     var shadow = gameObject.AddComponent<UIShadow>();
-//                     shadow.style = s.style;
-//                     shadow.effectDistance = s.effectDistance;
-//                     shadow.effectColor = s.effectColor;
-//                     shadow.useGraphicAlpha = s.useGraphicAlpha;
-//                     shadow.blurFactor = s.blur;
-//                 }
-//
-//                 m_AdditionalShadows = null;
-//             }
-//         }
-// #pragma warning restore 0612
-// #endif
+        // #if UNITY_EDITOR
+        //         public void OnBeforeSerialize()
+        //         {
+        //         }
+        //
+        //         public void OnAfterDeserialize()
+        //         {
+        //             EditorApplication.delayCall += UpgradeIfNeeded;
+        //         }
+        //
+        //
+        // #pragma warning disable 0612
+        //         void UpgradeIfNeeded()
+        //         {
+        //             if (0 < m_AdditionalShadows.Count)
+        //             {
+        //                 foreach (var s in m_AdditionalShadows)
+        //                 {
+        //                     if (s.style == ShadowStyle.None)
+        //                     {
+        //                         continue;
+        //                     }
+        //
+        //                     var shadow = gameObject.AddComponent<UIShadow>();
+        //                     shadow.style = s.style;
+        //                     shadow.effectDistance = s.effectDistance;
+        //                     shadow.effectColor = s.effectColor;
+        //                     shadow.useGraphicAlpha = s.useGraphicAlpha;
+        //                     shadow.blurFactor = s.blur;
+        //                 }
+        //
+        //                 m_AdditionalShadows = null;
+        //             }
+        //         }
+        // #pragma warning restore 0612
+        // #endif
     }
 }

@@ -21,16 +21,16 @@ public class ClanTagResyncPacketWarden : LambdaPacketWarden<ClanTagResyncPacket>
 
     public void Send(string newClanTag)
     {
-        var packet = new ClanTagResyncPacket
-        {
-            Player = H.MainPlayer,
-            newClanTag = newClanTag
-        };
+        var packet = new ClanTagResyncPacket { Player = H.MainPlayer, newClanTag = newClanTag };
 
         DispatchPacket(ref packet);
     }
 
-    protected override bool ValidatePacket(ClanTagResyncPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        ClanTagResyncPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         string clanTag = packet.newClanTag?.Trim();
 

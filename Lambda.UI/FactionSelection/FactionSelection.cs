@@ -1,5 +1,5 @@
-using Lambda.Shared;
 using System;
+using Lambda.Shared;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,11 +7,20 @@ namespace Lambda.UI
 {
     public class FactionSelection : MonoBehaviour
     {
-        [SerializeField] private Button buttonT;
-        [SerializeField] private Button buttonCT;
-        [SerializeField] private Button buttonSpectator;
-        [SerializeField] private Button buttonCancel;
-        [SerializeField] private FactionColors factionColors;
+        [SerializeField]
+        private Button buttonT;
+
+        [SerializeField]
+        private Button buttonCT;
+
+        [SerializeField]
+        private Button buttonSpectator;
+
+        [SerializeField]
+        private Button buttonCancel;
+
+        [SerializeField]
+        private FactionColors factionColors;
 
         public event Action<Faction> OnFactionSelected;
         public event Action OnCancelClicked;

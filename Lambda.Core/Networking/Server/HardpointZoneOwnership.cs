@@ -1,7 +1,7 @@
-﻿using PacketWarden;
-using MemoryPack;
-using Comfort.Common;
+﻿using Comfort.Common;
 using Lambda.Core.Main;
+using MemoryPack;
+using PacketWarden;
 
 namespace Lambda.Core.Networking;
 
@@ -18,19 +18,18 @@ public class ZoneOwnershipPacketWarden : LambdaPacketWarden<ZoneOwnershipPacket>
 
     public void Send(int netId, ZoneOwnership ownership)
     {
-        var packet = new ZoneOwnershipPacket
-        {
-            netId = netId,
-            ownership = ownership,
-        };
+        var packet = new ZoneOwnershipPacket { netId = netId, ownership = ownership };
 
         DispatchPacket(ref packet);
     }
 
     protected override void Apply(ZoneOwnershipPacket packet, int peerId)
     {
-        if (H.IsServer) return;
+        if (H.IsServer)
+            return;
 
-        Singleton<HardpointZoneManager>.Instance.NetIdtoZone[packet.netId].ChangeOwnership(packet.ownership);
+        Singleton<HardpointZoneManager>
+            .Instance.NetIdtoZone[packet.netId]
+            .ChangeOwnership(packet.ownership);
     }
 }

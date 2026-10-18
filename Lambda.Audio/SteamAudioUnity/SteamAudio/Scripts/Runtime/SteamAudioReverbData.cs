@@ -70,14 +70,17 @@ namespace SteamAudio
         }
 
         /** \return The energy value stored for a particular channel, band, and bin.
-         * 
+         *
          *  \param[in]  channel     The index of the channel.
          *  \param[in]  band        The index of the band.
          *  \param[in]  bin         The index of the bin.
          */
         public float GetEnergyFieldData(int channel, int band, int bin)
         {
-            int index = (channel * reverbEnergyFieldNumBands * reverbEnergyFieldNumBins) + band * reverbEnergyFieldNumBins + bin;
+            int index =
+                (channel * reverbEnergyFieldNumBands * reverbEnergyFieldNumBins)
+                + band * reverbEnergyFieldNumBins
+                + bin;
             return reverbEnergyField[index];
         }
 
@@ -89,7 +92,7 @@ namespace SteamAudio
         }
 
         /** \return The sample value stored for a particular channel and sample index.
-         * 
+         *
          *  \param[in]  channel     The index of the channel.
          *  \param[in]  sample      The index of the sample.
          */

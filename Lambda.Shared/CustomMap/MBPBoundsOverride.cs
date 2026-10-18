@@ -17,7 +17,10 @@ namespace Lambda.Shared.CustomMap
             Bounds bounds = GetGlobalBounds();
             int num = _mbpSubdivisions;
             Physics.RebuildBroadphaseRegions(bounds, _mbpSubdivisions);
-            Debug.LogFormat("MBPBounds overriden: {0} {1}", new object[] { bounds, _mbpSubdivisions });
+            Debug.LogFormat(
+                "MBPBounds overriden: {0} {1}",
+                new object[] { bounds, _mbpSubdivisions }
+            );
         }
 
         private Bounds GetGlobalBounds()
@@ -46,19 +49,43 @@ namespace Lambda.Shared.CustomMap
                 for (int i = 1; i < _mbpSubdivisions; i++)
                 {
                     float xPos = min.x + (stepX * i);
-                    Gizmos.DrawLine(new Vector3(xPos, min.y, min.z), new Vector3(xPos, min.y, max.z));
-                    Gizmos.DrawLine(new Vector3(xPos, max.y, min.z), new Vector3(xPos, max.y, max.z));
-                    Gizmos.DrawLine(new Vector3(xPos, min.y, min.z), new Vector3(xPos, max.y, min.z));
-                    Gizmos.DrawLine(new Vector3(xPos, min.y, max.z), new Vector3(xPos, max.y, max.z));
+                    Gizmos.DrawLine(
+                        new Vector3(xPos, min.y, min.z),
+                        new Vector3(xPos, min.y, max.z)
+                    );
+                    Gizmos.DrawLine(
+                        new Vector3(xPos, max.y, min.z),
+                        new Vector3(xPos, max.y, max.z)
+                    );
+                    Gizmos.DrawLine(
+                        new Vector3(xPos, min.y, min.z),
+                        new Vector3(xPos, max.y, min.z)
+                    );
+                    Gizmos.DrawLine(
+                        new Vector3(xPos, min.y, max.z),
+                        new Vector3(xPos, max.y, max.z)
+                    );
                 }
 
                 for (int i = 1; i < _mbpSubdivisions; i++)
                 {
                     float zPos = min.z + (stepZ * i);
-                    Gizmos.DrawLine(new Vector3(min.x, min.y, zPos), new Vector3(max.x, min.y, zPos));
-                    Gizmos.DrawLine(new Vector3(min.x, max.y, zPos), new Vector3(max.x, max.y, zPos));
-                    Gizmos.DrawLine(new Vector3(min.x, min.y, zPos), new Vector3(min.x, max.y, zPos));
-                    Gizmos.DrawLine(new Vector3(max.x, min.y, zPos), new Vector3(max.x, max.y, zPos));
+                    Gizmos.DrawLine(
+                        new Vector3(min.x, min.y, zPos),
+                        new Vector3(max.x, min.y, zPos)
+                    );
+                    Gizmos.DrawLine(
+                        new Vector3(min.x, max.y, zPos),
+                        new Vector3(max.x, max.y, zPos)
+                    );
+                    Gizmos.DrawLine(
+                        new Vector3(min.x, min.y, zPos),
+                        new Vector3(min.x, max.y, zPos)
+                    );
+                    Gizmos.DrawLine(
+                        new Vector3(max.x, min.y, zPos),
+                        new Vector3(max.x, max.y, zPos)
+                    );
                 }
             }
         }

@@ -16,12 +16,25 @@ public static class InventoryActionExtensions
 {
     // THIS MUST ONLY BE CALLED WHEN THE PLAYER IS STANDING STILL
     // OTHERWISE THE INVENTORY CONTROLLER GETS LOCKED OUT FOREVER
-    public static async UniTask<bool> TryPopContainedItem(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = false)
+    public static async UniTask<bool> TryPopContainedItem(
+        this Player player,
+        EquipmentSlot equipmentSlot,
+        bool waitUntilStationary = false
+    )
     {
-        return await player.TryOperateOnSlot(equipmentSlot, TryPopItem, waitUntilStationary, extraBackpackWait: true);
+        return await player.TryOperateOnSlot(
+            equipmentSlot,
+            TryPopItem,
+            waitUntilStationary,
+            extraBackpackWait: true
+        );
     }
 
-    public static async UniTask<bool> TryThrowContainedItem(this Player player, EquipmentSlot equipmentSlot, bool waitUntilStationary = false)
+    public static async UniTask<bool> TryThrowContainedItem(
+        this Player player,
+        EquipmentSlot equipmentSlot,
+        bool waitUntilStationary = false
+    )
     {
         return await player.TryOperateOnSlot(equipmentSlot, TryThrowItem, waitUntilStationary);
     }
@@ -31,22 +44,30 @@ public static class InventoryActionExtensions
         EquipmentSlot equipmentSlot,
         Func<Player, Item, UniTask<bool>> operation,
         bool waitUntilStationary,
-        bool extraBackpackWait = false)
+        bool extraBackpackWait = false
+    )
     {
         Item item = player.GetSlotItem(equipmentSlot);
-        if (item == null) return true;
+        if (item == null)
+            return true;
 
-        if (!await player.TryReleaseFromHands(item)) return false;
+        if (!await player.TryReleaseFromHands(item))
+            return false;
 
         return await operation(player, item);
     }
 
-    public static async UniTask TryPopItems(this Player player, IEnumerable<Item> items, int delayMs = 25)
+    public static async UniTask TryPopItems(
+        this Player player,
+        IEnumerable<Item> items,
+        int delayMs = 25
+    )
     {
         foreach (var item in items)
         {
             await player.TryPopItem(item);
-            if (delayMs != 0) await UniTask.Delay(delayMs);
+            if (delayMs != 0)
+                await UniTask.Delay(delayMs);
         }
     }
 
@@ -55,7 +76,11 @@ public static class InventoryActionExtensions
         return await player.TryDoItemAction(item, InteractionsHandlerClass.Remove, "remove");
     }
 
-    public static async UniTask TryThrowItems(this Player player, IEnumerable<Item> items, int delayMs = 25)
+    public static async UniTask TryThrowItems(
+        this Player player,
+        IEnumerable<Item> items,
+        int delayMs = 25
+    )
     {
         foreach (var item in items)
         {
@@ -72,17 +97,24 @@ public static class InventoryActionExtensions
     public static async UniTask<bool> TryDoItemAction<T>(
         this Player player,
         Item item,
-        Func<Item, InventoryController, bool, GStruct154<T>> action, string actionName) where T : IRaiseEvents
+        Func<Item, InventoryController, bool, GStruct154<T>> action,
+        string actionName
+    )
+        where T : IRaiseEvents
     {
 #if DEBUG
-        D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
+        D.LogInventory(
+            $"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})"
+        );
 #endif
 
         var opResult = action(item, player.InventoryController, true);
 
         if (opResult.Failed)
         {
-            D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
+            D.LogTransaction(
+                $"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})"
+            );
             D.LogTransaction($"Reason: {opResult.Error}");
             return false;
         }
@@ -91,14 +123,20 @@ public static class InventoryActionExtensions
 
         if (result.Failed)
         {
-            D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
+            D.LogTransaction(
+                $"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})"
+            );
             D.LogTransaction($"Reason: {result.Error}");
         }
 
         return !result.Failed;
     }
 
-    public static bool TryPopItemWithoutRestriction(this Player player, Item item, ItemAddress itemAddress)
+    public static bool TryPopItemWithoutRestriction(
+        this Player player,
+        Item item,
+        ItemAddress itemAddress
+    )
     {
         if (player.HandsController != null && player.HandsController.Item == item)
         {
@@ -121,8 +159,15 @@ public static class InventoryActionExtensions
         return true;
     }
 
-    static readonly MethodInfo RecalculateEquippedArmorComponents = AccessTools.Method(typeof(FikaPlayer), "RecalculateEquippedArmorComponents");
-    public static bool TryRecalculateEquippedArmorComponents(this Player player, CompoundItem plateCarrier = null)
+    static readonly MethodInfo RecalculateEquippedArmorComponents = AccessTools.Method(
+        typeof(FikaPlayer),
+        "RecalculateEquippedArmorComponents"
+    );
+
+    public static bool TryRecalculateEquippedArmorComponents(
+        this Player player,
+        CompoundItem plateCarrier = null
+    )
     {
         try
         {
@@ -130,7 +175,9 @@ public static class InventoryActionExtensions
 
             if (plateCarrier == null)
             {
-                D.LogError($"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into");
+                D.LogError(
+                    $"Can't find the plate carrier in {player.Profile.Nickname}'s inventory to place the armor plate into"
+                );
                 return false;
             }
 
@@ -139,7 +186,9 @@ public static class InventoryActionExtensions
         }
         catch (Exception e)
         {
-            D.LogError($"An error has occured trying to Recalculate Equipped Armor Components for {player.Profile.Nickname}");
+            D.LogError(
+                $"An error has occured trying to Recalculate Equipped Armor Components for {player.Profile.Nickname}"
+            );
             D.Log(e.Message);
             D.Log(e.StackTrace);
             return false;
@@ -149,16 +198,24 @@ public static class InventoryActionExtensions
     public static async UniTask<bool> TryDoItemActionWithoutRestriction<T>(
         this Player player,
         Item item,
-        Func<Item, InventoryController, GStruct154<T>> action, string actionName) where T : IRaiseEvents
+        Func<Item, InventoryController, GStruct154<T>> action,
+        string actionName
+    )
+        where T : IRaiseEvents
     {
-        if (H.ShouldLog) D.LogInventory($"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})");
+        if (H.ShouldLog)
+            D.LogInventory(
+                $"Player {player.Profile.Nickname} is trying to {actionName} {item.LocalizedName()} ({item.Id})"
+            );
 
         var address = item.CurrentAddress;
         var opResult = action(item, player.InventoryController);
 
         if (opResult.Failed && H.ShouldLog)
         {
-            D.LogTransaction($"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})");
+            D.LogTransaction(
+                $"Player {player.Profile.Nickname} failed to execute {actionName} simulation for {item.LocalizedName()} ({item.Id})"
+            );
             D.LogTransaction($"Reason: {opResult.Error}");
             return false;
         }
@@ -167,7 +224,9 @@ public static class InventoryActionExtensions
 
         if (result.Failed && H.ShouldLog)
         {
-            D.LogTransaction($"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})");
+            D.LogTransaction(
+                $"Player {player.Profile.Nickname} got an error for {actionName} network transaction for {item.LocalizedName()} ({item.Id})"
+            );
             D.LogTransaction($"Reason: {result.Error}");
         }
 
@@ -178,12 +237,15 @@ public static class InventoryActionExtensions
         this Player player,
         EquipmentSlot equipmentSlot,
         Func<Player, Item, UniTask<bool>> itemOperation,
-        Func<Player, IEnumerable<Item>, UniTask> multiItemOperation)
+        Func<Player, IEnumerable<Item>, UniTask> multiItemOperation
+    )
     {
         var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
-        if (slot.ContainedItem == null) return true;
+        if (slot.ContainedItem == null)
+            return true;
 
-        if (!await player.TryReleaseFromHands(slot.ContainedItem)) return false;
+        if (!await player.TryReleaseFromHands(slot.ContainedItem))
+            return false;
 
         IEnumerable<Item> mags = null;
 
@@ -207,7 +269,10 @@ public static class InventoryActionExtensions
         return await itemOperation(player, slot.ContainedItem);
     }
 
-    public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
+    public static async UniTask<bool> TryThrowWeaponAndMags(
+        this Player player,
+        EquipmentSlot equipmentSlot
+    )
     {
         return await player.TryOperateWeaponAndMags(
             equipmentSlot,
@@ -216,7 +281,10 @@ public static class InventoryActionExtensions
         );
     }
 
-    public static async UniTask<bool> TryPopWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
+    public static async UniTask<bool> TryPopWeaponAndMags(
+        this Player player,
+        EquipmentSlot equipmentSlot
+    )
     {
         return await player.TryOperateWeaponAndMags(
             equipmentSlot,
@@ -236,13 +304,17 @@ public static class InventoryActionExtensions
     public static bool PlaceItem(this Player player, Item item, ItemPlacement placement)
     {
 #if DEBUG
-        D.LogTransaction($"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})");
+        D.LogTransaction(
+            $"{player.Profile.Nickname} adding {item.LocalizedShortName()} ({item.Id}) to ({placement.Address})"
+        );
 #endif
 
         var addResult = placement.Address.AddWithoutRestrictions(item);
         if (addResult.Failed)
         {
-            D.LogError($"Failed to add item {item.Id} to {placement.Address}. Reason: {addResult.Error}");
+            D.LogError(
+                $"Failed to add item {item.Id} to {placement.Address}. Reason: {addResult.Error}"
+            );
             return false;
         }
 
@@ -250,7 +322,8 @@ public static class InventoryActionExtensions
 
         placement.Address.RaiseForceAdd(item, player);
 
-        if (placement.Kind == PlacementKind.ArmorPlate) player.TryRecalculateEquippedArmorComponents();
+        if (placement.Kind == PlacementKind.ArmorPlate)
+            player.TryRecalculateEquippedArmorComponents();
 
         return true;
     }
@@ -263,16 +336,26 @@ public static class InventoryActionExtensions
 
             if (player is FikaPlayer fikaPlayer && fikaPlayer.OperationCallbacks.Count > 0)
             {
-                D.LogInventory($"Clearing {fikaPlayer.OperationCallbacks.Count} stalled OperationCallbacks on {player.Profile.Nickname}");
+                D.LogInventory(
+                    $"Clearing {fikaPlayer.OperationCallbacks.Count} stalled OperationCallbacks on {player.Profile.Nickname}"
+                );
                 var callbacks = fikaPlayer.OperationCallbacks.Values.ToList();
                 fikaPlayer.OperationCallbacks.Clear();
                 foreach (var cb in callbacks)
                 {
-                    cb?.Invoke(new ServerOperationStatus(EOperationStatus.Failed, "Forcefully unlocked inventory"));
+                    cb?.Invoke(
+                        new ServerOperationStatus(
+                            EOperationStatus.Failed,
+                            "Forcefully unlocked inventory"
+                        )
+                    );
                 }
             }
 
-            if (player.HandsController != null && player.ProcessStatus != Player.EProcessStatus.None)
+            if (
+                player.HandsController != null
+                && player.ProcessStatus != Player.EProcessStatus.None
+            )
             {
                 player.HandsController.FastForwardCurrentState();
             }
@@ -286,19 +369,29 @@ public static class InventoryActionExtensions
                     lockable.Locked = false;
             }
         }
-        catch (Exception ex) { D.LogError($"Error unlocking inventory: {ex}"); }
+        catch (Exception ex)
+        {
+            D.LogError($"Error unlocking inventory: {ex}");
+        }
     }
 
     public static void AutoExamineAndSearch(this Player player, Item rootItem)
     {
-        if (player.InventoryController.SearchController is not PlayerSearchControllerClass searchController) return;
+        if (
+            player.InventoryController.SearchController
+            is not PlayerSearchControllerClass searchController
+        )
+            return;
 
         var allItems = rootItem.GetAllItems();
 
         foreach (var item in allItems)
         {
             // continue if we already searched this item
-            if (searchController.Dictionary_0.TryGetValue(item, out var value) && value.Equals(item.Parent))
+            if (
+                searchController.Dictionary_0.TryGetValue(item, out var value)
+                && value.Equals(item.Parent)
+            )
                 continue;
 
             searchController.SetItemAsKnown(item, true);

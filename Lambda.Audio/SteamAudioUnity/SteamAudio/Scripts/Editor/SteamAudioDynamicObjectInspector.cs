@@ -23,7 +23,7 @@ namespace SteamAudio
     [CustomEditor(typeof(SteamAudioDynamicObject))]
     public class SteamAudioDynamicObjectInspector : Editor
     {
- #if STEAMAUDIO_ENABLED
+#if STEAMAUDIO_ENABLED
         SerializedProperty mAsset;
 
         private void OnEnable()
@@ -40,8 +40,10 @@ namespace SteamAudio
             if (mAsset.objectReferenceValue == null)
             {
                 EditorGUILayout.HelpBox(
-                    "This Dynamic Object has not been exported to an asset yet. Please click Export Dynamic Object " +
-                    "to do so.", MessageType.Warning);
+                    "This Dynamic Object has not been exported to an asset yet. Please click Export Dynamic Object "
+                        + "to do so.",
+                    MessageType.Warning
+                );
             }
 
             EditorGUILayout.Space();
@@ -50,7 +52,10 @@ namespace SteamAudio
             {
                 if (mAsset.objectReferenceValue == null)
                 {
-                    var name = (target as SteamAudioDynamicObject).gameObject.scene.name + "_" + target.name;
+                    var name =
+                        (target as SteamAudioDynamicObject).gameObject.scene.name
+                        + "_"
+                        + target.name;
                     mAsset.objectReferenceValue = SerializedData.PromptForNewAsset(name);
                     serializedObject.ApplyModifiedProperties();
                 }
@@ -68,7 +73,10 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
     }

@@ -37,7 +37,8 @@ internal struct LiteNetLibWrapper : INetSerializable
     public bool IsValid => Payload.Array != null;
 
     // The payload is only valid until the next Create
-    public static LiteNetLibWrapper Create<T>(ref T packet) where T : IPacket
+    public static LiteNetLibWrapper Create<T>(ref T packet)
+        where T : IPacket
     {
         _scratch ??= new NetDataWriter();
         _scratch.Reset();
@@ -47,7 +48,7 @@ internal struct LiteNetLibWrapper : INetSerializable
         return new LiteNetLibWrapper
         {
             Id = PacketId<T>.Value,
-            Payload = new ArraySegment<byte>(_scratch.Data, 0, _scratch.Length)
+            Payload = new ArraySegment<byte>(_scratch.Data, 0, _scratch.Length),
         };
     }
 
@@ -62,7 +63,12 @@ internal struct LiteNetLibWrapper : INetSerializable
     {
         Payload = default;
 
-        if (!reader.TryGetUInt(out Id) || !reader.TryGetInt(out int length) || length < 0 || length > reader.AvailableBytes)
+        if (
+            !reader.TryGetUInt(out Id)
+            || !reader.TryGetInt(out int length)
+            || length < 0
+            || length > reader.AvailableBytes
+        )
         {
             reader.SkipBytes(reader.AvailableBytes);
             return;

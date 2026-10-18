@@ -24,18 +24,24 @@ namespace SteamAudio
         [Header("Absorption")]
         [Range(0.0f, 1.0f)]
         public float lowFreqAbsorption = 0.1f;
+
         [Range(0.0f, 1.0f)]
         public float midFreqAbsorption = 0.1f;
+
         [Range(0.0f, 1.0f)]
         public float highFreqAbsorption = 0.1f;
+
         [Header("Scattering")]
         [Range(0.0f, 1.0f)]
         public float scattering = 0.5f;
+
         [Header("Transmission")]
         [Range(0.0f, 1.0f)]
         public float lowFreqTransmission = 0.1f;
+
         [Range(0.0f, 1.0f)]
         public float midFreqTransmission = 0.1f;
+
         [Range(0.0f, 1.0f)]
         public float highFreqTransmission = 0.1f;
 

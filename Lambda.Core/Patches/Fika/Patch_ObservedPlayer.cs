@@ -1,12 +1,12 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Reflection;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core.Main.Players;
 using HarmonyLib;
 using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lambda.Core.Patches;
@@ -15,13 +15,18 @@ public class ObservedPlayer_POV_Getter_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ObservedPlayer).GetProperty(nameof(ObservedPlayer.PointOfView)).GetGetMethod();
+        return typeof(ObservedPlayer)
+            .GetProperty(nameof(ObservedPlayer.PointOfView))
+            .GetGetMethod();
     }
 
     [PatchPrefix]
     public static bool Prefix(ObservedPlayer __instance, ref EPointOfView __result)
     {
-        if (__instance.PlayerBody != null && __instance.PlayerBody.PointOfView.Value == EPointOfView.FirstPerson)
+        if (
+            __instance.PlayerBody != null
+            && __instance.PlayerBody.PointOfView.Value == EPointOfView.FirstPerson
+        )
         {
             __result = EPointOfView.FirstPerson;
             return false;
@@ -34,7 +39,13 @@ public class ObservedPlayer_VisualPass_Patch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(ObservedPlayer).GetMethod("ObservedVisualPass", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(float), typeof(int) }, null);
+        return typeof(ObservedPlayer).GetMethod(
+            "ObservedVisualPass",
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            null,
+            new Type[] { typeof(float), typeof(int) },
+            null
+        );
     }
 
     [PatchPrefix]
@@ -55,14 +66,22 @@ public class ObservedPlayer_VisualPass_Patch : ModulePatch
 
 internal class Patch_Player_FindItemById : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.FindItemById));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(Player), nameof(Player.FindItemById));
 
     [PatchPrefix]
-    public static bool Prefix(Player __instance, ref GStruct156<Item> __result, MongoID itemId, bool checkDistance = true, bool checkOwnership = true)
+    public static bool Prefix(
+        Player __instance,
+        ref GStruct156<Item> __result,
+        MongoID itemId,
+        bool checkDistance = true,
+        bool checkOwnership = true
+    )
     {
         if (__instance is ObservedPlayer)
         {
-            GStruct156<ValueTuple<Item, GameWorld.GStruct162>> gstruct = __instance.GameWorld.FindItemWithWorldData(itemId);
+            GStruct156<ValueTuple<Item, GameWorld.GStruct162>> gstruct =
+                __instance.GameWorld.FindItemWithWorldData(itemId);
             if (gstruct.Failed)
             {
                 __result = gstruct.Error;
@@ -74,6 +93,7 @@ internal class Patch_Player_FindItemById : ModulePatch
 
             return false;
         }
-        else return true;
+        else
+            return true;
     }
 }

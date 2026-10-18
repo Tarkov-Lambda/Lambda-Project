@@ -15,16 +15,14 @@ public partial struct ReconnectSnapshotterResetPacket : IPacket, IAuthoredPacket
 
 // there is 100% some bug I've created that causes the server to have some kind of a dissonance in the player snapshotter timestamps
 // as a result we just force reset it between rounds because it doesn't seem to cause any harm anyways
-public class ReconnectSnapshotterResetPacketWarden : LambdaPacketWarden<ReconnectSnapshotterResetPacket>
+public class ReconnectSnapshotterResetPacketWarden
+    : LambdaPacketWarden<ReconnectSnapshotterResetPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
     public void Send(Player player)
     {
-        var packet = new ReconnectSnapshotterResetPacket
-        {
-            Player = player
-        };
+        var packet = new ReconnectSnapshotterResetPacket { Player = player };
         DispatchPacket(ref packet);
     }
 
@@ -38,6 +36,5 @@ public class ReconnectSnapshotterResetPacketWarden : LambdaPacketWarden<Reconnec
             }
         }
         catch (Exception) { }
-
     }
 }

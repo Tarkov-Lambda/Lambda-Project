@@ -1,15 +1,15 @@
-﻿using Audio.ReverbSubsystem;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using Audio.ReverbSubsystem;
 using Comfort.Common;
 using EFT;
 using EFT.Ballistics;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using Systems.Effects;
 using UnityEngine;
 
@@ -17,7 +17,11 @@ namespace Lambda.Core.Patches.Tarkov;
 
 internal class Patch_MagazineItemClass_GetAmmoCountByLevel : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MagazineItemClass), nameof(MagazineItemClass.GetAmmoCountByLevel));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(MagazineItemClass),
+            nameof(MagazineItemClass.GetAmmoCountByLevel)
+        );
 
     [PatchPrefix]
     static bool Prefix(ref bool @checked, ref int skill)
@@ -30,7 +34,8 @@ internal class Patch_MagazineItemClass_GetAmmoCountByLevel : ModulePatch
 
 internal class Patch_ReverbSuperSource_Play : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ReverbSuperSource), nameof(ReverbSuperSource.Play));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ReverbSuperSource), nameof(ReverbSuperSource.Play));
 
     [PatchPrefix]
     static bool Prefix() => false;
@@ -38,7 +43,8 @@ internal class Patch_ReverbSuperSource_Play : ModulePatch
 
 internal class Patch_ReverbSuperSource_PlayScheduled : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ReverbSuperSource), nameof(ReverbSuperSource.PlayScheduled));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ReverbSuperSource), nameof(ReverbSuperSource.PlayScheduled));
 
     [PatchPrefix]
     static bool Prefix() => false;
@@ -46,7 +52,8 @@ internal class Patch_ReverbSuperSource_PlayScheduled : ModulePatch
 
 internal class Patch_BallisticsCalculator_CreateShot : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
             typeof(BallisticsCalculator),
             "Shoot_1",
             new Type[]
@@ -57,17 +64,38 @@ internal class Patch_BallisticsCalculator_CreateShot : ModulePatch
                 typeof(string),
                 typeof(Item),
                 typeof(float),
-                typeof(int)
-            });
+                typeof(int),
+            }
+        );
 
     static EftBulletClass savedBullet = null;
 
     [PatchPrefix]
-    static bool Prefix(BallisticsCalculator __instance, ref EftBulletClass __result, ref int ___int_0, AmmoItemClass ammo, UnityEngine.Vector3 shotPosition, UnityEngine.Vector3 shotDirection, System.String playerProfileID, EFT.InventoryLogic.Item item, System.Single speedFactor, System.Int32 fragmentIndex)
+    static bool Prefix(
+        BallisticsCalculator __instance,
+        ref EftBulletClass __result,
+        ref int ___int_0,
+        AmmoItemClass ammo,
+        UnityEngine.Vector3 shotPosition,
+        UnityEngine.Vector3 shotDirection,
+        System.String playerProfileID,
+        EFT.InventoryLogic.Item item,
+        System.Single speedFactor,
+        System.Int32 fragmentIndex
+    )
     {
         int num = ___int_0;
         ___int_0 = num + 1;
-        savedBullet ??= __instance.CreateShot(ammo, shotPosition, shotDirection, num, playerProfileID, item, speedFactor, fragmentIndex);
+        savedBullet ??= __instance.CreateShot(
+            ammo,
+            shotPosition,
+            shotDirection,
+            num,
+            playerProfileID,
+            item,
+            speedFactor,
+            fragmentIndex
+        );
         EftBulletClass eftBulletClass = savedBullet;
         // __instance.Shoot(eftBulletClass);
         __result = eftBulletClass;
@@ -77,9 +105,11 @@ internal class Patch_BallisticsCalculator_CreateShot : ModulePatch
 
 internal class Patch_Player_FirearmController_InitiateShot : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.InitiateShot));
-
-
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(Player.FirearmController),
+            nameof(Player.FirearmController.InitiateShot)
+        );
 
     [PatchPrefix]
     static bool Prefix(
@@ -95,17 +125,25 @@ internal class Patch_Player_FirearmController_InitiateShot : ModulePatch
         AmmoItemClass ammo,
         Vector3 shotPosition,
         Vector3 shotDirection
-        // Vector3 fireportPosition,
-        // int chamberIndex,
-        // float overheat
-        )
+    // Vector3 fireportPosition,
+    // int chamberIndex,
+    // float overheat
+    )
     {
         // ____player.OnMakingShot(weapon, ____player.PlayerBones.WeaponRoot.position - shotPosition);
         if (ammo.InitialSpeed > 0f)
         {
             if (ammo.ProjectileCount == 1)
             {
-                EftBulletClass eftBulletClass = ___BallisticsCalculator.Shoot(ammo, shotPosition, shotDirection, ____player.ProfileId, weapon.Item, weapon.SpeedFactor, 0);
+                EftBulletClass eftBulletClass = ___BallisticsCalculator.Shoot(
+                    ammo,
+                    shotPosition,
+                    shotDirection,
+                    ____player.ProfileId,
+                    weapon.Item,
+                    weapon.SpeedFactor,
+                    0
+                );
                 __instance.RegisterShot(weapon.Item, eftBulletClass);
             }
             // else
@@ -132,7 +170,8 @@ internal class Patch_Player_FirearmController_InitiateShot : ModulePatch
 
 internal class Patch_EftBulletClass_smethod_0 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.smethod_0));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.smethod_0));
 
     [PatchPrefix]
     static bool Prefix(ref EftBulletClass __result)
@@ -149,7 +188,8 @@ internal class Patch_EftBulletClass_smethod_0 : ModulePatch
 
 public class Transpiler_EftBulletClass_method_1 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.method_1));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.method_1));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -160,7 +200,8 @@ public class Transpiler_EftBulletClass_method_1 : ModulePatch
 
 internal class Patch_EftBulletClass_smethod_1 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.smethod_1));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.smethod_1));
 
     [PatchPrefix]
     static bool Prefix(EftBulletClass shot)
@@ -178,7 +219,8 @@ internal class Patch_EftBulletClass_smethod_1 : ModulePatch
 
 public class Transpiler_EftBulletClass_method_2 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.method_2));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.method_2));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -190,7 +232,11 @@ public class Transpiler_EftBulletClass_method_2 : ModulePatch
 
 internal class Patch_EftBulletClass_CalculateG1DragCoefficient : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftBulletClass), nameof(EftBulletClass.CalculateG1DragCoefficient));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(EftBulletClass),
+            nameof(EftBulletClass.CalculateG1DragCoefficient)
+        );
 
     [PatchPrefix]
     static bool Prefix(float velocity, ref float __result)
@@ -218,7 +264,8 @@ internal class Patch_EftBulletClass_CalculateG1DragCoefficient : ModulePatch
 
 internal class Patch_Shell_Update : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Shell), nameof(Shell.Update));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(Shell), nameof(Shell.Update));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -229,7 +276,8 @@ internal class Patch_Shell_Update : ModulePatch
 
 internal class Patch_BallisticsCalculator_method_2 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BallisticsCalculator), nameof(BallisticsCalculator.method_2));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BallisticsCalculator), nameof(BallisticsCalculator.method_2));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -240,7 +288,8 @@ internal class Patch_BallisticsCalculator_method_2 : ModulePatch
 
 internal class Patch_MuzzleManager_Play_Optimize : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MuzzleManager), nameof(MuzzleManager.Play));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(MuzzleManager), nameof(MuzzleManager.Play));
 
     [PatchPrefix]
     public static bool Prefix(EMuzzleParticlePivot pivot, Transform pTransform)
@@ -268,7 +317,8 @@ internal class Patch_MuzzleManager_Play_Optimize : ModulePatch
 
 internal class Patch_WeaponManager_PlayShotEffects_Optimize : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(WeaponManagerClass), nameof(WeaponManagerClass.PlayShotEffects));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(WeaponManagerClass), nameof(WeaponManagerClass.PlayShotEffects));
 
     [PatchPrefix]
     static bool Prefix(WeaponManagerClass __instance, bool isVisible, float sqrCameraDistance)
@@ -289,7 +339,12 @@ internal class Patch_WeaponManager_PlayShotEffects_Optimize : ModulePatch
 
 internal class Patch_BallisticsCalculator_Shoot : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BallisticsCalculator), nameof(BallisticsCalculator.Shoot), new[] { typeof(EftBulletClass) });
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(BallisticsCalculator),
+            nameof(BallisticsCalculator.Shoot),
+            new[] { typeof(EftBulletClass) }
+        );
 
     [PatchPrefix]
     static bool Prefix()
@@ -301,7 +356,8 @@ internal class Patch_BallisticsCalculator_Shoot : ModulePatch
 
 internal class Patch_BetterSource_Play : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SimpleSource), nameof(SimpleSource.Play));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(SimpleSource), nameof(SimpleSource.Play));
 
     [PatchPrefix]
     static bool Prefix() => false;
@@ -309,7 +365,8 @@ internal class Patch_BetterSource_Play : ModulePatch
 
 internal class Patch_BetterSource_PlayScheduled : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SimpleSource), nameof(SimpleSource.PlayScheduled));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(SimpleSource), nameof(SimpleSource.PlayScheduled));
 
     [PatchPrefix]
     static bool Prefix() => false;

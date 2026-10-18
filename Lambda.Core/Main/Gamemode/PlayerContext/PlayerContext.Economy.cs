@@ -19,7 +19,8 @@ public partial class PlayerContext
 
         context.Economy.Money = Math.Clamp(Money, 0, EconomyConstants.MAX_MONEY);
 
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         if (player == H.MainPlayer)
             EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
     }
@@ -29,9 +30,11 @@ public partial class PlayerContext
         if (H.Gamemode is IGMBuyable)
         {
             context.Economy.Money -= amount;
-            if (Money < 0) context.Economy.Money = 0;
+            if (Money < 0)
+                context.Economy.Money = 0;
 
-            if (H.IsHeadless) return;
+            if (H.IsHeadless)
+                return;
             EventBus.OnSelfMoneyChanged?.Invoke(H.MainPlayerScore.Money);
         }
     }
@@ -43,7 +46,8 @@ public partial class PlayerContext
 
     public bool HasReachedLimit(ShopItem shopItem)
     {
-        if (shopItem.maxBuy <= 0) return false;
+        if (shopItem.maxBuy <= 0)
+            return false;
 
         if (ItemQuantityBoughtInRound.TryGetValue(shopItem, out int count))
         {
@@ -58,17 +62,18 @@ public partial class PlayerContext
         ItemQuantityBoughtInRound[shopItem] = count + 1;
     }
 
-
     public bool CanBuy()
     {
         if (H.Gamemode is IGMBuyable buyable)
         {
-            if (H.Session.matchState is MatchState.RoundPrepare) return true;
+            if (H.Session.matchState is MatchState.RoundPrepare)
+                return true;
             if (buyable.CanBuyInActivePhase)
             {
                 if (H.Session.matchState is MatchState.RoundAction)
                 {
-                    return H.Arena.StateTimer >= H.Arena.PhaseDurationSeconds - buyable.TimeInActivePhaseToBuy;
+                    return H.Arena.StateTimer
+                        >= H.Arena.PhaseDurationSeconds - buyable.TimeInActivePhaseToBuy;
                 }
             }
         }

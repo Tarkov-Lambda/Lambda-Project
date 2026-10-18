@@ -35,7 +35,7 @@ namespace SteamAudio
     public enum Bool
     {
         False,
-        True
+        True,
     }
 
     public enum Error
@@ -43,7 +43,7 @@ namespace SteamAudio
         Success,
         Failure,
         OutOfMemory,
-        Initialization
+        Initialization,
     }
 
     public enum LogLevel
@@ -51,7 +51,7 @@ namespace SteamAudio
         Info,
         Warning,
         Error,
-        Debug
+        Debug,
     }
 
     public enum SIMDLevel
@@ -61,21 +61,21 @@ namespace SteamAudio
         AVX,
         AVX2,
         AVX512,
-        NEON = SSE2
+        NEON = SSE2,
     }
 
     [Flags]
     public enum ContextFlags
     {
         Validation = 1 << 0,
-        Force32Bit = 0x7fffffff
+        Force32Bit = 0x7fffffff,
     }
 
     public enum OpenCLDeviceType
     {
         Any,
         CPU,
-        GPU
+        GPU,
     }
 
     public enum SceneType
@@ -83,28 +83,29 @@ namespace SteamAudio
         Default,
         Embree,
         RadeonRays,
+
 #if UNITY_2019_2_OR_NEWER
         [InspectorName("Unity")]
 #endif
-        Custom
+        Custom,
     }
 
     public enum HRTFType
     {
         Default,
-        SOFA
+        SOFA,
     }
 
     public enum HRTFNormType
     {
         None,
-        RMS
+        RMS,
     }
 
     public enum ProbeGenerationType
     {
         Centroid,
-        UniformFloor
+        UniformFloor,
     }
 
     public enum BakedDataVariation
@@ -112,13 +113,13 @@ namespace SteamAudio
         Reverb,
         StaticSource,
         StaticListener,
-        Dynamic
+        Dynamic,
     }
 
     public enum BakedDataType
     {
         Reflections,
-        Pathing
+        Pathing,
     }
 
     [Flags]
@@ -126,7 +127,7 @@ namespace SteamAudio
     {
         Direct = 1 << 0,
         Reflections = 1 << 1,
-        Pathing = 1 << 2
+        Pathing = 1 << 2,
     }
 
     [Flags]
@@ -136,39 +137,39 @@ namespace SteamAudio
         AirAbsorption = 1 << 1,
         Directivity = 1 << 2,
         Occlusion = 1 << 3,
-        Transmission = 1 << 4
+        Transmission = 1 << 4,
     }
 
     public enum HRTFInterpolation
     {
         Nearest,
-        Bilinear
+        Bilinear,
     }
 
     public enum DistanceAttenuationModelType
     {
         Default,
         InverseDistance,
-        Callback
+        Callback,
     }
 
     public enum AirAbsorptionModelType
     {
         Default,
         Exponential,
-        Callback
+        Callback,
     }
 
     public enum DeviationModelType
     {
         Default,
-        Callback
+        Callback,
     }
 
     public enum OcclusionType
     {
         Raycast,
-        Volumetric
+        Volumetric,
     }
 
     [Flags]
@@ -178,13 +179,13 @@ namespace SteamAudio
         ApplyAirAbsorption = 1 << 1,
         ApplyDirectivity = 1 << 2,
         ApplyOcclusion = 1 << 3,
-        ApplyTransmission = 1 << 4
+        ApplyTransmission = 1 << 4,
     }
 
     public enum TransmissionType
     {
         FrequencyIndependent,
-        FrequencyDependent
+        FrequencyDependent,
     }
 
     public enum ReflectionEffectType
@@ -192,17 +193,18 @@ namespace SteamAudio
         Convolution,
         Parametric,
         Hybrid,
+
 #if UNITY_2019_2_OR_NEWER
         [InspectorName("TrueAudio Next")]
 #endif
-        TrueAudioNext
+        TrueAudioNext,
     }
 
     [Flags]
     public enum ReflectionsBakeFlags
     {
         BakeConvolution = 1 << 0,
-        BakeParametric = 1 << 1
+        BakeParametric = 1 << 1,
     }
 
     // CALLBACKS
@@ -220,16 +222,42 @@ namespace SteamAudio
     public delegate void FreeCallback(IntPtr memoryBlock);
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void ClosestHitCallback(ref Ray ray, float minDistance, float maxDistance, out Hit hit, IntPtr userData);
+    public delegate void ClosestHitCallback(
+        ref Ray ray,
+        float minDistance,
+        float maxDistance,
+        out Hit hit,
+        IntPtr userData
+    );
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void AnyHitCallback(ref Ray ray, float minDistance, float maxDistance, out byte occluded, IntPtr userData);
+    public delegate void AnyHitCallback(
+        ref Ray ray,
+        float minDistance,
+        float maxDistance,
+        out byte occluded,
+        IntPtr userData
+    );
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void BatchedClosestHitCallback(int numRays, Ray[] rays, float[] minDistances, float[] maxDistances, [Out] Hit[] hits, IntPtr userData);
+    public delegate void BatchedClosestHitCallback(
+        int numRays,
+        Ray[] rays,
+        float[] minDistances,
+        float[] maxDistances,
+        [Out] Hit[] hits,
+        IntPtr userData
+    );
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void BatchedAnyHitCallback(int numRays, Ray[] rays, float[] minDistances, float[] maxDistances, [Out] byte[] occluded, IntPtr userData);
+    public delegate void BatchedAnyHitCallback(
+        int numRays,
+        Ray[] rays,
+        float[] minDistances,
+        float[] maxDistances,
+        [Out] byte[] occluded,
+        IntPtr userData
+    );
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
     public delegate float DistanceAttenuationCallback(float distance, IntPtr userData);
@@ -244,7 +272,12 @@ namespace SteamAudio
     public delegate float DirectivityCallback(Vector3 direction, IntPtr userData);
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void PathingVisualizationCallback(Vector3 from, Vector3 to, Bool occluded, IntPtr userData);
+    public delegate void PathingVisualizationCallback(
+        Vector3 from,
+        Vector3 to,
+        Bool occluded,
+        IntPtr userData
+    );
 
     // STRUCTURES
 
@@ -731,7 +764,10 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplContextCreate(ref ContextSettings settings, out IntPtr context);
+        public static extern Error iplContextCreate(
+            ref ContextSettings settings,
+            out IntPtr context
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -754,7 +790,13 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Vector3 iplCalculateRelativeDirection(IntPtr context, Vector3 sourcePosition, Vector3 listenerPosition, Vector3 listenerAhead, Vector3 listenerUp);
+        public static extern Vector3 iplCalculateRelativeDirection(
+            IntPtr context,
+            Vector3 sourcePosition,
+            Vector3 listenerPosition,
+            Vector3 listenerAhead,
+            Vector3 listenerUp
+        );
 
         // Serialization
 
@@ -763,7 +805,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplSerializedObjectCreate(IntPtr context, ref SerializedObjectSettings settings, out IntPtr serializedObject);
+        public static extern Error iplSerializedObjectCreate(
+            IntPtr context,
+            ref SerializedObjectSettings settings,
+            out IntPtr serializedObject
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -800,7 +846,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplEmbreeDeviceCreate(IntPtr context, ref EmbreeDeviceSettings settings, out IntPtr device);
+        public static extern Error iplEmbreeDeviceCreate(
+            IntPtr context,
+            ref EmbreeDeviceSettings settings,
+            out IntPtr device
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -823,7 +873,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplOpenCLDeviceListCreate(IntPtr context, ref OpenCLDeviceSettings settings, out IntPtr deviceList);
+        public static extern Error iplOpenCLDeviceListCreate(
+            IntPtr context,
+            ref OpenCLDeviceSettings settings,
+            out IntPtr deviceList
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -851,14 +905,23 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplOpenCLDeviceListGetDeviceDesc(IntPtr deviceList, int index, out OpenCLDeviceDesc deviceDesc);
+        public static extern void iplOpenCLDeviceListGetDeviceDesc(
+            IntPtr deviceList,
+            int index,
+            out OpenCLDeviceDesc deviceDesc
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplOpenCLDeviceCreate(IntPtr context, IntPtr deviceList, int index, out IntPtr device);
+        public static extern Error iplOpenCLDeviceCreate(
+            IntPtr context,
+            IntPtr deviceList,
+            int index,
+            out IntPtr device
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -881,7 +944,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplRadeonRaysDeviceCreate(IntPtr openCLDevice, ref RadeonRaysDeviceSettings settings, out IntPtr rrDevice);
+        public static extern Error iplRadeonRaysDeviceCreate(
+            IntPtr openCLDevice,
+            ref RadeonRaysDeviceSettings settings,
+            out IntPtr rrDevice
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -904,7 +971,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplTrueAudioNextDeviceCreate(IntPtr openCLDevice, ref TrueAudioNextDeviceSettings settings, out IntPtr tanDevice);
+        public static extern Error iplTrueAudioNextDeviceCreate(
+            IntPtr openCLDevice,
+            ref TrueAudioNextDeviceSettings settings,
+            out IntPtr tanDevice
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -927,7 +998,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplSceneCreate(IntPtr context, ref SceneSettings settings, out IntPtr scene);
+        public static extern Error iplSceneCreate(
+            IntPtr context,
+            ref SceneSettings settings,
+            out IntPtr scene
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -948,7 +1023,14 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplSceneLoad(IntPtr context, ref SceneSettings settings, IntPtr serializedObject, ProgressCallback progressCallback, IntPtr progressCallbackUserData, out IntPtr scene);
+        public static extern Error iplSceneLoad(
+            IntPtr context,
+            ref SceneSettings settings,
+            IntPtr serializedObject,
+            ProgressCallback progressCallback,
+            IntPtr progressCallbackUserData,
+            out IntPtr scene
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -976,7 +1058,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplStaticMeshCreate(IntPtr scene, ref StaticMeshSettings settings, out IntPtr staticMesh);
+        public static extern Error iplStaticMeshCreate(
+            IntPtr scene,
+            ref StaticMeshSettings settings,
+            out IntPtr staticMesh
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -997,7 +1083,13 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplStaticMeshLoad(IntPtr scene, IntPtr serializedObject, ProgressCallback progressCallback, IntPtr progressCallbackUserData, out IntPtr staticMesh);
+        public static extern Error iplStaticMeshLoad(
+            IntPtr scene,
+            IntPtr serializedObject,
+            ProgressCallback progressCallback,
+            IntPtr progressCallbackUserData,
+            out IntPtr staticMesh
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1025,7 +1117,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplInstancedMeshCreate(IntPtr scene, ref InstancedMeshSettings settings, out IntPtr instancedMesh);
+        public static extern Error iplInstancedMeshCreate(
+            IntPtr scene,
+            ref InstancedMeshSettings settings,
+            out IntPtr instancedMesh
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1060,7 +1156,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplInstancedMeshUpdateTransform(IntPtr instancedMesh, IntPtr scene, Matrix4x4 transform);
+        public static extern void iplInstancedMeshUpdateTransform(
+            IntPtr instancedMesh,
+            IntPtr scene,
+            Matrix4x4 transform
+        );
 
         // HRTF
 
@@ -1069,7 +1169,12 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplHRTFCreate(IntPtr context, ref AudioSettings audioSettings, ref HRTFSettings hrtfSettings, out IntPtr hrtf);
+        public static extern Error iplHRTFCreate(
+            IntPtr context,
+            ref AudioSettings audioSettings,
+            ref HRTFSettings hrtfSettings,
+            out IntPtr hrtf
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1113,7 +1218,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplProbeArrayGenerateProbes(IntPtr probeArray, IntPtr scene, ref ProbeGenerationParams generationParams);
+        public static extern void iplProbeArrayGenerateProbes(
+            IntPtr probeArray,
+            IntPtr scene,
+            ref ProbeGenerationParams generationParams
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1155,7 +1264,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplProbeBatchLoad(IntPtr context, IntPtr serializedObject, out IntPtr probeBatch);
+        public static extern Error iplProbeBatchLoad(
+            IntPtr context,
+            IntPtr serializedObject,
+            out IntPtr probeBatch
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1204,28 +1317,44 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplProbeBatchRemoveData(IntPtr probeBatch, ref BakedDataIdentifier identifier);
+        public static extern void iplProbeBatchRemoveData(
+            IntPtr probeBatch,
+            ref BakedDataIdentifier identifier
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern UIntPtr iplProbeBatchGetDataSize(IntPtr probeBatch, ref BakedDataIdentifier identifier);
+        public static extern UIntPtr iplProbeBatchGetDataSize(
+            IntPtr probeBatch,
+            ref BakedDataIdentifier identifier
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplProbeBatchGetEnergyField(IntPtr probeBatch, ref BakedDataIdentifier identifier, int probeIndex, IntPtr energyField);
+        public static extern void iplProbeBatchGetEnergyField(
+            IntPtr probeBatch,
+            ref BakedDataIdentifier identifier,
+            int probeIndex,
+            IntPtr energyField
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplProbeBatchGetReverb(IntPtr probeBatch, ref BakedDataIdentifier identifier, int probeIndex, float[] reverbTimes);
+        public static extern void iplProbeBatchGetReverb(
+            IntPtr probeBatch,
+            ref BakedDataIdentifier identifier,
+            int probeIndex,
+            float[] reverbTimes
+        );
 
         // Baking
 
@@ -1234,7 +1363,12 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplReflectionsBakerBake(IntPtr context, ref ReflectionsBakeParams bakeParams, ProgressCallback progressCallback, IntPtr userData);
+        public static extern void iplReflectionsBakerBake(
+            IntPtr context,
+            ref ReflectionsBakeParams bakeParams,
+            ProgressCallback progressCallback,
+            IntPtr userData
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1248,7 +1382,12 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplPathBakerBake(IntPtr context, ref PathBakeParams bakeParams, ProgressCallback progressCallback, IntPtr userData);
+        public static extern void iplPathBakerBake(
+            IntPtr context,
+            ref PathBakeParams bakeParams,
+            ProgressCallback progressCallback,
+            IntPtr userData
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1264,7 +1403,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplSimulatorCreate(IntPtr context, ref SimulationSettings settings, out IntPtr simulator);
+        public static extern Error iplSimulatorCreate(
+            IntPtr context,
+            ref SimulationSettings settings,
+            out IntPtr simulator
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1306,7 +1449,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplSimulatorSetSharedInputs(IntPtr simulator, SimulationFlags flags, ref SimulationSharedInputs sharedInputs);
+        public static extern void iplSimulatorSetSharedInputs(
+            IntPtr simulator,
+            SimulationFlags flags,
+            ref SimulationSharedInputs sharedInputs
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1341,7 +1488,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplSourceCreate(IntPtr simulator, ref SourceSettings settings, out IntPtr source);
+        public static extern Error iplSourceCreate(
+            IntPtr simulator,
+            ref SourceSettings settings,
+            out IntPtr source
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1376,35 +1527,59 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplSourceSetInputs(IntPtr source, SimulationFlags flags,  ref SimulationInputs inputs);
+        public static extern void iplSourceSetInputs(
+            IntPtr source,
+            SimulationFlags flags,
+            ref SimulationInputs inputs
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplSourceGetOutputs(IntPtr source, SimulationFlags flags,  ref SimulationOutputs outputs);
+        public static extern void iplSourceGetOutputs(
+            IntPtr source,
+            SimulationFlags flags,
+            ref SimulationOutputs outputs
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern float iplDistanceAttenuationCalculate(IntPtr context, Vector3 source, Vector3 listener, ref DistanceAttenuationModel model);
+        public static extern float iplDistanceAttenuationCalculate(
+            IntPtr context,
+            Vector3 source,
+            Vector3 listener,
+            ref DistanceAttenuationModel model
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplAirAbsorptionCalculate(IntPtr context, Vector3 source, Vector3 listener, ref AirAbsorptionModel mode, float[] minDistances);
+        public static extern void iplAirAbsorptionCalculate(
+            IntPtr context,
+            Vector3 source,
+            Vector3 listener,
+            ref AirAbsorptionModel mode,
+            float[] minDistances
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern float iplDirectivityCalculate(IntPtr context, CoordinateSpace3 source, Vector3 listener, ref Directivity model);
+        public static extern float iplDirectivityCalculate(
+            IntPtr context,
+            CoordinateSpace3 source,
+            Vector3 listener,
+            ref Directivity model
+        );
 
         // Energy Field API
 
@@ -1413,7 +1588,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplEnergyFieldCreate(IntPtr context, ref EnergyFieldSettings settings, out IntPtr energyField);
+        public static extern Error iplEnergyFieldCreate(
+            IntPtr context,
+            ref EnergyFieldSettings settings,
+            out IntPtr energyField
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1462,7 +1641,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern IntPtr iplEnergyFieldGetBand(IntPtr energyField, int channelIndex, int bandIndex);
+        public static extern IntPtr iplEnergyFieldGetBand(
+            IntPtr energyField,
+            int channelIndex,
+            int bandIndex
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1490,21 +1673,33 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplEnergyFieldAdd(IntPtr energyField1, IntPtr energyField2, IntPtr outEnergyField);
+        public static extern void iplEnergyFieldAdd(
+            IntPtr energyField1,
+            IntPtr energyField2,
+            IntPtr outEnergyField
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplEnergyFieldScale(IntPtr inEnergyField, float scalar, IntPtr outEnergyField);
+        public static extern void iplEnergyFieldScale(
+            IntPtr inEnergyField,
+            float scalar,
+            IntPtr outEnergyField
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplEnergyFieldScaleAccum(IntPtr inEnergyField, float scalar, IntPtr outEnergyField);
+        public static extern void iplEnergyFieldScaleAccum(
+            IntPtr inEnergyField,
+            float scalar,
+            IntPtr outEnergyField
+        );
 
         // Impulse Response API
 
@@ -1513,7 +1708,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern Error iplImpulseResponseCreate(IntPtr context, ref ImpulseResponseSettings settings, out IntPtr impulseResponse);
+        public static extern Error iplImpulseResponseCreate(
+            IntPtr context,
+            ref ImpulseResponseSettings settings,
+            out IntPtr impulseResponse
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1555,7 +1754,11 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern IntPtr iplImpulseResponseGetChannel(IntPtr impulseResponse, int channelIndex);
+        public static extern IntPtr iplImpulseResponseGetChannel(
+            IntPtr impulseResponse,
+            int channelIndex
+        );
+
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
@@ -1568,35 +1771,53 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplImpulseResponseCopy(IntPtr srcImpulseReponse, IntPtr dstImpulseResponse);
+        public static extern void iplImpulseResponseCopy(
+            IntPtr srcImpulseReponse,
+            IntPtr dstImpulseResponse
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplImpulseResponseSwap(IntPtr impulseResponse1, IntPtr impulseResponse2);
+        public static extern void iplImpulseResponseSwap(
+            IntPtr impulseResponse1,
+            IntPtr impulseResponse2
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplImpulseResponseAdd(IntPtr inImpulseResponse1, IntPtr inImpulseResponse2, IntPtr outImpulseResponse);
+        public static extern void iplImpulseResponseAdd(
+            IntPtr inImpulseResponse1,
+            IntPtr inImpulseResponse2,
+            IntPtr outImpulseResponse
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplImpulseResponseScale(IntPtr inImpulseResponse, float scalar, IntPtr outImpulseResponse);
+        public static extern void iplImpulseResponseScale(
+            IntPtr inImpulseResponse,
+            float scalar,
+            IntPtr outImpulseResponse
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplImpulseResponseScaleAccum(IntPtr inImpulseRespnse, float scalar, IntPtr outImpulseResponse);
+        public static extern void iplImpulseResponseScaleAccum(
+            IntPtr inImpulseRespnse,
+            float scalar,
+            IntPtr outImpulseResponse
+        );
 
         // Reconstructor API
 
@@ -1604,9 +1825,12 @@ namespace SteamAudio
         [DllImport("__Internal")]
 #else
         [DllImport("phonon")]
-
 #endif
-        public static extern Error iplReconstructorCreate(IntPtr context, ref ReconstructorSettings settings, out IntPtr reconstructor);
+        public static extern Error iplReconstructorCreate(
+            IntPtr context,
+            ref ReconstructorSettings settings,
+            out IntPtr reconstructor
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -1627,7 +1851,13 @@ namespace SteamAudio
 #else
         [DllImport("phonon")]
 #endif
-        public static extern void iplReconstructorReconstruct(IntPtr reconstructor, int numInputs, ref ReconstructorInputs inputs, ref ReconstructorSharedInputs sharedInputs, ref ReconstructorOutputs outputs);
+        public static extern void iplReconstructorReconstruct(
+            IntPtr reconstructor,
+            int numInputs,
+            ref ReconstructorInputs inputs,
+            ref ReconstructorSharedInputs sharedInputs,
+            ref ReconstructorOutputs outputs
+        );
 
         // UNITY PLUGIN
 
@@ -1643,21 +1873,25 @@ namespace SteamAudio
 #else
         [DllImport("audioplugin_phonon")]
 #endif
-        public static extern void iplUnitySetPerspectiveCorrection(PerspectiveCorrection correction);
+        public static extern void iplUnitySetPerspectiveCorrection(
+            PerspectiveCorrection correction
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("audioplugin_phonon")]
 #endif
-        public static extern void  iplUnitySetHRTF(IntPtr hrtf);
+        public static extern void iplUnitySetHRTF(IntPtr hrtf);
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]
 #else
         [DllImport("audioplugin_phonon")]
 #endif
-        public static extern void iplUnitySetSimulationSettings(SimulationSettings simulationSettings);
+        public static extern void iplUnitySetSimulationSettings(
+            SimulationSettings simulationSettings
+        );
 
 #if (UNITY_IOS || UNITY_WEBGL) && !UNITY_EDITOR
         [DllImport("__Internal")]

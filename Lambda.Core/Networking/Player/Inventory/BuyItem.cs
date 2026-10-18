@@ -1,19 +1,23 @@
+using System;
+using System.Collections.Generic;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main;
 using Lambda.Core.Main.Economy;
-using Lambda.Shared.Models;
-using System;
-using PacketWarden.RateLimiting;
-using MemoryPack;
 using Lambda.Core.Main.Gamemode;
-using System.Collections.Generic;
+using Lambda.Shared.Models;
+using MemoryPack;
+using PacketWarden.RateLimiting;
 using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
 [MemoryPackable]
-public partial struct BuyItemPacket : IPacket, IAuthoredPacket, ITrackablePacket, IServerTimestampedPacket
+public partial struct BuyItemPacket
+    : IPacket,
+        IAuthoredPacket,
+        ITrackablePacket,
+        IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
@@ -77,7 +81,11 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         DispatchPacket(ref packet);
     }
 
-    protected override bool ValidatePacket(BuyItemPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        BuyItemPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {
@@ -130,7 +138,8 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
     {
         try
         {
-            if (packet.ID == Guid.Empty) packet.ID = Guid.NewGuid();
+            if (packet.ID == Guid.Empty)
+                packet.ID = Guid.NewGuid();
 
             packet.item = packet.item.CloneItem();
             packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
@@ -178,11 +187,11 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
                 {
                     // we deduct money before sending it as a client
-                    if (!packet.Player.IsYourPlayer) packet.Player.Context.SpendMoney(itemData.price);
+                    if (!packet.Player.IsYourPlayer)
+                        packet.Player.Context.SpendMoney(itemData.price);
 
                     packet.Player.Context.AddItemQuantity(itemData);
                 }
-
 
                 if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
                 {
@@ -212,7 +221,6 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             //         }
             //     );
             // }
-
         }
         catch (Exception ex)
         {

@@ -1,23 +1,27 @@
-using HarmonyLib;
-using EFT;
-using static EFT.Player;
+using System.Reflection;
 using Comfort.Common;
+using EFT;
+using HarmonyLib;
 using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
-using System.Reflection;
+using static EFT.Player;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-    internal class Patch_EmptyHandsController_ExamineWeapon : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EmptyHandsController), nameof(EmptyHandsController.ExamineWeapon));
+internal class Patch_EmptyHandsController_ExamineWeapon : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(EmptyHandsController),
+            nameof(EmptyHandsController.ExamineWeapon)
+        );
 
-        [PatchPostfix]
-        public static void Postfix(EmptyHandsController __instance, Player ____player)
+    [PatchPostfix]
+    public static void Postfix(EmptyHandsController __instance, Player ____player)
+    {
+        if (____player.IsYourPlayer)
         {
-            if (____player.IsYourPlayer)
-            {
-                Singleton<HandsInspectPacketWarden>.Instance.Send();
-            }
+            Singleton<HandsInspectPacketWarden>.Instance.Send();
         }
     }
+}

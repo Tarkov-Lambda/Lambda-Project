@@ -1,6 +1,6 @@
-﻿using Lambda.UI;
+﻿using System;
 using Lambda.Core.Main.Gamemode;
-using System;
+using Lambda.UI;
 
 namespace Lambda.Core.Main.UI
 {
@@ -24,7 +24,8 @@ namespace Lambda.Core.Main.UI
 
             if (H.GetPlayer(data.mvpId) != null && data.mvpReason != null)
             {
-                subTitle = $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
+                subTitle =
+                    $"{H.GetPlayer(data.mvpId).Profile.Nickname} awarded for {data.mvpReason}";
             }
 
             popupMatchEnd.Pop(win, mainTitle, subTitle);

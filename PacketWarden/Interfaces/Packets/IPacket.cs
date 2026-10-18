@@ -1,3 +1,1 @@
-﻿public interface IPacket 
-{ 
-}
+﻿public interface IPacket { }

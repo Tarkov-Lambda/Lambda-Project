@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
+using Comfort.Common;
+using EFT.InventoryLogic;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using System.Collections.Generic;
 using UnityEngine;
-using EFT.InventoryLogic;
-using System;
-using Comfort.Common;
 
 namespace Lambda.Core.Main.Economy;
 
@@ -12,11 +12,12 @@ public static class EconomyConstants
 {
     public const int MAX_MONEY = 16000;
 
-// #if DEBUG
-//     public const int START_MONEY = MAX_MONEY / 2;
-// #else 
+    // #if DEBUG
+    //     public const int START_MONEY = MAX_MONEY / 2;
+    // #else
     public const int START_MONEY = 800;
-// #endif
+
+    // #endif
 
     public const int WIN_ELIMINATION = 3250;
     public const int WIN_TIME = 3250;
@@ -68,33 +69,43 @@ public class EconomyManager : IDisposable
 
     private void HandleKillReward(PlayerKilledPacket packet)
     {
-        if (packet.killer == null || packet.Player == null) return;
-        if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore)) return;
-        if (packet.killer == packet.Player) return;
+        if (packet.killer == null || packet.Player == null)
+            return;
+        if (!H.Scoreboard.TryGetValue(packet.killer.Id, out var killerScore))
+            return;
+        if (packet.killer == packet.Player)
+            return;
 
         if (killerScore.Faction == packet.Player.Context.Faction)
         {
             killerScore.AddMoney(-300);
         }
-        else killerScore.AddMoney(300);
+        else
+            killerScore.AddMoney(300);
     }
 
     private int GetWeaponReward(Item weapon)
     {
-        if (weapon is KnifeItemClass) return 1500;
-        if (weapon is SniperRifleItemClass) return 100;
-        if (weapon is ShotgunItemClass) return 900;
-        if (weapon is SmgItemClass) return 600;
+        if (weapon is KnifeItemClass)
+            return 1500;
+        if (weapon is SniperRifleItemClass)
+            return 100;
+        if (weapon is ShotgunItemClass)
+            return 900;
+        if (weapon is SmgItemClass)
+            return 600;
 
         return EconomyConstants.KILL_DEFAULT;
     }
 
     private void HandleObjectiveReward(BombState state)
     {
-        if (H.Arena.LastObjectivePlayer == null) return;
+        if (H.Arena.LastObjectivePlayer == null)
+            return;
 
         var score = H.Arena.LastObjectivePlayer.Context;
-        if (score == null) return;
+        if (score == null)
+            return;
 
         if (state == BombState.Exploded)
         {
@@ -114,15 +125,18 @@ public class EconomyManager : IDisposable
         Faction winner = result.winner;
         Faction loser = winner == Faction.CT ? Faction.T : Faction.CT;
 
-        if (_lossCounters[loser] < 4) _lossCounters[loser]++;
-        if (_lossCounters[winner] > 0) _lossCounters[winner]--;
+        if (_lossCounters[loser] < 4)
+            _lossCounters[loser]++;
+        if (_lossCounters[winner] > 0)
+            _lossCounters[winner]--;
 
         int winReward = CalculateWinReward(result.roundWinReason);
         int lossReward = CalculateLossReward(loser);
 
         foreach (var p in H.Scoreboard.Values)
         {
-            if (p.Faction == Faction.None) continue;
+            if (p.Faction == Faction.None)
+                continue;
 
             if (p.Faction == winner)
             {
@@ -132,9 +146,15 @@ public class EconomyManager : IDisposable
             {
                 bool isTerrorist = p.Faction == Faction.T;
                 bool survived = p.IsAlive;
-                bool bombWasPlanted = H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Exploded;
+                bool bombWasPlanted =
+                    H.Session.bombState == BombState.Planted
+                    || H.Session.bombState == BombState.Exploded;
 
-                bool isSavingPenalty = isTerrorist && survived && !bombWasPlanted && result.roundWinReason == RoundWinReason.Timeout;
+                bool isSavingPenalty =
+                    isTerrorist
+                    && survived
+                    && !bombWasPlanted
+                    && result.roundWinReason == RoundWinReason.Timeout;
 
                 if (isSavingPenalty)
                 {
@@ -165,9 +185,16 @@ public class EconomyManager : IDisposable
     {
         int count = _lossCounters[losingFaction];
 
-        int reward = EconomyConstants.LOSS_BONUS_BASE + ((Mathf.Clamp(count, 1, 5) - 1) * EconomyConstants.LOSS_BONUS_INCREMENT);
+        int reward =
+            EconomyConstants.LOSS_BONUS_BASE
+            + ((Mathf.Clamp(count, 1, 5) - 1) * EconomyConstants.LOSS_BONUS_INCREMENT);
 
-        if (losingFaction == Faction.T && (H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defused))
+        if (
+            losingFaction == Faction.T
+            && (
+                H.Session.bombState == BombState.Planted || H.Session.bombState == BombState.Defused
+            )
+        )
         {
             reward += EconomyConstants.LOSS_BONUS_PLANT_ADDITION;
         }

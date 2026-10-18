@@ -1,12 +1,12 @@
-﻿using Comfort.Common;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using Lambda.Core.Main.UI;
 using SPT.Reflection.Patching;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,33 +20,43 @@ internal class PatchGroup_QuickAccessPanel_ModifyItemIcon : PatchGroup
 
     private class Patch_QuickSlotItemView_UpdateInfo : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.UpdateInfo));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.UpdateInfo));
 
         [PatchPostfix]
-        static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage) => ModifyItemIcon(__instance, ___MainImage);
+        static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage) =>
+            ModifyItemIcon(__instance, ___MainImage);
     }
 
     private class Patch_QuickSlotItemView_UpdateScale : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.UpdateScale));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.UpdateScale));
 
         [PatchPostfix]
-        private static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage) => ModifyItemIcon(__instance, ___MainImage);
+        private static void PatchPostfix(QuickSlotItemView __instance, Image ___MainImage) =>
+            ModifyItemIcon(__instance, ___MainImage);
     }
 
     private class Patch_QuickSlotItemView_Create : ModulePatch
     {
-        private static readonly FieldInfo Field_ItemView_MainImage = AccessTools.Field(typeof(ItemView), "MainImage");
+        private static readonly FieldInfo Field_ItemView_MainImage = AccessTools.Field(
+            typeof(ItemView),
+            "MainImage"
+        );
 
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.Create));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(QuickSlotItemView), nameof(QuickSlotItemView.Create));
 
         [PatchPostfix]
-        private static void PatchPostfix(QuickSlotItemView __result) => ModifyItemIcon(__result, Field_ItemView_MainImage.GetValue(__result) as Image);
+        private static void PatchPostfix(QuickSlotItemView __result) =>
+            ModifyItemIcon(__result, Field_ItemView_MainImage.GetValue(__result) as Image);
     }
 
     private static void ModifyItemIcon(QuickSlotItemView __instance, Image ___MainImage)
     {
-        if (___MainImage == null) return;
+        if (___MainImage == null)
+            return;
 
         if (__instance.Item is KnifeItemClass)
         {

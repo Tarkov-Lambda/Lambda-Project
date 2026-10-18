@@ -1,8 +1,8 @@
 using Lambda.Core.Main;
-using PacketWarden;
 using MemoryPack;
-using UnityEngine;
+using PacketWarden;
 using PacketWarden.TimeSync;
+using UnityEngine;
 
 namespace Lambda.Core.Networking;
 
@@ -26,7 +26,7 @@ public class MolotovExplosionPacketWarden : LambdaPacketWarden<MolotovExplosionP
             Timestamp = NetworkTime.ServerNowSeconds,
             explosionPos = explosionPos,
             fireRadius = GameplayVariables.vars.FireRadius,
-            fireNodes = MolotovController.GenerateFireSpread(explosionPos)
+            fireNodes = MolotovController.GenerateFireSpread(explosionPos),
         };
 
         DispatchPacket(ref packet);

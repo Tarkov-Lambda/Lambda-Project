@@ -21,21 +21,23 @@ using UnityEngine;
 
 namespace SteamAudio
 {
-
     [CustomEditor(typeof(SteamAudioReverbData)), CanEditMultipleObjects]
     public class ReverbDataEditor : Editor
     {
         private string mReverbTimeFoldoutKey = "SteamAudioProbeInspector_ReverbTimeFoldoutState";
         private string mEnergyFieldFoldoutKey = "SteamAudioProbeInspector_EnergyFieldFoldoutState";
-        private string mImpulseResponseFoldoutKey = "SteamAudioProbeInspector_ImpulseResponseFoldoutState";
+        private string mImpulseResponseFoldoutKey =
+            "SteamAudioProbeInspector_ImpulseResponseFoldoutState";
         public bool mOwnerIsMultiEditing = false; // Typically set by parent.
-
 
         public override void OnInspectorGUI()
         {
             var tgt = target as SteamAudioReverbData;
             bool bReverbTimesFoldoutExpanded = SessionState.GetBool(mReverbTimeFoldoutKey, false);
-            bReverbTimesFoldoutExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(bReverbTimesFoldoutExpanded, "Reverb Times");
+            bReverbTimesFoldoutExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(
+                bReverbTimesFoldoutExpanded,
+                "Reverb Times"
+            );
             if (bReverbTimesFoldoutExpanded)
             {
                 if (serializedObject.isEditingMultipleObjects | mOwnerIsMultiEditing)
@@ -50,7 +52,10 @@ namespace SteamAudio
                 {
                     for (int i = 0; i < tgt.reverbTimes.Length; ++i)
                     {
-                        EditorGUILayout.LabelField("Band " + i + " (seconds)", tgt.reverbTimes[i].ToString("0.000"));
+                        EditorGUILayout.LabelField(
+                            "Band " + i + " (seconds)",
+                            tgt.reverbTimes[i].ToString("0.000")
+                        );
                     }
                 }
             }
@@ -59,7 +64,10 @@ namespace SteamAudio
 
             EditorGUILayout.Space();
             bool bEnergyFieldFoldoutExpanded = SessionState.GetBool(mEnergyFieldFoldoutKey, false);
-            bEnergyFieldFoldoutExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(bEnergyFieldFoldoutExpanded, "Reverb Energy Field Stats");
+            bEnergyFieldFoldoutExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(
+                bEnergyFieldFoldoutExpanded,
+                "Reverb Energy Field Stats"
+            );
             if (bEnergyFieldFoldoutExpanded)
             {
                 if (serializedObject.isEditingMultipleObjects || mOwnerIsMultiEditing)
@@ -73,11 +81,17 @@ namespace SteamAudio
                 else
                 {
                     string sampleCountString = tgt.reverbEnergyField.Length.ToString();
-                    sampleCountString += " (" + tgt.reverbEnergyFieldNumChannels + (tgt.reverbEnergyFieldNumChannels > 1 ? " channels" : " channel");
+                    sampleCountString +=
+                        " ("
+                        + tgt.reverbEnergyFieldNumChannels
+                        + (tgt.reverbEnergyFieldNumChannels > 1 ? " channels" : " channel");
                     sampleCountString += " x " + tgt.reverbEnergyFieldNumBands + " bands";
                     sampleCountString += " x " + tgt.reverbEnergyFieldNumBins + " bins)";
                     EditorGUILayout.LabelField("Sample Count", sampleCountString);
-                    EditorGUILayout.LabelField("Total Size", Common.HumanReadableDataSize(tgt.GetEnergyFieldSize()));
+                    EditorGUILayout.LabelField(
+                        "Total Size",
+                        Common.HumanReadableDataSize(tgt.GetEnergyFieldSize())
+                    );
 
                     int numChannels = tgt.reverbEnergyFieldNumChannels;
                     int numBands = tgt.reverbEnergyFieldNumBands;
@@ -94,15 +108,24 @@ namespace SteamAudio
                             }
                         }
                     }
-                    EditorGUILayout.LabelField("Per Channel Energy", string.Join(", ", channelEnergy.Select(value => value.ToString("e2"))));
+                    EditorGUILayout.LabelField(
+                        "Per Channel Energy",
+                        string.Join(", ", channelEnergy.Select(value => value.ToString("e2")))
+                    );
                 }
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             SessionState.SetBool(mEnergyFieldFoldoutKey, bEnergyFieldFoldoutExpanded);
 
             EditorGUILayout.Space();
-            bool bImpulseResponseFoldoutExpanded = SessionState.GetBool(mImpulseResponseFoldoutKey, false);
-            bImpulseResponseFoldoutExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(bImpulseResponseFoldoutExpanded, "Reverb Impulse Response Stats");
+            bool bImpulseResponseFoldoutExpanded = SessionState.GetBool(
+                mImpulseResponseFoldoutKey,
+                false
+            );
+            bImpulseResponseFoldoutExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(
+                bImpulseResponseFoldoutExpanded,
+                "Reverb Impulse Response Stats"
+            );
             if (bImpulseResponseFoldoutExpanded)
             {
                 if (serializedObject.isEditingMultipleObjects || mOwnerIsMultiEditing)
@@ -111,15 +134,24 @@ namespace SteamAudio
                 }
                 else if (tgt.reverbIR == null || tgt.reverbIR.Length == 0)
                 {
-                    EditorGUILayout.HelpBox("No impulse response data to display.", MessageType.Info);
+                    EditorGUILayout.HelpBox(
+                        "No impulse response data to display.",
+                        MessageType.Info
+                    );
                 }
                 else
                 {
                     string sampleCountString = tgt.reverbIR.Length.ToString();
-                    sampleCountString += " (" + tgt.reverbIRNumChannels + (tgt.reverbIRNumChannels > 1 ? " channels" : " channel");
+                    sampleCountString +=
+                        " ("
+                        + tgt.reverbIRNumChannels
+                        + (tgt.reverbIRNumChannels > 1 ? " channels" : " channel");
                     sampleCountString += " x " + tgt.reverbIRNumSamples + " samples)";
                     EditorGUILayout.LabelField("Sample Count", sampleCountString);
-                    EditorGUILayout.LabelField("Total Size", Common.HumanReadableDataSize(tgt.GetImpulseResponseSize()));
+                    EditorGUILayout.LabelField(
+                        "Total Size",
+                        Common.HumanReadableDataSize(tgt.GetImpulseResponseSize())
+                    );
 
                     int numChannels = tgt.reverbIRNumChannels;
                     int numSamples = tgt.reverbIRNumSamples;
@@ -131,13 +163,25 @@ namespace SteamAudio
                         channelMin[i] = float.MaxValue;
                         for (int k = 0; k < numSamples; ++k)
                         {
-                            channelMax[i] = Mathf.Max(tgt.GetImpulseResponseData(i, k), channelMax[i]);
-                            channelMin[i] = Mathf.Min(tgt.GetImpulseResponseData(i, k), channelMin[i]);
+                            channelMax[i] = Mathf.Max(
+                                tgt.GetImpulseResponseData(i, k),
+                                channelMax[i]
+                            );
+                            channelMin[i] = Mathf.Min(
+                                tgt.GetImpulseResponseData(i, k),
+                                channelMin[i]
+                            );
                         }
                     }
 
-                    EditorGUILayout.LabelField("Per Channel Min", string.Join(", ", channelMin.Select(value => value.ToString("e2"))));
-                    EditorGUILayout.LabelField("Per Channel Max", string.Join(", ", channelMax.Select(value => value.ToString("e2"))));
+                    EditorGUILayout.LabelField(
+                        "Per Channel Min",
+                        string.Join(", ", channelMin.Select(value => value.ToString("e2")))
+                    );
+                    EditorGUILayout.LabelField(
+                        "Per Channel Max",
+                        string.Join(", ", channelMax.Select(value => value.ToString("e2")))
+                    );
                 }
             }
             EditorGUILayout.EndFoldoutHeaderGroup();

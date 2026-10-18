@@ -14,12 +14,11 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using System;
-using System.Runtime.InteropServices;
-using System.IO;
 using System.Collections.Generic;
-
+using System.IO;
+using System.Runtime.InteropServices;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -154,13 +153,22 @@ namespace SteamAudio
             reverbData.reverbEnergyFieldNumChannels = API.iplEnergyFieldGetNumChannels(energyField);
             reverbData.reverbEnergyFieldNumBands = 3;
             reverbData.reverbEnergyFieldNumBins = API.iplEnergyFieldGetNumBins(energyField);
-            reverbData.reverbEnergyField = new float[reverbData.reverbEnergyFieldNumChannels * reverbData.reverbEnergyFieldNumBands * reverbData.reverbEnergyFieldNumBins];
+            reverbData.reverbEnergyField = new float[
+                reverbData.reverbEnergyFieldNumChannels
+                    * reverbData.reverbEnergyFieldNumBands
+                    * reverbData.reverbEnergyFieldNumBins
+            ];
 
             IntPtr reverbEnergyFieldData = API.iplEnergyFieldGetData(energyField);
             if (reverbEnergyFieldData == IntPtr.Zero)
                 return;
 
-            Marshal.Copy(reverbEnergyFieldData, reverbData.reverbEnergyField, 0, reverbData.reverbEnergyField.Length);
+            Marshal.Copy(
+                reverbEnergyFieldData,
+                reverbData.reverbEnergyField,
+                0,
+                reverbData.reverbEnergyField.Length
+            );
         }
 
         public void UpdateImpulseResponse(IntPtr ir)
@@ -178,12 +186,14 @@ namespace SteamAudio
 
             reverbData.reverbIRNumChannels = API.iplImpulseResponseGetNumChannels(ir);
             reverbData.reverbIRNumSamples = API.iplImpulseResponseGetNumSamples(ir);
-            reverbData.reverbIR = new float[reverbData.reverbIRNumChannels * reverbData.reverbIRNumSamples];
+            reverbData.reverbIR = new float[
+                reverbData.reverbIRNumChannels * reverbData.reverbIRNumSamples
+            ];
 
             IntPtr reverbIRData = API.iplImpulseResponseGetData(ir);
             if (reverbIRData == IntPtr.Zero)
                 return;
-            
+
             Marshal.Copy(reverbIRData, reverbData.reverbIR, 0, reverbData.reverbIR.Length);
         }
 
@@ -225,7 +235,11 @@ namespace SteamAudio
             {
                 for (int i = 0; i < sAssetsToFlush.Count; ++i)
                 {
-                    EditorUtility.DisplayProgressBar("Saving Assets", $"{sAssetsToFlush[i]}", ((float)(i + 1)) / sAssetsToFlush.Count);
+                    EditorUtility.DisplayProgressBar(
+                        "Saving Assets",
+                        $"{sAssetsToFlush[i]}",
+                        ((float)(i + 1)) / sAssetsToFlush.Count
+                    );
                     FlushWrite(sAssetsToFlush[i]);
                 }
 

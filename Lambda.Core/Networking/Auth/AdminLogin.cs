@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using EFT;
-using PacketWarden.RateLimiting;
-using MemoryPack;
 using Comfort.Common;
+using EFT;
+using MemoryPack;
+using PacketWarden.RateLimiting;
 
 namespace Lambda.Core.Networking;
 
 public enum AdminAuthStep
 {
-    Request,    // Client -> Server
-    Challenge,  // Server -> Client
-    Verify,     // Client -> Server
-    Success     // Server -> Client (Confirmation)
+    Request, // Client -> Server
+    Challenge, // Server -> Client
+    Verify, // Client -> Server
+    Success, // Server -> Client (Confirmation)
 }
 
 [MemoryPackable]
@@ -47,13 +47,17 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         {
             Player = H.MainPlayer,
             Step = AdminAuthStep.Request,
-            Payload = null
+            Payload = null,
         };
 
         DispatchPacket(ref packet);
     }
 
-    protected override bool ValidatePacket(AdminAuthPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        AdminAuthPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         rejectionReason = null;
 
@@ -125,7 +129,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         {
             Player = packet.Player,
             Step = AdminAuthStep.Challenge,
-            Payload = nonce
+            Payload = nonce,
         };
 
         DispatchPacket(ref challenge, peerId);
@@ -139,13 +143,12 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         {
             Player = packet.Player,
             Step = AdminAuthStep.Success,
-            Payload = null
+            Payload = null,
         };
 
         DispatchPacket(ref success, peerId);
         ApplyInternal(success, INetworkBackend.LocalPeerId);
     }
-
 
     protected override void Apply(AdminAuthPacket packet, int peerId)
     {
@@ -175,7 +178,7 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
         {
             Player = H.MainPlayer,
             Step = AdminAuthStep.Verify,
-            Payload = hash
+            Payload = hash,
         };
 
         DispatchPacket(ref verify);
@@ -187,7 +190,10 @@ public class AdminLoginPacketWarden : LambdaPacketWarden<AdminAuthPacket>
 
         if (H.IsServer)
         {
-            Singleton<GenericMessagePacketWarden>.Instance.SendToPeer($"Your priviledges have been elevated.", PacketWardenUtils.Network.GetPeerIdByPlayer(packet.Player));
+            Singleton<GenericMessagePacketWarden>.Instance.SendToPeer(
+                $"Your priviledges have been elevated.",
+                PacketWardenUtils.Network.GetPeerIdByPlayer(packet.Player)
+            );
         }
     }
 

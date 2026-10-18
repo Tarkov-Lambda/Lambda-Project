@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -5,14 +8,11 @@ using EFT.CameraControl;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using EFT.SynchronizableObjects;
+using Lambda.Core.GameTypes;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
 using Lambda.Core.Networking;
 using Lambda.Shared.FX;
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using Systems.Effects;
 using UnityEngine;
 
@@ -72,13 +72,21 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
     public void Update()
     {
-        if (H.Arena == null) return;
-        if (H.Gamemode is not SNDGamemode) return;
-        if (H.Session == null) return;
-        if (H.Sounds == null) return;
+        if (H.Arena == null)
+            return;
+        if (H.Gamemode is not SNDGamemode)
+            return;
+        if (H.Session == null)
+            return;
+        if (H.Sounds == null)
+            return;
 
-        if (_beforeExplodingPlayed) return;
-        if (H.Arena?.StateTimer <= H.Sounds.BeforeExploding.length && H.Session.matchState is MatchState.RoundPlanted)
+        if (_beforeExplodingPlayed)
+            return;
+        if (
+            H.Arena?.StateTimer <= H.Sounds.BeforeExploding.length
+            && H.Session.matchState is MatchState.RoundPlanted
+        )
         {
             H.AudioHandler.PlayAtPoint(BombPlantedPosition, H.Sounds.BeforeExploding);
             _beforeExplodingPlayed = true;
@@ -136,7 +144,8 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
                     StartBombTick(pos);
                     _isAlreadyPlanted = true;
                 }
-                else shouldPlay = false;
+                else
+                    shouldPlay = false;
                 break;
             case BombState.Exploded:
                 // pos = H.BombHandler.BombPlantedPosition;
@@ -151,7 +160,11 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
         if (shouldPlay && pos != Vector3.zero && clip != null)
         {
-            LastBombSource = H.AudioHandler.PlayAtPoint(pos, clip, overrideSourceGroup: BetterAudio.AudioSourceGroupType.Collisions);
+            LastBombSource = H.AudioHandler.PlayAtPoint(
+                pos,
+                clip,
+                overrideSourceGroup: BetterAudio.AudioSourceGroupType.Collisions
+            );
         }
     }
 
@@ -167,7 +180,8 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         _bombTickCancellationSource = new CancellationTokenSource();
         Vector3 slightUpPos = pos;
         slightUpPos.y += 0.05f;
-        PlayEverySecondAsync(slightUpPos, H.Sounds.BombTick, _bombTickCancellationSource.Token).Forget();
+        PlayEverySecondAsync(slightUpPos, H.Sounds.BombTick, _bombTickCancellationSource.Token)
+            .Forget();
     }
 
     public void StopBombTick()
@@ -180,7 +194,11 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
         }
     }
 
-    private async UniTaskVoid PlayEverySecondAsync(Vector3 pos, AudioClip clip, CancellationToken token)
+    private async UniTaskVoid PlayEverySecondAsync(
+        Vector3 pos,
+        AudioClip clip,
+        CancellationToken token
+    )
     {
         try
         {
@@ -209,7 +227,8 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
 
         foreach (var component in BombVisuals.GetComponentsInChildren<Component>(true))
         {
-            if (component is Renderer or Transform or LODGroup or MeshFilter) continue;
+            if (component is Renderer or Transform or LODGroup or MeshFilter)
+                continue;
             Component.Destroy(component);
         }
 
@@ -246,7 +265,6 @@ public class BombHandler : Singleton<BombHandler>, IDisposable
             }
         }
     }
-
 }
 
 public class Bombasik : InteractableObject

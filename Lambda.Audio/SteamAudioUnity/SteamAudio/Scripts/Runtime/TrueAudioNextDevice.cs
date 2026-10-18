@@ -22,7 +22,13 @@ namespace SteamAudio
     {
         IntPtr mTrueAudioNextDevice = IntPtr.Zero;
 
-        public TrueAudioNextDevice(OpenCLDevice openCLDevice, int frameSize, int irSize, int order, int maxSources)
+        public TrueAudioNextDevice(
+            OpenCLDevice openCLDevice,
+            int frameSize,
+            int irSize,
+            int order,
+            int maxSources
+        )
         {
             var deviceSettings = new TrueAudioNextDeviceSettings { };
             deviceSettings.frameSize = frameSize;
@@ -30,9 +36,15 @@ namespace SteamAudio
             deviceSettings.order = order;
             deviceSettings.maxSources = maxSources;
 
-            var status = API.iplTrueAudioNextDeviceCreate(openCLDevice.Get(), ref deviceSettings, out mTrueAudioNextDevice);
+            var status = API.iplTrueAudioNextDeviceCreate(
+                openCLDevice.Get(),
+                ref deviceSettings,
+                out mTrueAudioNextDevice
+            );
             if (status != Error.Success)
-                throw new Exception(string.Format("Unable to create TrueAudio Next device. [{0}]", status));
+                throw new Exception(
+                    string.Format("Unable to create TrueAudio Next device. [{0}]", status)
+                );
         }
 
         public TrueAudioNextDevice(TrueAudioNextDevice device)

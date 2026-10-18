@@ -34,7 +34,11 @@ public class FakeDroppedItem : MonoBehaviour
             lastSurfaceSound = surface.SurfaceSound;
         }
 
-        H.BetterAudio.PlayDropItem(lastSurfaceSound, dropSoundType, transform.position, energy: 50f);
+        H.BetterAudio.PlayDropItem(
+            lastSurfaceSound,
+            dropSoundType,
+            transform.position,
+            energy: 50f
+        );
     }
 }
-

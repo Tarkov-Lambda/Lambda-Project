@@ -1,5 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
-using System.Linq;
+﻿using System.Linq;
+using Cysharp.Threading.Tasks;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -24,10 +24,13 @@ public class DuelPrepare : SharedPrepare
 public class DuelAction : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.RoundAction;
+
     public override void OnEnter() { }
+
     public override MatchState? OnUpdate()
     {
-        if (!H.IsServer) return null;
+        if (!H.IsServer)
+            return null;
         Faction? winner = CheckWipe();
         if (winner.HasValue)
         {
@@ -43,6 +46,7 @@ public class DuelAction : AbstractMatchStateController
 
         return null;
     }
+
     public override void OnExit() { }
 
     private Faction? CheckWipe()
@@ -51,12 +55,16 @@ public class DuelAction : AbstractMatchStateController
         int aliveT = 0;
         foreach (var p in H.Scoreboard.Values)
         {
-            if (p.IsAlive && p.Faction == Faction.CT) aliveCT++;
-            if (p.IsAlive && p.Faction == Faction.T) aliveT++;
+            if (p.IsAlive && p.Faction == Faction.CT)
+                aliveCT++;
+            if (p.IsAlive && p.Faction == Faction.T)
+                aliveT++;
         }
 
-        if (aliveCT == 0) return Faction.T;
-        if (aliveT == 0) return Faction.CT;
+        if (aliveCT == 0)
+            return Faction.T;
+        if (aliveT == 0)
+            return Faction.CT;
         return null;
     }
 }
@@ -69,17 +77,18 @@ public class DuelGamemode : LambdaGamemode, IGMRound, IGMTeam
 
     public int MaxRoundsToWin { get; set; } = 13;
 
-    public override AbstractMatchStateController CreateState(MatchState state) => state switch
-    {
-        MatchState.None => new SharedNone(),
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
-        MatchState.Cleanup => new SharedCleanup(),
-        MatchState.Pause => new SharedPause(),
-        MatchState.RoundPrepare => new DuelPrepare(),
-        MatchState.RoundAction => new DuelAction(),
-        MatchState.RoundEnd => new SharedRoundEnd(),
-        MatchState.MatchEnd => new SharedMatchEnd(),
-        _ => null
-    };
+    public override AbstractMatchStateController CreateState(MatchState state) =>
+        state switch
+        {
+            MatchState.None => new SharedNone(),
+            MatchState.Warmup => new SharedWarmup(),
+            MatchState.WarmupEnd => new SharedWarmupEnd(),
+            MatchState.Cleanup => new SharedCleanup(),
+            MatchState.Pause => new SharedPause(),
+            MatchState.RoundPrepare => new DuelPrepare(),
+            MatchState.RoundAction => new DuelAction(),
+            MatchState.RoundEnd => new SharedRoundEnd(),
+            MatchState.MatchEnd => new SharedMatchEnd(),
+            _ => null,
+        };
 }

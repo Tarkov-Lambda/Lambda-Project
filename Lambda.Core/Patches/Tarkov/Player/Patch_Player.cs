@@ -1,10 +1,10 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lambda.Core.Patches.Tarkov;
@@ -14,21 +14,24 @@ internal class Patch_Player_ShotReactions : ModulePatch, IDisposable
     private static readonly Dictionary<int, double> _lastShotTimeDict = new();
     private const double CooldownSeconds = 0.015;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.ShotReactions));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(Player), nameof(Player.ShotReactions));
 
     [PatchPostfix]
     static void Postfix(Player __instance, DamageInfoStruct shot, EBodyPart bodyPart)
     {
-        if (shot.OverDamageFrom != null) return;
+        if (shot.OverDamageFrom != null)
+            return;
 
-        if (bodyPart != EBodyPart.Head) return;
+        if (bodyPart != EBodyPart.Head)
+            return;
 
         if (!H.IsHeadless)
         {
             int killerId = shot.Player != null ? shot.Player.iPlayer.Id : 1;
-            if (killerId != H.MainPlayer.Id) return;
+            if (killerId != H.MainPlayer.Id)
+                return;
         }
-
 
         double now = Time.realtimeSinceStartupAsDouble;
 
@@ -44,7 +47,12 @@ internal class Patch_Player_ShotReactions : ModulePatch, IDisposable
         bool didHitHelmet = shot.BlockedBy != null;
 
         AudioClip[] clips = didHitHelmet ? H.Sounds.HeadshotHelmet : H.Sounds.HeadshotFlesh;
-        H.AudioHandler.PlayAtPoint(__instance.PlayerBody.PlayerBones.Head.position, clips.RandomElement(), 80, BetterAudio.AudioSourceGroupType.Collisions);
+        H.AudioHandler.PlayAtPoint(
+            __instance.PlayerBody.PlayerBones.Head.position,
+            clips.RandomElement(),
+            80,
+            BetterAudio.AudioSourceGroupType.Collisions
+        );
     }
 
     public void Dispose()
@@ -58,12 +66,14 @@ internal class Patch_Player_UpdateTick : ModulePatch
     private static float _lockTimer = 0f;
     private static EPlayerState _lastState = EPlayerState.Idle;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.UpdateTick));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(Player), nameof(Player.UpdateTick));
 
     [PatchPostfix]
     public static void Postfix(Player __instance)
     {
-        if (!__instance.IsYourPlayer) return;
+        if (!__instance.IsYourPlayer)
+            return;
 
         var currentState = __instance.CurrentManagedState?.Name ?? EPlayerState.Idle;
 
@@ -82,7 +92,9 @@ internal class Patch_Player_UpdateTick : ModulePatch
             if (_lockTimer > 0.7f)
             {
                 D.Notify("Picking up an unregistered item.");
-                H.MainPlayer.MovementContext.ProcessStateEnter(new IdleStateClass(H.MainPlayer.MovementContext));
+                H.MainPlayer.MovementContext.ProcessStateEnter(
+                    new IdleStateClass(H.MainPlayer.MovementContext)
+                );
 
                 _lockTimer = 0f;
             }
@@ -97,13 +109,15 @@ internal class Patch_Player_UpdateTick : ModulePatch
 
 internal class Patch_Player_OnItemAddedOrRemoved : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Player), nameof(Player.OnItemAddedOrRemoved));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(Player), nameof(Player.OnItemAddedOrRemoved));
 
     [PatchPostfix]
     public static void Postfix(Player __instance, Item item, ItemAddress location, bool added)
     {
         var pContext = __instance.Context;
-        if (pContext == null) return;
+        if (pContext == null)
+            return;
 
         if (item.TemplateId == Hardcode.BOMB_BACKPACK)
         {
@@ -111,4 +125,3 @@ internal class Patch_Player_OnItemAddedOrRemoved : ModulePatch
         }
     }
 }
-

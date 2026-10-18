@@ -1,14 +1,18 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Reflection;
+using HarmonyLib;
 using Lambda.Core.Main.Gamemode;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
 internal class Patch_BackpackItemClass_Constructor : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Constructor(typeof(BackpackItemClass), [typeof(string), typeof(BackpackTemplateClass)]);
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Constructor(
+            typeof(BackpackItemClass),
+            [typeof(string), typeof(BackpackTemplateClass)]
+        );
 
     [PatchPrefix]
     static bool Prefix(BackpackItemClass __instance, string id, ref BackpackTemplateClass template)

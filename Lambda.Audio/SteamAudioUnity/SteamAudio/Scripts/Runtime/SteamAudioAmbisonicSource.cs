@@ -30,7 +30,9 @@ namespace SteamAudio
 
         private void Awake()
         {
-            mAudioEngineAmbisonicSource = AudioEngineAmbisonicSource.Create(SteamAudioSettings.Singleton.audioEngine);
+            mAudioEngineAmbisonicSource = AudioEngineAmbisonicSource.Create(
+                SteamAudioSettings.Singleton.audioEngine
+            );
             if (mAudioEngineAmbisonicSource != null)
             {
                 mAudioEngineAmbisonicSource.Initialize(gameObject);
@@ -69,6 +71,5 @@ namespace SteamAudio
                 mAudioEngineAmbisonicSource.UpdateParameters(this);
             }
         }
-
     }
 }

@@ -45,14 +45,16 @@ public class HardpointZoneManager : Singleton<HardpointZoneManager>, IDisposable
     {
         NetIdtoZone = new();
 
-        var zones = UnityEngine.Object.FindObjectsByType<HardpointZone>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var zones = UnityEngine.Object.FindObjectsByType<HardpointZone>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
 
         foreach (var zone in zones)
         {
             NetIdtoZone[zone.NetId] = zone;
         }
     }
-
 
     private void ClearZoneCache()
     {
@@ -79,11 +81,13 @@ public class HardpointZoneManager : Singleton<HardpointZoneManager>, IDisposable
             foreach (int playerId in playerIds)
             {
                 Player player = H.GetPlayer(playerId);
-                if (player == null) continue;
+                if (player == null)
+                    continue;
 
                 Faction faction = player.Context.Faction;
 
-                if (!factionScores.ContainsKey(faction)) factionScores[faction] = 0;
+                if (!factionScores.ContainsKey(faction))
+                    factionScores[faction] = 0;
 
                 factionScores[faction]++;
             }
@@ -112,20 +116,20 @@ public class HardpointZoneManager : Singleton<HardpointZoneManager>, IDisposable
             }
             else
             {
-                zone.ChangeOwnership(leadingFaction.Value == Faction.CT ? ZoneOwnership.CT : ZoneOwnership.T);
+                zone.ChangeOwnership(
+                    leadingFaction.Value == Faction.CT ? ZoneOwnership.CT : ZoneOwnership.T
+                );
             }
 
-            if (zone.ZoneOwnership != cachedZoneOwnership)
-            {
-
-            }
+            if (zone.ZoneOwnership != cachedZoneOwnership) { }
         }
     }
 
     private void OnTriggerEnter(HardpointEventPayload hardpointEvent)
     {
         Player player = hardpointEvent.other.GetComponentInParent<Player>();
-        if (player == null) return;
+        if (player == null)
+            return;
 
         var zone = hardpointEvent.hardpoint;
         int playerId = player.Id;
@@ -146,7 +150,8 @@ public class HardpointZoneManager : Singleton<HardpointZoneManager>, IDisposable
     private void OnTriggerExit(HardpointEventPayload hardpointEvent)
     {
         Player player = hardpointEvent.other.GetComponentInParent<Player>();
-        if (player == null) return;
+        if (player == null)
+            return;
 
         var zone = hardpointEvent.hardpoint;
         int playerId = player.Id;

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using EFT;
 using EFT.InventoryLogic;
-using Lambda.Shared.Models;
 using Lambda.Core.Main.Gamemode;
+using Lambda.Shared.Models;
 using MemoryPack;
 
 namespace Lambda.Core.Networking;
@@ -14,6 +14,7 @@ public partial struct AskForMoneyPacket : IPacket, IAuthoredPacket
     public Player Player { get; set; }
 
     public string ItemBsgId;
+
     // if true, the player asking for this item
     // if false, the player is saying "I don't want anything at all anymore"
     public bool IsRequesting;
@@ -30,7 +31,8 @@ public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
 
     public void OnEnter(MatchState matchState)
     {
-        if (matchState == MatchState.Cleanup) playerToItem.Clear();
+        if (matchState == MatchState.Cleanup)
+            playerToItem.Clear();
     }
 
     public override void Dispose()
@@ -47,16 +49,19 @@ public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
 
     public void Send(string itemBsgId)
     {
-        if (H.Gamemode is not IGMTeam) return;
+        if (H.Gamemode is not IGMTeam)
+            return;
 
         // asking for the same item again cancels the request
-        bool isRequesting = !playerToItem.TryGetValue(H.MainPlayer, out string requestedItem) || requestedItem != itemBsgId;
+        bool isRequesting =
+            !playerToItem.TryGetValue(H.MainPlayer, out string requestedItem)
+            || requestedItem != itemBsgId;
 
         var packet = new AskForMoneyPacket
         {
             Player = H.MainPlayer,
             ItemBsgId = itemBsgId,
-            IsRequesting = isRequesting
+            IsRequesting = isRequesting,
         };
 
         DispatchPacket(ref packet);
@@ -69,7 +74,8 @@ public class AskForMoneyPacketWarden : LambdaPacketWarden<AskForMoneyPacket>
 
     protected override void Apply(AskForMoneyPacket packet, int peerId)
     {
-        if (packet.Player.IsYourPlayer) return;
+        if (packet.Player.IsYourPlayer)
+            return;
 
         UpdateRequest(packet);
 

@@ -1,9 +1,9 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using EFT;
 using EFT.UI.Ragfair;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +17,16 @@ namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(SubcategoryView __instance, RagFairClass ragfair, NodeBaseView categoryView, NodeBaseView subcategoryView, EntityNodeClass node, EViewListType viewListType, EWindowType windowType, Dictionary<string, NodeBaseView> viewNodes)
+        private static void PatchPostfix(
+            SubcategoryView __instance,
+            RagFairClass ragfair,
+            NodeBaseView categoryView,
+            NodeBaseView subcategoryView,
+            EntityNodeClass node,
+            EViewListType viewListType,
+            EWindowType windowType,
+            Dictionary<string, NodeBaseView> viewNodes
+        )
         {
             if (viewListType != EViewListType.WeaponBuild)
                 return;

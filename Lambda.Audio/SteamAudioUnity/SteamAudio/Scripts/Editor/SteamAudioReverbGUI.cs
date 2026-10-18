@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace SteamAudio
 {
@@ -23,26 +23,17 @@ namespace SteamAudio
     {
         public override string Name
         {
-            get
-            {
-                return "Steam Audio Reverb";
-            }
+            get { return "Steam Audio Reverb"; }
         }
 
         public override string Vendor
         {
-            get
-            {
-                return "Valve Corporation";
-            }
+            get { return "Valve Corporation"; }
         }
 
         public override string Description
         {
-            get
-            {
-                return "Listener-centric reverb using Steam Audio.";
-            }
+            get { return "Listener-centric reverb using Steam Audio."; }
         }
 
         public override bool OnGUI(IAudioEffectPlugin plugin)
@@ -50,8 +41,10 @@ namespace SteamAudio
             if (SteamAudioSettings.Singleton.audioEngine != AudioEngineType.Unity)
             {
                 EditorGUILayout.HelpBox(
-                    "This Audio Mixer effect requires the audio engine to be set to Unity. Click" +
-                    "Steam Audio > Settings to change this.", MessageType.Warning);
+                    "This Audio Mixer effect requires the audio engine to be set to Unity. Click"
+                        + "Steam Audio > Settings to change this.",
+                    MessageType.Warning
+                );
 
                 return false;
             }

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace SteamAudio
 {
@@ -80,24 +80,37 @@ namespace SteamAudio
             {
                 for (var i = 0; i < tgt.GetProbeBatchesUsed().Length; ++i)
                 {
-                    EditorGUILayout.LabelField(tgt.GetProbeBatchesUsed()[i].gameObject.name, Common.HumanReadableDataSize(tgt.GetProbeDataSizes()[i]));
+                    EditorGUILayout.LabelField(
+                        tgt.GetProbeBatchesUsed()[i].gameObject.name,
+                        Common.HumanReadableDataSize(tgt.GetProbeDataSizes()[i])
+                    );
                 }
-                EditorGUILayout.LabelField("Total Size", Common.HumanReadableDataSize(tgt.GetTotalDataSize()));
+                EditorGUILayout.LabelField(
+                    "Total Size",
+                    Common.HumanReadableDataSize(tgt.GetTotalDataSize())
+                );
             }
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        [MenuItem("Steam Audio/Steam Audio Baked Listener/Bake All Static Listener Reflections In Current Scene", false, 65)]
+        [MenuItem(
+            "Steam Audio/Steam Audio Baked Listener/Bake All Static Listener Reflections In Current Scene",
+            false,
+            65
+        )]
         public static void BakeAllReflectionsInScene()
         {
-            var bakedListeners = FindObjectsByType<SteamAudioBakedListener>(FindObjectsSortMode.None);
+            var bakedListeners = FindObjectsByType<SteamAudioBakedListener>(
+                FindObjectsSortMode.None
+            );
             if (bakedListeners.Length == 0)
             {
                 EditorUtility.DisplayDialog(
                     "No Steam Audio Baked Listeners Found",
                     "No Steam Audio Baked Listener components were found in the currently-open scene.",
-                    "OK");
+                    "OK"
+                );
                 return;
             }
 
@@ -107,7 +120,10 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
     }

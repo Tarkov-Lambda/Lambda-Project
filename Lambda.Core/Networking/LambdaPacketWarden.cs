@@ -3,7 +3,8 @@ using EFT;
 using Lambda.Core.Networking;
 using PacketWarden;
 
-public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket, new()
+public abstract class LambdaPacketWarden<T> : PacketWarden<T>
+    where T : IPacket, new()
 {
     // Make sure arena is initialized before we apply this packet type
     // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)
@@ -17,14 +18,16 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
 
     protected override void WhenClientReceivesPacket(T packet, int peerId)
     {
-        if (!ShouldApplyBeforeArenaInitialized && !IsArenaReady) return;
+        if (!ShouldApplyBeforeArenaInitialized && !IsArenaReady)
+            return;
 
         base.WhenClientReceivesPacket(packet, peerId);
     }
 
     protected override bool IsAdmin(int peerId)
     {
-        if (base.IsAdmin(peerId)) return true;
+        if (base.IsAdmin(peerId))
+            return true;
 
         Player player = Network.GetPlayerByPeerId(peerId);
         return player != null && player.Context?.IsAdmin == true;
@@ -34,12 +37,11 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
     {
         if (ShouldDisplayRejectionInChat)
         {
-            ServerMessagePacket RejectionReasonChatWrapperPacket = new()
-            {
-                msg = rejectionReason
-            };
+            ServerMessagePacket RejectionReasonChatWrapperPacket = new() { msg = rejectionReason };
             // not the cleanest pattern, but at least we pass it through the Packet Warden in a sense?
-            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(RejectionReasonChatWrapperPacket);
+            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(
+                RejectionReasonChatWrapperPacket
+            );
         }
         else
         {

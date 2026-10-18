@@ -1,7 +1,5 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-
-
+﻿using System.Collections.Generic;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -11,13 +9,19 @@ namespace Lambda.Shared
     [RequireComponent(typeof(BoxCollider))]
     public class SpawnPointCluster : MonoBehaviour
     {
-        [SerializeField] public Faction faction;
+        [SerializeField]
+        public Faction faction;
         public int pairId;
 
         [Header("Generation")]
-        [SerializeField] private GameObject spawnPointPrefab;
-        [SerializeField] private int spawnPointCount = 8;
-        [SerializeField] private Transform lookAtTarget;
+        [SerializeField]
+        private GameObject spawnPointPrefab;
+
+        [SerializeField]
+        private int spawnPointCount = 8;
+
+        [SerializeField]
+        private Transform lookAtTarget;
 
         private readonly float minSpawnDistance = 2f;
         private readonly int maxPlacementAttempts = 50;
@@ -78,12 +82,15 @@ namespace Lambda.Shared
                         Random.Range(bounds.min.z, bounds.max.z)
                     );
 
-                    if (!Physics.Raycast(
+                    if (
+                        !Physics.Raycast(
                             origin,
                             Vector3.down,
                             out RaycastHit hit,
                             bounds.size.y + 10f,
-                            layerMask))
+                            layerMask
+                        )
+                    )
                     {
                         continue;
                     }
@@ -95,7 +102,10 @@ namespace Lambda.Shared
 
                     for (int j = 0; j < placedPositions.Count; j++)
                     {
-                        if (Vector3.Distance(candidatePosition, placedPositions[j]) < minSpawnDistance)
+                        if (
+                            Vector3.Distance(candidatePosition, placedPositions[j])
+                            < minSpawnDistance
+                        )
                         {
                             tooClose = true;
                             break;
@@ -110,14 +120,15 @@ namespace Lambda.Shared
 
                     if (!Application.isPlaying)
                     {
-                        spawn = (GameObject)PrefabUtility.InstantiatePrefab(spawnPointPrefab, transform);
+                        spawn = (GameObject)
+                            PrefabUtility.InstantiatePrefab(spawnPointPrefab, transform);
                     }
                     else
                     {
                         spawn = Instantiate(spawnPointPrefab, transform);
                     }
 #else
-            GameObject spawn = Instantiate(spawnPointPrefab, transform);
+                    GameObject spawn = Instantiate(spawnPointPrefab, transform);
 #endif
 
                     Quaternion rotation = Quaternion.identity;
@@ -127,11 +138,12 @@ namespace Lambda.Shared
                         Vector3 flatDirection = lookAtTarget.position - candidatePosition;
                         flatDirection.y = 0f;
 
-                        if (flatDirection.sqrMagnitude > 0.0001f) rotation = Quaternion.LookRotation(flatDirection);
+                        if (flatDirection.sqrMagnitude > 0.0001f)
+                            rotation = Quaternion.LookRotation(flatDirection);
                     }
 
                     spawn.transform.SetPositionAndRotation(candidatePosition, rotation);
-                    
+
                     spawn.name = $"SpawnPoint_{i}";
 
                     placedPositions.Add(candidatePosition);
@@ -141,7 +153,9 @@ namespace Lambda.Shared
 
                 if (!placed)
                 {
-                    Debug.LogWarning($"Could only place {placedPositions.Count} spawn points. Increase cluster size or reduce minSpawnDistance.");
+                    Debug.LogWarning(
+                        $"Could only place {placedPositions.Count} spawn points. Increase cluster size or reduce minSpawnDistance."
+                    );
                     break;
                 }
             }

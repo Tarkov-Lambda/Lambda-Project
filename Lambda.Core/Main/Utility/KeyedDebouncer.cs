@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 
 namespace Lambda.Core.Main;
 
-
 public class KeyedDebouncer<TKey> : IDisposable
 {
     private readonly Dictionary<TKey, CancellationTokenSource> _activeTasks = new();
@@ -31,7 +30,12 @@ public class KeyedDebouncer<TKey> : IDisposable
         ExecuteAsync(key, delay, action, newCts).Forget();
     }
 
-    private async UniTaskVoid ExecuteAsync(TKey key, TimeSpan delay, Action action, CancellationTokenSource cts)
+    private async UniTaskVoid ExecuteAsync(
+        TKey key,
+        TimeSpan delay,
+        Action action,
+        CancellationTokenSource cts
+    )
     {
         try
         {

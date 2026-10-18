@@ -19,16 +19,18 @@ public class PhantomAudioRoom : ISpatialAudioRoom
     public Bounds Bounds { get; set; } = new Bounds(Vector3.zero, Vector3.one * 1000f);
     public bool IsValid => true;
 
-    public RoomAmbientData RoomAmbientData { get; set; } = new RoomAmbientData
-    {
-        PrecipitationVolume = 1f,
-        OutdoorAmbientVolume = 0.3f,
-        RoomToneVolume = 1f
-    };
+    public RoomAmbientData RoomAmbientData { get; set; } =
+        new RoomAmbientData
+        {
+            PrecipitationVolume = 1f,
+            OutdoorAmbientVolume = 0.3f,
+            RoomToneVolume = 1f,
+        };
 
     public bool CheckIsolationRelation(ISpatialAudioRoom roomToCheck) => false;
 
     public void PlayRoomToneSound() { }
+
     public void StopRoomToneSound() { }
 
     public Vector3 Position => Vector3.zero;

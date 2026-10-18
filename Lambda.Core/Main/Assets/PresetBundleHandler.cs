@@ -1,10 +1,10 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Networking;
-using System;
-using System.Collections.Generic;
 
 namespace Lambda.Core.Main.AssetBundleHandling;
 
@@ -43,7 +43,8 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 
     private bool TryCache(Item part)
     {
-        if (!_cachedItems.Add(part.TemplateId)) return false;
+        if (!_cachedItems.Add(part.TemplateId))
+            return false;
 
         ItemsToLoad.Add(part);
         TemplateIdsToLoad.Add(part.TemplateId);
@@ -86,11 +87,13 @@ public class RuntimeBundleLoader : Singleton<RuntimeBundleLoader>, IDisposable
 
     public void AddToCache(List<string> templateIds)
     {
-        if (templateIds == null) return;
+        if (templateIds == null)
+            return;
 
         foreach (string templateId in templateIds)
         {
-            if (_cachedItems.Contains(templateId)) continue;
+            if (_cachedItems.Contains(templateId))
+                continue;
 
             if (IU.TryCreateItem(templateId, out Item item))
             {

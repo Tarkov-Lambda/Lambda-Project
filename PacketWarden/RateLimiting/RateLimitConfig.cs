@@ -19,7 +19,8 @@ public readonly struct RateLimitConfig
         double burst,
         int costPerPacket = 1,
         RateLimitAction action = RateLimitAction.Reject,
-        double rejectCooldownSeconds = 0.25)
+        double rejectCooldownSeconds = 0.25
+    )
     {
         Enabled = enabled;
         RefillPerSecond = Math.Max(0, refillPerSecond);

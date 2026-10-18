@@ -7,7 +7,12 @@ namespace Coffee.UIEffects
     /// </summary>
     public struct Matrix2x3
     {
-        public float m00, m01, m02, m10, m11, m12;
+        public float m00,
+            m01,
+            m02,
+            m10,
+            m11,
+            m12;
 
         public Matrix2x3(Rect rect, float cos, float sin)
         {

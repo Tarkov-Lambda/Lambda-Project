@@ -30,20 +30,21 @@ public abstract class LambdaGamemode : IGamemode
 
     public abstract AbstractMatchStateController CreateState(MatchState state);
 
-    public virtual Dictionary<MatchState, float> StateTimerConfig { get; } = new()
-    {
-        {MatchState.None, 0},
-        {MatchState.Warmup, 120},
-        {MatchState.WarmupEnd, 5},
-        {MatchState.Cleanup, 3},
-        {MatchState.Pause, 45},
-        {MatchState.RoundPrepare, 5},
-        {MatchState.RoundAction, 115},
-        {MatchState.RoundEnd, 8},
-        {MatchState.RoundPlanted, 45},
-        {MatchState.SideSwap, 10},
-        {MatchState.MatchEnd, 15}
-    };
+    public virtual Dictionary<MatchState, float> StateTimerConfig { get; } =
+        new()
+        {
+            { MatchState.None, 0 },
+            { MatchState.Warmup, 120 },
+            { MatchState.WarmupEnd, 5 },
+            { MatchState.Cleanup, 3 },
+            { MatchState.Pause, 45 },
+            { MatchState.RoundPrepare, 5 },
+            { MatchState.RoundAction, 115 },
+            { MatchState.RoundEnd, 8 },
+            { MatchState.RoundPlanted, 45 },
+            { MatchState.SideSwap, 10 },
+            { MatchState.MatchEnd, 15 },
+        };
 
     public virtual void Dispose() { }
 }
@@ -86,10 +87,7 @@ public interface IGMWithNightMode
 /// <summary>
 /// Whether it's a CT/T gamemode
 /// </summary>
-public interface IGMTeam
-{
-
-}
+public interface IGMTeam { }
 
 /// <summary>
 /// Whether this gamemode allows respawning during action phase
@@ -114,6 +112,7 @@ public interface IGMRespawnable
 {
     // For shit like conquest, default is 0
     public int RespawnCost { get; set; }
+
     // Configuration
     public IRespawnWeights RespawnWeights { get; }
 }

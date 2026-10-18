@@ -29,8 +29,12 @@ namespace SteamAudio
         public static SerializedData PromptForNewAsset(string defaultFileName)
         {
 #if UNITY_EDITOR
-            var fileName = EditorUtility.SaveFilePanelInProject("Export", defaultFileName, "asset",
-                "Select a file to export data to.");
+            var fileName = EditorUtility.SaveFilePanelInProject(
+                "Export",
+                defaultFileName,
+                "asset",
+                "Select a file to export data to."
+            );
 
             if (fileName != null && fileName.Length > 0)
             {

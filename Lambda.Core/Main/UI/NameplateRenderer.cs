@@ -1,6 +1,6 @@
-﻿using EFT.UI;
+﻿using System.Collections.Generic;
+using EFT.UI;
 using Lambda.UI.Nameplate;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI;
@@ -65,7 +65,8 @@ internal class NameplateRenderer : MonoBehaviour
             return;
         }
 
-        if (H.MainPlayerScore == null) return;
+        if (H.MainPlayerScore == null)
+            return;
 
         Faction ownFaction = H.MainPlayerScore.Faction;
         int activeCount = 0;
@@ -98,10 +99,7 @@ internal class NameplateRenderer : MonoBehaviour
 
             RectTransform nameplateRect = nameplate.transform as RectTransform;
 
-            Vector2 screenPos = new(
-                viewportPos.x * Screen.width,
-                viewportPos.y * Screen.height
-            );
+            Vector2 screenPos = new(viewportPos.x * Screen.width, viewportPos.y * Screen.height);
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 RectTransform,

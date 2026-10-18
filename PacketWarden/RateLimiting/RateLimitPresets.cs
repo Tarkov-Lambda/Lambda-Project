@@ -6,35 +6,29 @@ public static class RateLimitPresets
 
     // Default policy: 20/s sustained, burst 40, cost 1, reject by default.
     // This is giga relaxed
-    public static RateLimitConfig Default => new(
-        enabled: true,
-        refillPerSecond: 20,
-        burst: 40,
-        costPerPacket: 1,
-        action: RateLimitAction.Reject,
-        rejectCooldownSeconds: 0.25);
+    public static RateLimitConfig Default =>
+        new(
+            enabled: true,
+            refillPerSecond: 20,
+            burst: 40,
+            costPerPacket: 1,
+            action: RateLimitAction.Reject,
+            rejectCooldownSeconds: 0.25
+        );
 
+    public static RateLimitConfig HighFrequency =>
+        new(enabled: true, refillPerSecond: 60, burst: 120, action: RateLimitAction.Drop);
 
-    public static RateLimitConfig HighFrequency => new(
-        enabled: true,
-        refillPerSecond: 60,
-        burst: 120,
-        action: RateLimitAction.Drop);
+    public static RateLimitConfig StrictInteraction =>
+        new(enabled: true, refillPerSecond: 2, burst: 5, action: RateLimitAction.Reject);
 
-    public static RateLimitConfig StrictInteraction => new(
-        enabled: true,
-        refillPerSecond: 2,
-        burst: 5,
-        action: RateLimitAction.Reject);
+    public static RateLimitConfig SecurityCritical =>
+        new(enabled: true, refillPerSecond: 1, burst: 3, action: RateLimitAction.Disconnect);
 
-    public static RateLimitConfig SecurityCritical => new(
-        enabled: true,
-        refillPerSecond: 1,
-        burst: 3,
-        action: RateLimitAction.Disconnect);
-
-
-    public static RateLimitConfig LimitPerSecond(double maxPerSecond, RateLimitAction action = RateLimitAction.Reject)
+    public static RateLimitConfig LimitPerSecond(
+        double maxPerSecond,
+        RateLimitAction action = RateLimitAction.Reject
+    )
     {
         return new RateLimitConfig(
             enabled: true,
@@ -45,7 +39,10 @@ public static class RateLimitPresets
         );
     }
 
-    public static RateLimitConfig LimitByCooldown(double cooldownSeconds, RateLimitAction action = RateLimitAction.Reject)
+    public static RateLimitConfig LimitByCooldown(
+        double cooldownSeconds,
+        RateLimitAction action = RateLimitAction.Reject
+    )
     {
         return new RateLimitConfig(
             enabled: true,

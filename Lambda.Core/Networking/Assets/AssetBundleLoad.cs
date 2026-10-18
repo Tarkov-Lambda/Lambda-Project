@@ -1,12 +1,12 @@
-﻿using PacketWarden;
-using MemoryPack;
-using Lambda.Core.Main.AssetBundleHandling;
+﻿using System;
 using System.Collections.Generic;
-using EFT;
-using Cysharp.Threading.Tasks;
-using Comfort.Common;
-using System;
 using System.Threading;
+using Comfort.Common;
+using Cysharp.Threading.Tasks;
+using EFT;
+using Lambda.Core.Main.AssetBundleHandling;
+using MemoryPack;
+using PacketWarden;
 
 namespace Lambda.Core.Networking;
 
@@ -46,7 +46,8 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
         var pending = new HashSet<Player>();
         foreach (var player in H.AllPlayers)
         {
-            if (H.IsHeadless && player.IsYourPlayer) continue;
+            if (H.IsHeadless && player.IsYourPlayer)
+                continue;
             pending.Add(player);
         }
 
@@ -56,7 +57,7 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
         {
             id = id,
             templateIds = templateIds,
-            replyWhenLoaded = true
+            replyWhenLoaded = true,
         };
 
         DispatchPacket(ref packet);
@@ -64,14 +65,15 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
         await UniTask.WaitUntil(() => !PendingLoads.ContainsKey(id), cancellationToken: _cts.Token);
     }
 
-    public void SendToLateJoiner(Player player, List<string> templateIds) => SendToLateJoiner(Network.GetPeerIdByPlayer(player), templateIds);
+    public void SendToLateJoiner(Player player, List<string> templateIds) =>
+        SendToLateJoiner(Network.GetPeerIdByPlayer(player), templateIds);
 
     public void SendToLateJoiner(int peerId, List<string> templateIds)
     {
         var packet = new AssetBundleLoadPacket
         {
             templateIds = templateIds,
-            replyWhenLoaded = false
+            replyWhenLoaded = false,
         };
 
         DispatchPacket(ref packet, peerId);
@@ -82,7 +84,7 @@ public class AssetBundleLoadPacketWarden : LambdaPacketWarden<AssetBundleLoadPac
         var packet = new AssetBundleLoadPacket
         {
             templateIds = templateIds,
-            replyWhenLoaded = false
+            replyWhenLoaded = false,
         };
 
         DispatchPacket(ref packet);

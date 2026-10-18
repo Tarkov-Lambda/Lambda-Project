@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using BepInEx;
 using BepInEx.Logging;
 using Comfort.Common;
@@ -7,19 +11,23 @@ using Lambda.Audio.SteamIntegration.AudioRooms;
 using Lambda.Audio.SteamIntegration.Patches;
 using SPT.Reflection.Patching;
 using SteamAudio;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using UnityEngine;
 
 namespace Lambda.Audio.SteamIntegration;
 
 // [BepInDependency("com.ifp.PhononSpatializerProxy")]
-[BepInPlugin("com.Lambda.Audio.SteamAudioIntegration", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin(
+    "com.Lambda.Audio.SteamAudioIntegration",
+    MyPluginInfo.PLUGIN_NAME,
+    MyPluginInfo.PLUGIN_VERSION
+)]
 public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
 {
-    public static readonly string pathToBinaries = Path.Combine(BepInEx.Paths.PluginPath, "ifp", "Binaries");
+    public static readonly string pathToBinaries = Path.Combine(
+        BepInEx.Paths.PluginPath,
+        "ifp",
+        "Binaries"
+    );
 
     internal ManualLogSource Log => Logger;
 
@@ -35,7 +43,8 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
         return gameWorld != null && gameWorld is not HideoutGameWorld;
     }
 
-    public async UniTask RegisterSingletonInRaid<T>() where T : class, IDisposable, new()
+    public async UniTask RegisterSingletonInRaid<T>()
+        where T : class, IDisposable, new()
     {
         try
         {
@@ -55,7 +64,8 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
         _patches.Add(patch);
     }
 
-    private void RegisterSingleton<T>() where T : class, IDisposable, new()
+    private void RegisterSingleton<T>()
+        where T : class, IDisposable, new()
     {
         Logger.LogInfo($"Registering {typeof(T).Name}");
         var instance = new T();
@@ -70,7 +80,8 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
 
         _cts = new CancellationTokenSource();
 
-        if (PacketWardenUtils.Network.IsHeadless) return;
+        if (PacketWardenUtils.Network.IsHeadless)
+            return;
 
         // RegisterPatch(new Patch_BetterAudio_SetProtagonist());                      // Attach SteamAudioListener to the local player's AudioListener transform whenever SetProtagonist is called (raid spawn).
 
@@ -81,23 +92,23 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
         //     BetterSourceProxyRouter.Attach(source);
         // }
 
-        RegisterPatch(new Transpiler_BetterSource_SetOcclusionVolumeFactor());              // do not let anything be occluded
+        RegisterPatch(new Transpiler_BetterSource_SetOcclusionVolumeFactor()); // do not let anything be occluded
         RegisterPatch(new Transpiler_BetterSource_SetOcclusionRolloffScale());
-        RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency());                 // bypass low filter muffling
-        RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency());                // bypass high filter muffling
+        RegisterPatch(new Patch_SpatialLowPassFilter_CalculateFrequency()); // bypass low filter muffling
+        RegisterPatch(new Patch_SpatialHighPassFilter_CalculateFrequency()); // bypass high filter muffling
 
-        RegisterPatch(new Transpiler_BetterSource_SetLowPassFilterParameters());            //
-        RegisterPatch(new Transpiler_BetterSource_SetHighPassFilterParameters());           //
+        RegisterPatch(new Transpiler_BetterSource_SetLowPassFilterParameters()); //
+        RegisterPatch(new Transpiler_BetterSource_SetHighPassFilterParameters()); //
 
-        RegisterPatch(new Transpiler_SpatialAudioSystem_Update());                          // bypass high filter muffling
-        RegisterPatch(new Transpiler_SpatialAudioSystem_LateUpdate());                      // bypass high filter muffling
+        RegisterPatch(new Transpiler_SpatialAudioSystem_Update()); // bypass high filter muffling
+        RegisterPatch(new Transpiler_SpatialAudioSystem_LateUpdate()); // bypass high filter muffling
 
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ListenerCurrentRoom());             // force audio room to always be Phantom Audio Room
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1());        // bypass occlusion containers
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2());        // bypass occlusion containers
-        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3());        // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ListenerCurrentRoom()); // force audio room to always be Phantom Audio Room
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1()); // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2()); // bypass occlusion containers
+        RegisterPatch(new Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3()); // bypass occlusion containers
 
-        RegisterSingletonInRaid<LambdaAudioRoomController>().Forget();              // We invoke all audio room changes manually
+        RegisterSingletonInRaid<LambdaAudioRoomController>().Forget(); // We invoke all audio room changes manually
 
         // RegisterSingleton<BetterSourceProxyRouter>();
     }
@@ -106,7 +117,8 @@ public class LambdaSteamAudioIntegrationPlugin : BaseUnityPlugin
     {
         Logger.LogInfo("Unloading LambdaSteamAudioIntegrationPlugin");
 
-        if (PacketWardenUtils.Network.IsHeadless) return;
+        if (PacketWardenUtils.Network.IsHeadless)
+            return;
 
         foreach (var patch in _patches)
         {

@@ -26,9 +26,15 @@ namespace SteamAudio
         {
             var deviceSettings = new RadeonRaysDeviceSettings { };
 
-            var status = API.iplRadeonRaysDeviceCreate(openCLDevice.Get(), ref deviceSettings, out mRadeonRaysDevice);
+            var status = API.iplRadeonRaysDeviceCreate(
+                openCLDevice.Get(),
+                ref deviceSettings,
+                out mRadeonRaysDevice
+            );
             if (status != Error.Success)
-                throw new Exception(string.Format("Unable to create Radeon Rays device. [{0}]", status));
+                throw new Exception(
+                    string.Format("Unable to create Radeon Rays device. [{0}]", status)
+                );
         }
 
         public RadeonRaysDevice(RadeonRaysDevice device)

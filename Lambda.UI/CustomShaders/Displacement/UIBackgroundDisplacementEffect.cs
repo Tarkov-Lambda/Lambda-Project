@@ -27,7 +27,8 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
     {
         get
         {
-            if (_graphic == null) _graphic = GetComponent<Graphic>();
+            if (_graphic == null)
+                _graphic = GetComponent<Graphic>();
             return _graphic;
         }
     }
@@ -41,8 +42,10 @@ public class UIBackgroundDisplacementEffect : MonoBehaviour, IMaterialModifier
     {
         if (_customMaterial != null)
         {
-            if (Application.isPlaying) Destroy(_customMaterial);
-            else DestroyImmediate(_customMaterial);
+            if (Application.isPlaying)
+                Destroy(_customMaterial);
+            else
+                DestroyImmediate(_customMaterial);
 
             _customMaterial = null;
         }

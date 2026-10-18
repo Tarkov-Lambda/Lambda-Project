@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
@@ -57,7 +56,6 @@
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
-
     <Reference Include="..\..\.Binaries\*.dll" />
   </ItemGroup>
 
@@ -72,8 +70,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SteamAudioUnity\SteamAudioUnity.csproj" />
     <ProjectReference Include="..\PhononSpatializerProxy\PhononSpatializerProxy.csproj" />
-    <ProjectReference
-      Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" />
+    <ProjectReference Include="..\PhononSpatializerProxy.BepInEx\PhononSpatializerProxy.BepInEx.csproj" />
     <ProjectReference Include="..\..\PacketWarden\PacketWarden.csproj" />
   </ItemGroup>
 
@@ -82,7 +79,6 @@
   </PropertyGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
       <FilesToDelete Include="$(SPTPath)\BepInEx\scripts\ifp\$(MSBuildProjectName).dll" />
@@ -96,12 +92,17 @@
       <FilesToDelete Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
-    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="@(FilesToCopyToPlugins)"
-      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <Copy Condition="'$(Configuration)' != 'Release'" SourceFiles="@(FilesToCopyToScripts)"
-      DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy
+      Condition="'$(Configuration)' == 'Release'"
+      SourceFiles="@(FilesToCopyToPlugins)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
+    />
+    <Copy
+      Condition="'$(Configuration)' != 'Release'"
+      SourceFiles="@(FilesToCopyToScripts)"
+      DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
+    />
 
     <Delete Files="@(FilesToDelete)" />
-
   </Target>
 </Project>

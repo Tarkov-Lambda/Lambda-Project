@@ -1,11 +1,11 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Linq;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Fika.Core;
 using Lambda.Core.Networking;
-using System;
-using System.Linq;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -13,6 +13,7 @@ namespace Lambda.Core.Main.Gamemode;
 public class SharedNone : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.None;
+
     public override void OnEnter()
     {
         if (!H.IsHeadless)
@@ -25,11 +26,16 @@ public class SharedNone : AbstractMatchStateController
 
         if (H.IsServer)
         {
-            var allDisconnected = H.Scoreboard.Values.Where(p => p.ReadyState == PlayerReadinessState.Disconnected);
+            var allDisconnected = H.Scoreboard.Values.Where(p =>
+                p.ReadyState == PlayerReadinessState.Disconnected
+            );
 
             foreach (var disconnectedPlayer in allDisconnected)
             {
-                Singleton<PlayerReadinessPacketWarden>.Instance.SendForPlayer(disconnectedPlayer.player, PlayerReadinessState.Disconnected);
+                Singleton<PlayerReadinessPacketWarden>.Instance.SendForPlayer(
+                    disconnectedPlayer.player,
+                    PlayerReadinessState.Disconnected
+                );
             }
         }
     }
@@ -38,12 +44,14 @@ public class SharedNone : AbstractMatchStateController
     {
         return null;
     }
+
     public override void OnExit() { }
 }
 
 public class SharedWarmup : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.Warmup;
+
     public override void OnEnter()
     {
         IU.GarbageCollectWorldLoot();
@@ -71,22 +79,22 @@ public class SharedWarmup : AbstractMatchStateController
 
         // if (allReady) return MatchState.WarmupEnd;
 
-        if (remaining <= 0) return MatchState.WarmupEnd;
+        if (remaining <= 0)
+            return MatchState.WarmupEnd;
 
-        if (elapsed >= 1f && allReady) return MatchState.WarmupEnd;
+        if (elapsed >= 1f && allReady)
+            return MatchState.WarmupEnd;
 
         return null;
     }
 
-    public override void OnExit()
-    {
-
-    }
+    public override void OnExit() { }
 }
 
 public class SharedWarmupEnd : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.WarmupEnd;
+
     public override void OnEnter()
     {
         if (!H.IsHeadless)
@@ -99,8 +107,11 @@ public class SharedWarmupEnd : AbstractMatchStateController
 
                 await UniTask.Delay(2250);
 
-                H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75f);
-
+                H.BetterAudio.FadeMixerVolume(
+                    H.BetterAudio.AudioMixerData.InGameVolumeMixer,
+                    -80f,
+                    0.75f
+                );
             });
         }
 
@@ -112,6 +123,7 @@ public class SharedWarmupEnd : AbstractMatchStateController
     }
 
     public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
+
     public override void OnExit()
     {
         H.Session.InitializeScoreBoard();
@@ -127,8 +139,10 @@ public class SharedWarmupEnd : AbstractMatchStateController
                 if (p.ReadyState == PlayerReadinessState.Disconnected)
                     continue;
 
-                if (p.Faction == Faction.CT) ctCount++;
-                else if (p.Faction == Faction.T) tCount++;
+                if (p.Faction == Faction.CT)
+                    ctCount++;
+                else if (p.Faction == Faction.T)
+                    tCount++;
             }
 
             bool factionsChanged = false;
@@ -143,8 +157,10 @@ public class SharedWarmupEnd : AbstractMatchStateController
                     Faction assignedFaction = ctCount <= tCount ? Faction.CT : Faction.T;
                     p.ChangeFaction(assignedFaction);
 
-                    if (assignedFaction == Faction.CT) ctCount++;
-                    else tCount++;
+                    if (assignedFaction == Faction.CT)
+                        ctCount++;
+                    else
+                        tCount++;
 
                     factionsChanged = true;
                 }
@@ -161,9 +177,11 @@ public class SharedWarmupEnd : AbstractMatchStateController
 public class SharedCleanup : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.Cleanup;
+
     public override void OnEnter()
     {
-        if (!H.IsHeadless) H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
+        if (!H.IsHeadless)
+            H.MainPlayer.GetComponent<EftGamePlayerOwner>().CloseInventoryIfOpen();
 
         int totalRounds = H.Session.TotalRoundsPlayed();
         bool isHalfTime = false;
@@ -194,7 +212,9 @@ public class SharedCleanup : AbstractMatchStateController
             }
             catch (Exception ex)
             {
-                D.Log($"[SharedCleanup] Error occured during Inventory Management for {player.Profile.Nickname}");
+                D.Log(
+                    $"[SharedCleanup] Error occured during Inventory Management for {player.Profile.Nickname}"
+                );
                 D.Log(ex.StackTrace);
             }
         }
@@ -206,13 +226,20 @@ public class SharedCleanup : AbstractMatchStateController
             {
                 Player selectedTerrorist = null;
 
-                Player assignedPlayer = Singleton<AskForBombPriorityPacketWarden>.Instance.AssignedPlayer;
+                Player assignedPlayer = Singleton<AskForBombPriorityPacketWarden>
+                    .Instance
+                    .AssignedPlayer;
                 if (assignedPlayer != null)
                     selectedTerrorist = assignedPlayer;
                 else
-                    selectedTerrorist = H.Session.GetPlayersFromFaction(Faction.T).Where(p => p.Context.ReadyState == PlayerReadinessState.Ready).RandomElement();
+                    selectedTerrorist = H
+                        .Session.GetPlayersFromFaction(Faction.T)
+                        .Where(p => p.Context.ReadyState == PlayerReadinessState.Ready)
+                        .RandomElement();
 
-                var backpackSlot = selectedTerrorist.Inventory.Equipment.GetSlot(EquipmentSlot.Backpack);
+                var backpackSlot = selectedTerrorist.Inventory.Equipment.GetSlot(
+                    EquipmentSlot.Backpack
+                );
 
                 backpackSlot.RemoveItemWithoutRestrictions();
 
@@ -226,51 +253,70 @@ public class SharedCleanup : AbstractMatchStateController
         {
             foreach (var player in H.AllPlayers)
             {
-                Singleton<EquipmentResyncPacketWarden>.Instance.Send(player, EquipmentResyncRequestType.CleanupBroadcast);
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(
+                    player,
+                    EquipmentResyncRequestType.CleanupBroadcast
+                );
             }
         }
 
-        UniTask.Void(async ct =>
-        {
-            try
+        UniTask.Void(
+            async ct =>
             {
-                await UniTask.Delay(250, cancellationToken: MatchStateCancellationToken);
-
-                IU.GarbageCollectWorldLoot();
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                if (!H.IsHeadless)
+                try
                 {
-                    await UniTask.Delay(500, cancellationToken: MatchStateCancellationToken);
+                    await UniTask.Delay(250, cancellationToken: MatchStateCancellationToken);
 
-                    HU.HealMe().Forget();
-                    if (H.MainPlayer.MovementContext.IsInPronePose) H.MainPlayer.MovementContext.IsInPronePose = false;
+                    IU.GarbageCollectWorldLoot();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
 
-                    H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
-                    await UniTask.Delay(750, cancellationToken: MatchStateCancellationToken);
-                    Teleporter.Teleport(H.MainPlayer, H.Session.level, H.MainPlayerScore.Faction);
+                    if (!H.IsHeadless)
+                    {
+                        await UniTask.Delay(500, cancellationToken: MatchStateCancellationToken);
+
+                        HU.HealMe().Forget();
+                        if (H.MainPlayer.MovementContext.IsInPronePose)
+                            H.MainPlayer.MovementContext.IsInPronePose = false;
+
+                        H.MainPlayer.MovementContext.SetPoseLevel(1f, false);
+                        await UniTask.Delay(750, cancellationToken: MatchStateCancellationToken);
+                        Teleporter.Teleport(
+                            H.MainPlayer,
+                            H.Session.level,
+                            H.MainPlayerScore.Faction
+                        );
+                    }
                 }
-            }
-            catch (OperationCanceledException) { }
-        }, cancellationToken: MatchStateCancellationToken);
+                catch (OperationCanceledException) { }
+            },
+            cancellationToken: MatchStateCancellationToken
+        );
     }
-    public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+
+    public override MatchState? OnUpdate() =>
+        H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+
     public override void OnExit() { }
 }
 
 public class SharedPause : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.Pause;
+
     public override void OnEnter() { }
-    public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+
+    public override MatchState? OnUpdate() =>
+        H.Arena.StateTimer <= 0 ? MatchState.RoundPrepare : null;
+
     public override void OnExit() { }
 }
 
 public class SharedPrepare : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.RoundPrepare;
+
     public override void OnEnter()
     {
         if (!H.IsHeadless)
@@ -283,7 +329,7 @@ public class SharedPrepare : AbstractMatchStateController
             if (H.MainPlayer.GetSlotItem(EquipmentSlot.Backpack) != null)
                 D.Notify("You have the bomb.");
         }
-        
+
         D.Log($"Dumping Player Metadata:");
         foreach (var player in H.AllPlayers)
         {
@@ -296,18 +342,18 @@ public class SharedPrepare : AbstractMatchStateController
         }
     }
 
-    public override MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
+    public override MatchState? OnUpdate() =>
+        H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.RoundAction : null;
 
-    public override void OnExit()
-    {
-
-    }
+    public override void OnExit() { }
 }
 
 public class GenericTeamRoundBasedAction : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.RoundAction;
+
     public override void OnEnter() { }
+
     public override MatchState? OnUpdate()
     {
         Faction? winner = CheckWipe();
@@ -326,6 +372,7 @@ public class GenericTeamRoundBasedAction : AbstractMatchStateController
 
         return null;
     }
+
     public override void OnExit() { }
 
     private Faction? CheckWipe()
@@ -334,12 +381,16 @@ public class GenericTeamRoundBasedAction : AbstractMatchStateController
         int aliveT = 0;
         foreach (var p in H.Scoreboard.Values)
         {
-            if (p.IsAlive && p.Faction == Faction.CT) aliveCT++;
-            if (p.IsAlive && p.Faction == Faction.T) aliveT++;
+            if (p.IsAlive && p.Faction == Faction.CT)
+                aliveCT++;
+            if (p.IsAlive && p.Faction == Faction.T)
+                aliveT++;
         }
 
-        if (aliveCT == 0) return Faction.T;
-        if (aliveT == 0) return Faction.CT;
+        if (aliveCT == 0)
+            return Faction.T;
+        if (aliveT == 0)
+            return Faction.CT;
         return null;
     }
 }
@@ -347,6 +398,7 @@ public class GenericTeamRoundBasedAction : AbstractMatchStateController
 public class SharedRoundEnd : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.RoundEnd;
+
     public override void OnEnter()
     {
         if (H.IsServer)
@@ -356,20 +408,30 @@ public class SharedRoundEnd : AbstractMatchStateController
 
         if (!H.IsHeadless)
         {
-            UniTask.Void(async ct =>
-            {
-                try
+            UniTask.Void(
+                async ct =>
                 {
-                    await UniTask.Delay((int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000, cancellationToken: MatchStateCancellationToken);
+                    try
+                    {
+                        await UniTask.Delay(
+                            (int)H.Gamemode.StateTimerConfig[StateType] * 1000 - 3000,
+                            cancellationToken: MatchStateCancellationToken
+                        );
 
-                    PU.CloseEyes(false, false).Forget();
+                        PU.CloseEyes(false, false).Forget();
 
-                    await UniTask.Delay(2250, cancellationToken: MatchStateCancellationToken);
+                        await UniTask.Delay(2250, cancellationToken: MatchStateCancellationToken);
 
-                    H.BetterAudio.FadeMixerVolume(H.BetterAudio.AudioMixerData.InGameVolumeMixer, -80f, 0.75F);
-                }
-                catch (OperationCanceledException) { }
-            }, cancellationToken: MatchStateCancellationToken);
+                        H.BetterAudio.FadeMixerVolume(
+                            H.BetterAudio.AudioMixerData.InGameVolumeMixer,
+                            -80f,
+                            0.75F
+                        );
+                    }
+                    catch (OperationCanceledException) { }
+                },
+                cancellationToken: MatchStateCancellationToken
+            );
         }
     }
 
@@ -389,7 +451,10 @@ public class SharedRoundEnd : AbstractMatchStateController
                     }
                 }
 
-                if (wins[Faction.CT] >= roundBasedGamemode.MaxRoundsToWin || wins[Faction.T] >= roundBasedGamemode.MaxRoundsToWin)
+                if (
+                    wins[Faction.CT] >= roundBasedGamemode.MaxRoundsToWin
+                    || wins[Faction.T] >= roundBasedGamemode.MaxRoundsToWin
+                )
                 {
                     return MatchState.MatchEnd;
                 }
@@ -399,6 +464,7 @@ public class SharedRoundEnd : AbstractMatchStateController
 
         return null;
     }
+
     public override void OnExit()
     {
         IU.GarbageCollectWorldLoot();
@@ -426,12 +492,16 @@ public class SharedSideSwap : AbstractMatchStateController
                 playerScore.ChangeFaction(swappedFaction);
             }
 
-            (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (H.Session.factionWins[Faction.T], H.Session.factionWins[Faction.CT]);
+            (H.Session.factionWins[Faction.CT], H.Session.factionWins[Faction.T]) = (
+                H.Session.factionWins[Faction.T],
+                H.Session.factionWins[Faction.CT]
+            );
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
         }
     }
 
-    public override MatchState? OnUpdate() => H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
+    public override MatchState? OnUpdate() =>
+        H.IsServer && H.Arena.StateTimer <= 0 ? MatchState.Cleanup : null;
 
     public override void OnExit()
     {
@@ -443,7 +513,10 @@ public class SharedSideSwap : AbstractMatchStateController
 public class SharedMatchEnd : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.MatchEnd;
+
     public override void OnEnter() { }
+
     public override MatchState? OnUpdate() => H.Arena.StateTimer <= 0 ? MatchState.None : null;
+
     public override void OnExit() { }
 }

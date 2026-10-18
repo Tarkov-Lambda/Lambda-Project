@@ -6,7 +6,8 @@ using SPT.Reflection.Patching;
 
 internal class Patch_GamePlayerOwner_TranslateCommand : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GamePlayerOwner), nameof(GamePlayerOwner.TranslateCommand));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(GamePlayerOwner), nameof(GamePlayerOwner.TranslateCommand));
 
     public static bool IsRessetingFreelook { get; private set; } = false;
 

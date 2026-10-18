@@ -15,7 +15,6 @@
 //
 
 using System.Threading.Tasks;
-
 using UnityEngine;
 
 namespace SteamAudio
@@ -37,14 +36,18 @@ namespace SteamAudio
             // in Tarkov, or non-standard audio engine), skip static mesh loading entirely.
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Context == null)
             {
-                Debug.LogWarning("[SteamAudio] SteamAudioStaticMesh.Start: SteamAudioManager not ready, static mesh will not be loaded.");
+                Debug.LogWarning(
+                    "[SteamAudio] SteamAudioStaticMesh.Start: SteamAudioManager not ready, static mesh will not be loaded."
+                );
                 return;
             }
 
             if (asset == null)
             {
-                Debug.LogWarningFormat("No asset set for Steam Audio Static Mesh in scene {0}. Export the scene before clicking Play.",
-                    gameObject.scene.name);
+                Debug.LogWarningFormat(
+                    "No asset set for Steam Audio Static Mesh in scene {0}. Export the scene before clicking Play.",
+                    gameObject.scene.name
+                );
             }
 
             // Only load the static mesh asynchronously if we're using the default scene type. In particular, with
@@ -89,7 +92,8 @@ namespace SteamAudio
         void Update()
         {
             // Guard: don't try to load if the context or scene isn't available yet.
-            if (SteamAudioManager.Context == null || SteamAudioManager.CurrentScene == null) return;
+            if (SteamAudioManager.Context == null || SteamAudioManager.CurrentScene == null)
+                return;
 
             if (mStaticMesh == null && asset != null)
             {
@@ -117,7 +121,11 @@ namespace SteamAudio
                 }
                 else
                 {
-                    mStaticMesh = new StaticMesh(SteamAudioManager.Context, SteamAudioManager.CurrentScene, asset);
+                    mStaticMesh = new StaticMesh(
+                        SteamAudioManager.Context,
+                        SteamAudioManager.CurrentScene,
+                        asset
+                    );
                     if (enabled)
                     {
                         mStaticMesh.AddToScene(SteamAudioManager.CurrentScene);

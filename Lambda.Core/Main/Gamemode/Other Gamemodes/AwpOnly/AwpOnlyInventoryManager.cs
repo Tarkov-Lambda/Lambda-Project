@@ -42,7 +42,7 @@ public class AwpOnlyInventoryManager : KnifeOnlyInventoryManager
             RoundGunType.TRG => Hardcode.TRG,
             RoundGunType.MK18 => Hardcode.MK18,
             RoundGunType.AK50 => Hardcode.AK50,
-            _ => null
+            _ => null,
         };
 
         var NewRifle = GetBuySelectionItem(player.Context, SelectedWeaponBsgId);

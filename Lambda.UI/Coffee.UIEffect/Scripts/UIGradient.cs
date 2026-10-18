@@ -10,7 +10,13 @@ namespace Coffee.UIEffects
     [AddComponentMenu("UI/UIEffects/UIGradient", 101)]
     public class UIGradient : BaseMeshEffect
     {
-        static readonly Vector2[] s_SplitedCharacterPosition = {Vector2.up, Vector2.one, Vector2.right, Vector2.zero};
+        static readonly Vector2[] s_SplitedCharacterPosition =
+        {
+            Vector2.up,
+            Vector2.one,
+            Vector2.right,
+            Vector2.zero,
+        };
 
         /// <summary>
         /// Gradient direction.
@@ -33,38 +39,51 @@ namespace Coffee.UIEffects
             Split,
         }
 
-
-        [Tooltip("Gradient Direction.")] [SerializeField]
+        [Tooltip("Gradient Direction.")]
+        [SerializeField]
         Direction m_Direction;
 
-        [Tooltip("Color1: Top or Left.")] [SerializeField]
+        [Tooltip("Color1: Top or Left.")]
+        [SerializeField]
         Color m_Color1 = Color.white;
 
-        [Tooltip("Color2: Bottom or Right.")] [SerializeField]
+        [Tooltip("Color2: Bottom or Right.")]
+        [SerializeField]
         Color m_Color2 = Color.white;
 
-        [Tooltip("Color3: For diagonal.")] [SerializeField]
+        [Tooltip("Color3: For diagonal.")]
+        [SerializeField]
         Color m_Color3 = Color.white;
 
-        [Tooltip("Color4: For diagonal.")] [SerializeField]
+        [Tooltip("Color4: For diagonal.")]
+        [SerializeField]
         Color m_Color4 = Color.white;
 
-        [Tooltip("Gradient rotation.")] [SerializeField] [Range(-180, 180)]
+        [Tooltip("Gradient rotation.")]
+        [SerializeField]
+        [Range(-180, 180)]
         float m_Rotation;
 
-        [Tooltip("Gradient offset for Horizontal, Vertical or Angle.")] [SerializeField] [Range(-1, 1)]
+        [Tooltip("Gradient offset for Horizontal, Vertical or Angle.")]
+        [SerializeField]
+        [Range(-1, 1)]
         float m_Offset1;
 
-        [Tooltip("Gradient offset for Diagonal.")] [SerializeField] [Range(-1, 1)]
+        [Tooltip("Gradient offset for Diagonal.")]
+        [SerializeField]
+        [Range(-1, 1)]
         float m_Offset2;
 
-        [Tooltip("Gradient style for Text.")] [SerializeField]
+        [Tooltip("Gradient style for Text.")]
+        [SerializeField]
         GradientStyle m_GradientStyle;
 
-        [Tooltip("Color space to correct color.")] [SerializeField]
+        [Tooltip("Color space to correct color.")]
+        [SerializeField]
         ColorSpace m_ColorSpace = ColorSpace.Uninitialized;
 
-        [Tooltip("Ignore aspect ratio.")] [SerializeField]
+        [Tooltip("Ignore aspect ratio.")]
+        [SerializeField]
         bool m_IgnoreAspectRatio = true;
 
         /// <summary>
@@ -75,7 +94,8 @@ namespace Coffee.UIEffects
             get { return m_Direction; }
             set
             {
-                if (m_Direction == value) return;
+                if (m_Direction == value)
+                    return;
                 m_Direction = value;
                 SetVerticesDirty();
             }
@@ -89,7 +109,8 @@ namespace Coffee.UIEffects
             get { return m_Color1; }
             set
             {
-                if (m_Color1 == value) return;
+                if (m_Color1 == value)
+                    return;
                 m_Color1 = value;
                 SetVerticesDirty();
             }
@@ -103,7 +124,8 @@ namespace Coffee.UIEffects
             get { return m_Color2; }
             set
             {
-                if (m_Color2 == value) return;
+                if (m_Color2 == value)
+                    return;
                 m_Color2 = value;
                 SetVerticesDirty();
             }
@@ -117,7 +139,8 @@ namespace Coffee.UIEffects
             get { return m_Color3; }
             set
             {
-                if (m_Color3 == value) return;
+                if (m_Color3 == value)
+                    return;
                 m_Color3 = value;
                 SetVerticesDirty();
             }
@@ -131,7 +154,8 @@ namespace Coffee.UIEffects
             get { return m_Color4; }
             set
             {
-                if (m_Color4 == value) return;
+                if (m_Color4 == value)
+                    return;
                 m_Color4 = value;
                 SetVerticesDirty();
             }
@@ -150,7 +174,8 @@ namespace Coffee.UIEffects
             }
             set
             {
-                if (Mathf.Approximately(m_Rotation, value)) return;
+                if (Mathf.Approximately(m_Rotation, value))
+                    return;
                 m_Rotation = value;
                 SetVerticesDirty();
             }
@@ -164,7 +189,8 @@ namespace Coffee.UIEffects
             get { return m_Offset1; }
             set
             {
-                if (Mathf.Approximately(m_Offset1, value)) return;
+                if (Mathf.Approximately(m_Offset1, value))
+                    return;
                 m_Offset1 = value;
                 SetVerticesDirty();
             }
@@ -178,7 +204,11 @@ namespace Coffee.UIEffects
             get { return new Vector2(m_Offset2, m_Offset1); }
             set
             {
-                if (Mathf.Approximately(m_Offset1, value.y) && Mathf.Approximately(m_Offset2, value.x)) return;
+                if (
+                    Mathf.Approximately(m_Offset1, value.y)
+                    && Mathf.Approximately(m_Offset2, value.x)
+                )
+                    return;
                 m_Offset1 = value.y;
                 m_Offset2 = value.x;
                 SetVerticesDirty();
@@ -193,7 +223,8 @@ namespace Coffee.UIEffects
             get { return m_GradientStyle; }
             set
             {
-                if (m_GradientStyle == value) return;
+                if (m_GradientStyle == value)
+                    return;
                 m_GradientStyle = value;
                 SetVerticesDirty();
             }
@@ -207,7 +238,8 @@ namespace Coffee.UIEffects
             get { return m_ColorSpace; }
             set
             {
-                if (m_ColorSpace == value) return;
+                if (m_ColorSpace == value)
+                    return;
                 m_ColorSpace = value;
                 SetVerticesDirty();
             }
@@ -221,7 +253,8 @@ namespace Coffee.UIEffects
             get { return m_IgnoreAspectRatio; }
             set
             {
-                if (m_IgnoreAspectRatio == value) return;
+                if (m_IgnoreAspectRatio == value)
+                    return;
                 m_IgnoreAspectRatio = value;
                 SetVerticesDirty();
             }
@@ -300,7 +333,8 @@ namespace Coffee.UIEffects
                     color = Color.LerpUnclamped(
                         Color.LerpUnclamped(m_Color1, m_Color2, normalizedPos.x),
                         Color.LerpUnclamped(m_Color3, m_Color4, normalizedPos.x),
-                        normalizedPos.y);
+                        normalizedPos.y
+                    );
                 }
                 else
                 {
@@ -308,7 +342,8 @@ namespace Coffee.UIEffects
                 }
 
                 // Correct color.
-                vertex.color *= (m_ColorSpace == ColorSpace.Gamma) ? color.gamma
+                vertex.color *=
+                    (m_ColorSpace == ColorSpace.Gamma) ? color.gamma
                     : (m_ColorSpace == ColorSpace.Linear) ? color.linear
                     : color;
 

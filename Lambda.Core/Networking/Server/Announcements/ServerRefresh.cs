@@ -23,10 +23,7 @@ public class ServerRefreshPacketWarden : LambdaPacketWarden<ServerRefreshPacket>
 
     public void Send(string msg)
     {
-        var packet = new ServerRefreshPacket
-        {
-            msg = msg
-        };
+        var packet = new ServerRefreshPacket { msg = msg };
         DispatchPacket(ref packet);
     }
 

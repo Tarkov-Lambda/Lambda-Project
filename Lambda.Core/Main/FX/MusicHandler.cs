@@ -1,11 +1,11 @@
-using Comfort.Common;
-using Cysharp.Threading.Tasks;
-using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
-using Lambda.Core.Networking;
-using Lambda.Shared;
 using System;
 using System.Threading;
+using Comfort.Common;
+using Cysharp.Threading.Tasks;
+using Lambda.Core.GameTypes;
+using Lambda.Core.Main.Gamemode;
+using Lambda.Core.Networking;
+using Lambda.Shared;
 using UnityEngine;
 
 namespace Lambda.Core.Main.FX;
@@ -24,7 +24,8 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         GameObject.DontDestroyOnLoad(go);
         _musicObject = go.AddComponent<MusicObject>();
 
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         EventBus.OnEnter += OnEnter;
         EventBus.OnExit += OnEnd;
         UnityTicker.OnUpdate += Update;
@@ -35,22 +36,22 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
         _cts.Cancel();
         _cts.Dispose();
 
-        if (_musicObject != null) GameObject.Destroy(_musicObject.gameObject);
+        if (_musicObject != null)
+            GameObject.Destroy(_musicObject.gameObject);
 
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnExit -= OnEnd;
         UnityTicker.OnUpdate -= Update;
     }
 
-    public void ChangeVolume()
-    {
-
-    }
+    public void ChangeVolume() { }
 
     public void Update()
     {
-        if (H.Arena == null || H.Session == null) return;
+        if (H.Arena == null || H.Session == null)
+            return;
 
         if (H.Session.matchState is MatchState.RoundPrepare or MatchState.WarmupEnd)
         {
@@ -60,7 +61,11 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
             {
                 _lastTickSecond = currentSecond;
 
-                if (H.Sounds != null && H.Sounds.CountdownTick != null && H.Sounds.CountdownTick.Length > 0)
+                if (
+                    H.Sounds != null
+                    && H.Sounds.CountdownTick != null
+                    && H.Sounds.CountdownTick.Length > 0
+                )
                 {
                     AudioClip tickClip = H.Sounds.CountdownTick.RandomElement();
                     PlaySFX(tickClip, 0.5f);
@@ -76,7 +81,7 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void OnEnter(MatchState state)
     {
-#if DEBUG        
+#if DEBUG
         if (!H.IsHeadless && H.MainPlayer?.Profile.Nickname == "asdada")
         {
             return;
@@ -117,7 +122,8 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
 
     public void PlayMusicEvent(AudioClip clip, float crossfadeDuration = 1f)
     {
-        if (clip == null) return;
+        if (clip == null)
+            return;
 
         CancelAndRefreshCts();
         _musicObject.CrossfadeTo(clip, crossfadeDuration, _cts.Token).Forget();
@@ -126,7 +132,8 @@ public class MusicHandler : Singleton<MusicHandler>, IDisposable
     // Dedicated method for One-Shot sounds so the music isn't interrupted
     public void PlaySFX(AudioClip clip, float volume = 1f)
     {
-        if (clip == null || _musicObject == null) return;
+        if (clip == null || _musicObject == null)
+            return;
         _musicObject.PlaySFX(clip, volume);
     }
 

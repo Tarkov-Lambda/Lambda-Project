@@ -1,11 +1,10 @@
 ﻿using System;
-using UnityEngine;
 using BepInEx.Logging;
-
-using EFT.Communications;
-using Diz.Utils;
 using Comfort.Common;
+using Diz.Utils;
+using EFT.Communications;
 using EFT.UI;
+using UnityEngine;
 
 namespace Lambda.Core
 {
@@ -13,7 +12,8 @@ namespace Lambda.Core
     {
         readonly Func<bool> displayNotification;
 
-        public EFTLogger(string sourceName, Func<bool> displayNotification) : base(sourceName)
+        public EFTLogger(string sourceName, Func<bool> displayNotification)
+            : base(sourceName)
         {
             this.displayNotification = displayNotification;
 
@@ -82,7 +82,8 @@ namespace Lambda.Core
                         text,
                         duration: default,
                         iconType: icon,
-                        textColor: color);
+                        textColor: color
+                    );
                 }
                 catch { }
             });

@@ -1,12 +1,12 @@
-﻿using Comfort.Common;
-using Lambda.Core.Main.AssetBundleHandling;
-using PacketWarden;
-using MemoryPack;
+﻿using System.Collections.Generic;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
-using Lambda.Core.Main.Gamemode;
 using EFT;
 using Lambda.Core.Main;
+using Lambda.Core.Main.AssetBundleHandling;
+using Lambda.Core.Main.Gamemode;
+using MemoryPack;
+using PacketWarden;
 using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
@@ -42,7 +42,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     public void Send()
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsInRaid())
+            return;
 
         var packet = new SessionStartPacket
         {
@@ -56,7 +57,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
     // if a player was not present at the start of this session, send them the sitrep
     public void SendToPeer(int peerId)
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsInRaid())
+            return;
 
         var packet = new SessionStartPacket
         {
@@ -82,7 +84,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         H.Arena.gamemode?.Dispose();
         H.Arena.gamemode = GetGamemodeByName(packet.gamemode);
         H.Arena.inventoryManager = H.Arena.gamemode.InventoryManager;
-        
+
         if (!H.IsClient)
         {
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
@@ -105,7 +107,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         // a different map would otherwise stay loaded (and rendered) for the rest of the raid
         if (!string.IsNullOrEmpty(previousLevel) && previousLevel != packet.level)
         {
-            if (!H.IsHeadless) Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
+            if (!H.IsHeadless)
+                Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
             await MapAssetBundleLoader.Instance.UnloadMap(previousLevel);
         }
 

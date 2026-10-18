@@ -13,15 +13,26 @@ namespace Lambda.UI
         public RectTransform rectTransform => transform as RectTransform;
         private CanvasGroup canvasGroup;
 
-        [SerializeField] private TMP_Text leftText;
-        [SerializeField] private Graphic leftColoredGraphic;
+        [SerializeField]
+        private TMP_Text leftText;
 
-        [SerializeField] private TMP_Text rightText;
-        [SerializeField] private Graphic rightColoredGraphic;
+        [SerializeField]
+        private Graphic leftColoredGraphic;
 
-        [SerializeField] private RectTransform containerMiddle;
-        [SerializeField] private Image imageWeapon;
-        [SerializeField] private Image imageHeadshot;
+        [SerializeField]
+        private TMP_Text rightText;
+
+        [SerializeField]
+        private Graphic rightColoredGraphic;
+
+        [SerializeField]
+        private RectTransform containerMiddle;
+
+        [SerializeField]
+        private Image imageWeapon;
+
+        [SerializeField]
+        private Image imageHeadshot;
 
         public float ActivationTimeStamp { get; private set; }
 
@@ -35,7 +46,13 @@ namespace Lambda.UI
             ActivationTimeStamp = Time.time;
         }
 
-        public void Set(string left, Color colorLeft, string right, Color colorRight, bool isHeadshot)
+        public void Set(
+            string left,
+            Color colorLeft,
+            string right,
+            Color colorRight,
+            bool isHeadshot
+        )
         {
             leftText.text = left;
             leftColoredGraphic.color = colorLeft;

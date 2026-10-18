@@ -11,14 +11,23 @@ namespace Lambda.Core.UI.Editor
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
-            if (_screenCapture == null || _screenCapture.width != source.width || _screenCapture.height != source.height)
+            if (
+                _screenCapture == null
+                || _screenCapture.width != source.width
+                || _screenCapture.height != source.height
+            )
             {
                 if (_screenCapture != null)
                 {
                     _screenCapture.Release();
                 }
 
-                _screenCapture = new RenderTexture(source.width, source.height, 0, RenderTextureFormat.ARGBHalf);
+                _screenCapture = new RenderTexture(
+                    source.width,
+                    source.height,
+                    0,
+                    RenderTextureFormat.ARGBHalf
+                );
                 _screenCapture.name = "EditorUI_ScreenGrab";
 
                 Shader.SetGlobalTexture("_GlobalScreenGrab", _screenCapture);

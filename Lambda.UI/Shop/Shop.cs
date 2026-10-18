@@ -1,9 +1,9 @@
-using Lambda.Shared;
-using Lambda.Shared.Models;
-using Lambda.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Lambda.Shared;
+using Lambda.Shared.Models;
+using Lambda.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,21 +12,36 @@ namespace Lambda.UI
 {
     public class Shop : MonoBehaviour
     {
-        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField]
+        private CanvasGroup canvasGroup;
 
-        [SerializeField] private TMP_Text textTimer;
-        [SerializeField] private TMP_Text textMoney;
-        [SerializeField] private RectTransform containerCategories;
+        [SerializeField]
+        private TMP_Text textTimer;
 
-        [SerializeField] private ShopCategory prefabShopCategory;
-        [SerializeField] private ShopCategory prefabShopCategoryVerticalLayout;
-        [SerializeField] private ShopItemButton prefabShopItem;
+        [SerializeField]
+        private TMP_Text textMoney;
+
+        [SerializeField]
+        private RectTransform containerCategories;
+
+        [SerializeField]
+        private ShopCategory prefabShopCategory;
+
+        [SerializeField]
+        private ShopCategory prefabShopCategoryVerticalLayout;
+
+        [SerializeField]
+        private ShopItemButton prefabShopItem;
 
         Dictionary<ShopItem, ShopItemButton> assortment;
 
         HorizontalLayoutGroup currentRow;
 
-        public void SetAssortment(List<BuyCategory> shelves, IItemInfoProvider itemInfoProvider, Action<ShopItem> onRequest)
+        public void SetAssortment(
+            List<BuyCategory> shelves,
+            IItemInfoProvider itemInfoProvider,
+            Action<ShopItem> onRequest
+        )
         {
             foreach (Transform child in containerCategories) // full reset
             {
@@ -41,8 +56,9 @@ namespace Lambda.UI
                     bool needNewRow = currentRow == null || currentRow.transform.childCount >= 3;
                     if (needNewRow)
                     {
-                        currentRow = new GameObject("HorizontalLayoutGroup")
-                            .AddComponent<HorizontalLayoutGroup>();
+                        currentRow = new GameObject(
+                            "HorizontalLayoutGroup"
+                        ).AddComponent<HorizontalLayoutGroup>();
                         currentRow.transform.SetParent(containerCategories);
                         currentRow.transform.localScale = Vector3.one;
                         currentRow.childControlWidth = true;
@@ -55,7 +71,8 @@ namespace Lambda.UI
 
                 ShopCategory newShelf = Instantiate(
                     shelf.verticalLayout ? prefabShopCategoryVerticalLayout : prefabShopCategory,
-                    shelf.verticalLayout ? currentRow.transform : containerCategories);
+                    shelf.verticalLayout ? currentRow.transform : containerCategories
+                );
 
                 foreach (Transform child in newShelf.container) // clean up placeholders left form editor
                 {
@@ -65,7 +82,11 @@ namespace Lambda.UI
                 newShelf.label = shelf.name;
                 foreach (var product in shelf.items)
                 {
-                    ShopItemButton shopItemButton = Instantiate(prefabShopItem.gameObject, newShelf.container).GetComponent<ShopItemButton>();
+                    ShopItemButton shopItemButton = Instantiate(
+                            prefabShopItem.gameObject,
+                            newShelf.container
+                        )
+                        .GetComponent<ShopItemButton>();
                     shopItemButton.Set(product, itemInfoProvider);
 
                     shopItemButton.OnClick += () => onRequest?.Invoke(product);

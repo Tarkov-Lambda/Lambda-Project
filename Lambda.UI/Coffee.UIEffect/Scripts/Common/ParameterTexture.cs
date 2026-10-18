@@ -1,8 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using System;
 
 namespace Coffee.UIEffects
 {
@@ -43,7 +43,6 @@ namespace Coffee.UIEffects
             }
         }
 
-
         /// <summary>
         /// Register the specified target.
         /// </summary>
@@ -54,7 +53,7 @@ namespace Coffee.UIEffects
             if (target.parameterIndex <= 0 && 0 < _stack.Count)
             {
                 target.parameterIndex = _stack.Pop();
-//				Debug.LogFormat("<color=green>@@@ Register {0} : {1}</color>", target, target.parameterIndex);
+                //				Debug.LogFormat("<color=green>@@@ Register {0} : {1}</color>", target, target.parameterIndex);
             }
         }
 
@@ -66,7 +65,7 @@ namespace Coffee.UIEffects
         {
             if (0 < target.parameterIndex)
             {
-//				Debug.LogFormat("<color=red>@@@ Unregister {0} : {1}</color>", target, target.parameterIndex);
+                //				Debug.LogFormat("<color=red>@@@ Unregister {0} : {1}</color>", target, target.parameterIndex);
                 _stack.Push(target.parameterIndex);
                 target.parameterIndex = 0;
             }
@@ -96,7 +95,7 @@ namespace Coffee.UIEffects
         /// <param name="value">Value.</param>
         public void SetData(IParameterTexture target, int channelId, float value)
         {
-            SetData(target, channelId, (byte) (Mathf.Clamp01(value) * 255));
+            SetData(target, channelId, (byte)(Mathf.Clamp01(value) * 255));
         }
 
         /// <summary>
@@ -123,9 +122,8 @@ namespace Coffee.UIEffects
         /// <param name="target">Target.</param>
         public float GetNormalizedIndex(IParameterTexture target)
         {
-            return ((float) target.parameterIndex - 0.5f) / _instanceLimit;
+            return ((float)target.parameterIndex - 0.5f) / _instanceLimit;
         }
-
 
         //################################
         // Private Members.
@@ -147,7 +145,10 @@ namespace Coffee.UIEffects
         void Initialize()
         {
 #if UNITY_EDITOR
-            if (!UnityEditor.EditorApplication.isPlaying && UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            if (
+                !UnityEditor.EditorApplication.isPlaying
+                && UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode
+            )
             {
                 return;
             }
@@ -168,7 +169,13 @@ namespace Coffee.UIEffects
             if (!_texture)
             {
                 bool isLinear = QualitySettings.activeColorSpace == ColorSpace.Linear;
-                _texture = new Texture2D(_channels / 4, _instanceLimit, TextureFormat.RGBA32, false, isLinear);
+                _texture = new Texture2D(
+                    _channels / 4,
+                    _instanceLimit,
+                    TextureFormat.RGBA32,
+                    false,
+                    isLinear
+                );
                 _texture.filterMode = FilterMode.Point;
                 _texture.wrapMode = TextureWrapMode.Clamp;
 

@@ -1,8 +1,8 @@
-﻿using EFT.UI;
+﻿using System;
+using EFT.UI;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Patches.Tarkov;
 using Lambda.UI.Nameplate;
-using System;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI
@@ -16,12 +16,18 @@ namespace Lambda.Core.Main.UI
             EventBus.OnEnter += OnMatchStateEnter;
             Patch_Gameworld_OnDispose.OnDispose += Patch_Gameworld_OnDispose_OnDispose;
 
-            nameplateObject = new GameObject("Nameplate Renderer", typeof(RectTransform), typeof(NameplateRenderer));
+            nameplateObject = new GameObject(
+                "Nameplate Renderer",
+                typeof(RectTransform),
+                typeof(NameplateRenderer)
+            );
 
             nameplateObject.transform.SetParent(commonUI.EftBattleUIScreen.transform, false);
 
             NameplateRenderer renderer = nameplateObject.GetComponent<NameplateRenderer>();
-            GameObject prefabNameplate = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/Nameplate/Nameplate.prefab");
+            GameObject prefabNameplate = uiBundle.LoadAsset<GameObject>(
+                "Packages/com.lambda.editor/Lambda.UI/Nameplate/Nameplate.prefab"
+            );
             renderer.Init(commonUI, prefabNameplate.GetComponent<Nameplate>());
         }
 

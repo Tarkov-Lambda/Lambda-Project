@@ -1,7 +1,7 @@
 using EFT;
 using MemoryPack;
-using static EFT.Player;
 using PacketWarden.RateLimiting;
+using static EFT.Player;
 
 namespace Lambda.Core.Networking;
 
@@ -25,7 +25,8 @@ public class HandsInspectPacketWarden : LambdaPacketWarden<HandsInspectPacket>
 
     protected override void Apply(HandsInspectPacket packet, int peerId)
     {
-        if (packet.Player.IsYourPlayer) return;
+        if (packet.Player.IsYourPlayer)
+            return;
 
         if (packet.Player.HandsController is EmptyHandsController emptyHands)
         {

@@ -1,23 +1,26 @@
-﻿using HarmonyLib;
-using SPT.Reflection.Patching;
+﻿using System;
 using System.Reflection;
-using UnityEngine;
-using Systems.Effects;
 using EFT;
-using System;
+using HarmonyLib;
+using SPT.Reflection.Patching;
+using Systems.Effects;
+using UnityEngine;
 
 namespace Lambda.Core.Patches.Tarkov;
 
 internal class Patch_Effects_GetEmissionEffect : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(Effects), nameof(Effects.GetEmissionEffect));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(Effects), nameof(Effects.GetEmissionEffect));
 
     [PatchPostfix]
     static void Postfix(string key, GrenadeEmission __result)
     {
         if (__result != null)
         {
-            ParticleSystem[] particleSystems = __result.GetComponentsInChildren<ParticleSystem>(true);
+            ParticleSystem[] particleSystems = __result.GetComponentsInChildren<ParticleSystem>(
+                true
+            );
 
             foreach (var ps in particleSystems)
             {
@@ -50,10 +53,9 @@ internal class Patch_Effects_GetEmissionEffect : ModulePatch
                 shape.scale = new Vector3(6f, 3.5f, 6f); // spread area
 
                 emission.rateOverTime = 0f;
-                emission.SetBursts(
-                [
+                emission.SetBursts([
                     new ParticleSystem.Burst(0f, 200),
-                    new ParticleSystem.Burst(0.5f, 150)
+                    new ParticleSystem.Burst(0.5f, 150),
                 ]);
 
                 vel.enabled = false;
@@ -76,12 +78,15 @@ internal class Patch_Effects_GetEmissionEffect : ModulePatch
                 // force.z = 0.1f;
 
                 sizeOverLife.enabled = true;
-                sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
-                    new Keyframe(0f, 0.3f),
-                    new Keyframe(0.1f, 1.0f),  // quick puff
-                    new Keyframe(0.7f, 1.2f),  // slight expansion
-                    new Keyframe(1f, 1.0f)
-                ));
+                sizeOverLife.size = new ParticleSystem.MinMaxCurve(
+                    1f,
+                    new AnimationCurve(
+                        new Keyframe(0f, 0.3f),
+                        new Keyframe(0.1f, 1.0f), // quick puff
+                        new Keyframe(0.7f, 1.2f), // slight expansion
+                        new Keyframe(1f, 1.0f)
+                    )
+                );
 
                 colorOverLife.enabled = true;
                 colorOverLife.color = new ParticleSystem.MinMaxGradient(
@@ -90,15 +95,15 @@ internal class Patch_Effects_GetEmissionEffect : ModulePatch
                         colorKeys = new[]
                         {
                             new GradientColorKey(Color.grey, 0f),
-                            new GradientColorKey(Color.grey, 1f)
+                            new GradientColorKey(Color.grey, 1f),
                         },
                         alphaKeys = new[]
                         {
                             new GradientAlphaKey(0f, 0f),
                             new GradientAlphaKey(0.6f, 0.05f),
                             new GradientAlphaKey(0.5f, 0.8f),
-                            new GradientAlphaKey(0f, 1f)
-                        }
+                            new GradientAlphaKey(0f, 1f),
+                        },
                     }
                 );
             }

@@ -12,12 +12,19 @@ public static class RespawnUtilities
 
     public static Vector3 GetBestSpawnPoint(this PlayerContext respawningPlayer)
     {
-        TryGetAllSpawnPointClusters(H.Session.level, respawningPlayer.Faction, 0, out List<SpawnPointCluster> availableSpawnClusters);
+        TryGetAllSpawnPointClusters(
+            H.Session.level,
+            respawningPlayer.Faction,
+            0,
+            out List<SpawnPointCluster> availableSpawnClusters
+        );
 
         var enemyPositions = GetAllEnemyPositions(respawningPlayer.Faction).ToList();
 
         IRespawnWeights weights = (H.Gamemode as IGMRespawnable)?.RespawnWeights;
-        if (weights == null) return availableSpawnClusters.FirstOrDefault()?.transform.GetChild(0).position ?? Vector3.zero;
+        if (weights == null)
+            return availableSpawnClusters.FirstOrDefault()?.transform.GetChild(0).position
+                ?? Vector3.zero;
 
         Vector3 bestSpawnPoint = Vector3.zero;
         float bestSpawnPointRating = float.MinValue;
@@ -26,7 +33,12 @@ public static class RespawnUtilities
         {
             foreach (Transform spawnPoint in spawnCluster.transform)
             {
-                float rating = RateSpawnPoint(spawnPoint.position, respawningPlayer, enemyPositions, weights);
+                float rating = RateSpawnPoint(
+                    spawnPoint.position,
+                    respawningPlayer,
+                    enemyPositions,
+                    weights
+                );
 
                 // rating += Random.Range(-0.05f, 0.05f);
 
@@ -41,20 +53,37 @@ public static class RespawnUtilities
         return bestSpawnPoint;
     }
 
-    public static float RateSpawnPoint(Vector3 spawnPoint, PlayerContext respawningPlayer, IEnumerable<Vector3> enemyPositions, IRespawnWeights weights)
+    public static float RateSpawnPoint(
+        Vector3 spawnPoint,
+        PlayerContext respawningPlayer,
+        IEnumerable<Vector3> enemyPositions,
+        IRespawnWeights weights
+    )
     {
         float totalScore = 0f;
 
-        float safetyScore = RateSafety(spawnPoint, enemyPositions, weights.MaxEnemyDistanceConsidered);
+        float safetyScore = RateSafety(
+            spawnPoint,
+            enemyPositions,
+            weights.MaxEnemyDistanceConsidered
+        );
 
         // for now return if safety is under 0
-        if (safetyScore < 0) return -1000f;
+        if (safetyScore < 0)
+            return -1000f;
 
         totalScore += safetyScore * weights.SafetyWeight;
 
-        if (weights.ObjectiveWeight > 0 && H.Gamemode is IGMSingularActiveObjective singularObjectiveGamemode)
+        if (
+            weights.ObjectiveWeight > 0
+            && H.Gamemode is IGMSingularActiveObjective singularObjectiveGamemode
+        )
         {
-            float objScore = RateObjectiveCloseness(spawnPoint, singularObjectiveGamemode.CurrentObjective, weights.IdealObjectiveDistance);
+            float objScore = RateObjectiveCloseness(
+                spawnPoint,
+                singularObjectiveGamemode.CurrentObjective,
+                weights.IdealObjectiveDistance
+            );
             totalScore += objScore * weights.ObjectiveWeight;
         }
 
@@ -67,7 +96,11 @@ public static class RespawnUtilities
         return totalScore;
     }
 
-    public static float RateSafety(Vector3 spawnPoint, IEnumerable<Vector3> enemyPositions, float maxDistanceConsidered)
+    public static float RateSafety(
+        Vector3 spawnPoint,
+        IEnumerable<Vector3> enemyPositions,
+        float maxDistanceConsidered
+    )
     {
         float closestEnemyDist = float.MaxValue;
         // TODO: REFACTOR
@@ -79,10 +112,12 @@ public static class RespawnUtilities
             Vector3 enemyHeadPos = enemyPos + Vector3.up * 1.5f;
             float dist = Vector3.Distance(spawnPoint, enemyPos);
 
-            if (dist < closestEnemyDist) closestEnemyDist = dist;
+            if (dist < closestEnemyDist)
+                closestEnemyDist = dist;
 
             // if enemy is way too close
-            if (dist < 15f) return -100f;
+            if (dist < 15f)
+                return -100f;
 
             // LINE OF SIGHT CHECK
             // If the enemy is within a relevant distance, check if they can see the spawn
@@ -102,7 +137,11 @@ public static class RespawnUtilities
         return closestEnemyDist / maxDistanceConsidered;
     }
 
-    public static float RateObjectiveCloseness(Vector3 spawnPoint, ILambdaObjective objective, float idealDistance)
+    public static float RateObjectiveCloseness(
+        Vector3 spawnPoint,
+        ILambdaObjective objective,
+        float idealDistance
+    )
     {
         float actualDist = Vector3.Distance(spawnPoint, objective.Center);
 
@@ -118,8 +157,11 @@ public static class RespawnUtilities
 
     public static float RateTeamCohesion(Vector3 spawnPoint, PlayerContext respawningPlayer)
     {
-        List<PlayerContext> teammates = H.Session.GetPlayerScoresFromFaction(respawningPlayer.Faction);
-        if (teammates.Count == 0) return 0.5f;
+        List<PlayerContext> teammates = H.Session.GetPlayerScoresFromFaction(
+            respawningPlayer.Faction
+        );
+        if (teammates.Count == 0)
+            return 0.5f;
 
         float averageDist = 0f;
         int aliveTeammates = 0;
@@ -133,7 +175,8 @@ public static class RespawnUtilities
             }
         }
 
-        if (aliveTeammates == 0) return 0.5f;
+        if (aliveTeammates == 0)
+            return 0.5f;
         averageDist /= aliveTeammates;
 
         // Ideal teammate distance is roughly 15-25 meters. Too close = nade bait.
@@ -170,7 +213,12 @@ public static class RespawnUtilities
         }
     }
 
-    public static bool TryGetAllSpawnPointClusters(string sceneName, Faction faction, int pair, out List<SpawnPointCluster> newPos)
+    public static bool TryGetAllSpawnPointClusters(
+        string sceneName,
+        Faction faction,
+        int pair,
+        out List<SpawnPointCluster> newPos
+    )
     {
         newPos = new();
 
@@ -191,7 +239,9 @@ public static class RespawnUtilities
 
         foreach (var rootGameObject in scene.GetRootGameObjects())
         {
-            SpawnPointCluster[] sPoints = rootGameObject.GetComponentsInChildren<SpawnPointCluster>(false);
+            SpawnPointCluster[] sPoints = rootGameObject.GetComponentsInChildren<SpawnPointCluster>(
+                false
+            );
             if (sPoints.Length > 0)
             {
                 allSpawnPoints.AddRange(sPoints);
@@ -204,7 +254,9 @@ public static class RespawnUtilities
             return false;
         }
 
-        var allSpawnPointClusters = allSpawnPoints.FindAll(spawnPointCluster => spawnPointCluster.faction == faction && spawnPointCluster?.pairId == pair);
+        var allSpawnPointClusters = allSpawnPoints.FindAll(spawnPointCluster =>
+            spawnPointCluster.faction == faction && spawnPointCluster?.pairId == pair
+        );
 
         newPos = allSpawnPointClusters;
         return true;
@@ -218,7 +270,10 @@ public static class RespawnUtilities
         return (pos1 - pos2).sqrMagnitude;
     }
 
-    public static float DistanceToClosestEnemy(Vector3 spawnPoint, IEnumerable<Vector3> enemyPositions)
+    public static float DistanceToClosestEnemy(
+        Vector3 spawnPoint,
+        IEnumerable<Vector3> enemyPositions
+    )
     {
         float sqrMagnitudeToClosestEnemy = float.MaxValue;
 

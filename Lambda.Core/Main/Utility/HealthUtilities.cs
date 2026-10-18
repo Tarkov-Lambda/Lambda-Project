@@ -13,9 +13,13 @@ public static class HealthUtilities
     // Applies a permanent painkiller at the start of the raid
     public static void ApplyPainkiller()
     {
-        Type painkillerType = AccessTools.TypeByName("EFT.HealthSystem.ActiveHealthController+PainKiller");
+        Type painkillerType = AccessTools.TypeByName(
+            "EFT.HealthSystem.ActiveHealthController+PainKiller"
+        );
 
-        bool hasPainkiller = H.MainPlayer.ActiveHealthController.GetAllEffects().Any(effect => effect.BodyPart == EBodyPart.Head && effect.GetType() == painkillerType);
+        bool hasPainkiller = H
+            .MainPlayer.ActiveHealthController.GetAllEffects()
+            .Any(effect => effect.BodyPart == EBodyPart.Head && effect.GetType() == painkillerType);
         if (!hasPainkiller)
         {
             H.MainPlayer.ActiveHealthController.DoPainKiller();
@@ -24,12 +28,15 @@ public static class HealthUtilities
 
     public static void ResetObservedPlayersHealth()
     {
-        if (!H.IsServer) return;
+        if (!H.IsServer)
+            return;
 
         foreach (var player in H.AllPlayers)
         {
-            if (player.IsYourPlayer) continue;
-            if (player.HealthController is not ObservedHealthController observedHC) continue;
+            if (player.IsYourPlayer)
+                continue;
+            if (player.HealthController is not ObservedHealthController observedHC)
+                continue;
 
             foreach (var kvp in observedHC.Dictionary_0)
             {
@@ -40,7 +47,8 @@ public static class HealthUtilities
 
     public static void ResetObservedPlayerHealth(this ObservedPlayer player)
     {
-        if (player.HealthController is not ObservedHealthController observedHC) return;
+        if (player.HealthController is not ObservedHealthController observedHC)
+            return;
 
         foreach (var kvp in observedHC.Dictionary_0)
         {

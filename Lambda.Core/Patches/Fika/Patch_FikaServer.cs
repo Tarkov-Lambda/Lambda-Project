@@ -1,4 +1,10 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Threading;
+using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using Fika.Core.Main.Components;
@@ -17,29 +23,32 @@ using Lambda.Core.Main;
 using Lambda.Core.Networking;
 using PacketWarden.TimeSync;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Threading;
 using UnityEngine;
 
 namespace Lambda.Core.Patches;
 
 internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(FikaServer), "OnCommonPlayerPacketReceived");
 
     [PatchPrefix]
-    private static bool Prefix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
+    private static bool Prefix(
+        FikaServer __instance,
+        CoopHandler ____coopHandler,
+        CommonPlayerPacket packet,
+        NetPeer peer
+    )
     {
-        if (packet.Type != ECommonSubPacketType.Damage) return true;
-        if (packet.SubPacket is not DamagePacket damage) return true;
+        if (packet.Type != ECommonSubPacketType.Damage)
+            return true;
+        if (packet.SubPacket is not DamagePacket damage)
+            return true;
 
         int victimNetId = packet.NetId;
 
-        if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return true;
+        if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim))
+            return true;
 
         Player shooter = H.GetPlayer(damage.ProfileId);
         PlayerContext shooterScore = shooter?.Context;
@@ -61,21 +70,30 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     }
 
     [PatchPostfix]
-    private static void Postfix(FikaServer __instance, CoopHandler ____coopHandler, CommonPlayerPacket packet, NetPeer peer)
+    private static void Postfix(
+        FikaServer __instance,
+        CoopHandler ____coopHandler,
+        CommonPlayerPacket packet,
+        NetPeer peer
+    )
     {
-        if (packet.Type != ECommonSubPacketType.Damage) return;
-        if (packet.SubPacket is not DamagePacket damage) return;
+        if (packet.Type != ECommonSubPacketType.Damage)
+            return;
+        if (packet.SubPacket is not DamagePacket damage)
+            return;
 
         int victimNetId = packet.NetId;
 
-        if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim)) return;
+        if (!____coopHandler.Players.TryGetValue(victimNetId, out FikaPlayer victim))
+            return;
 
         Player shooter = H.GetPlayer(damage.ProfileId);
 
         victim.Context?.RecordDamageTaken(shooter, damage.Damage);
 
         // we handle the server owner player natively through ActiveHealthController
-        if (victim.IsYourPlayer) return;
+        if (victim.IsYourPlayer)
+            return;
 
         DamageInfoStruct damageInfo = new()
         {
@@ -98,24 +116,39 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         shooter?.Context?.AddDamage((int)Math.Round(damageInfo.Damage));
     }
 
-    public static float Predict_ApplyDamage(FikaPlayer victim, EBodyPart bodyPart, float damage, DamageInfoStruct damageInfo, DamagePacket damagePacket)
+    public static float Predict_ApplyDamage(
+        FikaPlayer victim,
+        EBodyPart bodyPart,
+        float damage,
+        DamageInfoStruct damageInfo,
+        DamagePacket damagePacket
+    )
     {
-        if (!H.GetPlayerContext(victim.Id).IsAlive) return 0f;
+        if (!H.GetPlayerContext(victim.Id).IsAlive)
+            return 0f;
 
-        ObservedHealthController healthController = victim.HealthController as ObservedHealthController;
+        ObservedHealthController healthController =
+            victim.HealthController as ObservedHealthController;
 
         if (!H.IsHeadless)
         {
-            if (H.MainPlayer.ActiveHealthController.DamageMultiplier > 1f || bodyPart != EBodyPart.Head || !damageInfo.DamageType.IsEnemyDamage())
+            if (
+                H.MainPlayer.ActiveHealthController.DamageMultiplier > 1f
+                || bodyPart != EBodyPart.Head
+                || !damageInfo.DamageType.IsEnemyDamage()
+            )
             {
                 damage *= H.MainPlayer.ActiveHealthController.DamageMultiplier;
             }
         }
 
-
         if (damageInfo.DamageType.IsEnvironmental())
         {
-            damage *= GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[bodyPart].EnvironmentDamageMultiplier;
+            damage *= GClass3009<ActiveHealthController.GClass3008>
+                .GClass1728_0
+                .ProfileHealthSettings
+                .BodyPartsSettings[bodyPart]
+                .EnvironmentDamageMultiplier;
         }
 
         EDamageType damageType = damageInfo.DamageType;
@@ -183,9 +216,18 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
 
                     if (part != bodyPart && !state.IsDestroyed)
                     {
-                        float mult = GClass3009<ActiveHealthController.GClass3008>.GClass1728_0.ProfileHealthSettings.BodyPartsSettings[part].OverDamageReceivedMultiplier;
+                        float mult = GClass3009<ActiveHealthController.GClass3008>
+                            .GClass1728_0
+                            .ProfileHealthSettings
+                            .BodyPartsSettings[part]
+                            .OverDamageReceivedMultiplier;
 
-                        ChangeHealth(healthController, part, Mathf.Min(-num4 * state.Health.Maximum / num3 * mult, 0f), overDamage);
+                        ChangeHealth(
+                            healthController,
+                            part,
+                            Mathf.Min(-num4 * state.Health.Maximum / num3 * mult, 0f),
+                            overDamage
+                        );
 
                         // if (state.Health.AtMinimum)
                         // {
@@ -224,13 +266,19 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
         return current - current2;
     }
 
-    public static void ChangeHealth(ObservedHealthController healthController, EBodyPart bodyPart, float value, DamageInfoStruct damageInfo)
+    public static void ChangeHealth(
+        ObservedHealthController healthController,
+        EBodyPart bodyPart,
+        float value,
+        DamageInfoStruct damageInfo
+    )
     {
         // if (!base.IsAlive)
         // {
         //     return;
         // }
-        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState = healthController.Dictionary_0[bodyPart];
+        GClass3009<NetworkHealthControllerAbstractClass.NetworkBodyEffectsAbstractClass>.BodyPartState bodyPartState =
+            healthController.Dictionary_0[bodyPart];
         if (bodyPartState.IsDestroyed)
         {
             return;
@@ -250,18 +298,28 @@ internal class Patch_FikaServer_OnCommonPlayerPacketReceived : ModulePatch
     }
 }
 
-
-
 // FRAGILE (complete function overwrite)
 internal class Patch_FikaServer_OnNetworkReceiveUnconnected : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.OnNetworkReceiveUnconnected));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(FikaServer), nameof(FikaServer.OnNetworkReceiveUnconnected));
 
     [PatchPrefix]
-    private static bool Prefix(FikaServer __instance, CoopHandler ____coopHandler, NetManager ____netServer, IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+    private static bool Prefix(
+        FikaServer __instance,
+        CoopHandler ____coopHandler,
+        NetManager ____netServer,
+        IPEndPoint remoteEndPoint,
+        NetPacketReader reader,
+        UnconnectedMessageType messageType
+    )
     {
         bool flag = false;
-        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && H.IFikaGame.GameController.RaidStarted)
+        if (
+            ____coopHandler != null
+            && ____coopHandler.LocalGameInstance != null
+            && H.IFikaGame.GameController.RaidStarted
+        )
         {
             flag = true;
         }
@@ -283,13 +341,19 @@ internal class Patch_FikaServer_OnNetworkReceiveUnconnected : ModulePatch
                 bool flag2 = reader.GetBool();
                 // netDataWriter2.Put((flag && !flag2) ? "fika.inprogress" : "fika.hello");
                 netDataWriter2.Put("fika.hello");
-                ____netServer.SendUnconnectedMessage(netDataWriter2.AsReadOnlySpan(), remoteEndPoint);
+                ____netServer.SendUnconnectedMessage(
+                    netDataWriter2.AsReadOnlySpan(),
+                    remoteEndPoint
+                );
             }
             else
             {
                 D.LogError("PingingRequest::Data was not as expected: " + result);
                 netDataWriter2.Put("fika.reject");
-                ____netServer.SendUnconnectedMessage(netDataWriter2.AsReadOnlySpan(), remoteEndPoint);
+                ____netServer.SendUnconnectedMessage(
+                    netDataWriter2.AsReadOnlySpan(),
+                    remoteEndPoint
+                );
             }
         }
         else
@@ -304,16 +368,25 @@ internal class Patch_FikaServer_OnNetworkReceiveUnconnected : ModulePatch
 // FRAGILE (complete function overwrite)
 internal class Patch_FikaServer_OnConnectionRequest : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.OnConnectionRequest));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(FikaServer), nameof(FikaServer.OnConnectionRequest));
 
     [PatchPrefix]
-    private static bool Prefix(CoopHandler ____coopHandler, NetManager ____netServer, NetDataWriter ____dataWriter, ConnectionRequest request)
+    private static bool Prefix(
+        CoopHandler ____coopHandler,
+        NetManager ____netServer,
+        NetDataWriter ____dataWriter,
+        ConnectionRequest request
+    )
     {
         request.Accept();
         return false;
 
-
-        if (____coopHandler != null && ____coopHandler.LocalGameInstance != null && H.IFikaGame.GameController.RaidStarted)
+        if (
+            ____coopHandler != null
+            && ____coopHandler.LocalGameInstance != null
+            && H.IFikaGame.GameController.RaidStarted
+        )
         {
             if (request.Data.GetString() == "fika.reconnect")
             {
@@ -335,7 +408,8 @@ internal class Patch_FikaServer_OnConnectionRequest : ModulePatch
 
 internal class Patch_FikaServer_StopNatIntroduceRoutine : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), nameof(FikaServer.StopNatIntroduceRoutine));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(FikaServer), nameof(FikaServer.StopNatIntroduceRoutine));
 
     [PatchPrefix]
     private static bool Prefix(FikaServer __instance)
@@ -346,7 +420,8 @@ internal class Patch_FikaServer_StopNatIntroduceRoutine : ModulePatch
 
 internal class Patch_FikaServer_OnDestroy : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnDestroy");
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(FikaServer), "OnDestroy");
 
     [PatchPrefix]
     private static bool Prefix(FikaServer __instance, CancellationTokenSource ____cts)
@@ -364,7 +439,8 @@ internal class Patch_FikaServer_OnDestroy : ModulePatch
 // for some reason it errors
 internal class Patch_HostGameController_GetHostLootItems : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(HostGameController), nameof(HostGameController.GetHostLootItems));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(HostGameController), nameof(HostGameController.GetHostLootItems));
 
     [PatchPrefix]
     private static bool Prefix(ref byte[] __result)
@@ -377,11 +453,15 @@ internal class Patch_HostGameController_GetHostLootItems : ModulePatch
 
     public static byte[] GetEmptyLootData()
     {
-        if (_emptyLootData != null) return _emptyLootData;
+        if (_emptyLootData != null)
+            return _emptyLootData;
 
         var emptyLootList = new List<LootItemPositionClass>();
 
-        var target = EFTItemSerializerClass.SerializeLootData(emptyLootList, FikaGlobals.SearchControllerSerializer);
+        var target = EFTItemSerializerClass.SerializeLootData(
+            emptyLootList,
+            FikaGlobals.SearchControllerSerializer
+        );
         var writer = WriterPoolManager.GetWriter();
 
         GClass3695.WriteEFTLootDataDescriptor(writer, target);
@@ -398,16 +478,18 @@ internal class Patch_HostGameController_GetHostLootItems : ModulePatch
 // because of that the server will reject every single movement packet from the reconnected client
 // causing the player to be motionless until their reconnected timestamp state reaches the old timestamp
 // as a result we are checking if the observed player already exists OnNetworkSettingsPacketReceived
-// and clearing the snapshotter manually 
+// and clearing the snapshotter manually
 internal class Patch_FikaServer_OnNetworkSettingsPacketReceived : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FikaServer), "OnNetworkSettingsPacketReceived");
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(FikaServer), "OnNetworkSettingsPacketReceived");
 
     [PatchPrefix]
     static void Prefix(FikaServer __instance, NetworkSettingsPacket packet)
     {
         var coopHandler = __instance.CoopHandler;
-        if (coopHandler == null) return;
+        if (coopHandler == null)
+            return;
 
         foreach (var player in coopHandler.Players.Values)
         {

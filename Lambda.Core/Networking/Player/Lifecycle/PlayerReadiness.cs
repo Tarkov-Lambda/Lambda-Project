@@ -1,15 +1,15 @@
-﻿using Comfort.Common;
-using EFT;
-using MemoryPack;
-using EFT.InventoryLogic;
-using Lambda.Core.Main.UI;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using Lambda.Core.Main.AssetBundleHandling;
-using Lambda.Shared.Models;
-using Lambda.Core.Main.Economy;
-using Lambda.Core.Main;
+using EFT;
+using EFT.InventoryLogic;
 using Fika.Core.Main.Players;
+using Lambda.Core.Main;
+using Lambda.Core.Main.AssetBundleHandling;
+using Lambda.Core.Main.Economy;
+using Lambda.Core.Main.UI;
+using Lambda.Shared.Models;
+using MemoryPack;
 
 namespace Lambda.Core.Networking;
 
@@ -32,13 +32,14 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
     public void Send(PlayerReadinessState readyState)
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
 
         var packet = new PlayerReadinessPacket
         {
             Player = H.MainPlayer,
             readyState = readyState,
-            clanTag = LambdaPlugin.ClanTag.Value
+            clanTag = LambdaPlugin.ClanTag.Value,
         };
 
         if (readyState is PlayerReadinessState.Connected)
@@ -46,7 +47,10 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             packet.buySelection = [];
             foreach (var shopItem in BuyMenuSelection.GetAllShopItems())
             {
-                packet.buySelection.Add(shopItem, PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId));
+                packet.buySelection.Add(
+                    shopItem,
+                    PresetItemsCache.Instance.GetPresetItem(shopItem.bsgId)
+                );
             }
         }
 
@@ -55,11 +59,7 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
     public void SendForPlayer(Player targetPlayer, PlayerReadinessState readyState)
     {
-        var packet = new PlayerReadinessPacket
-        {
-            Player = targetPlayer,
-            readyState = readyState,
-        };
+        var packet = new PlayerReadinessPacket { Player = targetPlayer, readyState = readyState };
         DispatchPacket(ref packet);
     }
 
@@ -82,10 +82,14 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             bool isLateJoiner = H.Session.matchState >= MatchState.WarmupEnd;
             if (isLateJoiner)
             {
-                List<string> newTemplateIds = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(playerShopItems);
+                List<string> newTemplateIds = RuntimeBundleLoader.Instance.AddToCacheAndGetDelta(
+                    playerShopItems
+                );
                 if (newTemplateIds.Count > 0)
                 {
-                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(newTemplateIds);
+                    Singleton<AssetBundleLoadPacketWarden>.Instance.BroadcastMidJoinersItems(
+                        newTemplateIds
+                    );
                 }
             }
             else
@@ -99,7 +103,8 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
 
     protected override void Apply(PlayerReadinessPacket packet, int peerId)
     {
-        if (!IsArenaReady) return;
+        if (!IsArenaReady)
+            return;
 
         // does not respect reconnects, todo later
         bool isLateJoiner = H.Session.matchState >= MatchState.WarmupEnd;
@@ -151,7 +156,11 @@ public class PlayerReadinessPacketWarden : LambdaPacketWarden<PlayerReadinessPac
             }
         }
 
-        if (packet.Player.IsYourPlayer && packet.readyState == PlayerReadinessState.Connected && !LambdaPlugin.Password.Value.IsNullOrEmpty())
+        if (
+            packet.Player.IsYourPlayer
+            && packet.readyState == PlayerReadinessState.Connected
+            && !LambdaPlugin.Password.Value.IsNullOrEmpty()
+        )
         {
             Singleton<AdminLoginPacketWarden>.Instance.Send();
         }

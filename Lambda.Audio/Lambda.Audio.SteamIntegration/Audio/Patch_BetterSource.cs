@@ -7,7 +7,8 @@ using SPT.Reflection.Patching;
 
 internal class Transpiler_BetterSource_SetLowPassFilterParameters : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetLowPassFilterParameters));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetLowPassFilterParameters));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -18,7 +19,8 @@ internal class Transpiler_BetterSource_SetLowPassFilterParameters : ModulePatch
 
 internal class Transpiler_BetterSource_SetHighPassFilterParameters : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetHighPassFilterParameters));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetHighPassFilterParameters));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -29,9 +31,13 @@ internal class Transpiler_BetterSource_SetHighPassFilterParameters : ModulePatch
 
 internal class Transpiler_BetterSource_IncludeInOcclusionProcess : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.IncludeInOcclusionProcess));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BetterSource), nameof(BetterSource.IncludeInOcclusionProcess));
 
-    private static readonly FieldInfo IncludedInOcclusionProcess_FieldInfo = AccessTools.Field(typeof(BetterSource), "IncludedInOcclusionProcess");
+    private static readonly FieldInfo IncludedInOcclusionProcess_FieldInfo = AccessTools.Field(
+        typeof(BetterSource),
+        "IncludedInOcclusionProcess"
+    );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -45,9 +51,14 @@ internal class Transpiler_BetterSource_IncludeInOcclusionProcess : ModulePatch
 
 public class Transpiler_BetterSource_SetOcclusionVolumeFactor : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetOcclusionVolumeFactor));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetOcclusionVolumeFactor));
 
-    private static readonly MethodInfo OcclusionVolumeFactor_MethodInfo = AccessTools.PropertySetter(typeof(BetterSource), nameof(BetterSource.OcclusionVolumeFactor));
+    private static readonly MethodInfo OcclusionVolumeFactor_MethodInfo =
+        AccessTools.PropertySetter(
+            typeof(BetterSource),
+            nameof(BetterSource.OcclusionVolumeFactor)
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -61,9 +72,14 @@ public class Transpiler_BetterSource_SetOcclusionVolumeFactor : ModulePatch
 
 internal class Transpiler_BetterSource_SetOcclusionRolloffScale : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetOcclusionRolloffScale));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BetterSource), nameof(BetterSource.SetOcclusionRolloffScale));
 
-    private static readonly MethodInfo OcclusionRolloffScale_MethodInfo = AccessTools.PropertySetter(typeof(BetterSource), nameof(BetterSource.OcclusionRolloffScale));
+    private static readonly MethodInfo OcclusionRolloffScale_MethodInfo =
+        AccessTools.PropertySetter(
+            typeof(BetterSource),
+            nameof(BetterSource.OcclusionRolloffScale)
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -77,7 +93,8 @@ internal class Transpiler_BetterSource_SetOcclusionRolloffScale : ModulePatch
 
 internal class Patch_BetterSource_Init : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(BetterSource), nameof(BetterSource.Init));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(BetterSource), nameof(BetterSource.Init));
 
     [PatchPostfix]
     static void Postfix(BetterSource __instance)

@@ -38,8 +38,10 @@ namespace SteamAudio
     {
         [Header("Placement Settings")]
         public ProbeGenerationType placementStrategy = ProbeGenerationType.UniformFloor;
+
         [Range(.1f, 50f)]
         public float horizontalSpacing = 5f;
+
         [Range(.1f, 20f)]
         public float heightAboveFloor = 1.5f;
 
@@ -47,8 +49,12 @@ namespace SteamAudio
         public SerializedData asset = null;
 
         public int probeDataSize = 0;
-        [SerializeField] Sphere[] mProbeSpheres = null;
-        [SerializeField] List<BakedDataLayerInfo> mBakedDataLayerInfo = new List<BakedDataLayerInfo>();
+
+        [SerializeField]
+        Sphere[] mProbeSpheres = null;
+
+        [SerializeField]
+        List<BakedDataLayerInfo> mBakedDataLayerInfo = new List<BakedDataLayerInfo>();
 
 #if STEAMAUDIO_ENABLED
         ProbeBatch mProbeBatch = null;
@@ -126,7 +132,10 @@ namespace SteamAudio
                 for (var i = 0; i < mProbeSpheres.Length; ++i)
                 {
                     var center = Common.ConvertVector(mProbeSpheres[i].center);
-                    Gizmos.DrawCube(center, new UnityEngine.Vector3(kProbeDrawSize, kProbeDrawSize, kProbeDrawSize));
+                    Gizmos.DrawCube(
+                        center,
+                        new UnityEngine.Vector3(kProbeDrawSize, kProbeDrawSize, kProbeDrawSize)
+                    );
                 }
             }
             Gizmos.color = oldColor;
@@ -135,7 +144,11 @@ namespace SteamAudio
         public void GenerateProbes()
         {
             SteamAudioManager.Initialize(ManagerInitReason.GeneratingProbes);
-            SteamAudioManager.LoadScene(SceneManager.GetActiveScene(), SteamAudioManager.Context, false);
+            SteamAudioManager.LoadScene(
+                SceneManager.GetActiveScene(),
+                SteamAudioManager.Context,
+                false
+            );
             var scene = SteamAudioManager.CurrentScene;
 
             SteamAudioStaticMesh staticMeshComponent = null;
@@ -149,11 +162,20 @@ namespace SteamAudio
 
             if (staticMeshComponent == null || staticMeshComponent.asset == null)
             {
-                Debug.LogError(string.Format("Scene {0} has not been exported. Click Steam Audio > Export Active Scene to do so.", SceneManager.GetActiveScene().name));
+                Debug.LogError(
+                    string.Format(
+                        "Scene {0} has not been exported. Click Steam Audio > Export Active Scene to do so.",
+                        SceneManager.GetActiveScene().name
+                    )
+                );
                 return;
             }
 
-            var staticMesh = new StaticMesh(SteamAudioManager.Context, scene, staticMeshComponent.asset);
+            var staticMesh = new StaticMesh(
+                SteamAudioManager.Context,
+                scene,
+                staticMeshComponent.asset
+            );
             staticMesh.AddToScene(scene);
 
             scene.Commit();
@@ -189,7 +211,13 @@ namespace SteamAudio
 
             ResetLayers();
 
-            Debug.Log("Generated " + mProbeSpheres.Length + " probes for game object " + gameObject.name + ".");
+            Debug.Log(
+                "Generated "
+                    + mProbeSpheres.Length
+                    + " probes for game object "
+                    + gameObject.name
+                    + "."
+            );
 
             // Redraw scene view for probes to show up instantly.
 #if UNITY_EDITOR
@@ -223,7 +251,6 @@ namespace SteamAudio
                 {
                     return mBakedDataLayerInfo[i].dataSize;
                 }
-
             }
 
             return 0;
@@ -263,7 +290,11 @@ namespace SteamAudio
             }
         }
 
-        public void AddOrUpdateLayer(GameObject gameObject, BakedDataIdentifier identifier, int dataSize)
+        public void AddOrUpdateLayer(
+            GameObject gameObject,
+            BakedDataIdentifier identifier,
+            int dataSize
+        )
         {
             for (int i = 0; i < mBakedDataLayerInfo.Count; ++i)
             {
@@ -285,17 +316,23 @@ namespace SteamAudio
             {
                 switch (layerInfo.identifier.variation)
                 {
-                case BakedDataVariation.Reverb:
-                    layerInfo.gameObject.GetComponent<SteamAudioListener>().UpdateBakedDataStatistics();
-                    break;
+                    case BakedDataVariation.Reverb:
+                        layerInfo
+                            .gameObject.GetComponent<SteamAudioListener>()
+                            .UpdateBakedDataStatistics();
+                        break;
 
-                case BakedDataVariation.StaticSource:
-                    layerInfo.gameObject.GetComponent<SteamAudioBakedSource>().UpdateBakedDataStatistics();
-                    break;
+                    case BakedDataVariation.StaticSource:
+                        layerInfo
+                            .gameObject.GetComponent<SteamAudioBakedSource>()
+                            .UpdateBakedDataStatistics();
+                        break;
 
-                case BakedDataVariation.StaticListener:
-                    layerInfo.gameObject.GetComponent<SteamAudioBakedListener>().UpdateBakedDataStatistics();
-                    break;
+                    case BakedDataVariation.StaticListener:
+                        layerInfo
+                            .gameObject.GetComponent<SteamAudioBakedListener>()
+                            .UpdateBakedDataStatistics();
+                        break;
                 }
             }
         }

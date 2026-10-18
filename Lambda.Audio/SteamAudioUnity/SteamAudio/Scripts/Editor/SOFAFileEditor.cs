@@ -27,7 +27,10 @@ namespace SteamAudio
         public override void OnInspectorGUI()
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("sofaName"));
-            EditorGUILayout.LabelField("Size", Common.HumanReadableDataSize(serializedObject.FindProperty("data").arraySize));
+            EditorGUILayout.LabelField(
+                "Size",
+                Common.HumanReadableDataSize(serializedObject.FindProperty("data").arraySize)
+            );
         }
     }
 }

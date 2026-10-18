@@ -16,7 +16,7 @@ public static class NetworkTime
 
     // A monotonic local clock.
     public static double LocalNowSeconds => Time.realtimeSinceStartupAsDouble;
-    
+
     // Server: LocalNowSeconds
     // Client: LocalNowSeconds + offset
     public static double ServerNowSeconds => LocalNowSeconds + _offsetSeconds;
@@ -39,7 +39,11 @@ public static class NetworkTime
     // tS: server time when response was sent
     // offset sample: tS - (t0 + t3)/2
     // rtt: t3 - t0
-    internal static void ApplySample(double clientSendLocalSeconds, double clientReceiveLocalSeconds, double serverSendSeconds)
+    internal static void ApplySample(
+        double clientSendLocalSeconds,
+        double clientReceiveLocalSeconds,
+        double serverSendSeconds
+    )
     {
         if (clientReceiveLocalSeconds < clientSendLocalSeconds)
             return;
@@ -48,7 +52,8 @@ public static class NetworkTime
         if (rtt < 0)
             return;
 
-        double offsetSample = serverSendSeconds - ((clientSendLocalSeconds + clientReceiveLocalSeconds) * 0.5);
+        double offsetSample =
+            serverSendSeconds - ((clientSendLocalSeconds + clientReceiveLocalSeconds) * 0.5);
 
         if (!_hasSync)
         {
@@ -60,7 +65,8 @@ public static class NetworkTime
             _offsetSeconds = Lerp(_offsetSeconds, offsetSample, OffsetEmaAlpha);
         }
 
-        _estimatedRttSeconds = _estimatedRttSeconds <= 0 ? rtt : Lerp(_estimatedRttSeconds, rtt, 0.10);
+        _estimatedRttSeconds =
+            _estimatedRttSeconds <= 0 ? rtt : Lerp(_estimatedRttSeconds, rtt, 0.10);
     }
 
     // If we receive an authoritative server timestamp before periodic sync converges
@@ -80,8 +86,10 @@ public static class NetworkTime
 
     private static double Lerp(double a, double b, double t)
     {
-        if (t <= 0) return a;
-        if (t >= 1) return b;
+        if (t <= 0)
+            return a;
+        if (t >= 1)
+            return b;
         return a + (b - a) * t;
     }
 }

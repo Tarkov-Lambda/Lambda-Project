@@ -1,5 +1,5 @@
-using PacketWarden;
 using MemoryPack;
+using PacketWarden;
 
 namespace Lambda.Core.Networking;
 
@@ -37,7 +37,8 @@ public class PlayersPingPacketWarden : LambdaPacketWarden<PlayersPingPacket>
 
     protected override void Apply(PlayersPingPacket packet, int peerId)
     {
-        if (packet.scores == null) return;
+        if (packet.scores == null)
+            return;
 
         foreach (var syncScore in packet.scores)
         {

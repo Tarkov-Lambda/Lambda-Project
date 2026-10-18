@@ -60,7 +60,11 @@ namespace SteamAudio
         {
             if (mInstancedMesh == null && asset != null)
             {
-                mInstancedMesh = SteamAudioManager.LoadDynamicObject(this, SteamAudioManager.CurrentScene, SteamAudioManager.Context);
+                mInstancedMesh = SteamAudioManager.LoadDynamicObject(
+                    this,
+                    SteamAudioManager.CurrentScene,
+                    SteamAudioManager.Context
+                );
 
                 if (enabled)
                 {

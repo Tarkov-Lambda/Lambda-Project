@@ -1,13 +1,16 @@
-﻿using HarmonyLib;
+﻿using System.Reflection;
+using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
-
 internal class Patch_ThrowWeapItemClass_FragmentsCount : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.FragmentsCount));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(ThrowWeapItemClass),
+            nameof(ThrowWeapItemClass.FragmentsCount)
+        );
 
     [PatchPrefix]
     static bool Prefix(ThrowWeapItemClass __instance, ref int __result)
@@ -21,10 +24,13 @@ internal class Patch_ThrowWeapItemClass_FragmentsCount : ModulePatch
     }
 }
 
-
 internal class Patch_ThrowWeapItemClass_MinFragmentDamage : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MinFragmentDamage));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(ThrowWeapItemClass),
+            nameof(ThrowWeapItemClass.MinFragmentDamage)
+        );
 
     [PatchPrefix]
     static bool Prefix(ThrowWeapItemClass __instance, ref float __result)
@@ -40,7 +46,11 @@ internal class Patch_ThrowWeapItemClass_MinFragmentDamage : ModulePatch
 
 internal class Patch_ThrowWeapItemClass_MaxFragmentDamage : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MaxFragmentDamage));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(ThrowWeapItemClass),
+            nameof(ThrowWeapItemClass.MaxFragmentDamage)
+        );
 
     [PatchPrefix]
     static bool Prefix(ThrowWeapItemClass __instance, ref float __result)
@@ -56,7 +66,11 @@ internal class Patch_ThrowWeapItemClass_MaxFragmentDamage : ModulePatch
 
 internal class Patch_ThrowWeapItemClass_MinTimeToContactExplode : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(ThrowWeapItemClass), nameof(ThrowWeapItemClass.MinTimeToContactExplode));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(ThrowWeapItemClass),
+            nameof(ThrowWeapItemClass.MinTimeToContactExplode)
+        );
 
     [PatchPrefix]
     static bool Prefix(ThrowWeapItemClass __instance, ref float __result)

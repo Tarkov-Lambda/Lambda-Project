@@ -5,7 +5,10 @@ using MemoryPack;
 // Player.Id is the Fika NetId and is identical on every peer.
 public class PlayerFormatter : MemoryPackFormatter<Player>
 {
-    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref Player value)
+    public override void Serialize<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        scoped ref Player value
+    )
     {
         if (value == null)
         {
@@ -30,13 +33,15 @@ public class PlayerFormatter : MemoryPackFormatter<Player>
 
     public static Player Find(int id)
     {
-        if (!H.IsInRaid()) return null;
+        if (!H.IsInRaid())
+            return null;
 
         List<Player> players = H.GameWorld.AllAlivePlayersList;
 
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].Id == id) return players[i];
+            if (players[i].Id == id)
+                return players[i];
         }
 
         return null;

@@ -1,8 +1,8 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using EFT;
 using Lambda.Core.Main;
 using Lambda.Shared;
-using System;
-using System.Collections.Generic;
 
 namespace Lambda.Core.GameTypes;
 
@@ -31,7 +31,8 @@ public class SessionManager
         {
             foreach (var p in H.AllPlayers)
             {
-                if (p == null) continue;
+                if (p == null)
+                    continue;
                 if (!scoreboard.ContainsKey(p.Id))
                 {
                     scoreboard.Add(p.Id, new PlayerContext(p.Id));
@@ -87,13 +88,15 @@ public class SessionManager
     public int TotalRoundsPlayed()
     {
         int total = 0;
-        foreach (int wins in factionWins.Values) total += wins;
+        foreach (int wins in factionWins.Values)
+            total += wins;
         return total;
     }
 
     public List<Player> GetPlayersFromFaction(Faction faction)
     {
-        if (!H.IsArenaReady) return [];
+        if (!H.IsArenaReady)
+            return [];
 
         var result = new List<Player>();
 
@@ -110,7 +113,8 @@ public class SessionManager
 
     public List<PlayerContext> GetPlayerScoresFromFaction(Faction faction)
     {
-        if (!H.IsArenaReady) return [];
+        if (!H.IsArenaReady)
+            return [];
 
         var result = new List<PlayerContext>();
 
@@ -151,7 +155,8 @@ public class PlayerContextLookup(int capacity)
 
     public void Add(int id, PlayerContext value)
     {
-        if (id < 0) return;
+        if (id < 0)
+            return;
 
         if (id >= _items.Length)
             Array.Resize(ref _items, Math.Max(id + 1, _items.Length * 2));

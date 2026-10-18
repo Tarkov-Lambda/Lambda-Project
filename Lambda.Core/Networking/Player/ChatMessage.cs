@@ -21,7 +21,8 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
     protected override bool ShouldNotifyAboutRejection => true;
     protected override bool ShouldDisplayRejectionInChat => true;
 
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.25, RateLimitAction.Drop);
+    protected override RateLimitConfig ServerRateLimit =>
+        RateLimitPresets.LimitByCooldown(0.25, RateLimitAction.Drop);
 
     public void Send(ChatMessageScope scope, string msg)
     {
@@ -29,7 +30,7 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         {
             Player = H.MainPlayer,
             scope = scope,
-            msg = msg
+            msg = msg,
         };
 
         if (ChatCommandInterceptor.TryHandleLocal(msg))
@@ -41,7 +42,11 @@ public class ChatMessagePacketWarden : LambdaPacketWarden<ChatMessagePacket>
         DispatchPacket(ref packet);
     }
 
-    protected override bool ValidatePacket(ChatMessagePacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        ChatMessagePacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         if (string.IsNullOrEmpty(packet.msg) || packet.msg.Length > 132)
         {

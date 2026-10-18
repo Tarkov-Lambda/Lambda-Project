@@ -5,7 +5,10 @@ using MemoryPack;
 
 public class ItemFormatter : MemoryPackFormatter<Item>
 {
-    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref Item value)
+    public override void Serialize<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        scoped ref Item value
+    )
     {
         if (value == null)
         {
@@ -16,7 +19,9 @@ public class ItemFormatter : MemoryPackFormatter<Item>
         writer.WriteObjectHeader(1);
 
         var eftWriter = WriterPoolManager.GetWriter();
-        eftWriter.WriteEFTItemDescriptor(EFTItemSerializerClass.SerializeItem(value, GClass2240.Instance));
+        eftWriter.WriteEFTItemDescriptor(
+            EFTItemSerializerClass.SerializeItem(value, GClass2240.Instance)
+        );
         WriterPoolManager.WriteBlob(ref writer, eftWriter);
         WriterPoolManager.ReturnWriter(eftWriter);
     }
@@ -25,13 +30,19 @@ public class ItemFormatter : MemoryPackFormatter<Item>
     {
         value = null;
 
-        if (!reader.TryReadObjectHeader(out _)) return;
-        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob)) return;
+        if (!reader.TryReadObjectHeader(out _))
+            return;
+        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob))
+            return;
 
         try
         {
             using var eftReader = PacketToEFTReaderAbstractClass.Get(blob);
-            value = EFTItemSerializerClass.DeserializeItem(eftReader.ReadEFTItemDescriptor(), Singleton<ItemFactoryClass>.Instance, []);
+            value = EFTItemSerializerClass.DeserializeItem(
+                eftReader.ReadEFTItemDescriptor(),
+                Singleton<ItemFactoryClass>.Instance,
+                []
+            );
         }
         catch (Exception) { }
     }

@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System;
-using UnityEngine;
 using System.Text;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Coffee.UIEffects
 {
     public class MaterialCache
     {
-        static Dictionary<Hash128, MaterialEntry> materialMap = new Dictionary<Hash128, MaterialEntry>();
+        static Dictionary<Hash128, MaterialEntry> materialMap =
+            new Dictionary<Hash128, MaterialEntry>();
 
         private class MaterialEntry
         {
@@ -40,20 +41,22 @@ namespace Coffee.UIEffects
         }
 #endif
 
-        public static Material Register(Material baseMaterial, Hash128 hash,
-            System.Action<Material, Graphic> onModifyMaterial, Graphic graphic)
+        public static Material Register(
+            Material baseMaterial,
+            Hash128 hash,
+            System.Action<Material, Graphic> onModifyMaterial,
+            Graphic graphic
+        )
         {
-            if (!hash.isValid) return null;
+            if (!hash.isValid)
+                return null;
 
             MaterialEntry entry;
             if (!materialMap.TryGetValue(hash, out entry))
             {
                 entry = new MaterialEntry()
                 {
-                    material = new Material(baseMaterial)
-                    {
-                        hideFlags = HideFlags.HideAndDontSave,
-                    },
+                    material = new Material(baseMaterial) { hideFlags = HideFlags.HideAndDontSave },
                 };
 
                 onModifyMaterial(entry.material, graphic);
@@ -67,8 +70,10 @@ namespace Coffee.UIEffects
         public static void Unregister(Hash128 hash)
         {
             MaterialEntry entry;
-            if (!hash.isValid || !materialMap.TryGetValue(hash, out entry)) return;
-            if (--entry.referenceCount > 0) return;
+            if (!hash.isValid || !materialMap.TryGetValue(hash, out entry))
+                return;
+            if (--entry.referenceCount > 0)
+                return;
 
             entry.Release();
             materialMap.Remove(hash);

@@ -1,4 +1,3 @@
-
 using System;
 using EFT;
 using Lambda.Shared.Models;
@@ -8,6 +7,7 @@ namespace Lambda.Core.Main.Gamemode;
 public static class EventBus
 {
     public static Action<MatchState> OnEnter;
+
     // We do not have OnUpdate action because clients don't run the update loop (and also it's kinda stupid)
     public static Action<MatchState> OnExit;
     public static Action<BombState> OnBombStateChange;

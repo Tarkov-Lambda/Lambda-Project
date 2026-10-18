@@ -72,7 +72,13 @@ namespace SteamAudio
 #endif
 
 #if !UNITY_2019_2_OR_NEWER
-        static string[] sReflectionEffectTypes = new string[] { "Convolution", "Parametric", "Hybrid", "TrueAudio Next" };
+        static string[] sReflectionEffectTypes = new string[]
+        {
+            "Convolution",
+            "Parametric",
+            "Hybrid",
+            "TrueAudio Next",
+        };
 #endif
 
         private void OnEnable()
@@ -80,7 +86,9 @@ namespace SteamAudio
             mAudioEngine = serializedObject.FindProperty("audioEngine");
             mHRTFDisabled = serializedObject.FindProperty("hrtfDisabled");
             mPerspectiveCorrection = serializedObject.FindProperty("perspectiveCorrection");
-            mPerspectiveCorrectionFactor = serializedObject.FindProperty("perspectiveCorrectionFactor");
+            mPerspectiveCorrectionFactor = serializedObject.FindProperty(
+                "perspectiveCorrectionFactor"
+            );
             mHRTFVolumeGainDB = serializedObject.FindProperty("hrtfVolumeGainDB");
             mHRTFVolumeNormalizationType = serializedObject.FindProperty("hrtfNormalizationType");
             mSOFAFiles = serializedObject.FindProperty("SOFAFiles");
@@ -93,8 +101,12 @@ namespace SteamAudio
             mRealTimeDuration = serializedObject.FindProperty("realTimeDuration");
             mRealTimeAmbisonicOrder = serializedObject.FindProperty("realTimeAmbisonicOrder");
             mRealTimeMaxSources = serializedObject.FindProperty("realTimeMaxSources");
-            mRealTimeCPUCoresPercentage = serializedObject.FindProperty("realTimeCPUCoresPercentage");
-            mRealTimeIrradianceMinDistance = serializedObject.FindProperty("realTimeIrradianceMinDistance");
+            mRealTimeCPUCoresPercentage = serializedObject.FindProperty(
+                "realTimeCPUCoresPercentage"
+            );
+            mRealTimeIrradianceMinDistance = serializedObject.FindProperty(
+                "realTimeIrradianceMinDistance"
+            );
             mBakeConvolution = serializedObject.FindProperty("bakeConvolution");
             mBakeParametric = serializedObject.FindProperty("bakeParametric");
             mBakingRays = serializedObject.FindProperty("bakingRays");
@@ -102,20 +114,30 @@ namespace SteamAudio
             mBakingDuration = serializedObject.FindProperty("bakingDuration");
             mBakingAmbisonicOrder = serializedObject.FindProperty("bakingAmbisonicOrder");
             mBakingCPUCoresPercentage = serializedObject.FindProperty("bakingCPUCoresPercentage");
-            mBakingIrradianceMinDistance = serializedObject.FindProperty("bakingIrradianceMinDistance");
+            mBakingIrradianceMinDistance = serializedObject.FindProperty(
+                "bakingIrradianceMinDistance"
+            );
             mBakingVisibilitySamples = serializedObject.FindProperty("bakingVisibilitySamples");
             mBakingVisibilityRadius = serializedObject.FindProperty("bakingVisibilityRadius");
             mBakingVisibilityThreshold = serializedObject.FindProperty("bakingVisibilityThreshold");
             mBakingVisibilityRange = serializedObject.FindProperty("bakingVisibilityRange");
             mBakingPathRange = serializedObject.FindProperty("bakingPathRange");
-            mBakedPathingCPUCoresPercentage = serializedObject.FindProperty("bakedPathingCPUCoresPercentage");
+            mBakedPathingCPUCoresPercentage = serializedObject.FindProperty(
+                "bakedPathingCPUCoresPercentage"
+            );
             mSimulationUpdateInterval = serializedObject.FindProperty("simulationUpdateInterval");
             mReflectionEffectType = serializedObject.FindProperty("reflectionEffectType");
-            mHybridReverbTransitionTime = serializedObject.FindProperty("hybridReverbTransitionTime");
-            mHybridReverbOverlapPercent = serializedObject.FindProperty("hybridReverbOverlapPercent");
+            mHybridReverbTransitionTime = serializedObject.FindProperty(
+                "hybridReverbTransitionTime"
+            );
+            mHybridReverbOverlapPercent = serializedObject.FindProperty(
+                "hybridReverbOverlapPercent"
+            );
             mDeviceType = serializedObject.FindProperty("deviceType");
             mMaxReservedCUs = serializedObject.FindProperty("maxReservedComputeUnits");
-            mFractionCUsForIRUpdate = serializedObject.FindProperty("fractionComputeUnitsForIRUpdate");
+            mFractionCUsForIRUpdate = serializedObject.FindProperty(
+                "fractionComputeUnitsForIRUpdate"
+            );
             mBakingBatchSize = serializedObject.FindProperty("bakingBatchSize");
             mTANDuration = serializedObject.FindProperty("TANDuration");
             mTANAmbisonicOrder = serializedObject.FindProperty("TANAmbisonicOrder");
@@ -128,14 +150,29 @@ namespace SteamAudio
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(mAudioEngine);
-            EditorGUILayout.PropertyField(mHRTFDisabled, new UnityEngine.GUIContent("Disable HRTF Globally", "Disable HRTF rendering for all events/sources. Useful when the end user is using speakers instead of headphones."));
-            EditorGUILayout.PropertyField(mPerspectiveCorrection, new UnityEngine.GUIContent("Enable Perspective Correction"));
+            EditorGUILayout.PropertyField(
+                mHRTFDisabled,
+                new UnityEngine.GUIContent(
+                    "Disable HRTF Globally",
+                    "Disable HRTF rendering for all events/sources. Useful when the end user is using speakers instead of headphones."
+                )
+            );
+            EditorGUILayout.PropertyField(
+                mPerspectiveCorrection,
+                new UnityEngine.GUIContent("Enable Perspective Correction")
+            );
 
             if (mPerspectiveCorrection.boolValue)
                 EditorGUILayout.PropertyField(mPerspectiveCorrectionFactor);
 
-            EditorGUILayout.PropertyField(mHRTFVolumeGainDB, new UnityEngine.GUIContent("HRTF Volume Gain (dB)"));
-            EditorGUILayout.PropertyField(mHRTFVolumeNormalizationType, new UnityEngine.GUIContent("HRTF Normalization Type"));
+            EditorGUILayout.PropertyField(
+                mHRTFVolumeGainDB,
+                new UnityEngine.GUIContent("HRTF Volume Gain (dB)")
+            );
+            EditorGUILayout.PropertyField(
+                mHRTFVolumeNormalizationType,
+                new UnityEngine.GUIContent("HRTF Normalization Type")
+            );
 
             EditorGUILayout.PropertyField(mSOFAFiles, true);
             EditorGUILayout.PropertyField(mDefaultMaterial);
@@ -145,7 +182,7 @@ namespace SteamAudio
             SceneTypeField();
 #endif
 
-            if (((SceneType) mSceneType.enumValueIndex) == SceneType.Custom)
+            if (((SceneType)mSceneType.enumValueIndex) == SceneType.Custom)
             {
                 EditorGUILayout.PropertyField(mLayerMask);
             }
@@ -184,25 +221,34 @@ namespace SteamAudio
             ReflectionEffectTypeField();
 #endif
 
-            if (((ReflectionEffectType) mReflectionEffectType.enumValueIndex) == ReflectionEffectType.Hybrid)
+            if (
+                ((ReflectionEffectType)mReflectionEffectType.enumValueIndex)
+                == ReflectionEffectType.Hybrid
+            )
             {
                 EditorGUILayout.PropertyField(mHybridReverbTransitionTime);
                 EditorGUILayout.PropertyField(mHybridReverbOverlapPercent);
             }
 
-            if (((SceneType) mSceneType.enumValueIndex) == SceneType.RadeonRays ||
-                ((ReflectionEffectType) mReflectionEffectType.enumValueIndex) == ReflectionEffectType.TrueAudioNext)
+            if (
+                ((SceneType)mSceneType.enumValueIndex) == SceneType.RadeonRays
+                || ((ReflectionEffectType)mReflectionEffectType.enumValueIndex)
+                    == ReflectionEffectType.TrueAudioNext
+            )
             {
                 EditorGUILayout.PropertyField(mDeviceType);
                 EditorGUILayout.PropertyField(mMaxReservedCUs);
                 EditorGUILayout.PropertyField(mFractionCUsForIRUpdate);
 
-                if (((SceneType) mSceneType.enumValueIndex) == SceneType.RadeonRays)
+                if (((SceneType)mSceneType.enumValueIndex) == SceneType.RadeonRays)
                 {
                     EditorGUILayout.PropertyField(mBakingBatchSize);
                 }
 
-                if (((ReflectionEffectType) mReflectionEffectType.enumValueIndex) == ReflectionEffectType.TrueAudioNext)
+                if (
+                    ((ReflectionEffectType)mReflectionEffectType.enumValueIndex)
+                    == ReflectionEffectType.TrueAudioNext
+                )
                 {
                     EditorGUILayout.PropertyField(mTANDuration);
                     EditorGUILayout.PropertyField(mTANAmbisonicOrder);
@@ -220,7 +266,11 @@ namespace SteamAudio
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Ray Tracer Settings", EditorStyles.boldLabel);
-            mSceneType.enumValueIndex = EditorGUILayout.Popup(mSceneType.displayName, mSceneType.enumValueIndex, sSceneTypes);
+            mSceneType.enumValueIndex = EditorGUILayout.Popup(
+                mSceneType.displayName,
+                mSceneType.enumValueIndex,
+                sSceneTypes
+            );
         }
 #endif
 
@@ -229,7 +279,11 @@ namespace SteamAudio
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Reflection Effect Settings", EditorStyles.boldLabel);
-            mReflectionEffectType.enumValueIndex = EditorGUILayout.Popup(mReflectionEffectType.displayName, mReflectionEffectType.enumValueIndex, sReflectionEffectTypes);
+            mReflectionEffectType.enumValueIndex = EditorGUILayout.Popup(
+                mReflectionEffectType.displayName,
+                mReflectionEffectType.enumValueIndex,
+                sReflectionEffectTypes
+            );
         }
 #endif
     }

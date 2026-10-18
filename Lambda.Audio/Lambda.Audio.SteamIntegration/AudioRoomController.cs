@@ -18,9 +18,8 @@ public class LambdaAudioRoomController : Singleton<LambdaAudioRoomController>, I
             Room = audioRoom,
             CurrentRoomType = audioRoom.Type,
             CurrentOutdoorRoomID = 0,
-            InteractionState = EPlayerRoomInteractionState.Enter
+            InteractionState = EPlayerRoomInteractionState.Enter,
         };
-
     }
 
     public void TriggerChange()

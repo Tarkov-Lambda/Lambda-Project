@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-using AOT;
 using System;
 using System.Runtime.InteropServices;
+using AOT;
 using UnityEngine;
 
 namespace SteamAudio
@@ -24,38 +24,38 @@ namespace SteamAudio
     public enum DistanceAttenuationInput
     {
         CurveDriven,
-        PhysicsBased
+        PhysicsBased,
     }
 
     public enum AirAbsorptionInput
     {
         SimulationDefined,
-        UserDefined
+        UserDefined,
     }
 
     public enum DirectivityInput
     {
         SimulationDefined,
-        UserDefined
+        UserDefined,
     }
 
     public enum OcclusionInput
     {
         SimulationDefined,
-        UserDefined
+        UserDefined,
     }
 
     public enum TransmissionInput
     {
         SimulationDefined,
-        UserDefined
+        UserDefined,
     }
 
     public enum ReflectionsType
     {
         Realtime,
         BakedStaticSource,
-        BakedStaticListener
+        BakedStaticListener,
     }
 
     public struct AudioSourceAttenuationData
@@ -76,24 +76,31 @@ namespace SteamAudio
 
         [Header("Attenuation Settings")]
         public bool distanceAttenuation = false;
-        public DistanceAttenuationInput distanceAttenuationInput = DistanceAttenuationInput.CurveDriven;
+        public DistanceAttenuationInput distanceAttenuationInput =
+            DistanceAttenuationInput.CurveDriven;
         public float distanceAttenuationValue = 1.0f;
         public bool airAbsorption = false;
         public AirAbsorptionInput airAbsorptionInput = AirAbsorptionInput.SimulationDefined;
+
         [Range(0.0f, 1.0f)]
         public float airAbsorptionLow = 1.0f;
+
         [Range(0.0f, 1.0f)]
         public float airAbsorptionMid = 1.0f;
+
         [Range(0.0f, 1.0f)]
         public float airAbsorptionHigh = 1.0f;
 
         [Header("Directivity Settings")]
         public bool directivity = false;
         public DirectivityInput directivityInput = DirectivityInput.SimulationDefined;
+
         [Range(0.0f, 1.0f)]
         public float dipoleWeight = 0.0f;
+
         [Range(0.0f, 4.0f)]
         public float dipolePower = 0.0f;
+
         [Range(0.0f, 1.0f)]
         public float directivityValue = 1.0f;
 
@@ -101,21 +108,28 @@ namespace SteamAudio
         public bool occlusion = false;
         public OcclusionInput occlusionInput = OcclusionInput.SimulationDefined;
         public OcclusionType occlusionType = OcclusionType.Raycast;
+
         [Range(0.0f, 4.0f)]
         public float occlusionRadius = 1.0f;
+
         [Range(1, 128)]
         public int occlusionSamples = 16;
+
         [Range(0.0f, 1.0f)]
         public float occlusionValue = 1.0f;
         public bool transmission = false;
         public TransmissionType transmissionType = TransmissionType.FrequencyIndependent;
         public TransmissionInput transmissionInput = TransmissionInput.SimulationDefined;
+
         [Range(0.0f, 1.0f)]
         public float transmissionLow = 1.0f;
+
         [Range(0.0f, 1.0f)]
         public float transmissionMid = 1.0f;
+
         [Range(0.0f, 1.0f)]
         public float transmissionHigh = 1.0f;
+
         [Range(1, 8)]
         public int maxTransmissionSurfaces = 1;
 
@@ -137,6 +151,7 @@ namespace SteamAudio
         public float hybridReverbEQHigh = 1.0f;
         public int hybridReverbDelay = 0;
         public bool applyHRTFToReflections = false;
+
         [Range(0.0f, 10.0f)]
         public float reflectionsMixLevel = 1.0f;
 
@@ -148,6 +163,7 @@ namespace SteamAudio
         public float[] pathingEQ = new float[3] { 1.0f, 1.0f, 1.0f };
         public float[] pathingSH = new float[16];
         public bool applyHRTFToPathing = false;
+
         [Range(0.0f, 10.0f)]
         public float pathingMixLevel = 1.0f;
         public bool normalizePathingEQ = false;
@@ -170,7 +186,9 @@ namespace SteamAudio
         {
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Simulator == null)
             {
-                Debug.LogWarning("[SteamAudio] SteamAudioSource.Awake: SteamAudioManager not ready, skipping SA source setup.");
+                Debug.LogWarning(
+                    "[SteamAudio] SteamAudioSource.Awake: SteamAudioManager not ready, skipping SA source setup."
+                );
                 return;
             }
 
@@ -191,15 +209,20 @@ namespace SteamAudio
 
             mThis = GCHandle.Alloc(this);
 
-            if ((mSettings.audioEngine == AudioEngineType.Unity &&
-                distanceAttenuation &&
-                distanceAttenuationInput == DistanceAttenuationInput.CurveDriven) &&
-                ((reflections && useDistanceCurveForReflections) || pathing))
+            if (
+                (
+                    mSettings.audioEngine == AudioEngineType.Unity
+                    && distanceAttenuation
+                    && distanceAttenuationInput == DistanceAttenuationInput.CurveDriven
+                ) && ((reflections && useDistanceCurveForReflections) || pathing)
+            )
             {
                 mAttenuationData.rolloffMode = mAudioSource.rolloffMode;
                 mAttenuationData.minDistance = mAudioSource.minDistance;
                 mAttenuationData.maxDistance = mAudioSource.maxDistance;
-                mAttenuationData.curve = mAudioSource.GetCustomCurve(AudioSourceCurveType.CustomRolloff);
+                mAttenuationData.curve = mAudioSource.GetCustomCurve(
+                    AudioSourceCurveType.CustomRolloff
+                );
 
                 mCurveAttenuationModel.type = DistanceAttenuationModelType.Callback;
                 mCurveAttenuationModel.callback = EvaluateDistanceCurve;
@@ -241,7 +264,8 @@ namespace SteamAudio
 
         private void OnEnable()
         {
-            if (mSource == null || mSimulator == null) return;
+            if (mSource == null || mSimulator == null)
+                return;
             mSource.AddToSimulator(mSimulator);
             SteamAudioManager.AddSource(this);
 
@@ -253,7 +277,8 @@ namespace SteamAudio
 
         private void OnDisable()
         {
-            if (mSource == null || mSimulator == null) return;
+            if (mSource == null || mSimulator == null)
+                return;
             SteamAudioManager.RemoveSource(this);
             mSource.RemoveFromSimulator(mSimulator);
         }
@@ -268,7 +293,11 @@ namespace SteamAudio
 
         private void OnDrawGizmosSelected()
         {
-            if (directivity && directivityInput == DirectivityInput.SimulationDefined && dipoleWeight > 0.0f)
+            if (
+                directivity
+                && directivityInput == DirectivityInput.SimulationDefined
+                && dipoleWeight > 0.0f
+            )
             {
                 if (mDeformedSphereMesh == null)
                 {
@@ -294,7 +323,8 @@ namespace SteamAudio
         {
             // Find the AudioListener to act as the source of the occlusion rays
             AudioListener listener = FindObjectOfType<AudioListener>();
-            if (listener == null) return;
+            if (listener == null)
+                return;
 
             UnityEngine.Vector3 listenerPos = listener.transform.position;
             UnityEngine.Vector3 sourcePos = transform.position;
@@ -303,7 +333,11 @@ namespace SteamAudio
             {
                 // Single Raycast Occlusion Mode
                 UnityEngine.Vector3 direction = sourcePos - listenerPos;
-                bool isOccluded = Physics.Raycast(listenerPos, direction.normalized, direction.magnitude);
+                bool isOccluded = Physics.Raycast(
+                    listenerPos,
+                    direction.normalized,
+                    direction.magnitude
+                );
 
                 Gizmos.color = isOccluded ? Color.red : Color.green;
                 Gizmos.DrawLine(listenerPos, sourcePos);
@@ -335,14 +369,21 @@ namespace SteamAudio
                     float x = Mathf.Cos(theta) * radiusAtY;
                     float z = Mathf.Sin(theta) * radiusAtY;
 
-                    UnityEngine.Vector3 targetPoint = sourcePos + new UnityEngine.Vector3(x, y, z) * occlusionRadius;
+                    UnityEngine.Vector3 targetPoint =
+                        sourcePos + new UnityEngine.Vector3(x, y, z) * occlusionRadius;
                     UnityEngine.Vector3 direction = targetPoint - listenerPos;
 
-                    // Standard Unity Physics to mimic SA's internal checks against the scene geometry 
-                    bool isOccluded = Physics.Raycast(listenerPos, direction.normalized, direction.magnitude);
+                    // Standard Unity Physics to mimic SA's internal checks against the scene geometry
+                    bool isOccluded = Physics.Raycast(
+                        listenerPos,
+                        direction.normalized,
+                        direction.magnitude
+                    );
 
-                    // Color code: Red = block (occluded), Green = clear 
-                    Gizmos.color = isOccluded ? new Color(1f, 0f, 0f, 0.5f) : new Color(0f, 1f, 0f, 0.5f);
+                    // Color code: Red = block (occluded), Green = clear
+                    Gizmos.color = isOccluded
+                        ? new Color(1f, 0f, 0f, 0.5f)
+                        : new Color(0f, 1f, 0f, 0.5f);
                     Gizmos.DrawLine(listenerPos, targetPoint);
                 }
             }
@@ -358,11 +399,13 @@ namespace SteamAudio
             inputs.source.up = Common.ConvertVector(transform.up);
             inputs.source.right = Common.ConvertVector(transform.right);
 
-            if (mSettings.audioEngine == AudioEngineType.Unity &&
-                distanceAttenuation &&
-                distanceAttenuationInput == DistanceAttenuationInput.CurveDriven &&
-                reflections &&
-                useDistanceCurveForReflections)
+            if (
+                mSettings.audioEngine == AudioEngineType.Unity
+                && distanceAttenuation
+                && distanceAttenuationInput == DistanceAttenuationInput.CurveDriven
+                && reflections
+                && useDistanceCurveForReflections
+            )
             {
                 inputs.distanceAttenuationModel = mCurveAttenuationModel;
             }
@@ -388,7 +431,8 @@ namespace SteamAudio
             inputs.hybridReverbTransitionTime = mSettings.hybridReverbTransitionTime;
             inputs.hybridReverbOverlapPercent = mSettings.hybridReverbOverlapPercent / 100.0f;
             inputs.baked = (reflectionsType != ReflectionsType.Realtime) ? Bool.True : Bool.False;
-            inputs.pathingProbes = (pathingProbeBatch != null) ? pathingProbeBatch.GetProbeBatch() : IntPtr.Zero;
+            inputs.pathingProbes =
+                (pathingProbeBatch != null) ? pathingProbeBatch.GetProbeBatch() : IntPtr.Zero;
             inputs.visRadius = mSettings.bakingVisibilityRadius;
             inputs.visThreshold = mSettings.bakingVisibilityThreshold;
             inputs.visRange = mSettings.bakingVisibilityRange;
@@ -407,16 +451,26 @@ namespace SteamAudio
             {
                 if (listener != null && listener.currentBakedListener != null)
                 {
-                    inputs.bakedDataIdentifier = listener.currentBakedListener.GetBakedDataIdentifier();
+                    inputs.bakedDataIdentifier =
+                        listener.currentBakedListener.GetBakedDataIdentifier();
                 }
             }
 
             inputs.flags = SimulationFlags.Direct;
             if (reflections)
             {
-                if ((reflectionsType == ReflectionsType.Realtime) ||
-                    (reflectionsType == ReflectionsType.BakedStaticSource && currentBakedSource != null) ||
-                    (reflectionsType == ReflectionsType.BakedStaticListener && listener != null && listener.currentBakedListener != null))
+                if (
+                    (reflectionsType == ReflectionsType.Realtime)
+                    || (
+                        reflectionsType == ReflectionsType.BakedStaticSource
+                        && currentBakedSource != null
+                    )
+                    || (
+                        reflectionsType == ReflectionsType.BakedStaticListener
+                        && listener != null
+                        && listener.currentBakedListener != null
+                    )
+                )
                 {
                     inputs.flags = inputs.flags | SimulationFlags.Reflections;
                 }
@@ -426,7 +480,10 @@ namespace SteamAudio
                 if (pathingProbeBatch == null)
                 {
                     pathing = false;
-                    Debug.LogWarningFormat("Pathing probe batch not set, disabling pathing for source {0}.", gameObject.name);
+                    Debug.LogWarningFormat(
+                        "Pathing probe batch not set, disabling pathing for source {0}.",
+                        gameObject.name
+                    );
                 }
                 else
                 {
@@ -463,10 +520,15 @@ namespace SteamAudio
         {
             var outputs = mSource.GetOutputs(flags);
 
-            if (SteamAudioSettings.Singleton.audioEngine == AudioEngineType.Unity &&
-                ((flags & SimulationFlags.Direct) != 0))
+            if (
+                SteamAudioSettings.Singleton.audioEngine == AudioEngineType.Unity
+                && ((flags & SimulationFlags.Direct) != 0)
+            )
             {
-                if (distanceAttenuation && distanceAttenuationInput == DistanceAttenuationInput.PhysicsBased)
+                if (
+                    distanceAttenuation
+                    && distanceAttenuationInput == DistanceAttenuationInput.PhysicsBased
+                )
                 {
                     distanceAttenuationValue = outputs.direct.distanceAttenuation;
                 }
@@ -570,7 +632,10 @@ namespace SteamAudio
         UnityEngine.Vector3 DeformedVertex(UnityEngine.Vector3 vertex)
         {
             var cosine = vertex.z;
-            var r = Mathf.Pow(Mathf.Abs((1.0f - dipoleWeight) + dipoleWeight * cosine), dipolePower);
+            var r = Mathf.Pow(
+                Mathf.Abs((1.0f - dipoleWeight) + dipoleWeight * cosine),
+                dipolePower
+            );
             var deformedVertex = vertex;
             deformedVertex.Scale(new UnityEngine.Vector3(r, r, r));
             return deformedVertex;

@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
 using EFT;
 using EFT.InventoryLogic;
 using MemoryPack;
 using PacketWarden.RateLimiting;
-using System;
-using System.Collections.Generic;
 using static EFT.Player;
 
 namespace Lambda.Core.Networking;
@@ -21,7 +21,7 @@ public partial struct ItemAndAddress
 public enum EquipmentResyncRequestType : byte
 {
     CleanupBroadcast,
-    ClientRequest
+    ClientRequest,
 }
 
 [MemoryPackable]
@@ -41,7 +41,8 @@ public partial struct EquipmentResyncPacket : IPacket
 
 public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPacket>
 {
-    private readonly EquipmentSlot[] resyncableSlots = [
+    private readonly EquipmentSlot[] resyncableSlots =
+    [
         EquipmentSlot.Earpiece,
         EquipmentSlot.Headwear,
         EquipmentSlot.FaceCover,
@@ -54,22 +55,22 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         EquipmentSlot.Backpack,
         EquipmentSlot.Scabbard,
         EquipmentSlot.Pockets,
-        EquipmentSlot.ArmBand
+        EquipmentSlot.ArmBand,
     ];
 
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitByCooldown(0.1, RateLimitAction.Reject);
+    protected override RateLimitConfig ServerRateLimit =>
+        RateLimitPresets.LimitByCooldown(0.1, RateLimitAction.Reject);
 
 #if DEBUG
     protected override bool ShouldLog => true;
 #endif
 
-    public void Send(Player player, EquipmentResyncRequestType type = EquipmentResyncRequestType.ClientRequest)
+    public void Send(
+        Player player,
+        EquipmentResyncRequestType type = EquipmentResyncRequestType.ClientRequest
+    )
     {
-        var packet = new EquipmentResyncPacket
-        {
-            Player = player,
-            type = type
-        };
+        var packet = new EquipmentResyncPacket { Player = player, type = type };
 
         DispatchPacket(ref packet);
     }
@@ -79,13 +80,17 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
         var packet = new EquipmentResyncPacket
         {
             Player = player,
-            type = EquipmentResyncRequestType.ClientRequest
+            type = EquipmentResyncRequestType.ClientRequest,
         };
 
         DispatchPacket(ref packet, peerId);
     }
 
-    protected override bool ValidatePacket(EquipmentResyncPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        EquipmentResyncPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         if (packet.Player == null)
         {
@@ -113,12 +118,15 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                 packet.Equipment[slot] = new ItemAndAddress
                 {
                     item = item,
-                    address = item.CurrentAddress
+                    address = item.CurrentAddress,
                 };
             }
         }
 
-        if (H.Session.matchState is not MatchState.Cleanup && packet.type is EquipmentResyncRequestType.ClientRequest)
+        if (
+            H.Session.matchState is not MatchState.Cleanup
+            && packet.type is EquipmentResyncRequestType.ClientRequest
+        )
         {
             if (packet.Player.HandsController?.Item is Weapon weapon)
             {
@@ -149,7 +157,8 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
     protected override void Apply(EquipmentResyncPacket packet, int peerId)
     {
         Player player = packet.Player;
-        if (player == null || packet.Equipment == null) return;
+        if (player == null || packet.Equipment == null)
+            return;
 
         try
         {
@@ -178,7 +187,6 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
                 try
                 {
                     player.AutoExamineAndSearch(itemAndAddress.item);
-
                 }
                 catch (Exception ex)
                 {
@@ -191,28 +199,33 @@ public class EquipmentResyncPacketWarden : LambdaPacketWarden<EquipmentResyncPac
 
         if (packet.WeaponInHands != null)
         {
-            player.SetInHands(packet.WeaponInHands, (result) =>
-            {
-                if (result.Failed)
+            player.SetInHands(
+                packet.WeaponInHands,
+                (result) =>
                 {
-                    D.LogError($"[EquipmentResync] Failed to equip item: {result.Error}");
-                    player.SetEmptyHands(delegate { });
+                    if (result.Failed)
+                    {
+                        D.LogError($"[EquipmentResync] Failed to equip item: {result.Error}");
+                        player.SetEmptyHands(delegate { });
+                    }
                 }
-            });
+            );
 
             return;
         }
 
         if (player.IsYourPlayer)
         {
-            player.SetFirstAvailableItem((result) =>
-            {
-                if (result.Failed)
+            player.SetFirstAvailableItem(
+                (result) =>
                 {
-                    D.LogError($"[EquipmentResync] Failed to equip item: {result.Error}");
-                    player.SetEmptyHands(delegate { });
+                    if (result.Failed)
+                    {
+                        D.LogError($"[EquipmentResync] Failed to equip item: {result.Error}");
+                        player.SetEmptyHands(delegate { });
+                    }
                 }
-            });
+            );
 
             // IEnumerable<MedsItemClass> meds = player.GetVestAndPocketGridItems<MedsItemClass>();
             // foreach (var medicalItem in meds)

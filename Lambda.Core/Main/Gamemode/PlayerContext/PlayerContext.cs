@@ -66,7 +66,8 @@ public partial class PlayerContext
 
         ItemQuantityBoughtInRound = [];
 
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         if (H.IsServer && H.MainPlayer.Id == id)
         {
             context.Identity.IsAdmin = true;
@@ -82,18 +83,24 @@ public partial class PlayerContext
     // this needs to go elsewhere
     public bool IsControllerPartiallyLocked()
     {
-        if (H.IsHeadless) return false;
-        if (!H.IsArenaReady) return false;
+        if (H.IsHeadless)
+            return false;
+        if (!H.IsArenaReady)
+            return false;
 
         var matchState = H.Session.matchState;
-        if (matchState
+        if (
+            matchState
             is MatchState.WarmupEnd
-            or MatchState.RoundPrepare
-            // or MatchState.Pause
-            or MatchState.SideSwap
-            or MatchState.Cleanup) return true;
+                or MatchState.RoundPrepare
+                // or MatchState.Pause
+                or MatchState.SideSwap
+                or MatchState.Cleanup
+        )
+            return true;
 
-        if (!IsAlive && matchState is not MatchState.None) return true;
+        if (!IsAlive && matchState is not MatchState.None)
+            return true;
 
         return false;
     }

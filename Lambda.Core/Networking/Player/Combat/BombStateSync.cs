@@ -1,11 +1,11 @@
-﻿using EFT;
+﻿using System;
+using Comfort.Common;
+using EFT;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Shared;
 using MemoryPack;
-using UnityEngine;
 using PacketWarden.TimeSync;
-using Comfort.Common;
-using System;
+using UnityEngine;
 
 namespace Lambda.Core.Networking;
 
@@ -31,7 +31,7 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
             Player = player,
             state = state,
             position = position,
-            Timestamp = NetworkTime.ServerNowSeconds
+            Timestamp = NetworkTime.ServerNowSeconds,
         };
 
         DispatchPacket(ref packet);
@@ -70,17 +70,21 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
         if (packet.state is BombState.Planted)
         {
             H.Arena.LastObjectivePlayer = packet.Player;
-            foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
+            foreach (
+                var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(
+                    FindObjectsSortMode.None
+                )
+            )
             {
                 bombPlantZone.GetComponent<BoxCollider>().enabled = false; // remove interaction triggers
             }
         }
 
-
         if (packet.state is BombState.Defused or BombState.Exploded)
         {
             H.Arena.LastObjectiveBombState = packet.state;
-            if (packet.Player != null) H.Arena.LastObjectivePlayer = packet.Player;
+            if (packet.Player != null)
+                H.Arena.LastObjectivePlayer = packet.Player;
         }
 
         if (H.IsServer && packet.state is BombState.Exploded)
@@ -99,7 +103,11 @@ public class BombStatePacketWarden : LambdaPacketWarden<BombStatePacket>
                     try
                     {
                         Player BombPlanter = (H.Gamemode as SNDGamemode).BombPlanter;
-                        Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, BombPlanter);
+                        Singleton<PlayerKilledPacketWarden>.Instance.Send(
+                            damageInfo,
+                            player,
+                            BombPlanter
+                        );
                     }
                     catch (Exception) { }
                 }

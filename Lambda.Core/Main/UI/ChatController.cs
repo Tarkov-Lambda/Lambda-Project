@@ -1,4 +1,5 @@
-﻿using Comfort.Common;
+﻿using System;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.UI;
@@ -7,7 +8,6 @@ using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using Lambda.Shared.Models;
 using Lambda.UI;
-using System;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI
@@ -22,8 +22,10 @@ namespace Lambda.Core.Main.UI
 
             chat.OnSubmit += OnSubmit;
 
-            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat += OnAnnouncementReceived;
-            Singleton<GenericMessagePacketWarden>.Instance.AfterPacketApplied += OnAnnouncementReceived;
+            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat +=
+                OnAnnouncementReceived;
+            Singleton<GenericMessagePacketWarden>.Instance.AfterPacketApplied +=
+                OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied += OnMessageReceived;
             UnityTicker.OnUpdate += Update;
             EventBus.OnEnter += OnMatchStateEnter;
@@ -31,8 +33,10 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat -= OnAnnouncementReceived;
-            Singleton<GenericMessagePacketWarden>.Instance.AfterPacketApplied -= OnAnnouncementReceived;
+            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat -=
+                OnAnnouncementReceived;
+            Singleton<GenericMessagePacketWarden>.Instance.AfterPacketApplied -=
+                OnAnnouncementReceived;
             Singleton<ChatMessagePacketWarden>.Instance.AfterPacketApplied -= OnMessageReceived;
             UnityTicker.OnUpdate -= Update;
             EventBus.OnEnter -= OnMatchStateEnter;
@@ -89,7 +93,10 @@ namespace Lambda.Core.Main.UI
 
         private void OnAnnouncementReceived(ServerMessagePacket serverMessagePacket)
         {
-            if (serverMessagePacket.specificFaction != null && serverMessagePacket.specificFaction.Value == H.MainPlayerScore.Faction)
+            if (
+                serverMessagePacket.specificFaction != null
+                && serverMessagePacket.specificFaction.Value == H.MainPlayerScore.Faction
+            )
                 _chat.PopAnnouncementMessage(serverMessagePacket.msg);
             else if (serverMessagePacket.specificFaction == null)
                 _chat.PopAnnouncementMessage(serverMessagePacket.msg);
@@ -101,14 +108,18 @@ namespace Lambda.Core.Main.UI
 
             // await UniTask.DelayFrame(1);
 
-            if (chatPacket.scope == ChatMessageScope.Team && chatPacket.Player.Context.Faction != H.MainPlayerScore.Faction)
+            if (
+                chatPacket.scope == ChatMessageScope.Team
+                && chatPacket.Player.Context.Faction != H.MainPlayerScore.Faction
+            )
                 return;
 
             _chat.PopMessage(
                 chatPacket.scope,
                 playerScore.Faction,
                 chatPacket.Player.Profile.Nickname,
-                chatPacket.msg);
+                chatPacket.msg
+            );
         }
     }
 }

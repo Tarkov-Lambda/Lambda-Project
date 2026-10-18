@@ -1,23 +1,25 @@
-using Lambda.UI;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Comfort.Common;
 using EFT.UI;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Patches.Tarkov.UI;
 using Lambda.Core.Patches.Tarkov.UI.QuickAccess;
-using System;
-using System.Collections.Generic;
-using System.IO;
+using Lambda.UI;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI;
 
 public class UIManager : IDisposable
 {
-    private const string UI_BUNDLE_NAME       =  "arenaui";
-    private const string MATCH_UI_PREFAB_PATH =  "Packages/com.lambda.editor/Lambda.UI/ArenaMatchUI.prefab";
-    private const string UI_MATTE_PATH        =  "Packages/com.lambda.editor/Lambda.UI/UIMatte.mat";
+    private const string UI_BUNDLE_NAME = "arenaui";
+    private const string MATCH_UI_PREFAB_PATH =
+        "Packages/com.lambda.editor/Lambda.UI/ArenaMatchUI.prefab";
+    private const string UI_MATTE_PATH = "Packages/com.lambda.editor/Lambda.UI/UIMatte.mat";
 
-    private static string UIAssetBundlePath   => Path.Combine(LambdaPlugin.pathToBundles, UI_BUNDLE_NAME);
+    private static string UIAssetBundlePath =>
+        Path.Combine(LambdaPlugin.pathToBundles, UI_BUNDLE_NAME);
 
     private AssetBundle UIBundle;
 
@@ -27,12 +29,14 @@ public class UIManager : IDisposable
 
     public UIManager()
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
 
         H.AfterApplicationLoaded += Initialize;
 
         // hot reload
-        if (H.IsMainMenuLoaded()) Initialize();
+        if (H.IsMainMenuLoaded())
+            Initialize();
     }
 
     public void Initialize()
@@ -72,7 +76,9 @@ public class UIManager : IDisposable
         UIBundle = AssetBundle.LoadFromFile(UIAssetBundlePath);
 
         GameObject prefabMatchUI = UIBundle.LoadAsset<GameObject>(MATCH_UI_PREFAB_PATH);
-        matchUI = GameObject.Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform).GetComponent<ArenaMatchUI>();
+        matchUI = GameObject
+            .Instantiate(prefabMatchUI, commonUI.EftBattleUIScreen.transform)
+            .GetComponent<ArenaMatchUI>();
         matchUI.transform.SetAsFirstSibling();
 
         try
@@ -98,8 +104,8 @@ public class UIManager : IDisposable
             LambdaPlugin.Logger.LogError(e);
         }
 
-        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = UIBundle.LoadAsset<Material>(UI_MATTE_PATH);
+        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial = UIBundle.LoadAsset<Material>(
+            UI_MATTE_PATH
+        );
     }
-
-
 }

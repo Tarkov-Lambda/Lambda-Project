@@ -1,11 +1,11 @@
-﻿#if EFT_RUNTIME
-using EFT;
-
-using EFT.Interactive;
-#endif
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+#if EFT_RUNTIME
+using EFT;
+using EFT.Interactive;
+#endif
+
 
 namespace Lambda.Shared
 {
@@ -24,18 +24,12 @@ namespace Lambda.Shared
 
         public Vector3 Center
         {
-            get
-            {
-                return _boxCollider.center;
-            }
+            get { return _boxCollider.center; }
         }
 
         public Bounds Bounds
         {
-            get
-            {
-                return _boxCollider.bounds;
-            }
+            get { return _boxCollider.bounds; }
         }
 
         void Awake()

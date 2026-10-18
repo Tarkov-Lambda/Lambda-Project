@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 namespace Coffee.UIEffects
 {
     /// <summary>
@@ -12,7 +11,8 @@ namespace Coffee.UIEffects
     [ExecuteAlways]
     public class UISyncEffect : BaseMaterialEffect
     {
-        [Tooltip("The target effect to synchronize.")] [SerializeField]
+        [Tooltip("The target effect to synchronize.")]
+        [SerializeField]
         private BaseMeshEffect m_TargetEffect;
 
         public BaseMeshEffect targetEffect
@@ -20,7 +20,8 @@ namespace Coffee.UIEffects
             get { return m_TargetEffect != this ? m_TargetEffect : null; }
             set
             {
-                if (m_TargetEffect == value) return;
+                if (m_TargetEffect == value)
+                    return;
                 m_TargetEffect = value;
 
                 SetVerticesDirty();
@@ -45,28 +46,34 @@ namespace Coffee.UIEffects
 
         public override Hash128 GetMaterialHash(Material baseMaterial)
         {
-            if (!isActiveAndEnabled) return k_InvalidHash;
+            if (!isActiveAndEnabled)
+                return k_InvalidHash;
 
             var matEffect = targetEffect as BaseMaterialEffect;
-            if (!matEffect || !matEffect.isActiveAndEnabled) return k_InvalidHash;
+            if (!matEffect || !matEffect.isActiveAndEnabled)
+                return k_InvalidHash;
 
             return matEffect.GetMaterialHash(baseMaterial);
         }
 
         public override void ModifyMaterial(Material newMaterial, Graphic graphic)
         {
-            if (!isActiveAndEnabled) return;
+            if (!isActiveAndEnabled)
+                return;
 
             var matEffect = targetEffect as BaseMaterialEffect;
-            if (!matEffect || !matEffect.isActiveAndEnabled) return;
+            if (!matEffect || !matEffect.isActiveAndEnabled)
+                return;
 
             matEffect.ModifyMaterial(newMaterial, graphic);
         }
 
         public override void ModifyMesh(VertexHelper vh, Graphic graphic)
         {
-            if (!isActiveAndEnabled) return;
-            if (!targetEffect || !targetEffect.isActiveAndEnabled) return;
+            if (!isActiveAndEnabled)
+                return;
+            if (!targetEffect || !targetEffect.isActiveAndEnabled)
+                return;
 
             targetEffect.ModifyMesh(vh, graphic);
         }

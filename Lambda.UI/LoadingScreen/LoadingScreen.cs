@@ -7,22 +7,19 @@ namespace Lambda.UI
 {
     public class LoadingScreen : MonoBehaviour
     {
-        [SerializeField] private TMP_Text textProgress;
-        [SerializeField] private Spinner spinner;
+        [SerializeField]
+        private TMP_Text textProgress;
 
-        void Start()
-        {
+        [SerializeField]
+        private Spinner spinner;
 
-        }
+        void Start() { }
 
         public void SetText(string text)
         {
             textProgress.text = text;
         }
 
-        void Update()
-        {
-        
-        }
+        void Update() { }
     }
 }

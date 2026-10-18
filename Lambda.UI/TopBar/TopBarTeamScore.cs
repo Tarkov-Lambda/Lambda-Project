@@ -8,11 +8,14 @@ namespace Lambda.UI
 {
     public class TopBarTeamScore : MonoBehaviour
     {
-        [SerializeField] private TMP_Text textScore;
+        [SerializeField]
+        private TMP_Text textScore;
 
-        [SerializeField] private Graphic[] coloredGraphics;
+        [SerializeField]
+        private Graphic[] coloredGraphics;
 
-        [SerializeField] private Color color;
+        [SerializeField]
+        private Color color;
 
         public Color Color
         {
@@ -24,7 +27,6 @@ namespace Lambda.UI
                 {
                     if (graphic == null)
                         continue;
-
 
                     graphic.SetColorKeepGraphicAlpha(color);
                 }

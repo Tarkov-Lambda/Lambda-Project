@@ -16,12 +16,23 @@ namespace Coffee.UIEffects
     public static class EffectAreaExtensions
     {
         static readonly Rect rectForCharacter = new Rect(0, 0, 1, 1);
-        static readonly Vector2[] splitedCharacterPosition = {Vector2.up, Vector2.one, Vector2.right, Vector2.zero};
+        static readonly Vector2[] splitedCharacterPosition =
+        {
+            Vector2.up,
+            Vector2.one,
+            Vector2.right,
+            Vector2.zero,
+        };
 
         /// <summary>
         /// Gets effect for area.
         /// </summary>
-        public static Rect GetEffectArea(this EffectArea area, VertexHelper vh, Rect rectangle, float aspectRatio = -1)
+        public static Rect GetEffectArea(
+            this EffectArea area,
+            VertexHelper vh,
+            Rect rectangle,
+            float aspectRatio = -1
+        )
         {
             Rect rect = default(Rect);
             switch (area)
@@ -57,7 +68,6 @@ namespace Coffee.UIEffects
                     break;
             }
 
-
             if (0 < aspectRatio)
             {
                 if (rect.width < rect.height)
@@ -76,8 +86,16 @@ namespace Coffee.UIEffects
         /// <summary>
         /// Gets position factor for area.
         /// </summary>
-        public static void GetPositionFactor(this EffectArea area, int index, Rect rect, Vector2 position, bool isText,
-            bool isTMPro, out float x, out float y)
+        public static void GetPositionFactor(
+            this EffectArea area,
+            int index,
+            Rect rect,
+            Vector2 position,
+            bool isText,
+            bool isTMPro,
+            out float x,
+            out float y
+        )
         {
             if (isText && area == EffectArea.Character)
             {
@@ -100,8 +118,14 @@ namespace Coffee.UIEffects
         /// <summary>
         /// Normalize vertex position by local matrix.
         /// </summary>
-        public static void GetNormalizedFactor(this EffectArea area, int index, Matrix2x3 matrix, Vector2 position,
-            bool isText, out Vector2 nomalizedPos)
+        public static void GetNormalizedFactor(
+            this EffectArea area,
+            int index,
+            Matrix2x3 matrix,
+            Vector2 position,
+            bool isText,
+            out Vector2 nomalizedPos
+        )
         {
             if (isText && area == EffectArea.Character)
             {

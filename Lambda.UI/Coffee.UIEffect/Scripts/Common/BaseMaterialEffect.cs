@@ -58,14 +58,20 @@ namespace Coffee.UIEffects
 
         public virtual Material GetModifiedMaterial(Material baseMaterial, Graphic graphic)
         {
-            if (!isActiveAndEnabled) return baseMaterial;
+            if (!isActiveAndEnabled)
+                return baseMaterial;
 
             var oldHash = _effectMaterialHash;
             _effectMaterialHash = GetMaterialHash(baseMaterial);
             var modifiedMaterial = baseMaterial;
             if (_effectMaterialHash.isValid)
             {
-                modifiedMaterial = MaterialCache.Register(baseMaterial, _effectMaterialHash, ModifyMaterial, graphic);
+                modifiedMaterial = MaterialCache.Register(
+                    baseMaterial,
+                    _effectMaterialHash,
+                    ModifyMaterial,
+                    graphic
+                );
             }
 
             MaterialCache.Unregister(oldHash);
@@ -87,7 +93,8 @@ namespace Coffee.UIEffects
         protected void SetShaderVariants(Material newMaterial, params object[] variants)
         {
             // Set shader keywords as variants
-            var keywords = variants.Where(x => 0 < (int) x)
+            var keywords = variants
+                .Where(x => 0 < (int)x)
                 .Select(x => x.ToString().ToUpper())
                 .Concat(newMaterial.shaderKeywords)
                 .Distinct()
@@ -109,7 +116,8 @@ namespace Coffee.UIEffects
 #if UNITY_EDITOR
         protected override void Reset()
         {
-            if (!isActiveAndEnabled) return;
+            if (!isActiveAndEnabled)
+                return;
             SetMaterialDirty();
             SetVerticesDirty();
             SetEffectParamsDirty();
@@ -117,7 +125,8 @@ namespace Coffee.UIEffects
 
         protected override void OnValidate()
         {
-            if (!isActiveAndEnabled) return;
+            if (!isActiveAndEnabled)
+                return;
             SetVerticesDirty();
             SetEffectParamsDirty();
         }

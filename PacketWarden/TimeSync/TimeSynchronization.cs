@@ -1,5 +1,5 @@
-using PacketWarden.RateLimiting;
 using MemoryPack;
+using PacketWarden.RateLimiting;
 
 namespace PacketWarden.TimeSync;
 
@@ -12,14 +12,15 @@ public partial struct TimeSynchronizationPacket : IPacket
 
 public class TimeSynchronizationPacketWarden : PacketWarden<TimeSynchronizationPacket>
 {
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(2, RateLimitAction.Drop);
+    protected override RateLimitConfig ServerRateLimit =>
+        RateLimitPresets.LimitPerSecond(2, RateLimitAction.Drop);
     protected override DeliveryType DeliveryType => DeliveryType.Sequenced;
 
     public void Send()
     {
         var packet = new TimeSynchronizationPacket
         {
-            clientSendLocalSeconds = NetworkTime.LocalNowSeconds
+            clientSendLocalSeconds = NetworkTime.LocalNowSeconds,
         };
 
         DispatchPacket(ref packet);
@@ -33,6 +34,10 @@ public class TimeSynchronizationPacketWarden : PacketWarden<TimeSynchronizationP
 
     protected override void Apply(TimeSynchronizationPacket packet, int peerId)
     {
-        NetworkTime.ApplySample(packet.clientSendLocalSeconds, NetworkTime.LocalNowSeconds, packet.serverSendSeconds);
+        NetworkTime.ApplySample(
+            packet.clientSendLocalSeconds,
+            NetworkTime.LocalNowSeconds,
+            packet.serverSendSeconds
+        );
     }
 }

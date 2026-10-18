@@ -1,12 +1,12 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Threading;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main;
 using Lambda.Core.Main.Dying;
 using MemoryPack;
-using System;
-using System.Threading;
 using UnityEngine;
 
 namespace Lambda.Core.Networking;
@@ -56,7 +56,8 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
 
     public void Send(DamageInfoStruct damage, Player victim, Player killer)
     {
-        if (victim == null) return;
+        if (victim == null)
+            return;
 
         var packet = new PlayerKilledPacket
         {
@@ -71,7 +72,11 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         {
             if (packet.damageType is EDamageType.Bullet or EDamageType.Blunt)
             {
-                if (killer != null && killer.HandsController != null && killer.HandsController.Item is not null and Weapon weapon)
+                if (
+                    killer != null
+                    && killer.HandsController != null
+                    && killer.HandsController.Item is not null and Weapon weapon
+                )
                 {
                     packet.weaponId = weapon.TemplateId.ToString() ?? string.Empty;
                 }
@@ -106,7 +111,6 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         HandleKill(packet);
     }
 
-
     // TODO: move logic outta here
     private void HandleKill(PlayerKilledPacket packet)
     {
@@ -116,7 +120,11 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         victimScore.Kill();
 
         PlayerContext killerScore = H.GetPlayerContext(packet.killer);
-        if (killerScore != null && killerScore != victimScore && killerScore.Faction != victimScore.Faction)
+        if (
+            killerScore != null
+            && killerScore != victimScore
+            && killerScore.Faction != victimScore.Faction
+        )
         {
             killerScore.AddFrag(packet.IsHeadshot);
         }
@@ -124,12 +132,15 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         if (packet.assist != null)
         {
             PlayerContext assistScore = H.GetPlayerContext(packet.assist);
-            if (assistScore != null && assistScore != victimScore && assistScore.Faction != victimScore.Faction)
+            if (
+                assistScore != null
+                && assistScore != victimScore
+                && assistScore.Faction != victimScore.Faction
+            )
             {
                 assistScore.AddAssist();
             }
         }
-
 
         // needs to go elsewhere
         if (H.Gamemode is not IGMRespawnable)
@@ -138,7 +149,11 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
             {
                 victimScore.SetHardReset();
             }
-            else if (killerScore == null || killerScore == victimScore || killerScore.Faction != victimScore.Faction)
+            else if (
+                killerScore == null
+                || killerScore == victimScore
+                || killerScore.Faction != victimScore.Faction
+            )
             {
                 victimScore.SetHardReset();
             }
@@ -148,7 +163,11 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         {
             if (packet.damageType is EDamageType.Bullet or EDamageType.Blunt)
             {
-                if (packet.killer != null && packet.killer.HandsController != null && packet.killer.HandsController.Item is not null and Weapon weapon)
+                if (
+                    packet.killer != null
+                    && packet.killer.HandsController != null
+                    && packet.killer.HandsController.Item is not null and Weapon weapon
+                )
                 {
                     packet.weaponId = weapon.TemplateId.ToString() ?? string.Empty;
                 }
@@ -219,10 +238,12 @@ public class PlayerKilledPacketWarden : LambdaPacketWarden<PlayerKilledPacket>
         {
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
 
-            if (victim == null || victim.Destroyed) break;
+            if (victim == null || victim.Destroyed)
+                break;
 
             var score = H.GetPlayerContext(victim.Id);
-            if (score != null && score.IsAlive) break;
+            if (score != null && score.IsAlive)
+                break;
 
             ForcePlayerPosition(victim, targetPos);
             elapsed += Time.deltaTime;

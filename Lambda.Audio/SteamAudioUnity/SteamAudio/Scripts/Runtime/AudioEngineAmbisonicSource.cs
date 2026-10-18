@@ -20,26 +20,22 @@ namespace SteamAudio
 {
     public abstract class AudioEngineAmbisonicSource
     {
-        public virtual void Initialize(GameObject gameObject)
-        { }
+        public virtual void Initialize(GameObject gameObject) { }
 
-        public virtual void Destroy()
-        { }
+        public virtual void Destroy() { }
 
-        public virtual void UpdateParameters(SteamAudioAmbisonicSource ambisonicSource)
-        { }
+        public virtual void UpdateParameters(SteamAudioAmbisonicSource ambisonicSource) { }
 
-        public virtual void GetParameters(SteamAudioAmbisonicSource ambisonicSource)
-        { }
+        public virtual void GetParameters(SteamAudioAmbisonicSource ambisonicSource) { }
 
         public static AudioEngineAmbisonicSource Create(AudioEngineType type)
         {
             switch (type)
             {
-            case AudioEngineType.Unity:
-                return new UnityAudioEngineAmbisonicSource();
-            default:
-                return null;
+                case AudioEngineType.Unity:
+                    return new UnityAudioEngineAmbisonicSource();
+                default:
+                    return null;
             }
         }
     }

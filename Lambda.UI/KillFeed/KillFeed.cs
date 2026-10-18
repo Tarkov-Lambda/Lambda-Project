@@ -1,17 +1,23 @@
+using System.Collections.Generic;
 using Lambda.Shared;
 using Lambda.Shared.Models;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lambda.UI
 {
     public class KillFeed : MonoBehaviour
     {
-        [SerializeField] private FactionColors factionColors;
-        [SerializeField] private KillNotification prefabNotification;
+        [SerializeField]
+        private FactionColors factionColors;
 
-        [SerializeField] private float killShowTime = 2f;
-        [SerializeField] private float spacing = 5f;
+        [SerializeField]
+        private KillNotification prefabNotification;
+
+        [SerializeField]
+        private float killShowTime = 2f;
+
+        [SerializeField]
+        private float spacing = 5f;
 
         RectTransform container => transform as RectTransform;
 
@@ -28,7 +34,13 @@ namespace Lambda.UI
             }
         }
 
-        public KillNotification Pop(string killerName, Faction killerFaction, string victimName, Faction victimFaction, bool isHeadshot)
+        public KillNotification Pop(
+            string killerName,
+            Faction killerFaction,
+            string victimName,
+            Faction victimFaction,
+            bool isHeadshot
+        )
         {
             KillNotification notif = SpawnOrGetFromPool();
             notif.gameObject.SetActive(true);
@@ -36,9 +48,18 @@ namespace Lambda.UI
             notif.rectTransform.anchorMax = new Vector2(1f, 1f);
             notif.rectTransform.pivot = new Vector2(1f, 1f);
 
-            notif.rectTransform.anchoredPosition = new Vector2(0, notif.rectTransform.sizeDelta.y + spacing);
+            notif.rectTransform.anchoredPosition = new Vector2(
+                0,
+                notif.rectTransform.sizeDelta.y + spacing
+            );
 
-            notif.Set(killerName, factionColors.Get(killerFaction), victimName, factionColors.Get(victimFaction), isHeadshot);
+            notif.Set(
+                killerName,
+                factionColors.Get(killerFaction),
+                victimName,
+                factionColors.Get(victimFaction),
+                isHeadshot
+            );
             notif.SetAlpha(1f);
 
             currentlyShowing.Add(notif);
@@ -53,7 +74,11 @@ namespace Lambda.UI
             {
                 var notif = currentlyShowing[i];
                 Vector2 targetPos = new Vector2(0, offsetY);
-                notif.rectTransform.anchoredPosition = Vector2.Lerp(notif.rectTransform.anchoredPosition, targetPos, Time.deltaTime * 30f);
+                notif.rectTransform.anchoredPosition = Vector2.Lerp(
+                    notif.rectTransform.anchoredPosition,
+                    targetPos,
+                    Time.deltaTime * 30f
+                );
                 offsetY -= notif.rectTransform.sizeDelta.y + spacing;
 
                 float normalizedLifetime = ((Time.time - notif.ActivationTimeStamp) / killShowTime);
@@ -61,7 +86,10 @@ namespace Lambda.UI
                 notif.SetAlpha(targetAlpha);
             }
 
-            if (currentlyShowing.Count > 0 && currentlyShowing[0].ActivationTimeStamp < Time.time - killShowTime)
+            if (
+                currentlyShowing.Count > 0
+                && currentlyShowing[0].ActivationTimeStamp < Time.time - killShowTime
+            )
             {
                 ReturnToPool(currentlyShowing[0]);
                 currentlyShowing.RemoveAt(0);

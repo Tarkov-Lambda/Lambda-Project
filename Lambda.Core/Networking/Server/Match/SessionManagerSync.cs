@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using MemoryPack;
-using PacketWarden;
+using Lambda.Core.Main;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Shared.Models;
-using Lambda.Core.Main;
+using MemoryPack;
+using PacketWarden;
 
 namespace Lambda.Core.Networking;
 
@@ -41,7 +41,7 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
             scores[i] = new PlayerContextEntry
             {
                 playerId = contexts[i].Id,
-                info = contexts[i].Context
+                info = contexts[i].Context,
             };
         }
 
@@ -52,13 +52,14 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
             mvpId = H.Session.mvpId,
             mapName = H.Session.level,
             factionWins = H.Session.factionWins,
-            scores = scores
+            scores = scores,
         };
     }
 
     public void Send()
     {
-        if (H.Session == null) return;
+        if (H.Session == null)
+            return;
 
         var packet = FormatPacket();
         DispatchPacket(ref packet);
@@ -72,7 +73,8 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
 
     protected override void Apply(SessionManagerSyncPacket packet, int peerId)
     {
-        if (H.IsServer) return;
+        if (H.IsServer)
+            return;
 
         H.Session.matchState = packet.roundState;
         H.Session.bombState = packet.bombState;
@@ -80,14 +82,16 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
         H.Session.level = packet.mapName;
         H.Session.factionWins = packet.factionWins;
 
-        if (packet.scores == null) return;
+        if (packet.scores == null)
+            return;
 
         int mainPlayerId = H.IsHeadless ? -1 : H.MainPlayer.Id;
 
         foreach (PlayerContextEntry entry in packet.scores)
         {
             // players that already left only exist on the server
-            if (H.GetPlayer(entry.playerId) == null) continue;
+            if (H.GetPlayer(entry.playerId) == null)
+                continue;
 
             PlayerContext playerScore = H.GetPlayerContext(entry.playerId);
 

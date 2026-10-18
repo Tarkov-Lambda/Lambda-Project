@@ -1,7 +1,7 @@
-﻿using HarmonyLib;
-using SPT.Reflection.Patching;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
+using SPT.Reflection.Patching;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI;
@@ -58,4 +58,3 @@ internal class EFTCameraHook : IDisposable
         }
     }
 }
-

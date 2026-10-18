@@ -1,8 +1,8 @@
-﻿using Comfort.Common;
-using Lambda.Shared.FX;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Comfort.Common;
+using Lambda.Shared.FX;
 using UnityEngine;
 
 namespace Lambda.Core.Main.FX;
@@ -10,8 +10,10 @@ namespace Lambda.Core.Main.FX;
 public class FXHandler : Singleton<FXHandler>, IDisposable
 {
     private const string FX_BUNDLE_NAME = "fx";
-    private const string MOLOTOV_FIRE_PREFAB_PATH = "Packages/com.lambda.editor/Lambda.Shared/FX/Molotov/MolotovFX.prefab";
-    private const string FIRE_NODE_EFFECT_PATH = "Packages/com.lambda.editor/Lambda.Shared/FX/Molotov/FireNodeEffect.prefab";
+    private const string MOLOTOV_FIRE_PREFAB_PATH =
+        "Packages/com.lambda.editor/Lambda.Shared/FX/Molotov/MolotovFX.prefab";
+    private const string FIRE_NODE_EFFECT_PATH =
+        "Packages/com.lambda.editor/Lambda.Shared/FX/Molotov/FireNodeEffect.prefab";
     public string FXBundlePath => Path.Combine(LambdaPlugin.pathToBundles, FX_BUNDLE_NAME);
 
     public AssetBundle FXBundle;
@@ -27,15 +29,19 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
         H.OnGameStarted += Initialize;
         H.OnGameDispose += Dispose;
 
-        if (H.IsInRaid()) Initialize();
+        if (H.IsInRaid())
+            Initialize();
     }
 
     public void Initialize()
     {
         FXBundle = AssetBundle.LoadFromFile(FXBundlePath);
-        if (FXBundle == null) throw new NullReferenceException("CRITICAL ERROR: Effects Bundle is missing!");
-            
-        MolotovFirePrefab = FXBundle.LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH).GetComponent<MolotovFXController>();
+        if (FXBundle == null)
+            throw new NullReferenceException("CRITICAL ERROR: Effects Bundle is missing!");
+
+        MolotovFirePrefab = FXBundle
+            .LoadAsset<GameObject>(MOLOTOV_FIRE_PREFAB_PATH)
+            .GetComponent<MolotovFXController>();
         FireNodeEffectPrefab = FXBundle.LoadAsset<GameObject>(FIRE_NODE_EFFECT_PATH);
 
         parentEffects = new GameObject("FX").transform;
@@ -57,7 +63,12 @@ public class FXHandler : Singleton<FXHandler>, IDisposable
         Release(this);
     }
 
-    public MolotovFXController SpawnMolotov(Vector3 pos, float startRadius, float endRadius, float bloomDuration)
+    public MolotovFXController SpawnMolotov(
+        Vector3 pos,
+        float startRadius,
+        float endRadius,
+        float bloomDuration
+    )
     {
         MolotovFXController instance;
 

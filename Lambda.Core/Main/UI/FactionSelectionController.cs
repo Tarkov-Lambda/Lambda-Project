@@ -1,10 +1,10 @@
-﻿using Comfort.Common;
+﻿using System;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT.UI;
 using EFT.UI.Screens;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
-using System;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI
@@ -19,11 +19,18 @@ namespace Lambda.Core.Main.UI
             EventBus.OnSelfFactionChanged += OnSelfFactionChanged;
             EventBus.OnEnter += OnMatchStateEnter;
 
-            GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/FactionSelection/FactionSelection.prefab");
-            factionSelectionScreen = GameObject.Instantiate(prefabFactionSelection, commonUI.transform.GetChild(0)).AddComponent<FactionSelectionEftScreen>();
+            GameObject prefabFactionSelection = uibundle.LoadAsset<GameObject>(
+                "Packages/com.lambda.editor/Lambda.UI/FactionSelection/FactionSelection.prefab"
+            );
+            factionSelectionScreen = GameObject
+                .Instantiate(prefabFactionSelection, commonUI.transform.GetChild(0))
+                .AddComponent<FactionSelectionEftScreen>();
             factionSelectionScreen.transform.SetSiblingIndex(1);
 
-            EftScreenManager.Instance.RegisterScreen(FactionSelectionEftScreen.FAKETYPE, factionSelectionScreen);
+            EftScreenManager.Instance.RegisterScreen(
+                FactionSelectionEftScreen.FAKETYPE,
+                factionSelectionScreen
+            );
             factionSelectionScreen.Close();
         }
 
@@ -35,9 +42,15 @@ namespace Lambda.Core.Main.UI
 
             if (factionSelectionScreen != null)
             {
-                if (EftScreenManager.Instance.CurrentBaseScreenController is FactionSelectionEftScreen.FactionSelectionEftScreenController)
+                if (
+                    EftScreenManager.Instance.CurrentBaseScreenController
+                    is FactionSelectionEftScreen.FactionSelectionEftScreenController
+                )
                     EftScreenManager.Instance.CloseCurrentScreenForced();
-                EftScreenManager.Instance.ReleaseScreen(FactionSelectionEftScreen.FAKETYPE, factionSelectionScreen);
+                EftScreenManager.Instance.ReleaseScreen(
+                    FactionSelectionEftScreen.FAKETYPE,
+                    factionSelectionScreen
+                );
                 GameObject.Destroy(factionSelectionScreen.gameObject);
             }
         }
@@ -58,7 +71,9 @@ namespace Lambda.Core.Main.UI
 
         public async void ShowFactionSelectionEftScreen()
         {
-            FactionSelectionEftScreen.FactionSelectionEftScreenController screenController = new(Singleton<FactionChangePacketWarden>.Instance.Send);
+            FactionSelectionEftScreen.FactionSelectionEftScreenController screenController = new(
+                Singleton<FactionChangePacketWarden>.Instance.Send
+            );
             screenController.ShowScreen(EScreenState.Temporary);
         }
 

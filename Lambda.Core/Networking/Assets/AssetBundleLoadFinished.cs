@@ -1,7 +1,7 @@
-﻿using MemoryPack;
-using EFT;
+﻿using System.Collections.Generic;
 using Comfort.Common;
-using System.Collections.Generic;
+using EFT;
+using MemoryPack;
 
 namespace Lambda.Core.Networking;
 
@@ -19,17 +19,16 @@ public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundl
 {
     public void Send(string id)
     {
-        var packet = new AssetBundleLoadFinishedPacket
-        {
-            Player = H.MainPlayer,
-            id = id
-        };
+        var packet = new AssetBundleLoadFinishedPacket { Player = H.MainPlayer, id = id };
 
         DispatchPacket(ref packet);
     }
 
     // server only application
-    protected override void ProcessApprovedPacket(ref AssetBundleLoadFinishedPacket packet, int peerId)
+    protected override void ProcessApprovedPacket(
+        ref AssetBundleLoadFinishedPacket packet,
+        int peerId
+    )
     {
         MutateApprovedPacket(ref packet, peerId);
         ApplyInternal(packet, peerId);
@@ -39,7 +38,8 @@ public class AssetBundleLoadFinishedPacketWarden : LambdaPacketWarden<AssetBundl
     {
         var pendingLoads = Singleton<AssetBundleLoadPacketWarden>.Instance.PendingLoads;
 
-        if (packet.id == null || !pendingLoads.TryGetValue(packet.id, out HashSet<Player> pending)) return;
+        if (packet.id == null || !pendingLoads.TryGetValue(packet.id, out HashSet<Player> pending))
+            return;
 
         pending.Remove(packet.Player);
 

@@ -25,7 +25,7 @@ namespace SteamAudio
     public enum ReverbType
     {
         Realtime,
-        Baked
+        Baked,
     }
 
     [AddComponentMenu("Steam Audio/Steam Audio Listener")]
@@ -44,10 +44,13 @@ namespace SteamAudio
 
         [SerializeField]
         int mTotalDataSize = 0;
+
         [SerializeField]
         int[] mProbeDataSizes = null;
+
         [SerializeField]
         BakedDataIdentifier mIdentifier = new BakedDataIdentifier { };
+
         [SerializeField]
         SteamAudioProbeBatch[] mProbeBatchesUsed = null;
 
@@ -91,7 +94,9 @@ namespace SteamAudio
             // or non-Unity/FMOD/Wwise audio engine like Meta XR in Tarkov).
             if (SteamAudioManager.Singleton == null || SteamAudioManager.Simulator == null)
             {
-                Debug.LogWarning("[SteamAudio] SteamAudioListener.Reinitialize: SteamAudioManager not ready, skipping listener setup.");
+                Debug.LogWarning(
+                    "[SteamAudio] SteamAudioListener.Reinitialize: SteamAudioManager not ready, skipping listener setup."
+                );
                 return;
             }
 
@@ -113,13 +118,15 @@ namespace SteamAudio
 
         private void Start()
         {
-            if (mSource == null) return;
+            if (mSource == null)
+                return;
             SteamAudioManager.GetAudioEngineState().SetReverbSource(mSource);
         }
 
         private void OnEnable()
         {
-            if (mSource == null || mSimulator == null) return;
+            if (mSource == null || mSimulator == null)
+                return;
             if (applyReverb)
             {
                 mSource.AddToSimulator(mSimulator);
@@ -130,7 +137,8 @@ namespace SteamAudio
 
         private void OnDisable()
         {
-            if (mSource == null || mSimulator == null) return;
+            if (mSource == null || mSimulator == null)
+                return;
             if (applyReverb)
             {
                 SteamAudioManager.RemoveListener(this);
@@ -141,7 +149,8 @@ namespace SteamAudio
 
         private void Update()
         {
-            if (mSource == null) return;
+            if (mSource == null)
+                return;
             SteamAudioManager.GetAudioEngineState().SetReverbSource(mSource);
         }
 
@@ -165,8 +174,11 @@ namespace SteamAudio
             inputs.reverbScaleLow = 1.0f;
             inputs.reverbScaleMid = 1.0f;
             inputs.reverbScaleHigh = 1.0f;
-            inputs.hybridReverbTransitionTime = SteamAudioSettings.Singleton.hybridReverbTransitionTime;
-            inputs.hybridReverbOverlapPercent = SteamAudioSettings.Singleton.hybridReverbOverlapPercent / 100.0f;
+            inputs.hybridReverbTransitionTime = SteamAudioSettings
+                .Singleton
+                .hybridReverbTransitionTime;
+            inputs.hybridReverbOverlapPercent =
+                SteamAudioSettings.Singleton.hybridReverbOverlapPercent / 100.0f;
             inputs.baked = (reverbType != ReverbType.Realtime) ? Bool.True : Bool.False;
             if (reverbType == ReverbType.Baked)
             {
@@ -184,8 +196,7 @@ namespace SteamAudio
             mSource.SetInputs(flags, inputs);
         }
 
-        public void UpdateOutputs(SimulationFlags flags)
-        {}
+        public void UpdateOutputs(SimulationFlags flags) { }
 
         private void OnDrawGizmosSelected()
         {
@@ -202,7 +213,10 @@ namespace SteamAudio
                         continue;
 
                     Gizmos.matrix = probeBatch.transform.localToWorldMatrix;
-                    Gizmos.DrawWireCube(new UnityEngine.Vector3(0, 0, 0), new UnityEngine.Vector3(1, 1, 1));
+                    Gizmos.DrawWireCube(
+                        new UnityEngine.Vector3(0, 0, 0),
+                        new UnityEngine.Vector3(1, 1, 1)
+                    );
                 }
             }
 
@@ -235,7 +249,8 @@ namespace SteamAudio
             tasks[0].component = this;
             tasks[0].name = gameObject.name;
             tasks[0].identifier = mIdentifier;
-            tasks[0].probeBatches = (useAllProbeBatches) ? FindObjectsOfType<SteamAudioProbeBatch>() : probeBatches;
+            tasks[0].probeBatches =
+                (useAllProbeBatches) ? FindObjectsOfType<SteamAudioProbeBatch>() : probeBatches;
             tasks[0].probeBatchNames = new string[tasks[0].probeBatches.Length];
             tasks[0].probeBatchAssets = new SerializedData[tasks[0].probeBatches.Length];
             for (var i = 0; i < tasks[0].probeBatchNames.Length; ++i)
@@ -261,7 +276,10 @@ namespace SteamAudio
                 tasks[i].component = listeners[i];
                 tasks[i].name = listeners[i].gameObject.name;
                 tasks[i].identifier = listeners[i].GetBakedDataIdentifier();
-                tasks[i].probeBatches = (listeners[i].useAllProbeBatches) ? FindObjectsOfType<SteamAudioProbeBatch>() : listeners[i].probeBatches;
+                tasks[i].probeBatches =
+                    (listeners[i].useAllProbeBatches)
+                        ? FindObjectsOfType<SteamAudioProbeBatch>()
+                        : listeners[i].probeBatches;
                 tasks[i].probeBatchNames = new string[tasks[i].probeBatches.Length];
                 tasks[i].probeBatchAssets = new SerializedData[tasks[i].probeBatches.Length];
 
@@ -287,7 +305,8 @@ namespace SteamAudio
 
         void CacheProbeBatchesUsed()
         {
-            mProbeBatchesUsed = (useAllProbeBatches) ? FindObjectsOfType<SteamAudioProbeBatch>() : probeBatches;
+            mProbeBatchesUsed =
+                (useAllProbeBatches) ? FindObjectsOfType<SteamAudioProbeBatch>() : probeBatches;
         }
 #endif
     }

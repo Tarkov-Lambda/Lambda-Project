@@ -5,5 +5,5 @@ public enum BombState : byte
     Planted,
     Defusing,
     Defused,
-    Exploded
+    Exploded,
 }

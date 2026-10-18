@@ -83,10 +83,16 @@ namespace SteamAudio
 
             var serializedObject = new SerializedObject(context, dataAsset);
 
-            var status = API.iplProbeBatchLoad(context.Get(), serializedObject.Get(), out mProbeBatch);
+            var status = API.iplProbeBatchLoad(
+                context.Get(),
+                serializedObject.Get(),
+                out mProbeBatch
+            );
             if (status != Error.Success)
             {
-                Debug.LogError(string.Format("Unable to load Probe Batch from {0}.", dataAsset.name));
+                Debug.LogError(
+                    string.Format("Unable to load Probe Batch from {0}.", dataAsset.name)
+                );
                 mProbeBatch = IntPtr.Zero;
             }
 
@@ -121,7 +127,7 @@ namespace SteamAudio
         {
             var serializedObject = new SerializedObject(mContext);
             API.iplProbeBatchSave(mProbeBatch, serializedObject.Get());
-            var size = (int) serializedObject.GetSize();
+            var size = (int)serializedObject.GetSize();
             serializedObject.WriteToFile(dataAsset, flush);
             serializedObject.Release();
             return size;

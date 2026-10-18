@@ -7,36 +7,38 @@ namespace Lambda.Shared.Models
     public partial struct PlayerContextInfo
     {
         public PlayerIdentity Identity;
+
         // public PlayerLoadingStatus Status;
         public PlayerCombat Combat;
         public PlayerEconomyData Economy;
+
         // public IGamemodeData GamemodeData;
 
         // tech debt :C
-        public readonly string Name                     => Identity.Name;
-        public readonly Faction Faction                 => Identity.Faction;
-        public readonly bool IsAdmin                    => Identity.IsAdmin;
-        public readonly string ClanTag                    => Identity.ClanTag;
+        public readonly string Name => Identity.Name;
+        public readonly Faction Faction => Identity.Faction;
+        public readonly bool IsAdmin => Identity.IsAdmin;
+        public readonly string ClanTag => Identity.ClanTag;
         public readonly PlayerReadinessState ReadyState => Identity.ReadyState;
-        public readonly int Ping                        => Identity.Ping;
-        public readonly float LoadingProgress           => Identity.LoadingProgress;
+        public readonly int Ping => Identity.Ping;
+        public readonly float LoadingProgress => Identity.LoadingProgress;
 
-        public readonly bool IsAlive                    => Combat.IsAlive;
+        public readonly bool IsAlive => Combat.IsAlive;
 
-        public readonly int Kills                       => Combat.Kills;
-        public readonly int Damage                      => Combat.Damage;
-        public readonly int Headshots                   => Combat.Headshots;
-        public readonly int Assists                     => Combat.Assists;
-        public readonly int Deaths                      => Combat.Deaths;
+        public readonly int Kills => Combat.Kills;
+        public readonly int Damage => Combat.Damage;
+        public readonly int Headshots => Combat.Headshots;
+        public readonly int Assists => Combat.Assists;
+        public readonly int Deaths => Combat.Deaths;
 
-        public readonly int RoundDamage                 => Combat.RoundDamage;
-        public readonly int RoundKills                  => Combat.RoundKills;
-        public readonly int RoundHeadshots              => Combat.RoundHeadshots;
+        public readonly int RoundDamage => Combat.RoundDamage;
+        public readonly int RoundKills => Combat.RoundKills;
+        public readonly int RoundHeadshots => Combat.RoundHeadshots;
 
-        public readonly int Mvps                        => Combat.Mvps;
+        public readonly int Mvps => Combat.Mvps;
 
-        public readonly int Money                       => Economy.Money;
-        public readonly bool ShouldHardReset            => Economy.ShouldHardReset;
+        public readonly int Money => Economy.Money;
+        public readonly bool ShouldHardReset => Economy.ShouldHardReset;
     }
 
     [System.Serializable]
@@ -47,7 +49,7 @@ namespace Lambda.Shared.Models
         public string ClanTag;
         public Faction Faction;
         public bool IsAdmin;
-        
+
         public PlayerReadinessState ReadyState;
         public int Ping;
         public float LoadingProgress;
@@ -81,5 +83,5 @@ namespace Lambda.Shared.Models
         public bool ShouldHardReset;
     }
 
-    public partial interface IGamemodeData {}
+    public partial interface IGamemodeData { }
 }

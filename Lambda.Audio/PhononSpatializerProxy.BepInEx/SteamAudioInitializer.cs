@@ -15,7 +15,6 @@ public static class PhononInitializer
 
     public static void Initialize()
     {
-
         if (_initialized)
         {
             Debug.Log("[SteamAudio] Already initialized, skipping.");
@@ -39,8 +38,9 @@ public static class PhononInitializer
 
     private static void PreloadNativeDlls()
     {
-
-        Debug.Log($"[SteamAudio] Pre-loading native DLLs from: {PhononSpatializerProxyPlugin.pathToBinaries}");
+        Debug.Log(
+            $"[SteamAudio] Pre-loading native DLLs from: {PhononSpatializerProxyPlugin.pathToBinaries}"
+        );
 
         string[] libs = { "phonon.dll", "audioplugin_phonon.dll" };
 
@@ -50,7 +50,9 @@ public static class PhononInitializer
             Debug.Log(fullPath);
             if (!File.Exists(fullPath))
             {
-                Debug.LogWarning($"[SteamAudio] Native library not found: '{fullPath}' – skipping.");
+                Debug.LogWarning(
+                    $"[SteamAudio] Native library not found: '{fullPath}' – skipping."
+                );
                 continue;
             }
 
@@ -58,7 +60,11 @@ public static class PhononInitializer
             if (handle == IntPtr.Zero)
             {
                 int err = Marshal.GetLastWin32Error();
-                Debug.LogError($"[SteamAudio] LoadLibraryW failed for '{libName}' " + $"(Win32 error {err}" + "Missing a dependency DLL?");
+                Debug.LogError(
+                    $"[SteamAudio] LoadLibraryW failed for '{libName}' "
+                        + $"(Win32 error {err}"
+                        + "Missing a dependency DLL?"
+                );
             }
             else
             {

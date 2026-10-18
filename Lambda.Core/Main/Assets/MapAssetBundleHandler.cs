@@ -1,11 +1,11 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using Lambda.Core.Networking;
 using Lambda.Core.Patches.Tarkov;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -27,10 +27,7 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
         Release(this);
     }
 
-    private void ScanMapDirectory()
-    {
-        
-    }
+    private void ScanMapDirectory() { }
 
     public async UniTask ReloadMap(string mapName)
     {
@@ -78,12 +75,15 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
             MapLoadEvent.OnBeginLoad?.Invoke();
 
         AssetBundle bundle = await LoadAssetBundle(mapName);
-        if (bundle == null) return;
+        if (bundle == null)
+            return;
 
         string[] scenePaths = bundle.GetAllScenePaths();
         if (scenePaths.Length == 0)
         {
-            D.LogError($"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load");
+            D.LogError(
+                $"[AssetBundleHandler] Loaded Asset Bundle \"{mapName}\" does not have any scenes to load"
+            );
             return;
         }
 
@@ -99,12 +99,16 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
                     bool isBunkerAlreadyLoaded = SceneManager.GetSceneByBuildIndex(131).isLoaded;
                     if (!isBunkerAlreadyLoaded)
                     {
-                        UniTask reserveBunkerLoadTask = SceneManager.LoadSceneAsync(131, LoadSceneMode.Additive).ToUniTask();
+                        UniTask reserveBunkerLoadTask = SceneManager
+                            .LoadSceneAsync(131, LoadSceneMode.Additive)
+                            .ToUniTask();
                         await reserveBunkerLoadTask;
                     }
                 }
 
-                UniTask sceneLoadTask = SceneManager.LoadSceneAsync(scenePath, LoadSceneMode.Additive).ToUniTask(progressReportScene);
+                UniTask sceneLoadTask = SceneManager
+                    .LoadSceneAsync(scenePath, LoadSceneMode.Additive)
+                    .ToUniTask(progressReportScene);
                 loadTasks.Add(sceneLoadTask);
             }
         }
@@ -117,14 +121,15 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
             foreach (var scenePath in scenePaths)
             {
                 Scene scene = SceneManager.GetSceneByPath(scenePath);
-                if (!scene.isLoaded) continue;
+                if (!scene.isLoaded)
+                    continue;
 
                 Vector3 offset = GetOffsetForScene(scenePath);
 
                 foreach (GameObject root in scene.GetRootGameObjects())
                 {
                     root.transform.position += offset;
-                    
+
                     // AllPhononDSPBridges.AddRangeToArray(root.GetComponentsInChildren<PhononDSPBridge>(false));
                 }
             }
@@ -190,7 +195,8 @@ public class MapAssetBundleLoader : Singleton<MapAssetBundleLoader>, IDisposable
             if (bundle != null)
             {
                 // we do not unload lobby so that we can teleport there during reloads
-                if (!includingLobby && bundle.name == "lobby") continue;
+                if (!includingLobby && bundle.name == "lobby")
+                    continue;
 
                 foreach (var scenePath in bundle.GetAllScenePaths())
                 {

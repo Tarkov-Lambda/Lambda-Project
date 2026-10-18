@@ -40,8 +40,10 @@ public class LadderManager : Singleton<LadderManager>, IDisposable
     private void OnTriggerEnter(LadderEventPayload ladderEvent)
     {
         Player player = ladderEvent.other.GetComponentInParent<Player>();
-        if (player == null || !player.IsYourPlayer) return;
-        if (player.MovementContext.CurrentState is SprintStateClass) return;
+        if (player == null || !player.IsYourPlayer)
+            return;
+        if (player.MovementContext.CurrentState is SprintStateClass)
+            return;
 
         isOnLadder = true;
         wasOriginallyGrounded = H.MainPlayer.MovementContext.IsGrounded;
@@ -56,7 +58,8 @@ public class LadderManager : Singleton<LadderManager>, IDisposable
     private void OnTriggerExit(LadderEventPayload ladderEvent)
     {
         Player player = ladderEvent.other.GetComponentInParent<Player>();
-        if (player == null || !player.IsYourPlayer || ladderCollider == null) return;
+        if (player == null || !player.IsYourPlayer || ladderCollider == null)
+            return;
 
         Exit();
     }
@@ -103,10 +106,10 @@ public class LadderManager : Singleton<LadderManager>, IDisposable
             Vector3 moveDirection = verticalMove + sideMove;
 
             Vector3 motionThisFrame =
-                moveDirection *
-                _climbSpeed *
-                H.MainPlayer.MovementContext.PoseLevel *
-                Time.deltaTime;
+                moveDirection
+                * _climbSpeed
+                * H.MainPlayer.MovementContext.PoseLevel
+                * Time.deltaTime;
 
             H.MainPlayer.MovementContext.PlatformMotion = motionThisFrame;
 

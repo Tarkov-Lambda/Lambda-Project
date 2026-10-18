@@ -8,17 +8,38 @@ namespace Lambda.UI.scoreboard
 {
     public class RowPlayer : MonoBehaviour
     {
-        [SerializeField] private TMP_Text textName;
-        [SerializeField] private Image iconRouble;
-        [SerializeField] private TMP_Text textMoney;
-        [SerializeField] private TMP_Text textKills;
-        [SerializeField] private TMP_Text textDeaths;
-        [SerializeField] private TMP_Text textAssists;
-        [SerializeField] private TMP_Text textPing;
-        [SerializeField] private TMP_Text textHeadshotRatio;
-        [SerializeField] private TMP_Text textDamage;
-        [SerializeField] private Graphic bg;
-        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField]
+        private TMP_Text textName;
+
+        [SerializeField]
+        private Image iconRouble;
+
+        [SerializeField]
+        private TMP_Text textMoney;
+
+        [SerializeField]
+        private TMP_Text textKills;
+
+        [SerializeField]
+        private TMP_Text textDeaths;
+
+        [SerializeField]
+        private TMP_Text textAssists;
+
+        [SerializeField]
+        private TMP_Text textPing;
+
+        [SerializeField]
+        private TMP_Text textHeadshotRatio;
+
+        [SerializeField]
+        private TMP_Text textDamage;
+
+        [SerializeField]
+        private Graphic bg;
+
+        [SerializeField]
+        private CanvasGroup canvasGroup;
 
         Faction _lastFaction;
 

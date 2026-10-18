@@ -5,11 +5,17 @@ namespace Lambda.UI
 {
     public class TeamStatusPlayer : MonoBehaviour
     {
-        [SerializeField] private Image iconPlayer;
-        [SerializeField] private Image iconDead;
+        [SerializeField]
+        private Image iconPlayer;
 
-        [SerializeField] private float opacityWhenAlive;
-        [SerializeField] private float opacityWhenDead;
+        [SerializeField]
+        private Image iconDead;
+
+        [SerializeField]
+        private float opacityWhenAlive;
+
+        [SerializeField]
+        private float opacityWhenDead;
 
         public void SetColor(Color color)
         {

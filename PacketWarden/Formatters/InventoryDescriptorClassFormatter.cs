@@ -3,7 +3,10 @@ using MemoryPack;
 
 public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDescriptorClass>
 {
-    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref InventoryDescriptorClass value)
+    public override void Serialize<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        scoped ref InventoryDescriptorClass value
+    )
     {
         if (value == null)
         {
@@ -19,12 +22,17 @@ public class InventoryDescriptorClassFormatter : MemoryPackFormatter<InventoryDe
         WriterPoolManager.ReturnWriter(eftWriter);
     }
 
-    public override void Deserialize(ref MemoryPackReader reader, scoped ref InventoryDescriptorClass value)
+    public override void Deserialize(
+        ref MemoryPackReader reader,
+        scoped ref InventoryDescriptorClass value
+    )
     {
         value = null;
 
-        if (!reader.TryReadObjectHeader(out _)) return;
-        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob)) return;
+        if (!reader.TryReadObjectHeader(out _))
+            return;
+        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob))
+            return;
 
         try
         {

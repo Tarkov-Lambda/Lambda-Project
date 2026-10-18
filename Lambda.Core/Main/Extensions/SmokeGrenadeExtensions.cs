@@ -39,8 +39,5 @@ public static class SmokeGrenadeExtensions
         TriggerSmokeBloom(grenade);
     }
 
-    private static void TriggerSmokeBloom(SmokeGrenade grenade)
-    {
-
-    }
+    private static void TriggerSmokeBloom(SmokeGrenade grenade) { }
 }

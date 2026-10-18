@@ -1,13 +1,12 @@
-﻿using BepInEx;
-using SPT.Reflection.Patching;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using BepInEx;
 using Comfort.Common;
-
+using EFT.UI;
 using Lambda.Core.Patches.Tarkov.UI.BattleStance;
 using Lambda.Core.Patches.Tarkov.UI.QuickAccess;
-using EFT.UI;
-using Lambda.Core.Patches.Tarkov.UI.WeaponBuilds;
 using Lambda.Core.Patches.Tarkov.UI.QuickAccess.MagazineSelector;
+using Lambda.Core.Patches.Tarkov.UI.WeaponBuilds;
+using SPT.Reflection.Patching;
 
 namespace Lambda.Core.Patches.Tarkov.UI;
 
@@ -21,6 +20,7 @@ internal static class UIPatches
         patchGroups.Push(patchGroup);
         patchGroups.Peek().Enable();
     }
+
     internal static void RegisterAndEnable(ModulePatch patch)
     {
         patches.Push(patch);
@@ -61,7 +61,6 @@ internal static class UIPatches
             Patch_CommonUI_Awake.ModifyQuickAccessPanel(Singleton<CommonUI>.Instance);
             Patch_CommonUI_Awake.StretchInventoryScreen(Singleton<CommonUI>.Instance);
         }
-
 
         RegisterAndEnable(new Patch_EditBuildScreen_Show());
         RegisterAndEnable(new Patch_EditBuildScreen_UpdateItem());

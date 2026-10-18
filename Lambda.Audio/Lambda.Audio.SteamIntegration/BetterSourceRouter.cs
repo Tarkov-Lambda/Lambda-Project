@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using Audio.ReverbSubsystem;
 using Comfort.Common;
@@ -10,16 +9,32 @@ using UnityEngine.Audio;
 
 public class BetterSourceProxyRouter : Singleton<BetterSourceProxyRouter>
 {
-    public readonly static AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef = AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
-    public readonly static AccessTools.FieldRef<BetterSource, bool> ForceStereoRef = AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
-    public readonly static AccessTools.FieldRef<ReverbSimpleSource, AudioSource> ReverbSimpleSourceFieldRef = AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>("_reverbSource");
-    public readonly static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceAFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceA");
-    public readonly static AccessTools.FieldRef<ReverbSuperSource, AudioSource> ReverbSuperSourceBFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>("_reverbSourceB");
+    public static readonly AccessTools.FieldRef<BetterSource, AudioGroupPreset> PresetRef =
+        AccessTools.FieldRefAccess<BetterSource, AudioGroupPreset>("Preset");
+    public static readonly AccessTools.FieldRef<BetterSource, bool> ForceStereoRef =
+        AccessTools.FieldRefAccess<BetterSource, bool>("_forceStereo");
+    public static readonly AccessTools.FieldRef<
+        ReverbSimpleSource,
+        AudioSource
+    > ReverbSimpleSourceFieldRef = AccessTools.FieldRefAccess<ReverbSimpleSource, AudioSource>(
+        "_reverbSource"
+    );
+    public static readonly AccessTools.FieldRef<
+        ReverbSuperSource,
+        AudioSource
+    > ReverbSuperSourceAFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>(
+        "_reverbSourceA"
+    );
+    public static readonly AccessTools.FieldRef<
+        ReverbSuperSource,
+        AudioSource
+    > ReverbSuperSourceBFieldRef = AccessTools.FieldRefAccess<ReverbSuperSource, AudioSource>(
+        "_reverbSourceB"
+    );
 
     // Selection of mixers we do not route through steam audio
-    private readonly static Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
-    private readonly static HashSet<BetterSource> playingBetterSources = new();
-
+    private static readonly Dictionary<AudioMixerGroup, bool> MixerBypassCache = new();
+    private static readonly HashSet<BetterSource> playingBetterSources = new();
 
     // private static bool IsMixerBypassed(AudioMixerGroup mixer)
     // {
@@ -101,6 +116,5 @@ public class BetterSourceProxyRouter : Singleton<BetterSourceProxyRouter>
                 SteamAudioSourceController.GetOrAdd(ReverbSuperSourceBFieldRef(reverbSuperSource));
             }
         }
-
     }
 }

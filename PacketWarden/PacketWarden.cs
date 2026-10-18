@@ -11,20 +11,24 @@ public enum PacketAuthority
 {
     Anyone,
     Admin,
-    ServerOnly
+    ServerOnly,
 }
 
 [MemoryPackable]
-public partial struct RejectionPacket<T> : IPacket where T : IPacket, new()
+public partial struct RejectionPacket<T> : IPacket
+    where T : IPacket, new()
 {
     public T Payload;
     public string rejectionReason;
 }
 
-public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
+public abstract class PacketWarden<T> : IDisposable
+    where T : IPacket, new()
 {
-    private static readonly string UnauthorizedReason = $"You are not authorized to send {typeof(T).Name}";
-    private static readonly string RateLimitedReason = $"You've been rate limited. ({typeof(T).Name})";
+    private static readonly string UnauthorizedReason =
+        $"You are not authorized to send {typeof(T).Name}";
+    private static readonly string RateLimitedReason =
+        $"You've been rate limited. ({typeof(T).Name})";
 
     protected INetworkBackend Network => Plugin.Network;
 
@@ -61,7 +65,8 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         Network.OnNetworkDestroyed += UnregisterPacket;
         Network.OnPeerDisconnected += _serverRateLimiter.Remove;
 
-        if (H.IsInRaid()) RegisterPacket(); // Hot reloading
+        if (H.IsInRaid())
+            RegisterPacket(); // Hot reloading
     }
 
     public virtual void Dispose()
@@ -70,7 +75,8 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         Network.OnNetworkDestroyed -= UnregisterPacket;
         Network.OnPeerDisconnected -= _serverRateLimiter.Remove;
 
-        if (IsRegistered) UnregisterPacket(); // Hot reloading
+        if (IsRegistered)
+            UnregisterPacket(); // Hot reloading
     }
 
     private void RegisterPacket()
@@ -111,11 +117,16 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     #region Sending
     protected void DispatchPacket(ref T packet, int? targetPeerId = null)
     {
-        if (!H.IsInRaid()) return;
-        if (IsUnauthorized(INetworkBackend.LocalPeerId)) return;
+        if (!H.IsInRaid())
+            return;
+        if (IsUnauthorized(INetworkBackend.LocalPeerId))
+            return;
 
 #if DEBUG
-        if (ShouldLog) H.Log($"[PacketWarden] Sending {typeof(T).Name} at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}");
+        if (ShouldLog)
+            H.Log(
+                $"[PacketWarden] Sending {typeof(T).Name} at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}"
+            );
 #endif
 
         ApplyOptimisticallyInternal(packet);
@@ -147,7 +158,10 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     protected void WhenServerReceivesPacket(T packet, int peerId)
     {
 #if DEBUG
-        if (ShouldLog) H.Log($"[PacketWarden] Receiving {typeof(T).Name} from Peer {peerId} at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}");
+        if (ShouldLog)
+            H.Log(
+                $"[PacketWarden] Receiving {typeof(T).Name} from Peer {peerId} at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}"
+            );
 #endif
 
         if (!TryPassServerRateLimit(packet, peerId))
@@ -159,7 +173,10 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
             return;
         }
 
-        if (!SanitizeMetadata(ref packet, peerId, out string rejectionReason) || !ValidatePacket(packet, peerId, out rejectionReason))
+        if (
+            !SanitizeMetadata(ref packet, peerId, out string rejectionReason)
+            || !ValidatePacket(packet, peerId, out rejectionReason)
+        )
         {
             SendRejection(ref packet, peerId, rejectionReason);
             return;
@@ -185,7 +202,8 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         switch (config.Action)
         {
             case RateLimitAction.Reject:
-                if (notify) SendRejection(ref packet, peerId, RateLimitedReason);
+                if (notify)
+                    SendRejection(ref packet, peerId, RateLimitedReason);
                 break;
             case RateLimitAction.Disconnect:
                 Network.DisconnectPeer(peerId);
@@ -199,13 +217,15 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     {
         return Authority switch
         {
-            PacketAuthority.ServerOnly => !Network.IsServer || peerId != INetworkBackend.LocalPeerId,
+            PacketAuthority.ServerOnly => !Network.IsServer
+                || peerId != INetworkBackend.LocalPeerId,
             PacketAuthority.Admin => !IsAdmin(peerId),
             _ => false,
         };
     }
 
-    protected virtual bool IsAdmin(int peerId) => Network.IsServer && peerId == INetworkBackend.LocalPeerId;
+    protected virtual bool IsAdmin(int peerId) =>
+        Network.IsServer && peerId == INetworkBackend.LocalPeerId;
 
     protected virtual bool SanitizeMetadata(ref T packet, int peerId, out string rejectionReason)
     {
@@ -249,7 +269,11 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 
     protected void SendRejection(ref T packet, int peerId, string rejectionReason = null)
     {
-        var rejection = new RejectionPacket<T> { Payload = packet, rejectionReason = rejectionReason };
+        var rejection = new RejectionPacket<T>
+        {
+            Payload = packet,
+            rejectionReason = rejectionReason,
+        };
 
         if (peerId == INetworkBackend.LocalPeerId)
             WhenClientReceivesRejection(rejection, peerId);
@@ -267,7 +291,10 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
     protected virtual void WhenClientReceivesPacket(T packet, int peerId)
     {
 #if DEBUG
-        if (ShouldLog) H.Log($"[PacketWarden] Receiving {typeof(T).Name} from Server at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}");
+        if (ShouldLog)
+            H.Log(
+                $"[PacketWarden] Receiving {typeof(T).Name} from Server at {NetworkTime.LocalNowSeconds} {NetworkTime.ServerNowSeconds}"
+            );
 #endif
         ApplyInternal(packet, peerId);
     }
@@ -277,7 +304,11 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
         bool hasReason = !string.IsNullOrEmpty(rejection.rejectionReason);
 
         if (ShouldLog)
-            H.Log(hasReason ? $"Server Rejected {GetType().Name}: {rejection.rejectionReason}" : $"Server Rejected {GetType().Name}");
+            H.Log(
+                hasReason
+                    ? $"Server Rejected {GetType().Name}: {rejection.rejectionReason}"
+                    : $"Server Rejected {GetType().Name}"
+            );
 
         if (ShouldNotifyAboutRejection && hasReason)
             Notify(rejection.rejectionReason);
@@ -326,7 +357,8 @@ public abstract class PacketWarden<T> : IDisposable where T : IPacket, new()
 
     private void TryInvokeAction(Action<T> action, T packet)
     {
-        if (action == null) return;
+        if (action == null)
+            return;
 
         try
         {

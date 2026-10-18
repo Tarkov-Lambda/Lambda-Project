@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace SteamAudio
 {
@@ -91,9 +91,15 @@ namespace SteamAudio
             {
                 for (var i = 0; i < tgt.GetProbeBatchesUsed().Length; ++i)
                 {
-                    EditorGUILayout.LabelField(tgt.GetProbeBatchesUsed()[i].gameObject.name, Common.HumanReadableDataSize(tgt.GetProbeDataSizes()[i]));
+                    EditorGUILayout.LabelField(
+                        tgt.GetProbeBatchesUsed()[i].gameObject.name,
+                        Common.HumanReadableDataSize(tgt.GetProbeDataSizes()[i])
+                    );
                 }
-                EditorGUILayout.LabelField("Total Size", Common.HumanReadableDataSize(tgt.GetTotalDataSize()));
+                EditorGUILayout.LabelField(
+                    "Total Size",
+                    Common.HumanReadableDataSize(tgt.GetTotalDataSize())
+                );
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -108,7 +114,8 @@ namespace SteamAudio
                 EditorUtility.DisplayDialog(
                     "No Steam Audio Listeners Found",
                     "No Steam Audio Listener components were found in the currently-open scene.",
-                    "OK");
+                    "OK"
+                );
                 return;
             }
 
@@ -118,7 +125,10 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
     }

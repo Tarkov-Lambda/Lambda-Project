@@ -1,8 +1,8 @@
-﻿using PacketWarden;
-using MemoryPack;
-using System;
-using UnityEngine;
+﻿using System;
 using EFT.Weather;
+using MemoryPack;
+using PacketWarden;
+using UnityEngine;
 
 namespace Lambda.Core.Networking;
 
@@ -18,10 +18,7 @@ public class WeatherAndTimeSyncPacketWarden : LambdaPacketWarden<WeatherAndTimeP
 
     public void Send(double minutesSinceMidnight)
     {
-        var packet = new WeatherAndTimePacket
-        {
-            minutesSinceMidnight = minutesSinceMidnight,
-        };
+        var packet = new WeatherAndTimePacket { minutesSinceMidnight = minutesSinceMidnight };
 
         DispatchPacket(ref packet);
     }
@@ -30,7 +27,9 @@ public class WeatherAndTimeSyncPacketWarden : LambdaPacketWarden<WeatherAndTimeP
     {
         try
         {
-            var fixedTime = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc).AddMinutes(packet.minutesSinceMidnight);
+            var fixedTime = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc).AddMinutes(
+                packet.minutesSinceMidnight
+            );
 
             H.GameWorld.GameDateTime.Reset(fixedTime);
             H.GameWorld.GameDateTime.TimeFactor = 0f;
@@ -63,8 +62,8 @@ public static class TimeOfDayHelper
     private const double DAY_START = 16 * 60;
     private const double DAY_END = 19 * 60;
 
-    private const double NIGHT_START = 0;      // 00:00
-    private const double NIGHT_END = 3 * 60;   // 03:00
+    private const double NIGHT_START = 0; // 00:00
+    private const double NIGHT_END = 3 * 60; // 03:00
 
     public static double GetMinutesForRound(int roundIndex, int maxRounds)
     {

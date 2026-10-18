@@ -1,21 +1,21 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using Fika.Core.Modding.Events;
 using Fika.Core.Networking.Snapshotting;
+using Lambda.Core.GameTypes;
 using Lambda.Core.Main.AssetBundleHandling;
 using Lambda.Core.Main.Dying;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.UI;
-using Lambda.Core.GameTypes;
 using Lambda.Core.Networking;
 using Lambda.Shared;
 using MemoryPack;
 using PacketWarden.TimeSync;
-using System;
 using UnityEngine;
 using static Fika.Core.Modding.FikaEventDispatcher;
-using System.Collections.Generic;
-using EFT.InventoryLogic;
 
 namespace Lambda.Core.Main.Gamemode;
 
@@ -42,7 +42,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
     public IInventoryManager inventoryManager = new BaseInventoryManager();
 
     public float StateTimer;
-    public double ServerPhaseStartSeconds, PhaseDurationSeconds;
+    public double ServerPhaseStartSeconds,
+        PhaseDurationSeconds;
 
     // this block of vars just seems wrong
     public RoundActionPhaseEnd? PendingRoundActionEnd;
@@ -63,7 +64,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         H.OnGameDispose += EndSession;
         OnFikaEvent += ManageFikaEvents;
 
-        if (H.IsInRaid()) StartSession();
+        if (H.IsInRaid())
+            StartSession();
     }
 
     public void Dispose()
@@ -76,28 +78,36 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public void ManageFikaEvents(FikaEvent fikaEvent)
     {
-        if (H.IsClient) return;
+        if (H.IsClient)
+            return;
 
         if (fikaEvent is PeerDisconnectedEvent peerDisconnectedEvent)
         {
-            if (H.IsClient) return;
+            if (H.IsClient)
+                return;
 
             Player player = peerDisconnectedEvent.Peer.Player;
             if (player != null)
             {
-                Singleton<PlayerReadinessPacketWarden>.Instance.SendForPlayer(player, PlayerReadinessState.Disconnected);
+                Singleton<PlayerReadinessPacketWarden>.Instance.SendForPlayer(
+                    player,
+                    PlayerReadinessState.Disconnected
+                );
                 var damageInfo = new DamageInfoStruct
                 {
                     Damage = 1f,
-                    BodyPartColliderType = EBodyPartColliderType.RibcageUp
+                    BodyPartColliderType = EBodyPartColliderType.RibcageUp,
                 };
                 Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
             }
         }
         else if (fikaEvent is PeerConnectedEvent peerConnectedEvent && H.IsArenaReady)
         {
-            // notify 
-            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(peerConnectedEvent.Peer.Id, RuntimeBundleLoader.Instance.TemplateIdsToLoad);
+            // notify
+            Singleton<AssetBundleLoadPacketWarden>.Instance.SendToLateJoiner(
+                peerConnectedEvent.Peer.Id,
+                RuntimeBundleLoader.Instance.TemplateIdsToLoad
+            );
         }
     }
 
@@ -115,7 +125,8 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         foreach (var hardcodedItemTemplateID in allHardcodedItemTemplateIDs)
         {
             Item item = IU.CreateItemFromTemplateId(hardcodedItemTemplateID);
-            if (item != null) RuntimeBundleLoader.Instance.AddToCache(item);
+            if (item != null)
+                RuntimeBundleLoader.Instance.AddToCache(item);
         }
 
         if (!H.IsHeadless)
@@ -157,11 +168,14 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public void Update()
     {
-        if (Session == null || _currentState == null) return;
+        if (Session == null || _currentState == null)
+            return;
 
         // On Server: Start + Duration - Now ~= Duration (since Start is Now)
         // On Client: Start + Duration - Now = Remaining Time accurately synced
-        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
+        StateTimer = (float)(
+            ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds
+        );
 
         if (H.IsServer)
         {
@@ -175,12 +189,17 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
 
     public async void ServerPostMatchState(MatchState newStateType)
     {
-        if (H.IsClient) return;
+        if (H.IsClient)
+            return;
 
         RoundActionPhaseEnd? roundEndData = PendingRoundActionEnd;
         PendingRoundActionEnd = null;
 
-        Singleton<MatchStateSyncPacketWarden>.Instance.Send(newStateType, H.Gamemode.StateTimerConfig[newStateType], roundEndData);
+        Singleton<MatchStateSyncPacketWarden>.Instance.Send(
+            newStateType,
+            H.Gamemode.StateTimerConfig[newStateType],
+            roundEndData
+        );
     }
 
     public void TransitionToState(MatchStateSyncPacket packet)
@@ -199,18 +218,22 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
         Session.matchState = packet.matchState;
         _currentState = gamemode.CreateState(packet.matchState);
 
-        StateTimer = (float)(ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds);
+        StateTimer = (float)(
+            ServerPhaseStartSeconds + PhaseDurationSeconds - NetworkTime.ServerNowSeconds
+        );
 
         if (previousState != null)
         {
             // Cancel CancellationToken to signal any async sequence running in the OnEnter to do an early return
-            previousState.Dispose(); 
+            previousState.Dispose();
             previousState.OnExit();
             EventBus.OnExit?.Invoke(previousState.StateType);
         }
 
 #if DEBUG
-        D.LogArenaController($"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}");
+        D.LogArenaController(
+            $"Entering {_currentState.GetType()} at {NetworkTime.ServerNowSeconds}"
+        );
 #endif
 
         if (_currentState != null)
@@ -226,9 +249,20 @@ public class ArenaController : Singleton<ArenaController>, IDisposable
             H.Session.factionWins[w] = 0;
         H.Session.factionWins[w]++;
 
-        var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(w, reason, H.Arena.LastObjectiveBombState, H.Arena.LastObjectivePlayer);
+        var (mvpId, mvpReason) = MvpCalculator.CalculateRoundMvp(
+            w,
+            reason,
+            H.Arena.LastObjectiveBombState,
+            H.Arena.LastObjectivePlayer
+        );
 
-        H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd { mvpId = mvpId, mvpReason = mvpReason, winner = w, roundWinReason = reason };
+        H.Arena.PendingRoundActionEnd = new RoundActionPhaseEnd
+        {
+            mvpId = mvpId,
+            mvpReason = mvpReason,
+            winner = w,
+            roundWinReason = reason,
+        };
     }
 }
 
@@ -238,5 +272,6 @@ public class UnityTicker : MonoBehaviour
     public static event Action OnLateUpdate;
 
     private void Update() => OnUpdate?.Invoke();
+
     private void LateUpdate() => OnLateUpdate?.Invoke();
 }

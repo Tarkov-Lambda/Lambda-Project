@@ -1,11 +1,11 @@
 ﻿using System;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.UI;
-using UnityEngine.Serialization;
-using System.Text;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Text;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace Coffee.UIEffects
 {
@@ -16,29 +16,42 @@ namespace Coffee.UIEffects
     public class UIDissolve : BaseMaterialEffect, IMaterialModifier
     {
         private const uint k_ShaderId = 0 << 3;
-        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(8, 128, "_ParamTex");
+        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(
+            8,
+            128,
+            "_ParamTex"
+        );
         private static readonly int k_TransitionTexId = Shader.PropertyToID("_TransitionTex");
 
         private bool _lastKeepAspectRatio;
         private EffectArea _lastEffectArea;
         private static Texture _defaultTransitionTexture;
 
-        [Tooltip("Current location[0-1] for dissolve effect. 0 is not dissolved, 1 is completely dissolved.")]
+        [Tooltip(
+            "Current location[0-1] for dissolve effect. 0 is not dissolved, 1 is completely dissolved."
+        )]
         [FormerlySerializedAs("m_Location")]
         [SerializeField]
         [Range(0, 1)]
         float m_EffectFactor = 0.5f;
 
-        [Tooltip("Edge width.")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Edge width.")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_Width = 0.5f;
 
-        [Tooltip("Edge softness.")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Edge softness.")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_Softness = 0.5f;
 
-        [Tooltip("Edge color.")] [SerializeField] [ColorUsage(false)]
+        [Tooltip("Edge color.")]
+        [SerializeField]
+        [ColorUsage(false)]
         Color m_Color = new Color(0.0f, 0.25f, 1.0f);
 
-        [Tooltip("Edge color effect mode.")] [SerializeField]
+        [Tooltip("Edge color effect mode.")]
+        [SerializeField]
         ColorMode m_ColorMode = ColorMode.Add;
 
         [Tooltip("Noise texture for dissolving (single channel texture).")]
@@ -46,13 +59,18 @@ namespace Coffee.UIEffects
         [FormerlySerializedAs("m_NoiseTexture")]
         Texture m_TransitionTexture;
 
-        [Header("Advanced Option")] [Tooltip("The area for effect.")] [SerializeField]
+        [Header("Advanced Option")]
+        [Tooltip("The area for effect.")]
+        [SerializeField]
         protected EffectArea m_EffectArea;
 
-        [Tooltip("Keep effect aspect ratio.")] [SerializeField]
+        [Tooltip("Keep effect aspect ratio.")]
+        [SerializeField]
         bool m_KeepAspectRatio;
 
-        [Tooltip("Reverse the dissolve effect.")] [FormerlySerializedAs("m_ReverseAnimation")] [SerializeField]
+        [Tooltip("Reverse the dissolve effect.")]
+        [FormerlySerializedAs("m_ReverseAnimation")]
+        [SerializeField]
         bool m_Reverse = false;
 
         /// <summary>
@@ -64,7 +82,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_EffectFactor, value)) return;
+                if (Mathf.Approximately(m_EffectFactor, value))
+                    return;
                 m_EffectFactor = value;
                 SetEffectParamsDirty();
             }
@@ -79,7 +98,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_Width, value)) return;
+                if (Mathf.Approximately(m_Width, value))
+                    return;
                 m_Width = value;
                 SetEffectParamsDirty();
             }
@@ -94,7 +114,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_Softness, value)) return;
+                if (Mathf.Approximately(m_Softness, value))
+                    return;
                 m_Softness = value;
                 SetEffectParamsDirty();
             }
@@ -108,7 +129,8 @@ namespace Coffee.UIEffects
             get { return m_Color; }
             set
             {
-                if (m_Color == value) return;
+                if (m_Color == value)
+                    return;
                 m_Color = value;
                 SetEffectParamsDirty();
             }
@@ -119,15 +141,11 @@ namespace Coffee.UIEffects
         /// </summary>
         public Texture transitionTexture
         {
-            get
-            {
-                return m_TransitionTexture
-                    ? m_TransitionTexture
-                    : defaultTransitionTexture;
-            }
+            get { return m_TransitionTexture ? m_TransitionTexture : defaultTransitionTexture; }
             set
             {
-                if (m_TransitionTexture == value) return;
+                if (m_TransitionTexture == value)
+                    return;
                 m_TransitionTexture = value;
                 SetMaterialDirty();
             }
@@ -151,7 +169,8 @@ namespace Coffee.UIEffects
             get { return m_EffectArea; }
             set
             {
-                if (m_EffectArea == value) return;
+                if (m_EffectArea == value)
+                    return;
                 m_EffectArea = value;
                 SetVerticesDirty();
             }
@@ -165,7 +184,8 @@ namespace Coffee.UIEffects
             get { return m_KeepAspectRatio; }
             set
             {
-                if (m_KeepAspectRatio == value) return;
+                if (m_KeepAspectRatio == value)
+                    return;
                 m_KeepAspectRatio = value;
                 SetVerticesDirty();
             }
@@ -179,7 +199,8 @@ namespace Coffee.UIEffects
             get { return m_ColorMode; }
             set
             {
-                if (m_ColorMode == value) return;
+                if (m_ColorMode == value)
+                    return;
                 m_ColorMode = value;
                 SetMaterialDirty();
             }
@@ -198,10 +219,10 @@ namespace Coffee.UIEffects
             if (!isActiveAndEnabled || !material || !material.shader)
                 return k_InvalidHash;
 
-            var shaderVariantId = (uint) ((int) m_ColorMode << 6);
-            var resourceId = (uint) transitionTexture.GetInstanceID();
+            var shaderVariantId = (uint)((int)m_ColorMode << 6);
+            var resourceId = (uint)transitionTexture.GetInstanceID();
             return new Hash128(
-                (uint) material.GetInstanceID(),
+                (uint)material.GetInstanceID(),
                 k_ShaderId + shaderVariantId,
                 resourceId,
                 0
@@ -211,7 +232,9 @@ namespace Coffee.UIEffects
         public override void ModifyMaterial(Material newMaterial, Graphic graphic)
         {
             var connector = GraphicConnector.FindConnector(graphic);
-            newMaterial.shader = FindShader(string.Format("Hidden/{0} (UIDissolve)", newMaterial.shader.name));
+            newMaterial.shader = FindShader(
+                string.Format("Hidden/{0} (UIDissolve)", newMaterial.shader.name)
+            );
             SetShaderVariants(newMaterial, m_ColorMode);
 
             newMaterial.SetTexture(k_TransitionTexId, transitionTexture);
@@ -231,7 +254,7 @@ namespace Coffee.UIEffects
 
             // rect.
             var tex = transitionTexture;
-            var aspectRatio = m_KeepAspectRatio && tex ? ((float) tex.width) / tex.height : -1;
+            var aspectRatio = m_KeepAspectRatio && tex ? ((float)tex.width) / tex.height : -1;
             var rect = m_EffectArea.GetEffectArea(vh, rectTransform.rect, aspectRatio);
 
             // Calculate vertex position.
@@ -275,10 +298,8 @@ namespace Coffee.UIEffects
         {
             base.OnDidApplyAnimationProperties();
 
-            if (_lastKeepAspectRatio != m_KeepAspectRatio
-                || _lastEffectArea != m_EffectArea)
+            if (_lastKeepAspectRatio != m_KeepAspectRatio || _lastEffectArea != m_EffectArea)
                 SetVerticesDirty();
         }
-
     }
 }

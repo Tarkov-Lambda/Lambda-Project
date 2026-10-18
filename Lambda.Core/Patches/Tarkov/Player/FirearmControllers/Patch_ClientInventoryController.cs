@@ -8,17 +8,30 @@ using SPT.Reflection.Patching;
 
 internal class Patch_ClientPlayer_method_1 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ClientPlayer.Class2443.Class1678), nameof(ClientPlayer.Class2443.Class1678.method_1));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ClientPlayer.Class2443.Class1678),
+            nameof(ClientPlayer.Class2443.Class1678.method_1)
+        );
 
     [PatchPrefix]
-    public static void Prefix(ClientPlayer.Class2443.Class1678 __instance, ClientPlayer.Struct555 serverState)
+    public static void Prefix(
+        ClientPlayer.Class2443.Class1678 __instance,
+        ClientPlayer.Struct555 serverState
+    )
     {
-        if (serverState.Status == EOperationStatus.Failed && serverState.Error.StartsWith("Could not find item"))
+        if (
+            serverState.Status == EOperationStatus.Failed
+            && serverState.Error.StartsWith("Could not find item")
+        )
         {
-            InventoryController inventoryController = __instance.operation.TraderControllerClass as InventoryController;
+            InventoryController inventoryController =
+                __instance.operation.TraderControllerClass as InventoryController;
             if (inventoryController.Profile != null)
             {
-                Singleton<EquipmentResyncPacketWarden>.Instance.Send(H.GetPlayer(inventoryController.Profile.ProfileId));
+                Singleton<EquipmentResyncPacketWarden>.Instance.Send(
+                    H.GetPlayer(inventoryController.Profile.ProfileId)
+                );
             }
         }
     }

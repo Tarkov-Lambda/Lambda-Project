@@ -15,7 +15,11 @@ public static class ItemAddressExtensions
         address.RaiseRemoveEvent(item, CommandStatus.Succeed, player.InventoryController);
     }
 
-    public static void ForceAddAndRaiseForServerPlayer(this ItemAddress address, Item item, Player player)
+    public static void ForceAddAndRaiseForServerPlayer(
+        this ItemAddress address,
+        Item item,
+        Player player
+    )
     {
         address.AddWithoutRestrictions(item);
         if (!H.IsHeadless && player.IsYourPlayer && H.IsServer)
@@ -25,7 +29,11 @@ public static class ItemAddressExtensions
         }
     }
 
-    public static void ForceRemoveAndRaiseForServerPlayer(this ItemAddress address, Item item, Player player)
+    public static void ForceRemoveAndRaiseForServerPlayer(
+        this ItemAddress address,
+        Item item,
+        Player player
+    )
     {
         address.RemoveWithoutRestrictions(item);
         if (!H.IsHeadless && player.IsYourPlayer && H.IsServer)

@@ -34,7 +34,10 @@ namespace SteamAudio
                 return;
 
             var index = 0;
-            mAudioSource.SetAmbisonicDecoderFloat(index++, (ambisonicSource.applyHRTF) ? 1.0f : 0.0f);
+            mAudioSource.SetAmbisonicDecoderFloat(
+                index++,
+                (ambisonicSource.applyHRTF) ? 1.0f : 0.0f
+            );
         }
     }
 }

@@ -7,7 +7,10 @@ using MemoryPack;
 // TODO: Make this work for all IItemOwner and not just InventoryController subtype
 public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
 {
-    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ItemAddress value)
+    public override void Serialize<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        scoped ref ItemAddress value
+    )
     {
         Player owner = value != null ? FindOwner(value) : null;
 
@@ -30,11 +33,16 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
     {
         value = null;
 
-        if (!reader.TryReadObjectHeader(out _)) return;
+        if (!reader.TryReadObjectHeader(out _))
+            return;
 
         Player player = PlayerFormatter.Find(reader.ReadUnmanaged<int>());
 
-        if (!WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob) || player == null) return;
+        if (
+            !WriterPoolManager.TryReadBlob(ref reader, out ArraySegment<byte> blob)
+            || player == null
+        )
+            return;
 
         try
         {
@@ -46,16 +54,19 @@ public class ItemAddressFormatter : MemoryPackFormatter<ItemAddress>
 
     private static Player FindOwner(ItemAddress address)
     {
-        if (!H.IsInRaid()) return null;
+        if (!H.IsInRaid())
+            return null;
 
         Item rootItem = address.GetOwner()?.RootItem;
-        if (rootItem == null) return null;
+        if (rootItem == null)
+            return null;
 
         List<Player> players = H.GameWorld.AllAlivePlayersList;
 
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].InventoryController.RootItem == rootItem) return players[i];
+            if (players[i].InventoryController.RootItem == rootItem)
+                return players[i];
         }
 
         return null;

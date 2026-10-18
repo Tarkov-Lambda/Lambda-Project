@@ -1,9 +1,9 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Linq;
+using Comfort.Common;
 using EFT;
 using EFT.InputSystem;
 using Lambda.Core.Patches.Tarkov.UI;
-using System;
-using System.Linq;
 using UnityEngine;
 
 namespace Lambda.Core.Main.UI;
@@ -85,11 +85,14 @@ public class InventoryHotkeyListener : MonoBehaviour
                 if (heldTime <= MAX_TAP_TIME)
                 {
                     // tupa copy of bsg logic
-                    if (playerOwner.Player.HealthController.IsAlive &&
-                        !GamePlayerOwner.IgnoreInputInNPCDialog &&
-                        !GamePlayerOwner.IgnoreInputWithKeepResetLook)
+                    if (
+                        playerOwner.Player.HealthController.IsAlive
+                        && !GamePlayerOwner.IgnoreInputInNPCDialog
+                        && !GamePlayerOwner.IgnoreInputWithKeepResetLook
+                    )
                     {
-                        Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory = true;
+                        Patch_EftGamePlayerOwner_TranslateInventoryScreenInput.AllowOpenInventory =
+                            true;
                         playerOwner.TranslateInventoryScreenInput(ECommand.ToggleInventory);
                     }
                 }
@@ -110,7 +113,8 @@ public class InventoryHotkeyListener : MonoBehaviour
 
         foreach (var variant in invKeyGroup.variants)
         {
-            if (variant.IsEmpty || variant.keyCode == null || variant.keyCode.Count == 0) continue;
+            if (variant.IsEmpty || variant.keyCode == null || variant.keyCode.Count == 0)
+                continue;
 
             bool allKeysDown = true;
 
@@ -130,4 +134,3 @@ public class InventoryHotkeyListener : MonoBehaviour
         return false;
     }
 }
-

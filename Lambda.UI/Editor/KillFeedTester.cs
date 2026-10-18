@@ -1,19 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
 using Lambda.Shared;
 using Lambda.Shared.Models;
 using Lambda.UI;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class KillFeedTester : MonoBehaviour
 {
-    [SerializeField] private KillFeed killfeed;
-    [SerializeField] private Sprite placeholdergun;
+    [SerializeField]
+    private KillFeed killfeed;
 
-    [SerializeField] private string playerLeft;
-    [SerializeField] private Faction factionLeft;
-    [SerializeField] private Faction factionRight;
-    [SerializeField] private string playerRight;
+    [SerializeField]
+    private Sprite placeholdergun;
+
+    [SerializeField]
+    private string playerLeft;
+
+    [SerializeField]
+    private Faction factionLeft;
+
+    [SerializeField]
+    private Faction factionRight;
+
+    [SerializeField]
+    private string playerRight;
 
     float t;
 

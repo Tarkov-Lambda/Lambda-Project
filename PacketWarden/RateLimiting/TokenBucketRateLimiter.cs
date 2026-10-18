@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace PacketWarden.RateLimiting;
 
-public sealed class TokenBucketRateLimiter<TKey> where TKey : notnull
+public sealed class TokenBucketRateLimiter<TKey>
+    where TKey : notnull
 {
     private struct Bucket
     {
@@ -36,7 +37,11 @@ public sealed class TokenBucketRateLimiter<TKey> where TKey : notnull
             };
         }
 
-        bucket.Tokens = Math.Min(config.Burst, bucket.Tokens + Math.Max(0, nowSeconds - bucket.LastRefillSeconds) * config.RefillPerSecond);
+        bucket.Tokens = Math.Min(
+            config.Burst,
+            bucket.Tokens
+                + Math.Max(0, nowSeconds - bucket.LastRefillSeconds) * config.RefillPerSecond
+        );
         bucket.LastRefillSeconds = nowSeconds;
 
         bool allowed = bucket.Tokens >= config.CostPerPacket;

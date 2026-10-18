@@ -9,7 +9,7 @@ namespace Lambda.Core.Networking;
 public enum PausePacketRequestType : byte
 {
     Pause,
-    Unpause
+    Unpause,
 }
 
 [MemoryPackable]
@@ -30,28 +30,23 @@ public class SessionPausePacketWarden : LambdaPacketWarden<PausePacket>
 
     public void Pause()
     {
-        var packet = new PausePacket
-        {
-            type = PausePacketRequestType.Pause
-        };
+        var packet = new PausePacket { type = PausePacketRequestType.Pause };
         DispatchPacket(ref packet);
     }
 
     public void Unpause()
     {
-        var packet = new PausePacket
-        {
-            type = PausePacketRequestType.Unpause
-        };
+        var packet = new PausePacket { type = PausePacketRequestType.Unpause };
         DispatchPacket(ref packet);
     }
 
-    public void RequestUnpause()
-    {
+    public void RequestUnpause() { }
 
-    }
-
-    protected override bool ValidatePacket(PausePacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        PausePacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         if (packet.type is PausePacketRequestType.Pause)
         {

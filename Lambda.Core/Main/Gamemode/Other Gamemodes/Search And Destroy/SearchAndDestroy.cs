@@ -1,11 +1,11 @@
-﻿using Comfort.Common;
+﻿using System.Collections.Generic;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using Lambda.Core.Main.Economy;
 using Lambda.Core.Main.FX;
 using Lambda.Core.Networking;
 using Lambda.Shared;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lambda.Core.Main.Gamemode;
@@ -14,7 +14,11 @@ public class SND_Cleanup : SharedCleanup
 {
     public override void OnEnter()
     {
-        foreach (var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(FindObjectsSortMode.None))
+        foreach (
+            var bombPlantZone in UnityEngine.Object.FindObjectsByType<BombPlantZone>(
+                FindObjectsSortMode.None
+            )
+        )
         {
             bombPlantZone.GetComponent<BoxCollider>().enabled = true;
         }
@@ -34,7 +38,6 @@ public class SND_Cleanup : SharedCleanup
 
         base.OnEnter();
     }
-
 }
 
 public class SND_Prepare : SharedPrepare
@@ -48,10 +51,13 @@ public class SND_Prepare : SharedPrepare
 public class SND_Action : AbstractMatchStateController
 {
     public override MatchState StateType => MatchState.RoundAction;
+
     public override void OnEnter() { }
+
     public override MatchState? OnUpdate()
     {
-        if (!H.IsServer) return null;
+        if (!H.IsServer)
+            return null;
         Faction? winner = CheckWipe();
         if (winner.HasValue)
         {
@@ -71,22 +77,28 @@ public class SND_Action : AbstractMatchStateController
 
         return null;
     }
+
     public override void OnExit() { }
 
     private Faction? CheckWipe()
     {
-        if (H.CountPlayingPlayers() == 1) return null;
+        if (H.CountPlayingPlayers() == 1)
+            return null;
 
         int aliveCT = 0;
         int aliveT = 0;
         foreach (var p in H.Scoreboard.Values)
         {
-            if (p.IsAlive && p.Faction == Faction.CT) aliveCT++;
-            if (p.IsAlive && p.Faction == Faction.T) aliveT++;
+            if (p.IsAlive && p.Faction == Faction.CT)
+                aliveCT++;
+            if (p.IsAlive && p.Faction == Faction.T)
+                aliveT++;
         }
 
-        if (aliveCT == 0) return Faction.T;
-        if (aliveT == 0) return Faction.CT;
+        if (aliveCT == 0)
+            return Faction.T;
+        if (aliveT == 0)
+            return Faction.CT;
         return null;
     }
 }
@@ -99,7 +111,8 @@ public class SND_Planted : AbstractMatchStateController
 
     public override MatchState? OnUpdate()
     {
-        if (!H.IsServer) return null;
+        if (!H.IsServer)
+            return null;
 
         // If all CT are dead before timer runs out
         if (!IsAnyCTAlive())
@@ -117,7 +130,11 @@ public class SND_Planted : AbstractMatchStateController
         if (H.Arena.StateTimer <= 0)
         {
             H.Arena.Award(Faction.T, RoundWinReason.Objective);
-            Singleton<BombStatePacketWarden>.Instance.Send(H.Arena.LastObjectivePlayer, BombState.Exploded, BombHandler.Instance.BombPlantedPosition);
+            Singleton<BombStatePacketWarden>.Instance.Send(
+                H.Arena.LastObjectivePlayer,
+                BombState.Exploded,
+                BombHandler.Instance.BombPlantedPosition
+            );
             return MatchState.RoundEnd;
         }
 
@@ -130,7 +147,8 @@ public class SND_Planted : AbstractMatchStateController
     {
         foreach (var p in H.Scoreboard.Values)
         {
-            if (p.IsAlive && p.Faction == Faction.CT) return true;
+            if (p.IsAlive && p.Faction == Faction.CT)
+                return true;
         }
 
         return false;
@@ -145,10 +163,16 @@ public class SND_RoundEnd : SharedRoundEnd
     }
 }
 
-public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappable, IGMBuyable, IGMWithNightMode
+public class SNDGamemode
+    : LambdaGamemode,
+        IGMObjective,
+        IGMRound,
+        IGMSideSwappable,
+        IGMBuyable,
+        IGMWithNightMode
 {
     // public EconomyManager economyManager = new();
-    
+
     public override IInventoryManager InventoryManager { get; } = new SNDInventoryManager();
 
     public SNDGamemode()
@@ -199,35 +223,36 @@ public class SNDGamemode : LambdaGamemode, IGMObjective, IGMRound, IGMSideSwappa
 
     public Player BombPlanter { get; private set; } = null;
 
-    public override Dictionary<MatchState, float> StateTimerConfig { get; } = new()
-    {
-        {MatchState.None, 0},
-        {MatchState.Warmup, 120},
-        {MatchState.WarmupEnd, 5},
-        {MatchState.Cleanup, 3},
-        {MatchState.Pause, 600},
-        {MatchState.RoundPrepare, 15},
-        {MatchState.RoundAction, 115},
-        {MatchState.RoundEnd, 8},
-        {MatchState.RoundPlanted, 7},
-        {MatchState.SideSwap, 5},
-        {MatchState.MatchEnd, 15}
-    };
+    public override Dictionary<MatchState, float> StateTimerConfig { get; } =
+        new()
+        {
+            { MatchState.None, 0 },
+            { MatchState.Warmup, 120 },
+            { MatchState.WarmupEnd, 5 },
+            { MatchState.Cleanup, 3 },
+            { MatchState.Pause, 600 },
+            { MatchState.RoundPrepare, 15 },
+            { MatchState.RoundAction, 115 },
+            { MatchState.RoundEnd, 8 },
+            { MatchState.RoundPlanted, 7 },
+            { MatchState.SideSwap, 5 },
+            { MatchState.MatchEnd, 15 },
+        };
 
-
-    public override AbstractMatchStateController CreateState(MatchState state) => state switch
-    {
-        MatchState.None => new SharedNone(),
-        MatchState.Warmup => new SharedWarmup(),
-        MatchState.WarmupEnd => new SharedWarmupEnd(),
-        MatchState.Cleanup => new SND_Cleanup(),
-        MatchState.Pause => new SharedPause(),
-        MatchState.RoundPrepare => new SND_Prepare(),
-        MatchState.RoundAction => new SND_Action(),
-        MatchState.RoundPlanted => new SND_Planted(),
-        MatchState.RoundEnd => new SND_RoundEnd(),
-        MatchState.SideSwap => new SharedSideSwap(),
-        MatchState.MatchEnd => new SharedMatchEnd(),
-        _ => null
-    };
+    public override AbstractMatchStateController CreateState(MatchState state) =>
+        state switch
+        {
+            MatchState.None => new SharedNone(),
+            MatchState.Warmup => new SharedWarmup(),
+            MatchState.WarmupEnd => new SharedWarmupEnd(),
+            MatchState.Cleanup => new SND_Cleanup(),
+            MatchState.Pause => new SharedPause(),
+            MatchState.RoundPrepare => new SND_Prepare(),
+            MatchState.RoundAction => new SND_Action(),
+            MatchState.RoundPlanted => new SND_Planted(),
+            MatchState.RoundEnd => new SND_RoundEnd(),
+            MatchState.SideSwap => new SharedSideSwap(),
+            MatchState.MatchEnd => new SharedMatchEnd(),
+            _ => null,
+        };
 }

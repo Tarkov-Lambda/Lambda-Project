@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
@@ -57,8 +56,6 @@
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-
-
     <ItemGroup>
       <Binaries Include="$(OutputPath)\MemoryPack.Core.dll" />
       <Binaries Include="$(OutputPath)\System.Collections.Immutable.dll" />
@@ -66,10 +63,17 @@
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-
-    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries"
-      SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
-    <Copy SourceFiles="@(FilesToCopyToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy
+      SourceFiles="@(Binaries)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue"
+    />
+    <Copy
+      SourceFiles="@(FilesToCopyToPlugins)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue"
+    />
   </Target>
 </Project>
