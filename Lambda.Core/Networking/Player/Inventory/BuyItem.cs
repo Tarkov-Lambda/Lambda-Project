@@ -57,7 +57,8 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 
     public void OnMatchStateEnter(MatchState state)
     {
-        if (state is MatchState.Cleanup)
+        // modes without a Cleanup phase (FFA, Gun Game, Hardpoint) only pass through None
+        if (state is MatchState.Cleanup or MatchState.None)
         {
             RoundTransactions.Clear();
             // _resyncDebouncer.Dispose();

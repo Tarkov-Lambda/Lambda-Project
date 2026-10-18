@@ -75,7 +75,8 @@ internal class NameplateRenderer : MonoBehaviour
 
         foreach (var playerScore in H.Scoreboard.Values)
         {
-            if (playerScore.player.IsYourPlayer)
+            // destroyed once a player leaves, touching its bones would throw every frame
+            if (playerScore.player == null || playerScore.player.IsYourPlayer)
                 continue;
 
             if (playerScore.Faction != ownFaction)

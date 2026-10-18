@@ -61,7 +61,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         var packet = new SessionStartPacket
         {
             level = H.Session.level,
-            gamemode = H.Gamemode.GetType().Name, // deal with it
+            gamemode = H.Gamemode.GetType().Name,
             isForLateJoiner = true,
         };
 
@@ -75,6 +75,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     protected override async void Apply(SessionStartPacket packet, int peerId)
     {
+        string previousLevel = H.Session.level;
+
         PrepareForStart(packet);
 
         H.Arena.gamemode?.Dispose();
@@ -100,6 +102,13 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
             }
         }
 
+        // a different map would otherwise stay loaded (and rendered) for the rest of the raid
+        if (!string.IsNullOrEmpty(previousLevel) && previousLevel != packet.level)
+        {
+            if (!H.IsHeadless) Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
+            await MapAssetBundleLoader.Instance.UnloadMap(previousLevel);
+        }
+
         await UniTask.WhenAll(
             MapAssetBundleLoader.Instance.LoadMap(packet.level),
             RuntimeBundleLoader.Instance.LoadEverythingInCache(),
@@ -117,7 +126,6 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         }
     }
 
-    // you gonna have to prefix patch this bro
     public LambdaGamemode GetGamemodeByName(string gamemodeName)
     {
         if (gamemodeName == "SNDGamemode")

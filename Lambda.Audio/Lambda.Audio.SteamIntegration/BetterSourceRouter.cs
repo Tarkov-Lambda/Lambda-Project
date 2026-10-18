@@ -21,7 +21,6 @@ public class BetterSourceProxyRouter : Singleton<BetterSourceProxyRouter>
     private readonly static HashSet<BetterSource> playingBetterSources = new();
 
 
-    // it works idgaf
     // private static bool IsMixerBypassed(AudioMixerGroup mixer)
     // {
     //     if (mixer == null) return false;

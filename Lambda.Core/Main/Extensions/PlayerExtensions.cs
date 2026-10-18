@@ -119,7 +119,6 @@ public static class PlayerExtensions
         }
     }
 
-    // Lord forgive me
     public static void UpdateVisuals(this Player player, InventoryEquipment newEquipment)
     {
         UpdateObserver(player.NightVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));

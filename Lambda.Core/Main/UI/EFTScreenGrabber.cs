@@ -47,6 +47,7 @@ internal class EFTScreenGrabber : MonoBehaviour
         if (_screenCapture != null)
         {
             _screenCapture.Release();
+            Destroy(_screenCapture);
             _screenCapture = null;
         }
 
@@ -85,6 +86,10 @@ internal class EFTScreenGrabber : MonoBehaviour
         }
 
         if (_commandBuffer != null) _commandBuffer.Release();
-        if (_screenCapture != null) _screenCapture.Release();
+        if (_screenCapture != null)
+        {
+            _screenCapture.Release();
+            Destroy(_screenCapture);
+        }
     }
 }

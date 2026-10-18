@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using MemoryPack;
+using PacketWarden;
 using PacketWarden.TimeSync;
 using System;
 using System.Collections.Generic;
