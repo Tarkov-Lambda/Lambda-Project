@@ -39,6 +39,8 @@ public static class PlayerExtensions
         if (await player.SetEmptyHandsAndWait(item))
             return true;
 
+        // tear the controller down, then spawn empty hands right away. SpawnController assigns
+        // HandsController synchronously, so it is never left null for a frame.
         D.LogInventory($"{player.Profile.Nickname} couldn't put away {item.LocalizedShortName()}, forcing empty hands");
         player.PolitelyNukeHands();
 
@@ -49,6 +51,9 @@ public static class PlayerExtensions
         return false;
     }
 
+    // Don't act on SetEmptyHands' callback: it fires from inside Process.Complete(), before ExecuteNext()
+    // resets ProcessStatus, so the inventory still reports itself blocked at that point. Wait for the state
+    // instead; the callback only ends the wait early when the swap is refused.
     private static async UniTask<bool> SetEmptyHandsAndWait(this Player player, Item item)
     {
         bool refused = false;
@@ -61,6 +66,8 @@ public static class PlayerExtensions
         return player.IsReleased(item);
     }
 
+    // Out of the hands, and Tarkov accepts actions on it again: Item.CheckAction is the same gate the
+    // remove/throw transaction checks (fails while ProcessStatus > None or while the item has pending events).
     private static bool IsReleased(this Player player, Item item) => !player.IsHolding(item) && item.CheckAction(null).Succeeded;
 
     // this needs to go ASAP
