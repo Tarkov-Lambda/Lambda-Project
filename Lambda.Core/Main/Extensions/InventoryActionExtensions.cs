@@ -36,6 +36,8 @@ public static class InventoryActionExtensions
         Item item = player.GetSlotItem(equipmentSlot);
         if (item == null) return true;
 
+        if (!await player.TryReleaseFromHands(item)) return false;
+
         return await operation(player, item);
     }
 
@@ -181,6 +183,8 @@ public static class InventoryActionExtensions
         var slot = player.Inventory.Equipment.GetSlot(equipmentSlot);
         if (slot.ContainedItem == null) return true;
 
+        if (!await player.TryReleaseFromHands(slot.ContainedItem)) return false;
+
         IEnumerable<Item> mags = null;
 
         if (slot.ContainedItem is Weapon weapon)
@@ -205,15 +209,6 @@ public static class InventoryActionExtensions
 
     public static async UniTask<bool> TryThrowWeaponAndMags(this Player player, EquipmentSlot equipmentSlot)
     {
-        if (H.IsServer && player.IsYourPlayer)
-        {
-            if (player.HandsController.Item == player.GetSlotItem(equipmentSlot))
-            {
-                player.PolitelyNukeHands();
-                await UniTask.Delay(50);
-            }
-        }
-
         return await player.TryOperateWeaponAndMags(
             equipmentSlot,
             (p, item) => p.TryThrowItem(item),

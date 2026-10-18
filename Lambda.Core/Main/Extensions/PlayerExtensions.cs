@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -25,7 +27,45 @@ public static class PlayerExtensions
         return player.Inventory.Equipment.GetSlot(equipmentSlotType);
     }
 
+    private static readonly TimeSpan HandsReleaseTimeout = TimeSpan.FromSeconds(2);
+
+    public static bool IsHolding(this Player player, Item item) => player.HandsController != null && player.HandsController.Item == item;
+
+    public static async UniTask<bool> TryReleaseFromHands(this Player player, Item item)
+    {
+        if (!player.IsHolding(item))
+            return true;
+
+        if (await player.SetEmptyHandsAndWait(item))
+            return true;
+
+        D.LogInventory($"{player.Profile.Nickname} couldn't put away {item.LocalizedShortName()}, forcing empty hands");
+        player.PolitelyNukeHands();
+
+        if (await player.SetEmptyHandsAndWait(item))
+            return true;
+
+        D.LogError($"{player.Profile.Nickname} failed to restore empty hands after forcing them");
+        return false;
+    }
+
+    private static async UniTask<bool> SetEmptyHandsAndWait(this Player player, Item item)
+    {
+        bool refused = false;
+        player.SetEmptyHands(result => refused = result.Failed);
+
+        using var timeout = new CancellationTokenSource(HandsReleaseTimeout);
+        await UniTask.WaitUntil(() => refused || player.IsReleased(item), cancellationToken: timeout.Token)
+            .SuppressCancellationThrow();
+
+        return player.IsReleased(item);
+    }
+
+    private static bool IsReleased(this Player player, Item item) => !player.IsHolding(item) && item.CheckAction(null).Succeeded;
+
     // this needs to go ASAP
+    // Leaves HandsController == null: the caller must spawn a new controller in the same frame
+    // (SetEmptyHands / SetInHands), otherwise Player.LateUpdate -> MouseLook throws every frame.
     public static void PolitelyNukeHands(this Player player)
     {
         try
