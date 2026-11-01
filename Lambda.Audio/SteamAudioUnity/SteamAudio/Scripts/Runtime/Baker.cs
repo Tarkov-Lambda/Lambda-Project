@@ -32,7 +32,7 @@ namespace SteamAudio
     {
         Ready,
         InProgress,
-        Complete
+        Complete,
     }
 
     public struct BakedDataTask
@@ -79,11 +79,17 @@ namespace SteamAudio
 
             if (SteamAudioManager.GetSceneType() == SceneType.Custom)
             {
-                Debug.LogError("Baking is not supported when using Unity's built-in ray tracer. Click Steam Audio > Settings and switch to a different ray tracer.");
+                Debug.LogError(
+                    "Baking is not supported when using Unity's built-in ray tracer. Click Steam Audio > Settings and switch to a different ray tracer."
+                );
                 return;
             }
 
-            SteamAudioManager.LoadScene(SceneManager.GetActiveScene(), SteamAudioManager.Context, false);
+            SteamAudioManager.LoadScene(
+                SceneManager.GetActiveScene(),
+                SteamAudioManager.Context,
+                false
+            );
 
             SteamAudioStaticMesh staticMeshComponent = null;
             var rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
@@ -96,11 +102,20 @@ namespace SteamAudio
 
             if (staticMeshComponent == null || staticMeshComponent.asset == null)
             {
-                Debug.LogError(string.Format("Scene {0} has not been exported. Click Steam Audio > Export Active Scene to do so.", SceneManager.GetActiveScene().name));
+                Debug.LogError(
+                    string.Format(
+                        "Scene {0} has not been exported. Click Steam Audio > Export Active Scene to do so.",
+                        SceneManager.GetActiveScene().name
+                    )
+                );
                 return;
             }
 
-            var staticMesh = new StaticMesh(SteamAudioManager.Context, SteamAudioManager.CurrentScene, staticMeshComponent.asset);
+            var staticMesh = new StaticMesh(
+                SteamAudioManager.Context,
+                SteamAudioManager.CurrentScene,
+                staticMeshComponent.asset
+            );
             staticMesh.AddToScene(SteamAudioManager.CurrentScene);
 
             SteamAudioManager.CurrentScene.Commit();
@@ -208,15 +223,33 @@ namespace SteamAudio
             return true;
         }
 
-        static void UpdateBakeProgress(int taskIndex, int numTasks, string taskName, int subTaskIndex = 0, int numSubTasks = 1, string subTaskName = null)
+        static void UpdateBakeProgress(
+            int taskIndex,
+            int numTasks,
+            string taskName,
+            int subTaskIndex = 0,
+            int numSubTasks = 1,
+            string subTaskName = null
+        )
         {
 #if UNITY_EDITOR
-            var progress = ((sNumSubTasksCompleted + sProgress) / Mathf.Max(sNumSubTasks, 1)) + .01f; // Adding an offset because progress bar when it is exact 0 has some non-zero progress.
+            var progress =
+                ((sNumSubTasksCompleted + sProgress) / Mathf.Max(sNumSubTasks, 1)) + .01f; // Adding an offset because progress bar when it is exact 0 has some non-zero progress.
 
-            var progressString = string.Format("Task {0} / {1} [{2}]", taskIndex + 1, numTasks, taskName);
+            var progressString = string.Format(
+                "Task {0} / {1} [{2}]",
+                taskIndex + 1,
+                numTasks,
+                taskName
+            );
             if (subTaskName != null)
             {
-                progressString += string.Format(", Probe Batch {0} / {1} [{2}]", subTaskIndex + 1, numSubTasks, subTaskName);
+                progressString += string.Format(
+                    ", Probe Batch {0} / {1} [{2}]",
+                    subTaskIndex + 1,
+                    numSubTasks,
+                    subTaskName
+                );
             }
 
             var progressPercent = Mathf.FloorToInt(Mathf.Min(progress * 100.0f, 100.0f));
@@ -244,7 +277,14 @@ namespace SteamAudio
         {
 #if UNITY_EDITOR
             sProgress = progress;
-            UpdateBakeProgress(sCurrentTask, sTasks.Length, sCurrentTaskName, sCurrentSubTask, sNumSubTasksInCurrentTask, sCurrentSubTaskName);
+            UpdateBakeProgress(
+                sCurrentTask,
+                sTasks.Length,
+                sCurrentTaskName,
+                sCurrentSubTask,
+                sNumSubTasksInCurrentTask,
+                sCurrentSubTaskName
+            );
 #endif
         }
 
@@ -322,13 +362,25 @@ namespace SteamAudio
 
                         if (probeBatches[j] == null)
                         {
-                            Debug.LogWarning(string.Format("{0}: Probe Batch at index {1} is null, skipping.", taskName, j));
+                            Debug.LogWarning(
+                                string.Format(
+                                    "{0}: Probe Batch at index {1} is null, skipping.",
+                                    taskName,
+                                    j
+                                )
+                            );
                             continue;
                         }
 
                         if (probeBatches[j].GetNumProbes() == 0)
                         {
-                            Debug.LogWarning(string.Format("{0}: Probe Batch {1} has no probes, skipping.", taskName, sTasks[i].probeBatchNames[j]));
+                            Debug.LogWarning(
+                                string.Format(
+                                    "{0}: Probe Batch {1} has no probes, skipping.",
+                                    taskName,
+                                    sTasks[i].probeBatchNames[j]
+                                )
+                            );
                             continue;
                         }
 
@@ -336,7 +388,10 @@ namespace SteamAudio
                         sCurrentSubTaskName = sTasks[i].probeBatchNames[j];
                         sNumSubTasksInCurrentTask = sTasks[i].probeBatches.Length;
 
-                        var probeBatch = new ProbeBatch(SteamAudioManager.Context, sTasks[i].probeBatchAssets[j]);
+                        var probeBatch = new ProbeBatch(
+                            SteamAudioManager.Context,
+                            sTasks[i].probeBatchAssets[j]
+                        );
 
                         var simulationSettings = SteamAudioManager.GetSimulationSettings(true);
 
@@ -356,23 +411,34 @@ namespace SteamAudio
                             bakeParams.order = simulationSettings.maxOrder;
                             bakeParams.numThreads = simulationSettings.numThreads;
                             bakeParams.rayBatchSize = simulationSettings.rayBatchSize;
-                            bakeParams.irradianceMinDistance = SteamAudioSettings.Singleton.bakingIrradianceMinDistance;
+                            bakeParams.irradianceMinDistance = SteamAudioSettings
+                                .Singleton
+                                .bakingIrradianceMinDistance;
                             bakeParams.bakeBatchSize = 1;
 
                             if (SteamAudioSettings.Singleton.bakeConvolution)
-                                bakeParams.flags = bakeParams.flags | ReflectionsBakeFlags.BakeConvolution;
+                                bakeParams.flags =
+                                    bakeParams.flags | ReflectionsBakeFlags.BakeConvolution;
 
                             if (SteamAudioSettings.Singleton.bakeParametric)
-                                bakeParams.flags = bakeParams.flags | ReflectionsBakeFlags.BakeParametric;
+                                bakeParams.flags =
+                                    bakeParams.flags | ReflectionsBakeFlags.BakeParametric;
 
                             if (simulationSettings.sceneType == SceneType.RadeonRays)
                             {
                                 bakeParams.openCLDevice = SteamAudioManager.OpenCLDevice;
                                 bakeParams.radeonRaysDevice = SteamAudioManager.RadeonRaysDevice;
-                                bakeParams.bakeBatchSize = SteamAudioSettings.Singleton.bakingBatchSize;
+                                bakeParams.bakeBatchSize = SteamAudioSettings
+                                    .Singleton
+                                    .bakingBatchSize;
                             }
 
-                            API.iplReflectionsBakerBake(SteamAudioManager.Context.Get(), ref bakeParams, sProgressCallback, IntPtr.Zero);
+                            API.iplReflectionsBakerBake(
+                                SteamAudioManager.Context.Get(),
+                                ref bakeParams,
+                                sProgressCallback,
+                                IntPtr.Zero
+                            );
                         }
                         else
                         {
@@ -380,14 +446,28 @@ namespace SteamAudio
                             bakeParams.scene = SteamAudioManager.CurrentScene.Get();
                             bakeParams.probeBatch = probeBatch.Get();
                             bakeParams.identifier = sTasks[i].identifier;
-                            bakeParams.numSamples = SteamAudioSettings.Singleton.bakingVisibilitySamples;
+                            bakeParams.numSamples = SteamAudioSettings
+                                .Singleton
+                                .bakingVisibilitySamples;
                             bakeParams.radius = SteamAudioSettings.Singleton.bakingVisibilityRadius;
-                            bakeParams.threshold = SteamAudioSettings.Singleton.bakingVisibilityThreshold;
-                            bakeParams.visRange = SteamAudioSettings.Singleton.bakingVisibilityRange;
+                            bakeParams.threshold = SteamAudioSettings
+                                .Singleton
+                                .bakingVisibilityThreshold;
+                            bakeParams.visRange = SteamAudioSettings
+                                .Singleton
+                                .bakingVisibilityRange;
                             bakeParams.pathRange = SteamAudioSettings.Singleton.bakingPathRange;
-                            bakeParams.numThreads = SteamAudioManager.Singleton.NumThreadsForCPUCorePercentage(SteamAudioSettings.Singleton.bakedPathingCPUCoresPercentage);
+                            bakeParams.numThreads =
+                                SteamAudioManager.Singleton.NumThreadsForCPUCorePercentage(
+                                    SteamAudioSettings.Singleton.bakedPathingCPUCoresPercentage
+                                );
 
-                            API.iplPathBakerBake(SteamAudioManager.Context.Get(), ref bakeParams, sProgressCallback, IntPtr.Zero);
+                            API.iplPathBakerBake(
+                                SteamAudioManager.Context.Get(),
+                                ref bakeParams,
+                                sProgressCallback,
+                                IntPtr.Zero
+                            );
                         }
 
                         if (sCancel)
@@ -397,36 +477,53 @@ namespace SteamAudio
                         }
 
                         // Don't flush the writes to disk just yet, because we can only do it from the main thread.
-                        probeBatches[j].probeDataSize = probeBatch.Save(sTasks[i].probeBatchAssets[j], false);
+                        probeBatches[j].probeDataSize = probeBatch.Save(
+                            sTasks[i].probeBatchAssets[j],
+                            false
+                        );
 
                         var dataSize = (int)probeBatch.GetDataSize(sTasks[i].identifier);
-                        probeBatches[j].AddOrUpdateLayer(sTasks[i].gameObject, sTasks[i].identifier, dataSize);
+                        probeBatches[j]
+                            .AddOrUpdateLayer(sTasks[i].gameObject, sTasks[i].identifier, dataSize);
 
                         if (sTasks[i].identifier.type == BakedDataType.Reflections)
                         {
                             switch (sTasks[i].identifier.variation)
                             {
                                 case BakedDataVariation.Reverb:
-                                    (sTasks[i].component as SteamAudioListener).UpdateBakedDataStatistics();
+                                    (
+                                        sTasks[i].component as SteamAudioListener
+                                    ).UpdateBakedDataStatistics();
                                     break;
 
                                 case BakedDataVariation.StaticSource:
-                                    (sTasks[i].component as SteamAudioBakedSource).UpdateBakedDataStatistics();
+                                    (
+                                        sTasks[i].component as SteamAudioBakedSource
+                                    ).UpdateBakedDataStatistics();
                                     break;
 
                                 case BakedDataVariation.StaticListener:
-                                    (sTasks[i].component as SteamAudioBakedListener).UpdateBakedDataStatistics();
+                                    (
+                                        sTasks[i].component as SteamAudioBakedListener
+                                    ).UpdateBakedDataStatistics();
                                     break;
                             }
                         }
 
                         sNumSubTasksCompleted++;
-                        UpdateBakeProgress(i, sTasks.Length, taskName, j, sTasks[i].probeBatches.Length, sTasks[i].probeBatchNames[j]);
+                        UpdateBakeProgress(
+                            i,
+                            sTasks.Length,
+                            taskName,
+                            j,
+                            sTasks[i].probeBatches.Length,
+                            sTasks[i].probeBatchNames[j]
+                        );
                     }
                 }
 
                 if (sTasks[i].probe != null)
-                { 
+                {
                     var probe = sTasks[i].probe;
                     var probePosition = sTasks[i].probePosition;
 
@@ -434,7 +531,11 @@ namespace SteamAudio
                         return;
 
                     var probeBatch = new ProbeBatch(SteamAudioManager.Context);
-                    SteamAudio.Sphere sphere = new SteamAudio.Sphere { center = Common.ConvertVector(probePosition), radius = 10.0f };
+                    SteamAudio.Sphere sphere = new SteamAudio.Sphere
+                    {
+                        center = Common.ConvertVector(probePosition),
+                        radius = 10.0f,
+                    };
                     probeBatch.AddProbe(sphere);
                     probeBatch.Commit();
 
@@ -458,7 +559,9 @@ namespace SteamAudio
                         bakeParams.order = simulationSettings.maxOrder;
                         bakeParams.numThreads = simulationSettings.numThreads;
                         bakeParams.rayBatchSize = simulationSettings.rayBatchSize;
-                        bakeParams.irradianceMinDistance = SteamAudioSettings.Singleton.bakingIrradianceMinDistance;
+                        bakeParams.irradianceMinDistance = SteamAudioSettings
+                            .Singleton
+                            .bakingIrradianceMinDistance;
                         bakeParams.bakeBatchSize = 1;
 
                         bakeParams.flags = bakeParams.flags | ReflectionsBakeFlags.BakeConvolution;
@@ -471,7 +574,12 @@ namespace SteamAudio
                             bakeParams.bakeBatchSize = SteamAudioSettings.Singleton.bakingBatchSize;
                         }
 
-                        API.iplReflectionsBakerBake(SteamAudioManager.Context.Get(), ref bakeParams, sProgressCallback, IntPtr.Zero);
+                        API.iplReflectionsBakerBake(
+                            SteamAudioManager.Context.Get(),
+                            ref bakeParams,
+                            sProgressCallback,
+                            IntPtr.Zero
+                        );
 
                         if (probe.reverbData.reverbTimes.Length != 3)
                         {
@@ -489,10 +597,24 @@ namespace SteamAudio
                             energyFieldSettings.order = bakeParams.order;
 
                             IntPtr energyField;
-                            API.iplEnergyFieldCreate(SteamAudioManager.Context.Get(), ref energyFieldSettings, out energyField);
+                            API.iplEnergyFieldCreate(
+                                SteamAudioManager.Context.Get(),
+                                ref energyFieldSettings,
+                                out energyField
+                            );
 
-                            API.iplProbeBatchGetEnergyField(probeBatch.Get(), ref sTasks[i].identifier, 0, energyField);
-                            API.iplProbeBatchGetReverb(probeBatch.Get(), ref sTasks[i].identifier, 0, probe.reverbData.reverbTimes);
+                            API.iplProbeBatchGetEnergyField(
+                                probeBatch.Get(),
+                                ref sTasks[i].identifier,
+                                0,
+                                energyField
+                            );
+                            API.iplProbeBatchGetReverb(
+                                probeBatch.Get(),
+                                ref sTasks[i].identifier,
+                                0,
+                                probe.reverbData.reverbTimes
+                            );
                             probe.UpdateEnergyField(energyField);
 
                             // Create Reconstructor
@@ -502,7 +624,11 @@ namespace SteamAudio
                             reconstructorSettings.samplingRate = probe.sampleRate;
 
                             IntPtr irConstructor;
-                            API.iplReconstructorCreate(SteamAudioManager.Context.Get(), ref reconstructorSettings, out irConstructor);
+                            API.iplReconstructorCreate(
+                                SteamAudioManager.Context.Get(),
+                                ref reconstructorSettings,
+                                out irConstructor
+                            );
 
                             // Create Impulse Response
                             ImpulseResponseSettings irSettings;
@@ -511,7 +637,11 @@ namespace SteamAudio
                             irSettings.samplingRate = probe.sampleRate;
 
                             IntPtr ir;
-                            API.iplImpulseResponseCreate(SteamAudioManager.Context.Get(), ref irSettings, out ir);
+                            API.iplImpulseResponseCreate(
+                                SteamAudioManager.Context.Get(),
+                                ref irSettings,
+                                out ir
+                            );
 
                             // Reconstruct Impulse Response
                             ReconstructorInputs reconstructorInputs;
@@ -524,7 +654,13 @@ namespace SteamAudio
                             ReconstructorOutputs reconstructorOutputs;
                             reconstructorOutputs.impulseResponse = ir;
 
-                            API.iplReconstructorReconstruct(irConstructor, 1, ref reconstructorInputs, ref reconstructorSharedInputs, ref reconstructorOutputs);
+                            API.iplReconstructorReconstruct(
+                                irConstructor,
+                                1,
+                                ref reconstructorInputs,
+                                ref reconstructorSharedInputs,
+                                ref reconstructorOutputs
+                            );
                             probe.UpdateImpulseResponse(ir);
 
                             API.iplImpulseResponseRelease(ref ir);

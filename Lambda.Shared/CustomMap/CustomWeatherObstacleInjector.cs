@@ -30,10 +30,12 @@ namespace Lambda.Shared.CustomMap
 
         void OnEnable()
         {
-            if (WeatherObstacle.Instance == null ||
-                WeatherObstacle.Instance.MeshCollider == null ||
-                WeatherObstacle.Instance.MeshCollider.sharedMesh == null ||
-                DepthPhotograper.Instance == null)
+            if (
+                WeatherObstacle.Instance == null
+                || WeatherObstacle.Instance.MeshCollider == null
+                || WeatherObstacle.Instance.MeshCollider.sharedMesh == null
+                || DepthPhotograper.Instance == null
+            )
             {
                 Debug.LogError("invalid scene");
                 return;
@@ -42,27 +44,28 @@ namespace Lambda.Shared.CustomMap
             vanillaMesh = WeatherObstacle.Instance.MeshCollider.sharedMesh;
             List<CombineInstance> combineInstances = new List<CombineInstance>();
 
-            combineInstances.Add(new CombineInstance
-            {
-                mesh = vanillaMesh,
-                transform = Matrix4x4.identity
-            });
+            combineInstances.Add(
+                new CombineInstance { mesh = vanillaMesh, transform = Matrix4x4.identity }
+            );
 
             foreach (MeshFilter filter in gameObject.GetComponentsInChildren<MeshFilter>())
             {
-                if (filter.sharedMesh == null) continue;
+                if (filter.sharedMesh == null)
+                    continue;
 
-                combineInstances.Add(new CombineInstance
-                {
-                    mesh = filter.sharedMesh,
-                    transform = filter.transform.localToWorldMatrix
-                });
+                combineInstances.Add(
+                    new CombineInstance
+                    {
+                        mesh = filter.sharedMesh,
+                        transform = filter.transform.localToWorldMatrix,
+                    }
+                );
             }
 
             newCombinedMesh = new Mesh
             {
                 name = "WeatherObstacle Custom Combined",
-                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32,
             };
 
             newCombinedMesh.CombineMeshes(combineInstances.ToArray(), true, true);

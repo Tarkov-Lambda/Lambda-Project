@@ -23,8 +23,10 @@ namespace SteamAudio
     {
         [Header("Material Settings")]
         public SteamAudioMaterial material = null;
+
         [Header("Export Settings")]
         public bool exportAllChildren = false;
+
         [Header("Terrain Settings")]
         [Range(0, 10)]
         public int terrainSimplificationLevel = 0;

@@ -13,13 +13,13 @@ namespace Lambda.Shared
     public enum LadderMaterial : byte
     {
         Metal,
-        Wood
+        Wood,
     }
 
     [RequireComponent(typeof(BoxCollider))]
     public class Ladder : MonoBehaviour
 #if EFT_RUNTIME
-        , IPhysicsTrigger
+            , IPhysicsTrigger
 #endif
     {
         public static Action<LadderEventPayload> OnPlayerEnterLadder;
@@ -66,22 +66,14 @@ namespace Lambda.Shared
 
         public void OnTriggerEnter(Collider other)
         {
-            LadderEventPayload ladderEvent = new()
-            {
-                other = other,
-                ladder = this
-            };
+            LadderEventPayload ladderEvent = new() { other = other, ladder = this };
 
             OnPlayerEnterLadder?.Invoke(ladderEvent);
         }
 
         public void OnTriggerExit(Collider other)
         {
-            LadderEventPayload ladderEvent = new()
-            {
-                other = other,
-                ladder = this
-            };
+            LadderEventPayload ladderEvent = new() { other = other, ladder = this };
 
             OnPlayerExitLadder?.Invoke(ladderEvent);
         }

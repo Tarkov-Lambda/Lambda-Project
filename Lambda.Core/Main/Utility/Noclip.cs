@@ -18,13 +18,19 @@ public static class Noclip
         Transform camTransform = CameraClass.Instance.Camera.transform;
         Vector3 moveDirection = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.W)) moveDirection += camTransform.forward;
-        if (Input.GetKey(KeyCode.S)) moveDirection -= camTransform.forward;
-        if (Input.GetKey(KeyCode.A)) moveDirection -= camTransform.right;
-        if (Input.GetKey(KeyCode.D)) moveDirection += camTransform.right;
+        if (Input.GetKey(KeyCode.W))
+            moveDirection += camTransform.forward;
+        if (Input.GetKey(KeyCode.S))
+            moveDirection -= camTransform.forward;
+        if (Input.GetKey(KeyCode.A))
+            moveDirection -= camTransform.right;
+        if (Input.GetKey(KeyCode.D))
+            moveDirection += camTransform.right;
 
-        if (Input.GetKey(KeyCode.Space)) moveDirection += Vector3.up;
-        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) moveDirection -= Vector3.up;
+        if (Input.GetKey(KeyCode.Space))
+            moveDirection += Vector3.up;
+        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            moveDirection -= Vector3.up;
 
         if (moveDirection.sqrMagnitude > 0f)
         {
@@ -35,13 +41,18 @@ public static class Noclip
         float targetSpeed = Mathf.Lerp(5f, 30f, noiseLevel);
 
         bool isShift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        if (isShift) targetSpeed *= 4f;
+        if (isShift)
+            targetSpeed *= 4f;
 
         Vector3 targetVelocity = moveDirection * targetSpeed;
 
-        float acceleration = 12f; 
+        float acceleration = 12f;
 
-        _currentVelocity = Vector3.Lerp(_currentVelocity, targetVelocity, acceleration * Time.deltaTime);
+        _currentVelocity = Vector3.Lerp(
+            _currentVelocity,
+            targetVelocity,
+            acceleration * Time.deltaTime
+        );
 
         Vector3 newPosition = H.MainPlayer.Transform.position + (_currentVelocity * Time.deltaTime);
         H.MainPlayer.Teleport(newPosition);
@@ -50,7 +61,7 @@ public static class Noclip
     public static void ToggleNoclip()
     {
         IsEnabled = !IsEnabled;
-        
+
         if (!IsEnabled)
         {
             _currentVelocity = Vector3.zero;

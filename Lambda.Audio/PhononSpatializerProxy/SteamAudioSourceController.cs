@@ -25,17 +25,12 @@ namespace PhononSpatializerProxy
             PhononDSPBridge.OnBridgeDisabled += OnBridgeDisabled;
         }
 
-        public static readonly ConditionalWeakTable<AudioSource, StrongBox<SteamSourceData>> cache = new();
+        public static readonly ConditionalWeakTable<AudioSource, StrongBox<SteamSourceData>> cache =
+            new();
 
-        public static void OnBridgeEnabled(PhononDSPBridge bridge)
-        {
+        public static void OnBridgeEnabled(PhononDSPBridge bridge) { }
 
-        }
-
-        public static void OnBridgeDisabled(PhononDSPBridge bridge)
-        {
-
-        }
+        public static void OnBridgeDisabled(PhononDSPBridge bridge) { }
 
         public static SteamSourceData GetOrAdd(AudioSource audioSource)
         {
@@ -47,7 +42,7 @@ namespace PhononSpatializerProxy
             var data = new SteamSourceData
             {
                 steam = audioSource.gameObject.GetComponent<SteamAudioSource>(),
-                proxy = audioSource.gameObject.GetComponent<PhononDSPBridge>()
+                proxy = audioSource.gameObject.GetComponent<PhononDSPBridge>(),
             };
 
             RerouteSpatialValues(data, audioSource);

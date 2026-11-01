@@ -37,5 +37,5 @@ public enum MatchState : byte
     Lima,
     Mike,
     November,
-    Oscar
+    Oscar,
 }

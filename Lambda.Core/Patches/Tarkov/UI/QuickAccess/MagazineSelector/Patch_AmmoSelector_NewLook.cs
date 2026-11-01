@@ -1,12 +1,12 @@
-﻿using EFT.UI;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using EFT.UI;
 using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
 
 namespace Lambda.Core.Patches.Tarkov.UI.QuickAccess.MagazineSelector;
 
@@ -16,27 +16,31 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
     public static bool IsAmmoSelectorContext(Component component)
     {
-        if (IsCreatingAmmoSelectorItems) return true;
+        if (IsCreatingAmmoSelectorItems)
+            return true;
         return component != null && component.GetComponentInParent<AmmoSelector>() != null;
     }
 
     private static bool IsQuickAccessContext(Component component)
     {
-        return component != null && component.GetComponentInParent<InventoryScreenQuickAccessPanel>() != null;
+        return component != null
+            && component.GetComponentInParent<InventoryScreenQuickAccessPanel>() != null;
     }
 
     private class Patch_AmmoSelector_ShowAcceptableMags : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(AmmoSelector), nameof(AmmoSelector.ShowAcceptableMags));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(AmmoSelector), nameof(AmmoSelector.ShowAcceptableMags));
 
         [PatchPrefix]
         static void Prefix() => IsCreatingAmmoSelectorItems = true;
 
         [PatchPostfix]
-        private static void PatchPostfix(AmmoSelector __instance,
-        ref Image ____cancelBackground,
-        ref Color ____normalCancelColor,
-        ref Color ____selectedCancelColor
+        private static void PatchPostfix(
+            AmmoSelector __instance,
+            ref Image ____cancelBackground,
+            ref Color ____normalCancelColor,
+            ref Color ____selectedCancelColor
         )
         {
             var cross = __instance.transform.Find("Cancel/Image");
@@ -50,7 +54,8 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
                 ____selectedCancelColor = new Color(1, 1, 1, 1.0f);
 
                 var border = __instance.transform.Find("Cancel/Border");
-                if (border != null) border.gameObject.SetActive(false);
+                if (border != null)
+                    border.gameObject.SetActive(false);
             }
         }
 
@@ -60,40 +65,53 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
     private class Patch_GridItemView_UpdateInfoVisibility : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GridItemView), nameof(GridItemView.UpdateInfoVisibility));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(GridItemView), nameof(GridItemView.UpdateInfoVisibility));
 
         [PatchPostfix]
         static void PatchPostfix(GridItemView __instance, Image ___ColorPanel, Image ____border)
         {
             if (IsAmmoSelectorContext(__instance))
             {
-                if (___ColorPanel != null) ___ColorPanel.enabled = false;
-                if (____border != null) ____border.enabled = false;
+                if (___ColorPanel != null)
+                    ___ColorPanel.enabled = false;
+                if (____border != null)
+                    ____border.enabled = false;
 
                 Transform infoPanel = __instance.transform.Find("Info Panel");
                 if (infoPanel != null)
                 {
                     Transform caption = infoPanel.Find("Caption");
-                    if (caption != null) caption.gameObject.SetActive(false);
+                    if (caption != null)
+                        caption.gameObject.SetActive(false);
 
-                    Transform bottomLeft = infoPanel.Find("BottomLayoutGroup/BottomLeftLayoutGroup");
-                    if (bottomLeft != null) bottomLeft.gameObject.SetActive(false);
+                    Transform bottomLeft = infoPanel.Find(
+                        "BottomLayoutGroup/BottomLeftLayoutGroup"
+                    );
+                    if (bottomLeft != null)
+                        bottomLeft.gameObject.SetActive(false);
 
-                    Transform bulletStats = infoPanel.Find("BottomLayoutGroup/BottomRightLayoutGroup/");
-                    if (bottomLeft != null) bottomLeft.gameObject.SetActive(false);
+                    Transform bulletStats = infoPanel.Find(
+                        "BottomLayoutGroup/BottomRightLayoutGroup/"
+                    );
+                    if (bottomLeft != null)
+                        bottomLeft.gameObject.SetActive(false);
                 }
             }
             else if (!IsQuickAccessContext(__instance))
             {
-                if (___ColorPanel != null) ___ColorPanel.enabled = true;
-                if (____border != null) ____border.enabled = true;
+                if (___ColorPanel != null)
+                    ___ColorPanel.enabled = true;
+                if (____border != null)
+                    ____border.enabled = true;
             }
         }
     }
 
     private class Patch_AmmoSelector_RemoveItem : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(AmmoSelector), nameof(AmmoSelector.method_6));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(AmmoSelector), nameof(AmmoSelector.method_6));
 
         [PatchPrefix]
         static void Prefix(AmmoSelector __instance, int index)
@@ -113,9 +131,11 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
         static void RestoreGridItemView(GridItemView view)
         {
-            Image colorPanel = AccessTools.Field(typeof(GridItemView), "ColorPanel")?.GetValue(view) as Image;
+            Image colorPanel =
+                AccessTools.Field(typeof(GridItemView), "ColorPanel")?.GetValue(view) as Image;
 
-            Image border = AccessTools.Field(typeof(GridItemView), "_border")?.GetValue(view) as Image;
+            Image border =
+                AccessTools.Field(typeof(GridItemView), "_border")?.GetValue(view) as Image;
 
             if (colorPanel != null)
                 colorPanel.enabled = true;
@@ -127,10 +147,12 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
             if (infoPanel != null)
             {
                 Transform caption = infoPanel.Find("Caption");
-                if (caption != null) caption.gameObject.SetActive(true);
+                if (caption != null)
+                    caption.gameObject.SetActive(true);
 
                 Transform bottomLeft = infoPanel.Find("BottomLayoutGroup/BottomLeftLayoutGroup");
-                if (bottomLeft != null) bottomLeft.gameObject.SetActive(true);
+                if (bottomLeft != null)
+                    bottomLeft.gameObject.SetActive(true);
 
                 // Transform Boolets = infoPanel.Find("BottomLayoutGroup/BottomRightLayoutGroup/Value");
                 // if (Boolets != null)
@@ -140,7 +162,8 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
                 // }
             }
 
-            Image mainImage = AccessTools.Field(typeof(ItemView), "MainImage")?.GetValue(view) as Image;
+            Image mainImage =
+                AccessTools.Field(typeof(ItemView), "MainImage")?.GetValue(view) as Image;
 
             if (mainImage != null)
             {
@@ -158,12 +181,19 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
     private class Patch_ItemView_UpdateColor : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemView), nameof(ItemView.UpdateColor));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(ItemView), nameof(ItemView.UpdateColor));
 
         [PatchPostfix]
-        static void PatchPostfix(ItemView __instance, bool ___bool_4, bool ___HighlightedGlobally, Image ___MainImage)
+        static void PatchPostfix(
+            ItemView __instance,
+            bool ___bool_4,
+            bool ___HighlightedGlobally,
+            Image ___MainImage
+        )
         {
-            if (___MainImage == null) return;
+            if (___MainImage == null)
+                return;
 
             if (IsAmmoSelectorContext(__instance))
             {
@@ -175,12 +205,14 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
     private class Patch_ItemView_UpdateScale : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemView), nameof(ItemView.UpdateScale));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(ItemView), nameof(ItemView.UpdateScale));
 
         [PatchPostfix]
         static void PatchPostfix(ItemView __instance, Image ___MainImage)
         {
-            if (___MainImage == null) return;
+            if (___MainImage == null)
+                return;
 
             if (IsAmmoSelectorContext(__instance))
             {
@@ -191,10 +223,14 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
                 if (PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial != null)
                 {
-                    ___MainImage.material = PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial;
+                    ___MainImage.material =
+                        PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial;
                 }
             }
-            else if (!IsQuickAccessContext(__instance) && __instance.GetType() == typeof(GridItemView))
+            else if (
+                !IsQuickAccessContext(__instance)
+                && __instance.GetType() == typeof(GridItemView)
+            )
             {
                 ___MainImage.rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 ___MainImage.rectTransform.anchoredPosition = Vector2.zero;
@@ -205,12 +241,14 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
     private class Patch_GridItemView_UpdateInfo : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GridItemView), nameof(GridItemView.UpdateInfo));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(GridItemView), nameof(GridItemView.UpdateInfo));
 
         [PatchPostfix]
         static void PatchPostfix(GridItemView __instance, Image ___MainImage)
         {
-            if (___MainImage == null || !IsAmmoSelectorContext(__instance)) return;
+            if (___MainImage == null || !IsAmmoSelectorContext(__instance))
+                return;
 
             if (PatchGroup_QuickAccessPanel_ModifyItemIcon.MatteMaterial != null)
             {
@@ -223,7 +261,8 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
 
     internal class Patch_AmmoSelector_Position : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(AmmoSelector), nameof(AmmoSelector.ShowAcceptableMags));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(AmmoSelector), nameof(AmmoSelector.ShowAcceptableMags));
 
         [PatchPostfix]
         private static void PatchPostfix(AmmoSelector __instance)
@@ -231,9 +270,13 @@ internal class PatchGroup_AmmoSelector_NewLook : PatchGroup
             if (H.MainPlayer?.HandsController?.Item == null)
                 return;
 
-            if (!PatchGroup_QuickAccessPanel_ModifyItemIcon.ItemToImage.TryGetValue(
-                H.MainPlayer.HandsController.Item,
-                out Image weaponImage) || weaponImage == null)
+            if (
+                !PatchGroup_QuickAccessPanel_ModifyItemIcon.ItemToImage.TryGetValue(
+                    H.MainPlayer.HandsController.Item,
+                    out Image weaponImage
+                )
+                || weaponImage == null
+            )
                 return;
 
             var weapRect = weaponImage.rectTransform;

@@ -10,14 +10,26 @@ using static Fika.Core.Main.ClientClasses.ClientInventoryController;
 // mid way to auto-resync inventory in case of a missing item error
 internal class Patch_ClientInventoryOperationHandler_ReceiveStatusFromServer : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ClientInventoryOperationHandler), nameof(ClientInventoryOperationHandler.ReceiveStatusFromServer));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ClientInventoryOperationHandler),
+            nameof(ClientInventoryOperationHandler.ReceiveStatusFromServer)
+        );
 
     [PatchPostfix]
-    public static void Postfix(ClientInventoryOperationHandler __instance, ServerOperationStatus serverStatus)
+    public static void Postfix(
+        ClientInventoryOperationHandler __instance,
+        ServerOperationStatus serverStatus
+    )
     {
-        if (serverStatus.Status == EOperationStatus.Failed && serverStatus.Error.StartsWith("Could not find item"))
+        if (
+            serverStatus.Status == EOperationStatus.Failed
+            && serverStatus.Error.StartsWith("Could not find item")
+        )
         {
-            Singleton<EquipmentResyncPacketWarden>.Instance.Send(__instance.InventoryController.FikaPlayer); // maybe this works?
+            Singleton<EquipmentResyncPacketWarden>.Instance.Send(
+                __instance.InventoryController.FikaPlayer
+            ); // maybe this works?
         }
     }
 }

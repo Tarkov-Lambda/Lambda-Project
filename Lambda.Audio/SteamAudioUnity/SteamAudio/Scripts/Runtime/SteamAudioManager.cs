@@ -38,7 +38,7 @@ namespace SteamAudio
         GeneratingProbes,
         EditingProbes,
         Baking,
-        Playing
+        Playing,
     }
 
     /**
@@ -87,17 +87,15 @@ namespace SteamAudio
 
         public static SteamAudioManager Singleton
         {
-            get
-            {
-                return sSingleton;
-            }
+            get { return sSingleton; }
         }
 
         public static Context Context
         {
             get
             {
-                if (sSingleton == null) return null;
+                if (sSingleton == null)
+                    return null;
                 return sSingleton.mContext;
             }
         }
@@ -106,48 +104,38 @@ namespace SteamAudio
         {
             get
             {
-                if (sSingleton == null || sSingleton.mHRTFs == null) return null;
+                if (sSingleton == null || sSingleton.mHRTFs == null)
+                    return null;
                 return sSingleton.mHRTFs[sSingleton.currentHRTF];
             }
         }
 
         public static IntPtr EmbreeDevice
         {
-            get
-            {
-                return sSingleton.mEmbreeDevice.Get();
-            }
+            get { return sSingleton.mEmbreeDevice.Get(); }
         }
 
         public static IntPtr OpenCLDevice
         {
-            get
-            {
-                return sSingleton.mOpenCLDevice.Get();
-            }
+            get { return sSingleton.mOpenCLDevice.Get(); }
         }
 
         public static IntPtr RadeonRaysDevice
         {
-            get
-            {
-                return sSingleton.mRadeonRaysDevice.Get();
-            }
+            get { return sSingleton.mRadeonRaysDevice.Get(); }
         }
 
         public static IntPtr TrueAudioNextDevice
         {
-            get
-            {
-                return sSingleton.mTrueAudioNextDevice.Get();
-            }
+            get { return sSingleton.mTrueAudioNextDevice.Get(); }
         }
 
         public static Scene CurrentScene
         {
             get
             {
-                if (sSingleton == null) return null;
+                if (sSingleton == null)
+                    return null;
                 // Lazy-create a default scene if SceneManager.sceneLoaded hasn't fired yet
                 // (e.g. when objects from an asset bundle wake up before the main scene callback).
                 if (sSingleton.mCurrentScene == null && sSingleton.mContext != null)
@@ -162,7 +150,8 @@ namespace SteamAudio
         {
             get
             {
-                if (sSingleton == null) return null;
+                if (sSingleton == null)
+                    return null;
                 return sSingleton.mSimulator;
             }
         }
@@ -171,7 +160,8 @@ namespace SteamAudio
         {
             get
             {
-                if (sSingleton == null) return default;
+                if (sSingleton == null)
+                    return default;
                 return sSingleton.mAudioSettings;
             }
         }
@@ -180,11 +170,13 @@ namespace SteamAudio
         // This prevents NullReferenceExceptions in Listener/Source components that unconditionally call
         // GetAudioEngineState().SomeMethod() without null-checking the return value.
         private sealed class NullAudioEngineState : AudioEngineState { }
+
         private static readonly AudioEngineState sNullAudioEngineState = new NullAudioEngineState();
 
         public static AudioEngineState GetAudioEngineState()
         {
-            if (sSingleton == null) return sNullAudioEngineState;
+            if (sSingleton == null)
+                return sNullAudioEngineState;
             return sSingleton.mAudioEngineState ?? sNullAudioEngineState;
         }
 
@@ -203,12 +195,20 @@ namespace SteamAudio
 
         public static SceneType GetSceneType()
         {
-            if (SteamAudioSettings.Singleton == null) return SceneType.Default;
+            if (SteamAudioSettings.Singleton == null)
+                return SceneType.Default;
             var sceneType = SteamAudioSettings.Singleton.sceneType;
 
-            if (sSingleton != null &&
-                ((sceneType == SceneType.Embree && sSingleton.mEmbreeInitFailed) ||
-                (sceneType == SceneType.RadeonRays && (sSingleton.mOpenCLInitFailed || sSingleton.mRadeonRaysInitFailed))))
+            if (
+                sSingleton != null
+                && (
+                    (sceneType == SceneType.Embree && sSingleton.mEmbreeInitFailed)
+                    || (
+                        sceneType == SceneType.RadeonRays
+                        && (sSingleton.mOpenCLInitFailed || sSingleton.mRadeonRaysInitFailed)
+                    )
+                )
+            )
             {
                 sceneType = SceneType.Default;
             }
@@ -220,7 +220,12 @@ namespace SteamAudio
         {
             var reflectionEffectType = SteamAudioSettings.Singleton.reflectionEffectType;
 
-            if ((reflectionEffectType == ReflectionEffectType.TrueAudioNext && (sSingleton.mOpenCLInitFailed || sSingleton.mTrueAudioNextInitFailed)))
+            if (
+                (
+                    reflectionEffectType == ReflectionEffectType.TrueAudioNext
+                    && (sSingleton.mOpenCLInitFailed || sSingleton.mTrueAudioNextInitFailed)
+                )
+            )
             {
                 reflectionEffectType = ReflectionEffectType.Convolution;
             }
@@ -237,12 +242,17 @@ namespace SteamAudio
             PerspectiveCorrection correction = default;
             if (mainCamera != null && mainCamera.aspect > .0f)
             {
-                correction.enabled = SteamAudioSettings.Singleton.perspectiveCorrection ? Bool.True : Bool.False;
-                correction.xfactor = 1.0f * SteamAudioSettings.Singleton.perspectiveCorrectionFactor;
+                correction.enabled = SteamAudioSettings.Singleton.perspectiveCorrection
+                    ? Bool.True
+                    : Bool.False;
+                correction.xfactor =
+                    1.0f * SteamAudioSettings.Singleton.perspectiveCorrectionFactor;
                 correction.yfactor = correction.xfactor / mainCamera.aspect;
 
                 // Camera space matches OpenGL convention. No need to transform matrix to ConvertTransform.
-                correction.transform = Common.TransformMatrix(mainCamera.projectionMatrix * mainCamera.worldToCameraMatrix);
+                correction.transform = Common.TransformMatrix(
+                    mainCamera.projectionMatrix * mainCamera.worldToCameraMatrix
+                );
             }
 
             return correction;
@@ -266,21 +276,39 @@ namespace SteamAudio
                 simulationSettings.numDiffuseSamples = 1024;
                 simulationSettings.maxDuration = SteamAudioSettings.Singleton.bakingDuration;
                 simulationSettings.maxOrder = SteamAudioSettings.Singleton.bakingAmbisonicOrder;
-                simulationSettings.numThreads = sSingleton.NumThreadsForCPUCorePercentage(SteamAudioSettings.Singleton.bakingCPUCoresPercentage);
+                simulationSettings.numThreads = sSingleton.NumThreadsForCPUCorePercentage(
+                    SteamAudioSettings.Singleton.bakingCPUCoresPercentage
+                );
                 simulationSettings.rayBatchSize = 16;
             }
             else
             {
-                simulationSettings.flags = SimulationFlags.Direct | SimulationFlags.Reflections | SimulationFlags.Pathing;
-                simulationSettings.maxNumOcclusionSamples = SteamAudioSettings.Singleton.maxOcclusionSamples;
+                simulationSettings.flags =
+                    SimulationFlags.Direct | SimulationFlags.Reflections | SimulationFlags.Pathing;
+                simulationSettings.maxNumOcclusionSamples = SteamAudioSettings
+                    .Singleton
+                    .maxOcclusionSamples;
                 simulationSettings.maxNumRays = SteamAudioSettings.Singleton.realTimeRays;
                 simulationSettings.numDiffuseSamples = 1024;
-                simulationSettings.maxDuration = (simulationSettings.reflectionType == ReflectionEffectType.TrueAudioNext) ? SteamAudioSettings.Singleton.TANDuration : SteamAudioSettings.Singleton.realTimeDuration;
-                simulationSettings.maxOrder = (simulationSettings.reflectionType == ReflectionEffectType.TrueAudioNext) ? SteamAudioSettings.Singleton.TANAmbisonicOrder : SteamAudioSettings.Singleton.realTimeAmbisonicOrder;
-                simulationSettings.maxNumSources = (simulationSettings.reflectionType == ReflectionEffectType.TrueAudioNext) ? SteamAudioSettings.Singleton.TANMaxSources : SteamAudioSettings.Singleton.realTimeMaxSources;
-                simulationSettings.numThreads = sSingleton.NumThreadsForCPUCorePercentage(SteamAudioSettings.Singleton.realTimeCPUCoresPercentage);
+                simulationSettings.maxDuration =
+                    (simulationSettings.reflectionType == ReflectionEffectType.TrueAudioNext)
+                        ? SteamAudioSettings.Singleton.TANDuration
+                        : SteamAudioSettings.Singleton.realTimeDuration;
+                simulationSettings.maxOrder =
+                    (simulationSettings.reflectionType == ReflectionEffectType.TrueAudioNext)
+                        ? SteamAudioSettings.Singleton.TANAmbisonicOrder
+                        : SteamAudioSettings.Singleton.realTimeAmbisonicOrder;
+                simulationSettings.maxNumSources =
+                    (simulationSettings.reflectionType == ReflectionEffectType.TrueAudioNext)
+                        ? SteamAudioSettings.Singleton.TANMaxSources
+                        : SteamAudioSettings.Singleton.realTimeMaxSources;
+                simulationSettings.numThreads = sSingleton.NumThreadsForCPUCorePercentage(
+                    SteamAudioSettings.Singleton.realTimeCPUCoresPercentage
+                );
                 simulationSettings.rayBatchSize = 16;
-                simulationSettings.numVisSamples = SteamAudioSettings.Singleton.bakingVisibilitySamples;
+                simulationSettings.numVisSamples = SteamAudioSettings
+                    .Singleton
+                    .bakingVisibilitySamples;
                 simulationSettings.samplingRate = AudioSettings.samplingRate;
                 simulationSettings.frameSize = AudioSettings.frameSize;
             }
@@ -315,7 +343,9 @@ namespace SteamAudio
 
             if (reason == ManagerInitReason.Playing)
             {
-                mAudioSettings = AudioEngineStateHelpers.Create(SteamAudioSettings.Singleton.audioEngine).GetAudioSettings();
+                mAudioSettings = AudioEngineStateHelpers
+                    .Create(SteamAudioSettings.Singleton.audioEngine)
+                    .GetAudioSettings();
 
                 mHRTFs = new HRTF[SteamAudioSettings.Singleton.SOFAFiles.Length + 1];
 
@@ -329,17 +359,27 @@ namespace SteamAudio
                         hrtfNames[i + 1] = null;
                 }
 
-                mHRTFs[0] = new HRTF(mContext, mAudioSettings, null, null, SteamAudioSettings.Singleton.hrtfVolumeGainDB, SteamAudioSettings.Singleton.hrtfNormalizationType);
+                mHRTFs[0] = new HRTF(
+                    mContext,
+                    mAudioSettings,
+                    null,
+                    null,
+                    SteamAudioSettings.Singleton.hrtfVolumeGainDB,
+                    SteamAudioSettings.Singleton.hrtfNormalizationType
+                );
 
                 for (var i = 0; i < SteamAudioSettings.Singleton.SOFAFiles.Length; ++i)
                 {
                     if (SteamAudioSettings.Singleton.SOFAFiles[i])
                     {
-                        mHRTFs[i + 1] = new HRTF(mContext, mAudioSettings,
+                        mHRTFs[i + 1] = new HRTF(
+                            mContext,
+                            mAudioSettings,
                             SteamAudioSettings.Singleton.SOFAFiles[i].sofaName,
                             SteamAudioSettings.Singleton.SOFAFiles[i].data,
                             SteamAudioSettings.Singleton.SOFAFiles[i].volume,
-                            SteamAudioSettings.Singleton.SOFAFiles[i].normType);
+                            SteamAudioSettings.Singleton.SOFAFiles[i].normType
+                        );
                     }
                     else
                     {
@@ -364,23 +404,34 @@ namespace SteamAudio
                         mEmbreeInitFailed = true;
 
                         Debug.LogException(e);
-                        Debug.LogWarning("Embree initialization failed, reverting to Phonon for ray tracing.");
+                        Debug.LogWarning(
+                            "Embree initialization failed, reverting to Phonon for ray tracing."
+                        );
                     }
                 }
 
-                var requiresTAN = (SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext);
+                var requiresTAN = (
+                    SteamAudioSettings.Singleton.reflectionEffectType
+                    == ReflectionEffectType.TrueAudioNext
+                );
 
-                if (SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays ||
-                    SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext)
+                if (
+                    SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays
+                    || SteamAudioSettings.Singleton.reflectionEffectType
+                        == ReflectionEffectType.TrueAudioNext
+                )
                 {
                     try
                     {
                         mOpenCLInitFailed = false;
 
-                        mOpenCLDevice = new OpenCLDevice(mContext, SteamAudioSettings.Singleton.deviceType,
+                        mOpenCLDevice = new OpenCLDevice(
+                            mContext,
+                            SteamAudioSettings.Singleton.deviceType,
                             SteamAudioSettings.Singleton.maxReservedComputeUnits,
                             SteamAudioSettings.Singleton.fractionComputeUnitsForIRUpdate,
-                            requiresTAN);
+                            requiresTAN
+                        );
                     }
                     catch (Exception e)
                     {
@@ -391,15 +442,21 @@ namespace SteamAudio
                         var warningMessage = "OpenCL initialization failed.";
                         if (SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays)
                             warningMessage += " Reverting to Phonon for ray tracing.";
-                        if (SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext)
-                            warningMessage += " Reverting to Convolution for reflection effect processing.";
+                        if (
+                            SteamAudioSettings.Singleton.reflectionEffectType
+                            == ReflectionEffectType.TrueAudioNext
+                        )
+                            warningMessage +=
+                                " Reverting to Convolution for reflection effect processing.";
 
                         Debug.LogWarning(warningMessage);
                     }
                 }
 
-                if (SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays &&
-                    !mOpenCLInitFailed)
+                if (
+                    SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays
+                    && !mOpenCLInitFailed
+                )
                 {
                     try
                     {
@@ -412,32 +469,47 @@ namespace SteamAudio
                         mRadeonRaysInitFailed = true;
 
                         Debug.LogException(e);
-                        Debug.LogWarning("Radeon Rays initialization failed, reverting to Phonon for ray tracing.");
+                        Debug.LogWarning(
+                            "Radeon Rays initialization failed, reverting to Phonon for ray tracing."
+                        );
                     }
                 }
 
-                if (SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext &&
-                    reason == ManagerInitReason.Playing &&
-                    !mOpenCLInitFailed)
+                if (
+                    SteamAudioSettings.Singleton.reflectionEffectType
+                        == ReflectionEffectType.TrueAudioNext
+                    && reason == ManagerInitReason.Playing
+                    && !mOpenCLInitFailed
+                )
                 {
                     try
                     {
                         mTrueAudioNextInitFailed = false;
 
                         var frameSize = AudioSettings.frameSize;
-                        var irSize = Mathf.CeilToInt(SteamAudioSettings.Singleton.realTimeDuration * AudioSettings.samplingRate);
+                        var irSize = Mathf.CeilToInt(
+                            SteamAudioSettings.Singleton.realTimeDuration
+                                * AudioSettings.samplingRate
+                        );
                         var order = SteamAudioSettings.Singleton.realTimeAmbisonicOrder;
                         var maxSources = SteamAudioSettings.Singleton.TANMaxSources;
 
-                        mTrueAudioNextDevice = new TrueAudioNextDevice(mOpenCLDevice, frameSize, irSize,
-                            order, maxSources);
+                        mTrueAudioNextDevice = new TrueAudioNextDevice(
+                            mOpenCLDevice,
+                            frameSize,
+                            irSize,
+                            order,
+                            maxSources
+                        );
                     }
                     catch (Exception e)
                     {
                         mTrueAudioNextInitFailed = true;
 
                         Debug.LogException(e);
-                        Debug.LogWarning("TrueAudio Next initialization failed, reverting to Convolution for reflection effect processing.");
+                        Debug.LogWarning(
+                            "TrueAudio Next initialization failed, reverting to Convolution for reflection effect processing."
+                        );
                     }
                 }
             }
@@ -454,16 +526,27 @@ namespace SteamAudio
                 mSimulationThread = new Thread(RunSimulation);
                 mSimulationThread.Start();
 
-                mAudioEngineState = AudioEngineState.Create(SteamAudioSettings.Singleton.audioEngine);
+                mAudioEngineState = AudioEngineState.Create(
+                    SteamAudioSettings.Singleton.audioEngine
+                );
                 if (mAudioEngineState != null)
                 {
-                    mAudioEngineState.Initialize(mContext.Get(), mHRTFs[0].Get(), simulationSettings, perspectiveCorrection);
+                    mAudioEngineState.Initialize(
+                        mContext.Get(),
+                        mHRTFs[0].Get(),
+                        simulationSettings,
+                        perspectiveCorrection
+                    );
                 }
 
 #if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
                 // If the developer has disabled scene reload, SceneManager.sceneLoaded won't fire during initial load
-                if (EditorSettings.enterPlayModeOptionsEnabled &&
-                    EditorSettings.enterPlayModeOptions.HasFlag(EnterPlayModeOptions.DisableSceneReload))
+                if (
+                    EditorSettings.enterPlayModeOptionsEnabled
+                    && EditorSettings.enterPlayModeOptions.HasFlag(
+                        EnterPlayModeOptions.DisableSceneReload
+                    )
+                )
                 {
                     OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
                 }
@@ -508,7 +591,11 @@ namespace SteamAudio
          */
         public static void NotifyAudioListenerChanged()
         {
-            NotifyAudioListenerChangedTo(AudioEngineStateHelpers.Create(SteamAudioSettings.Singleton.audioEngine).GetListenerTransform());
+            NotifyAudioListenerChangedTo(
+                AudioEngineStateHelpers
+                    .Create(SteamAudioSettings.Singleton.audioEngine)
+                    .GetListenerTransform()
+            );
         }
 
         /** Notifies Steam Audio that the \c AudioListener has changed to a specific \c GameObject.
@@ -529,7 +616,8 @@ namespace SteamAudio
             sSingleton.mListener = listenerTransform;
             if (sSingleton.mListener)
             {
-                sSingleton.mListenerComponent = sSingleton.mListener.GetComponent<SteamAudioListener>();
+                sSingleton.mListenerComponent =
+                    sSingleton.mListener.GetComponent<SteamAudioListener>();
             }
         }
 
@@ -542,7 +630,8 @@ namespace SteamAudio
         // Call this function to request that changes to a scene be committed. Call only when changes have happened.
         public static void ScheduleCommitScene()
         {
-            if (sSingleton == null) return;
+            if (sSingleton == null)
+                return;
             sSingleton.mSceneCommitRequired = true;
         }
 
@@ -587,7 +676,9 @@ namespace SteamAudio
             sharedInputs.numBounces = SteamAudioSettings.Singleton.realTimeBounces;
             sharedInputs.duration = SteamAudioSettings.Singleton.realTimeDuration;
             sharedInputs.order = SteamAudioSettings.Singleton.realTimeAmbisonicOrder;
-            sharedInputs.irradianceMinDistance = SteamAudioSettings.Singleton.realTimeIrradianceMinDistance;
+            sharedInputs.irradianceMinDistance = SteamAudioSettings
+                .Singleton
+                .realTimeIrradianceMinDistance;
             sharedInputs.pathingVisualizationCallback = null;
             sharedInputs.pathingUserData = IntPtr.Zero;
 
@@ -616,7 +707,9 @@ namespace SteamAudio
             }
 
             mSimulationUpdateTimeElapsed += Time.deltaTime;
-            if (mSimulationUpdateTimeElapsed < SteamAudioSettings.Singleton.simulationUpdateInterval)
+            if (
+                mSimulationUpdateTimeElapsed < SteamAudioSettings.Singleton.simulationUpdateInterval
+            )
                 return;
 
             mSimulationUpdateTimeElapsed = 0.0f;
@@ -634,11 +727,16 @@ namespace SteamAudio
 
                     foreach (var listener in mListeners)
                     {
-                        listener.UpdateOutputs(SimulationFlags.Reflections | SimulationFlags.Pathing);
+                        listener.UpdateOutputs(
+                            SimulationFlags.Reflections | SimulationFlags.Pathing
+                        );
                     }
                 }
 
-                mSimulator.SetSharedInputs(SimulationFlags.Reflections | SimulationFlags.Pathing, sharedInputs);
+                mSimulator.SetSharedInputs(
+                    SimulationFlags.Reflections | SimulationFlags.Pathing,
+                    sharedInputs
+                );
 
                 foreach (var source in mSources)
                 {
@@ -788,8 +886,10 @@ namespace SteamAudio
 
             UnityEngine.AudioSettings.Reset(UnityEngine.AudioSettings.GetConfiguration());
 
-            if ((sSingleton.mEmbreeDevice == null || sSingleton.mEmbreeDevice.Get() == IntPtr.Zero)
-                && SteamAudioSettings.Singleton.sceneType == SceneType.Embree)
+            if (
+                (sSingleton.mEmbreeDevice == null || sSingleton.mEmbreeDevice.Get() == IntPtr.Zero)
+                && SteamAudioSettings.Singleton.sceneType == SceneType.Embree
+            )
             {
                 try
                 {
@@ -802,24 +902,37 @@ namespace SteamAudio
                     sSingleton.mEmbreeInitFailed = true;
 
                     Debug.LogException(e);
-                    Debug.LogWarning("Embree initialization failed, reverting to Phonon for ray tracing.");
+                    Debug.LogWarning(
+                        "Embree initialization failed, reverting to Phonon for ray tracing."
+                    );
                 }
             }
 
-            var requiresTAN = (SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext);
+            var requiresTAN = (
+                SteamAudioSettings.Singleton.reflectionEffectType
+                == ReflectionEffectType.TrueAudioNext
+            );
 
-            if ((sSingleton.mOpenCLDevice == null || sSingleton.mOpenCLDevice.Get() == IntPtr.Zero) &&
-                (SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays ||
-                SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext))
+            if (
+                (sSingleton.mOpenCLDevice == null || sSingleton.mOpenCLDevice.Get() == IntPtr.Zero)
+                && (
+                    SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays
+                    || SteamAudioSettings.Singleton.reflectionEffectType
+                        == ReflectionEffectType.TrueAudioNext
+                )
+            )
             {
                 try
                 {
                     sSingleton.mOpenCLInitFailed = false;
 
-                    sSingleton.mOpenCLDevice = new OpenCLDevice(sSingleton.mContext, SteamAudioSettings.Singleton.deviceType,
+                    sSingleton.mOpenCLDevice = new OpenCLDevice(
+                        sSingleton.mContext,
+                        SteamAudioSettings.Singleton.deviceType,
                         SteamAudioSettings.Singleton.maxReservedComputeUnits,
                         SteamAudioSettings.Singleton.fractionComputeUnitsForIRUpdate,
-                        requiresTAN);
+                        requiresTAN
+                    );
                 }
                 catch (Exception e)
                 {
@@ -830,16 +943,25 @@ namespace SteamAudio
                     var warningMessage = "OpenCL initialization failed.";
                     if (SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays)
                         warningMessage += " Reverting to Phonon for ray tracing.";
-                    if (SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext)
-                        warningMessage += " Reverting to Convolution for reflection effect processing.";
+                    if (
+                        SteamAudioSettings.Singleton.reflectionEffectType
+                        == ReflectionEffectType.TrueAudioNext
+                    )
+                        warningMessage +=
+                            " Reverting to Convolution for reflection effect processing.";
 
                     Debug.LogWarning(warningMessage);
                 }
             }
 
-            if ((sSingleton.mRadeonRaysDevice == null || sSingleton.mRadeonRaysDevice.Get() == IntPtr.Zero) &&
-                SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays &&
-                !sSingleton.mOpenCLInitFailed)
+            if (
+                (
+                    sSingleton.mRadeonRaysDevice == null
+                    || sSingleton.mRadeonRaysDevice.Get() == IntPtr.Zero
+                )
+                && SteamAudioSettings.Singleton.sceneType == SceneType.RadeonRays
+                && !sSingleton.mOpenCLInitFailed
+            )
             {
                 try
                 {
@@ -852,32 +974,49 @@ namespace SteamAudio
                     sSingleton.mRadeonRaysInitFailed = true;
 
                     Debug.LogException(e);
-                    Debug.LogWarning("Radeon Rays initialization failed, reverting to Phonon for ray tracing.");
+                    Debug.LogWarning(
+                        "Radeon Rays initialization failed, reverting to Phonon for ray tracing."
+                    );
                 }
             }
 
-            if ((sSingleton.mTrueAudioNextDevice == null || sSingleton.mTrueAudioNextDevice.Get() == IntPtr.Zero) &&
-                SteamAudioSettings.Singleton.reflectionEffectType == ReflectionEffectType.TrueAudioNext &&
-                !sSingleton.mOpenCLInitFailed)
+            if (
+                (
+                    sSingleton.mTrueAudioNextDevice == null
+                    || sSingleton.mTrueAudioNextDevice.Get() == IntPtr.Zero
+                )
+                && SteamAudioSettings.Singleton.reflectionEffectType
+                    == ReflectionEffectType.TrueAudioNext
+                && !sSingleton.mOpenCLInitFailed
+            )
             {
                 try
                 {
                     sSingleton.mTrueAudioNextInitFailed = false;
 
                     var frameSize = AudioSettings.frameSize;
-                    var irSize = Mathf.CeilToInt(SteamAudioSettings.Singleton.realTimeDuration * AudioSettings.samplingRate);
+                    var irSize = Mathf.CeilToInt(
+                        SteamAudioSettings.Singleton.realTimeDuration * AudioSettings.samplingRate
+                    );
                     var order = SteamAudioSettings.Singleton.realTimeAmbisonicOrder;
                     var maxSources = SteamAudioSettings.Singleton.TANMaxSources;
 
-                    sSingleton.mTrueAudioNextDevice = new TrueAudioNextDevice(sSingleton.mOpenCLDevice, frameSize, irSize,
-                        order, maxSources);
+                    sSingleton.mTrueAudioNextDevice = new TrueAudioNextDevice(
+                        sSingleton.mOpenCLDevice,
+                        frameSize,
+                        irSize,
+                        order,
+                        maxSources
+                    );
                 }
                 catch (Exception e)
                 {
                     sSingleton.mTrueAudioNextInitFailed = true;
 
                     Debug.LogException(e);
-                    Debug.LogWarning("TrueAudio Next initialization failed, reverting to Convolution for reflection effect processing.");
+                    Debug.LogWarning(
+                        "TrueAudio Next initialization failed, reverting to Convolution for reflection effect processing."
+                    );
                 }
             }
 
@@ -890,10 +1029,17 @@ namespace SteamAudio
             sSingleton.mSimulationThread = new Thread(sSingleton.RunSimulation);
             sSingleton.mSimulationThread.Start();
 
-            sSingleton.mAudioEngineState = AudioEngineState.Create(SteamAudioSettings.Singleton.audioEngine);
+            sSingleton.mAudioEngineState = AudioEngineState.Create(
+                SteamAudioSettings.Singleton.audioEngine
+            );
             if (sSingleton.mAudioEngineState != null)
             {
-                sSingleton.mAudioEngineState.Initialize(sSingleton.mContext.Get(), sSingleton.mHRTFs[0].Get(), simulationSettings, persPectiveCorrection);
+                sSingleton.mAudioEngineState.Initialize(
+                    sSingleton.mContext.Get(),
+                    sSingleton.mHRTFs[0].Get(),
+                    simulationSettings,
+                    persPectiveCorrection
+                );
 
                 var listeners = new SteamAudioListener[sSingleton.mListeners.Count];
                 sSingleton.mListeners.CopyTo(listeners);
@@ -908,25 +1054,29 @@ namespace SteamAudio
 
         public static void AddSource(SteamAudioSource source)
         {
-            if (sSingleton == null) return;
+            if (sSingleton == null)
+                return;
             sSingleton.mSources.Add(source);
         }
 
         public static void RemoveSource(SteamAudioSource source)
         {
-            if (sSingleton == null) return;
+            if (sSingleton == null)
+                return;
             sSingleton.mSources.Remove(source);
         }
 
         public static void AddListener(SteamAudioListener listener)
         {
-            if (sSingleton == null) return;
+            if (sSingleton == null)
+                return;
             sSingleton.mListeners.Add(listener);
         }
 
         public static void RemoveListener(SteamAudioListener listener)
         {
-            if (sSingleton == null) return;
+            if (sSingleton == null)
+                return;
             sSingleton.mListeners.Remove(listener);
         }
 
@@ -955,11 +1105,17 @@ namespace SteamAudio
             {
                 var scene = SceneManager.GetSceneAt(i);
 
-                EditorUtility.DisplayProgressBar("Steam Audio", string.Format("Exporting scene: {0}", scene.name), (float)i / (float)SceneManager.sceneCount);
+                EditorUtility.DisplayProgressBar(
+                    "Steam Audio",
+                    string.Format("Exporting scene: {0}", scene.name),
+                    (float)i / (float)SceneManager.sceneCount
+                );
 
                 if (!scene.isLoaded)
                 {
-                    Debug.LogWarning(string.Format("Scene {0} is not loaded in the hierarchy.", scene.name));
+                    Debug.LogWarning(
+                        string.Format("Scene {0} is not loaded in the hierarchy.", scene.name)
+                    );
                     continue;
                 }
 
@@ -977,12 +1133,19 @@ namespace SteamAudio
             {
                 var scene = SceneManager.GetSceneByBuildIndex(i);
 
-                EditorUtility.DisplayProgressBar("Steam Audio", string.Format("Exporting scene: {0}", scene.name), (float)i / (float)SceneManager.sceneCountInBuildSettings);
+                EditorUtility.DisplayProgressBar(
+                    "Steam Audio",
+                    string.Format("Exporting scene: {0}", scene.name),
+                    (float)i / (float)SceneManager.sceneCountInBuildSettings
+                );
 
                 var shouldClose = false;
                 if (!scene.isLoaded)
                 {
-                    scene = EditorSceneManager.OpenScene(SceneUtility.GetScenePathByBuildIndex(i), OpenSceneMode.Additive);
+                    scene = EditorSceneManager.OpenScene(
+                        SceneUtility.GetScenePathByBuildIndex(i),
+                        OpenSceneMode.Additive
+                    );
                     shouldClose = true;
                 }
 
@@ -1017,11 +1180,17 @@ namespace SteamAudio
             {
                 var scene = SceneManager.GetSceneAt(i);
 
-                EditorUtility.DisplayProgressBar("Steam Audio", string.Format("Exporting dynamic objects in scene: {0}", scene.name), (float)i / (float)SceneManager.sceneCount);
+                EditorUtility.DisplayProgressBar(
+                    "Steam Audio",
+                    string.Format("Exporting dynamic objects in scene: {0}", scene.name),
+                    (float)i / (float)SceneManager.sceneCount
+                );
 
                 if (!scene.isLoaded)
                 {
-                    Debug.LogWarning(string.Format("Scene {0} is not loaded in the hierarchy.", scene.name));
+                    Debug.LogWarning(
+                        string.Format("Scene {0} is not loaded in the hierarchy.", scene.name)
+                    );
                     continue;
                 }
 
@@ -1039,12 +1208,19 @@ namespace SteamAudio
             {
                 var scene = SceneManager.GetSceneByBuildIndex(i);
 
-                EditorUtility.DisplayProgressBar("Steam Audio", string.Format("Exporting dynamic objects in scene: {0}", scene.name), (float)i / (float)SceneManager.sceneCountInBuildSettings);
+                EditorUtility.DisplayProgressBar(
+                    "Steam Audio",
+                    string.Format("Exporting dynamic objects in scene: {0}", scene.name),
+                    (float)i / (float)SceneManager.sceneCountInBuildSettings
+                );
 
                 var shouldClose = false;
                 if (!scene.isLoaded)
                 {
-                    scene = EditorSceneManager.OpenScene(SceneUtility.GetScenePathByBuildIndex(i), OpenSceneMode.Additive);
+                    scene = EditorSceneManager.OpenScene(
+                        SceneUtility.GetScenePathByBuildIndex(i),
+                        OpenSceneMode.Additive
+                    );
                     shouldClose = true;
                 }
 
@@ -1073,7 +1249,11 @@ namespace SteamAudio
             {
                 var scenePath = AssetDatabase.GUIDToAssetPath(sceneGUID);
 
-                EditorUtility.DisplayProgressBar("Steam Audio", string.Format("Exporting dynamic objects in scene: {0}", scenePath), (float)index / (float)numItems);
+                EditorUtility.DisplayProgressBar(
+                    "Steam Audio",
+                    string.Format("Exporting dynamic objects in scene: {0}", scenePath),
+                    (float)index / (float)numItems
+                );
 
                 var activeScene = EditorSceneManager.GetActiveScene();
                 var isLoadedScene = (scenePath == activeScene.path);
@@ -1107,7 +1287,11 @@ namespace SteamAudio
             {
                 var prefabPath = AssetDatabase.GUIDToAssetPath(prefabGUID);
 
-                EditorUtility.DisplayProgressBar("Steam Audio", string.Format("Exporting dynamic objects in prefab: {0}", prefabPath), (float)index / (float)numItems);
+                EditorUtility.DisplayProgressBar(
+                    "Steam Audio",
+                    string.Format("Exporting dynamic objects in prefab: {0}", prefabPath),
+                    (float)index / (float)numItems
+                );
 
                 var prefab = AssetDatabase.LoadMainAssetAtPath(prefabPath) as GameObject;
                 var dynamicObjects = prefab.GetComponentsInChildren<SteamAudioDynamicObject>();
@@ -1128,10 +1312,12 @@ namespace SteamAudio
             var FMODUnity_Settings = Type.GetType("FMODUnity.Settings" + assemblySuffix);
             if (FMODUnity_Settings == null)
             {
-                EditorUtility.DisplayDialog("Steam Audio",
-                    "The FMOD Studio Unity integration does not seem to be installed to your Unity project. Install " +
-                    "it and try again.",
-                    "OK");
+                EditorUtility.DisplayDialog(
+                    "Steam Audio",
+                    "The FMOD Studio Unity integration does not seem to be installed to your Unity project. Install "
+                        + "it and try again.",
+                    "OK"
+                );
                 return;
             }
 
@@ -1145,9 +1331,11 @@ namespace SteamAudio
             var fmodVersionPatch = (fmodVersion & 0x000000ff);
             if (fmodVersionMajor < 2)
             {
-                EditorUtility.DisplayDialog("Steam Audio",
+                EditorUtility.DisplayDialog(
+                    "Steam Audio",
                     "Steam Audio requires FMOD Studio 2.0 or later.",
-                    "OK");
+                    "OK"
+                );
                 return;
             }
 
@@ -1167,14 +1355,38 @@ namespace SteamAudio
                     moveRequired = true;
 
                     var moves = new Dictionary<string, string>();
-                    moves.Add("Assets/Plugins/FMOD/lib/win/x86/phonon_fmod.dll", "Assets/Plugins/FMOD/platforms/win/lib/x86/phonon_fmod.dll");
-                    moves.Add("Assets/Plugins/FMOD/lib/win/x86_64/phonon_fmod.dll", "Assets/Plugins/FMOD/platforms/win/lib/x86_64/phonon_fmod.dll");
-                    moves.Add("Assets/Plugins/FMOD/lib/linux/x86/libphonon_fmod.so", "Assets/Plugins/FMOD/platforms/linux/lib/x86/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/lib/linux/x86_64/libphonon_fmod.so", "Assets/Plugins/FMOD/platforms/linux/lib/x86_64/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/lib/mac/phonon_fmod.bundle", "Assets/Plugins/FMOD/platforms/mac/lib/phonon_fmod.bundle");
-                    moves.Add("Assets/Plugins/FMOD/lib/android/armeabi-v7a/libphonon_fmod.so", "Assets/Plugins/FMOD/platforms/android/lib/armeabi-v7a/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/lib/android/arm64-v8a/libphonon_fmod.so", "Assets/Plugins/FMOD/platforms/android/lib/arm64-v8a/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/lib/android/x86/libphonon_fmod.so", "Assets/Plugins/FMOD/platforms/android/lib/x86/libphonon_fmod.so");
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/win/x86/phonon_fmod.dll",
+                        "Assets/Plugins/FMOD/platforms/win/lib/x86/phonon_fmod.dll"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/win/x86_64/phonon_fmod.dll",
+                        "Assets/Plugins/FMOD/platforms/win/lib/x86_64/phonon_fmod.dll"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/linux/x86/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/platforms/linux/lib/x86/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/linux/x86_64/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/platforms/linux/lib/x86_64/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/mac/phonon_fmod.bundle",
+                        "Assets/Plugins/FMOD/platforms/mac/lib/phonon_fmod.bundle"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/android/armeabi-v7a/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/platforms/android/lib/armeabi-v7a/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/android/arm64-v8a/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/platforms/android/lib/arm64-v8a/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/lib/android/x86/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/platforms/android/lib/x86/libphonon_fmod.so"
+                    );
 
                     moveSucceeded = MoveAssets(moves);
                 }
@@ -1188,45 +1400,77 @@ namespace SteamAudio
                     moveRequired = true;
 
                     var moves = new Dictionary<string, string>();
-                    moves.Add("Assets/Plugins/FMOD/platforms/win/lib/x86/phonon_fmod.dll", "Assets/Plugins/FMOD/lib/win/x86/phonon_fmod.dll");
-                    moves.Add("Assets/Plugins/FMOD/platforms/win/lib/x86_64/phonon_fmod.dll", "Assets/Plugins/FMOD/lib/win/x86_64/phonon_fmod.dll");
-                    moves.Add("Assets/Plugins/FMOD/platforms/linux/lib/x86/libphonon_fmod.so", "Assets/Plugins/FMOD/lib/linux/x86/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/platforms/linux/lib/x86_64/libphonon_fmod.so", "Assets/Plugins/FMOD/lib/linux/x86_64/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/platforms/mac/lib/phonon_fmod.bundle", "Assets/Plugins/FMOD/lib/mac/phonon_fmod.bundle");
-                    moves.Add("Assets/Plugins/FMOD/platforms/android/lib/armeabi-v7a/libphonon_fmod.so", "Assets/Plugins/FMOD/lib/android/armeabi-v7a/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/platforms/android/lib/arm64-v8a/libphonon_fmod.so", "Assets/Plugins/FMOD/lib/android/arm64-v8a/libphonon_fmod.so");
-                    moves.Add("Assets/Plugins/FMOD/platforms/android/lib/x86/libphonon_fmod.so", "Assets/Plugins/FMOD/lib/android/x86/libphonon_fmod.so");
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/win/lib/x86/phonon_fmod.dll",
+                        "Assets/Plugins/FMOD/lib/win/x86/phonon_fmod.dll"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/win/lib/x86_64/phonon_fmod.dll",
+                        "Assets/Plugins/FMOD/lib/win/x86_64/phonon_fmod.dll"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/linux/lib/x86/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/lib/linux/x86/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/linux/lib/x86_64/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/lib/linux/x86_64/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/mac/lib/phonon_fmod.bundle",
+                        "Assets/Plugins/FMOD/lib/mac/phonon_fmod.bundle"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/android/lib/armeabi-v7a/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/lib/android/armeabi-v7a/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/android/lib/arm64-v8a/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/lib/android/arm64-v8a/libphonon_fmod.so"
+                    );
+                    moves.Add(
+                        "Assets/Plugins/FMOD/platforms/android/lib/x86/libphonon_fmod.so",
+                        "Assets/Plugins/FMOD/lib/android/x86/libphonon_fmod.so"
+                    );
 
                     moveSucceeded = MoveAssets(moves);
                 }
             }
             else
             {
-                EditorUtility.DisplayDialog("Steam Audio",
-                    "Unable to find Steam Audio FMOD Studio plugin files. Try reinstalling the Steam Audio Unity " +
-                    "integration.",
-                    "OK");
+                EditorUtility.DisplayDialog(
+                    "Steam Audio",
+                    "Unable to find Steam Audio FMOD Studio plugin files. Try reinstalling the Steam Audio Unity "
+                        + "integration.",
+                    "OK"
+                );
                 return;
             }
 
             if (!moveRequired)
             {
-                EditorUtility.DisplayDialog("Steam Audio",
+                EditorUtility.DisplayDialog(
+                    "Steam Audio",
                     "Steam Audio FMOD Studio plugin files are already in the correct place.",
-                    "OK");
+                    "OK"
+                );
             }
             else if (!moveSucceeded)
             {
-                EditorUtility.DisplayDialog("Steam Audio",
-                    "Failed to copy Steam Audio FMOD Studio plugin files to the correct place. See the console for " +
-                    "details.",
-                    "OK");
+                EditorUtility.DisplayDialog(
+                    "Steam Audio",
+                    "Failed to copy Steam Audio FMOD Studio plugin files to the correct place. See the console for "
+                        + "details.",
+                    "OK"
+                );
             }
             else
             {
-                EditorUtility.DisplayDialog("Steam Audio",
+                EditorUtility.DisplayDialog(
+                    "Steam Audio",
                     "Steam Audio FMOD Studio plugin files moved to the correct place.",
-                    "OK");
+                    "OK"
+                );
             }
         }
 
@@ -1238,8 +1482,11 @@ namespace SteamAudio
 
         private static bool AssetExists(string assetPath)
         {
-            return !string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(assetPath)) &&
-                (File.Exists(Environment.CurrentDirectory + "/" + assetPath) || Directory.Exists(Environment.CurrentDirectory + "/" + assetPath));
+            return !string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(assetPath))
+                && (
+                    File.Exists(Environment.CurrentDirectory + "/" + assetPath)
+                    || Directory.Exists(Environment.CurrentDirectory + "/" + assetPath)
+                );
         }
 
         private static bool EnsureAssetDirectoryExists(string directory)
@@ -1256,7 +1503,12 @@ namespace SteamAudio
             var result = AssetDatabase.CreateFolder(parent, baseName);
             if (string.IsNullOrEmpty(result))
             {
-                Debug.LogErrorFormat("Unable to create asset directory {0} in {1}: {2}", baseName, parent, result);
+                Debug.LogErrorFormat(
+                    "Unable to create asset directory {0} in {1}: {2}",
+                    baseName,
+                    parent,
+                    result
+                );
                 return false;
             }
 
@@ -1286,7 +1538,12 @@ namespace SteamAudio
 
                 if (!string.IsNullOrEmpty(result))
                 {
-                    Debug.LogErrorFormat("Unable to move {0} to {1}: {2}", source, destination, result);
+                    Debug.LogErrorFormat(
+                        "Unable to move {0} to {1}: {2}",
+                        source,
+                        destination,
+                        result
+                    );
                     return false;
                 }
 
@@ -1298,13 +1555,21 @@ namespace SteamAudio
 #endif
 
         // Exports a dynamic object.
-        public static void ExportDynamicObject(SteamAudioDynamicObject dynamicObject, bool exportOBJ)
+        public static void ExportDynamicObject(
+            SteamAudioDynamicObject dynamicObject,
+            bool exportOBJ
+        )
         {
             var objects = GetDynamicGameObjectsForExport(dynamicObject);
 
             if (objects == null || objects.Length == 0)
             {
-                Debug.LogError(string.Format("Dynamic object {0} has no Steam Audio geometry attached. Skipping export.", dynamicObject.name));
+                Debug.LogError(
+                    string.Format(
+                        "Dynamic object {0} has no Steam Audio geometry attached. Skipping export.",
+                        dynamicObject.name
+                    )
+                );
                 return;
             }
 
@@ -1330,21 +1595,29 @@ namespace SteamAudio
         }
 
         // Finds all dynamic objects in a scene.
-        static SteamAudioDynamicObject[] GetDynamicObjectsInScene(UnityEngine.SceneManagement.Scene scene)
+        static SteamAudioDynamicObject[] GetDynamicObjectsInScene(
+            UnityEngine.SceneManagement.Scene scene
+        )
         {
             var dynamicObjects = new List<SteamAudioDynamicObject>();
 
             var rootObjects = scene.GetRootGameObjects();
             foreach (var rootObject in rootObjects)
             {
-                dynamicObjects.AddRange(rootObject.GetComponentsInChildren<SteamAudioDynamicObject>());
+                dynamicObjects.AddRange(
+                    rootObject.GetComponentsInChildren<SteamAudioDynamicObject>()
+                );
             }
 
             return dynamicObjects.ToArray();
         }
 
         // Loads a static scene.
-        public static void LoadScene(UnityEngine.SceneManagement.Scene unityScene, Context context, bool additive)
+        public static void LoadScene(
+            UnityEngine.SceneManagement.Scene unityScene,
+            Context context,
+            bool additive
+        )
         {
             if (!additive)
             {
@@ -1355,7 +1628,11 @@ namespace SteamAudio
         // Loads a dynamic object as an instanced mesh. Multiple dynamic objects loaded from the same file
         // will share the underlying geometry and material data (using a reference count). The instanced meshes
         // allow each dynamic object to have its own transform.
-        public static InstancedMesh LoadDynamicObject(SteamAudioDynamicObject dynamicObject, Scene parentScene, Context context)
+        public static InstancedMesh LoadDynamicObject(
+            SteamAudioDynamicObject dynamicObject,
+            Scene parentScene,
+            Context context
+        )
         {
             InstancedMesh instancedMesh = null;
 
@@ -1401,11 +1678,17 @@ namespace SteamAudio
         }
 
         // Gather a list of all GameObjects to export, starting from a given root object.
-        public static List<GameObject> GetGameObjectsForExport(GameObject root, bool exportingStaticObjects = false)
+        public static List<GameObject> GetGameObjectsForExport(
+            GameObject root,
+            bool exportingStaticObjects = false
+        )
         {
             var gameObjects = new List<GameObject>();
 
-            if (exportingStaticObjects && root.GetComponentInParent<SteamAudioDynamicObject>() != null)
+            if (
+                exportingStaticObjects
+                && root.GetComponentInParent<SteamAudioDynamicObject>() != null
+            )
                 return new List<GameObject>();
 
             var geometries = root.GetComponentsInChildren<SteamAudioGeometry>();
@@ -1424,7 +1707,10 @@ namespace SteamAudio
                             if (IsActiveInHierarchy(mesh.gameObject.transform))
                             {
                                 // Skip if the mesh or any of its parents have the SteamAudioIgnore script or is on LowPollyCollider Layer
-                                if (mesh.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || mesh.gameObject.layer != 18)
+                                if (
+                                    mesh.gameObject.GetComponentInParent<SteamAudioIgnore>() == null
+                                    || mesh.gameObject.layer != 18
+                                )
                                 {
                                     gameObjects.Add(mesh.gameObject);
                                 }
@@ -1440,7 +1726,11 @@ namespace SteamAudio
                             if (IsActiveInHierarchy(terrain.gameObject.transform))
                             {
                                 // Skip if the mesh or any of its parents have the SteamAudioIgnore script or is on LowPollyCollider Layer
-                                if (terrain.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || terrain.gameObject.layer != 18)
+                                if (
+                                    terrain.gameObject.GetComponentInParent<SteamAudioIgnore>()
+                                        == null
+                                    || terrain.gameObject.layer != 18
+                                )
                                 {
                                     gameObjects.Add(terrain.gameObject);
                                 }
@@ -1452,11 +1742,16 @@ namespace SteamAudio
                 {
                     if (IsActiveInHierarchy(geometry.gameObject.transform))
                     {
-                        if (geometry.gameObject.GetComponent<MeshFilter>() != null ||
-                            geometry.gameObject.GetComponent<Terrain>() != null)
+                        if (
+                            geometry.gameObject.GetComponent<MeshFilter>() != null
+                            || geometry.gameObject.GetComponent<Terrain>() != null
+                        )
                         {
                             // --- ADDED CHECK ---
-                            if (geometry.gameObject.GetComponentInParent<SteamAudioIgnore>() == null || geometry.gameObject.layer == 18)
+                            if (
+                                geometry.gameObject.GetComponentInParent<SteamAudioIgnore>() == null
+                                || geometry.gameObject.layer == 18
+                            )
                             {
                                 gameObjects.Add(geometry.gameObject);
                             }
@@ -1492,7 +1787,10 @@ namespace SteamAudio
 
                 var w = terrain.terrainData.heightmapResolution;
                 var h = terrain.terrainData.heightmapResolution;
-                var s = Mathf.Min(w - 1, Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel)));
+                var s = Mathf.Min(
+                    w - 1,
+                    Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel))
+                );
 
                 if (s == 0)
                 {
@@ -1526,7 +1824,10 @@ namespace SteamAudio
 
                 var w = terrain.terrainData.heightmapResolution;
                 var h = terrain.terrainData.heightmapResolution;
-                var s = Mathf.Min(w - 1, Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel)));
+                var s = Mathf.Min(
+                    w - 1,
+                    Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel))
+                );
 
                 if (s == 0)
                 {
@@ -1545,7 +1846,13 @@ namespace SteamAudio
         }
 
         [MonoPInvokeCallback(typeof(ClosestHitCallback))]
-        public static void ClosestHit(ref Ray ray, float minDistance, float maxDistance, out Hit hit, IntPtr userData)
+        public static void ClosestHit(
+            ref Ray ray,
+            float minDistance,
+            float maxDistance,
+            out Hit hit,
+            IntPtr userData
+        )
         {
             var origin = Common.ConvertVector(ray.origin);
             var direction = Common.ConvertVector(ray.direction);
@@ -1558,23 +1865,42 @@ namespace SteamAudio
             hit.triangleIndex = 0;
             hit.materialIndex = 0;
 
-            var numHits = Physics.RaycastNonAlloc(origin, direction, sSingleton.mRayHits, maxDistance, layerMask);
+            var numHits = Physics.RaycastNonAlloc(
+                origin,
+                direction,
+                sSingleton.mRayHits,
+                maxDistance,
+                layerMask
+            );
             if (numHits > 0)
             {
                 hit.distance = sSingleton.mRayHits[0].distance;
                 hit.normal = Common.ConvertVector(sSingleton.mRayHits[0].normal);
-                hit.material = GetMaterialBufferForTransform(sSingleton.mRayHits[0].collider.transform);
+                hit.material = GetMaterialBufferForTransform(
+                    sSingleton.mRayHits[0].collider.transform
+                );
             }
             else
             {
                 hit.distance = Mathf.Infinity;
-                hit.normal = new Vector3 { x = 0.0f, y = 0.0f, z = 0.0f };
+                hit.normal = new Vector3
+                {
+                    x = 0.0f,
+                    y = 0.0f,
+                    z = 0.0f,
+                };
                 hit.material = IntPtr.Zero;
             }
         }
 
         [MonoPInvokeCallback(typeof(AnyHitCallback))]
-        public static void AnyHit(ref Ray ray, float minDistance, float maxDistance, out byte occluded, IntPtr userData)
+        public static void AnyHit(
+            ref Ray ray,
+            float minDistance,
+            float maxDistance,
+            out byte occluded,
+            IntPtr userData
+        )
         {
             var origin = Common.ConvertVector(ray.origin);
             var direction = Common.ConvertVector(ray.direction);
@@ -1583,7 +1909,13 @@ namespace SteamAudio
 
             var layerMask = SteamAudioSettings.Singleton.layerMask;
 
-            var numHits = Physics.RaycastNonAlloc(origin, direction, sSingleton.mRayHits, maxDistance, layerMask);
+            var numHits = Physics.RaycastNonAlloc(
+                origin,
+                direction,
+                sSingleton.mRayHits,
+                maxDistance,
+                layerMask
+            );
 
             occluded = (byte)((numHits > 0) ? 1 : 0);
         }
@@ -1600,8 +1932,11 @@ namespace SteamAudio
             }
             catch (Exception e)
             {
-                Debug.LogWarning("[SteamAudio] AutoInitialize failed (SteamAudioSettings asset may be missing). " +
-                    "Steam Audio simulation features will be unavailable, but DirectPhononSpatializer will still work. Exception: " + e.Message);
+                Debug.LogWarning(
+                    "[SteamAudio] AutoInitialize failed (SteamAudioSettings asset may be missing). "
+                        + "Steam Audio simulation features will be unavailable, but DirectPhononSpatializer will still work. Exception: "
+                        + e.Message
+                );
             }
         }
 
@@ -1612,7 +1947,12 @@ namespace SteamAudio
 
             if (objects == null || objects.Length == 0)
             {
-                Debug.LogWarning(string.Format("Scene {0} has no Steam Audio static geometry. Skipping export.", unityScene.name));
+                Debug.LogWarning(
+                    string.Format(
+                        "Scene {0} has no Steam Audio static geometry. Skipping export.",
+                        unityScene.name
+                    )
+                );
                 return;
             }
 
@@ -1629,7 +1969,14 @@ namespace SteamAudio
         }
 
         // Exports a set of GameObjects.
-        static void Export(GameObject[] objects, string name, SerializedData dataAsset, string objFileName, bool dynamic, bool exportOBJ)
+        static void Export(
+            GameObject[] objects,
+            string name,
+            SerializedData dataAsset,
+            string objFileName,
+            bool dynamic,
+            bool exportOBJ
+        )
         {
             var type = (dynamic) ? "Dynamic Object" : "Scene";
 
@@ -1637,11 +1984,30 @@ namespace SteamAudio
             Triangle[] triangles = null;
             int[] materialIndices = null;
             Material[] materials = null;
-            GetGeometryAndMaterialBuffers(objects, ref vertices, ref triangles, ref materialIndices, ref materials, dynamic, exportOBJ);
+            GetGeometryAndMaterialBuffers(
+                objects,
+                ref vertices,
+                ref triangles,
+                ref materialIndices,
+                ref materials,
+                dynamic,
+                exportOBJ
+            );
 
-            if (vertices.Length == 0 || triangles.Length == 0 || materialIndices.Length == 0 || materials.Length == 0)
+            if (
+                vertices.Length == 0
+                || triangles.Length == 0
+                || materialIndices.Length == 0
+                || materials.Length == 0
+            )
             {
-                Debug.LogError(string.Format("Steam Audio {0} [{1}]: No Steam Audio Geometry components attached.", type, name));
+                Debug.LogError(
+                    string.Format(
+                        "Steam Audio {0} [{1}]: No Steam Audio Geometry components attached.",
+                        type,
+                        name
+                    )
+                );
                 return;
             }
 
@@ -1650,7 +2016,14 @@ namespace SteamAudio
             // Scene type should always be Phonon when exporting.
             var scene = new Scene(context, SceneType.Default, null, null, null, null);
 
-            var staticMesh = new StaticMesh(context, scene, vertices, triangles, materialIndices, materials);
+            var staticMesh = new StaticMesh(
+                context,
+                scene,
+                vertices,
+                triangles,
+                materialIndices,
+                materials
+            );
             staticMesh.AddToScene(scene);
 
             if (exportOBJ)
@@ -1663,7 +2036,14 @@ namespace SteamAudio
                 staticMesh.Save(dataAsset);
             }
 
-            Debug.Log(string.Format("Steam Audio {0} [{1}]: Exported to {2}.", type, name, (exportOBJ) ? objFileName : dataAsset.name));
+            Debug.Log(
+                string.Format(
+                    "Steam Audio {0} [{1}]: Exported to {2}.",
+                    type,
+                    name,
+                    (exportOBJ) ? objFileName : dataAsset.name
+                )
+            );
 
             staticMesh.Release();
             scene.Release();
@@ -1673,14 +2053,22 @@ namespace SteamAudio
         {
             var sceneType = GetSceneType();
 
-            var scene = new Scene(context, sceneType, sSingleton.mEmbreeDevice, sSingleton.mRadeonRaysDevice,
-                ClosestHit, AnyHit);
+            var scene = new Scene(
+                context,
+                sceneType,
+                sSingleton.mEmbreeDevice,
+                sSingleton.mRadeonRaysDevice,
+                ClosestHit,
+                AnyHit
+            );
 
             if (sceneType == SceneType.Custom)
             {
                 if (sSingleton.mMaterialBuffer == IntPtr.Zero)
                 {
-                    sSingleton.mMaterialBuffer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(Material)));
+                    sSingleton.mMaterialBuffer = Marshal.AllocHGlobal(
+                        Marshal.SizeOf(typeof(Material))
+                    );
                 }
             }
 
@@ -1777,8 +2165,10 @@ namespace SteamAudio
 
         static bool IsDynamicSubObject(GameObject root, GameObject obj)
         {
-            return (root.GetComponentInParent<SteamAudioDynamicObject>() !=
-                obj.GetComponentInParent<SteamAudioDynamicObject>());
+            return (
+                root.GetComponentInParent<SteamAudioDynamicObject>()
+                != obj.GetComponentInParent<SteamAudioDynamicObject>()
+            );
         }
 
         // Ideally, we want to use GameObject.activeInHierarchy to check if a GameObject is active. However, when
@@ -1794,7 +2184,15 @@ namespace SteamAudio
         }
 
         // Given an array of GameObjects, export the vertex, triangle, material index, and material data.
-        static void GetGeometryAndMaterialBuffers(GameObject[] gameObjects, ref Vector3[] vertices, ref Triangle[] triangles, ref int[] materialIndices, ref Material[] materials, bool isDynamic, bool exportOBJ)
+        static void GetGeometryAndMaterialBuffers(
+            GameObject[] gameObjects,
+            ref Vector3[] vertices,
+            ref Triangle[] triangles,
+            ref int[] materialIndices,
+            ref Material[] materials,
+            bool isDynamic,
+            bool exportOBJ
+        )
         {
             var numVertices = new int[gameObjects.Length];
             var numTriangles = new int[gameObjects.Length];
@@ -1835,7 +2233,12 @@ namespace SteamAudio
             {
                 GetVertices(gameObjects[i], vertices, verticesOffset, transform);
                 GetTriangles(gameObjects[i], triangles, trianglesOffset);
-                FixupTriangleIndices(triangles, trianglesOffset, trianglesOffset + numTriangles[i], verticesOffset);
+                FixupTriangleIndices(
+                    triangles,
+                    trianglesOffset,
+                    trianglesOffset + numTriangles[i],
+                    verticesOffset
+                );
 
                 for (var j = 0; j < numTriangles[i]; ++j)
                 {
@@ -1864,7 +2267,12 @@ namespace SteamAudio
         }
 
         // Populates an array with the vertices associated with a GameObject, starting at a given offset.
-        static void GetVertices(GameObject gameObject, Vector3[] vertices, int offset, Transform transform)
+        static void GetVertices(
+            GameObject gameObject,
+            Vector3[] vertices,
+            int offset,
+            Transform transform
+        )
         {
             var mesh = gameObject.GetComponent<MeshFilter>();
             var terrain = gameObject.GetComponent<Terrain>();
@@ -1888,7 +2296,10 @@ namespace SteamAudio
 
                 var w = terrain.terrainData.heightmapResolution;
                 var h = terrain.terrainData.heightmapResolution;
-                var s = Mathf.Min(w - 1, Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel)));
+                var s = Mathf.Min(
+                    w - 1,
+                    Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel))
+                );
                 if (s == 0)
                 {
                     s = 1;
@@ -1897,8 +2308,12 @@ namespace SteamAudio
                 w = ((w - 1) / s) + 1;
                 h = ((h - 1) / s) + 1;
 
-                var heights = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution,
-                    terrain.terrainData.heightmapResolution);
+                var heights = terrain.terrainData.GetHeights(
+                    0,
+                    0,
+                    terrain.terrainData.heightmapResolution,
+                    terrain.terrainData.heightmapResolution
+                );
 
                 var index = 0;
                 for (var v = 0; v < terrain.terrainData.heightmapResolution; v += s)
@@ -1907,11 +2322,20 @@ namespace SteamAudio
                     {
                         var height = heights[v, u];
 
-                        var x = ((float)u / terrain.terrainData.heightmapResolution) * terrain.terrainData.size.x;
+                        var x =
+                            ((float)u / terrain.terrainData.heightmapResolution)
+                            * terrain.terrainData.size.x;
                         var y = height * terrain.terrainData.size.y;
-                        var z = ((float)v / terrain.terrainData.heightmapResolution) * terrain.terrainData.size.z;
+                        var z =
+                            ((float)v / terrain.terrainData.heightmapResolution)
+                            * terrain.terrainData.size.z;
 
-                        var vertex = new UnityEngine.Vector3 { x = x, y = y, z = z };
+                        var vertex = new UnityEngine.Vector3
+                        {
+                            x = x,
+                            y = y,
+                            z = z,
+                        };
                         var transformedVertex = terrain.transform.TransformPoint(vertex);
                         if (transform != null)
                         {
@@ -1946,7 +2370,10 @@ namespace SteamAudio
 
                 var w = terrain.terrainData.heightmapResolution;
                 var h = terrain.terrainData.heightmapResolution;
-                var s = Mathf.Min(w - 1, Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel)));
+                var s = Mathf.Min(
+                    w - 1,
+                    Mathf.Min(h - 1, (int)Mathf.Pow(2.0f, terrainSimplificationLevel))
+                );
                 if (s == 0)
                 {
                     s = 1;
@@ -1967,7 +2394,7 @@ namespace SteamAudio
                         {
                             index0 = i0,
                             index1 = i1,
-                            index2 = i2
+                            index2 = i2,
                         };
 
                         i0 = v * w + (u + 1);
@@ -1977,7 +2404,7 @@ namespace SteamAudio
                         {
                             index0 = i0,
                             index1 = i1,
-                            index2 = i2
+                            index2 = i2,
                         };
 
                         index += 2;
@@ -1989,7 +2416,12 @@ namespace SteamAudio
         // When multiple meshes are combined to form a single piece of geometry, each mesh will have
         // 0-based triangle indices, even though the combined mesh will have a single vertex buffer. This
         // function applies appropriate offsets to triangle indices so make all vertex indices correct.
-        static void FixupTriangleIndices(Triangle[] triangles, int startIndex, int endIndex, int indexOffset)
+        static void FixupTriangleIndices(
+            Triangle[] triangles,
+            int startIndex,
+            int endIndex,
+            int indexOffset
+        )
         {
             for (var i = startIndex; i < endIndex; ++i)
             {
@@ -2006,7 +2438,11 @@ namespace SteamAudio
 
         // Given an array of GameObjects, returns: a) an array containing all the unique materials referenced by
         // them, and b) an array indicating for each GameObject, which material it references.
-        static void GetMaterialMapping(GameObject[] gameObjects, ref Material[] materials, ref int[] materialIndices)
+        static void GetMaterialMapping(
+            GameObject[] gameObjects,
+            ref Material[] materials,
+            ref int[] materialIndices
+        )
         {
             var materialMapping = new Dictionary<Material, List<int>>();
 
@@ -2066,8 +2502,9 @@ namespace SteamAudio
 
             // The default material was set to null, so create a default material and use it.
             Debug.LogWarning(
-                "A default material has not been set, using built-in default. Click Steam Audio > Settings " +
-                "to specify a default material.");
+                "A default material has not been set, using built-in default. Click Steam Audio > Settings "
+                    + "to specify a default material."
+            );
             return ScriptableObject.CreateInstance<SteamAudioMaterial>().GetMaterial();
         }
 
@@ -2078,7 +2515,9 @@ namespace SteamAudio
 #if UNITY_EDITOR
             // Get directory of the scene, fallback to "Assets" if unsaved/empty
             var scenePath = scene.path;
-            var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+            var directory = string.IsNullOrEmpty(scenePath)
+                ? "Assets"
+                : Path.GetDirectoryName(scenePath).Replace('\\', '/');
             fileName = directory + "/" + scene.name + ".obj";
 #endif
 
@@ -2091,7 +2530,9 @@ namespace SteamAudio
 
 #if UNITY_EDITOR
             var scenePath = dynamicObject.gameObject.scene.path;
-            var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+            var directory = string.IsNullOrEmpty(scenePath)
+                ? "Assets"
+                : Path.GetDirectoryName(scenePath).Replace('\\', '/');
             fileName = directory + "/" + dynamicObject.name + ".obj";
 #endif
 
@@ -2126,11 +2567,16 @@ namespace SteamAudio
 #if UNITY_EDITOR
                 // Automatically create the asset next to the scene without file dialog
                 var scenePath = scene.path;
-                var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+                var directory = string.IsNullOrEmpty(scenePath)
+                    ? "Assets"
+                    : Path.GetDirectoryName(scenePath).Replace('\\', '/');
                 var assetPath = directory + "/" + scene.name + ".asset";
 
                 steamAudioStaticMesh.asset = ScriptableObject.CreateInstance<SerializedData>();
-                AssetDatabase.CreateAsset(steamAudioStaticMesh.asset, AssetDatabase.GenerateUniqueAssetPath(assetPath));
+                AssetDatabase.CreateAsset(
+                    steamAudioStaticMesh.asset,
+                    AssetDatabase.GenerateUniqueAssetPath(assetPath)
+                );
 #else
                 steamAudioStaticMesh.asset = SerializedData.PromptForNewAsset(scene.name);
 #endif
@@ -2147,11 +2593,16 @@ namespace SteamAudio
             {
 #if UNITY_EDITOR
                 var scenePath = dynamicObject.gameObject.scene.path;
-                var directory = string.IsNullOrEmpty(scenePath) ? "Assets" : Path.GetDirectoryName(scenePath).Replace('\\', '/');
+                var directory = string.IsNullOrEmpty(scenePath)
+                    ? "Assets"
+                    : Path.GetDirectoryName(scenePath).Replace('\\', '/');
                 var assetPath = directory + "/" + dynamicObject.name + ".asset";
 
                 dynamicObject.asset = ScriptableObject.CreateInstance<SerializedData>();
-                AssetDatabase.CreateAsset(dynamicObject.asset, AssetDatabase.GenerateUniqueAssetPath(assetPath));
+                AssetDatabase.CreateAsset(
+                    dynamicObject.asset,
+                    AssetDatabase.GenerateUniqueAssetPath(assetPath)
+                );
                 EditorUtility.SetDirty(dynamicObject);
 #endif
             }

@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Coffee.UIEffects
 {
@@ -31,15 +31,18 @@ namespace Coffee.UIEffects
 
         public static GraphicConnector FindConnector(Graphic graphic)
         {
-            if (!graphic) return s_EmptyConnector;
+            if (!graphic)
+                return s_EmptyConnector;
 
             var type = graphic.GetType();
             GraphicConnector connector = null;
-            if (s_ConnectorMap.TryGetValue(type, out connector)) return connector;
+            if (s_ConnectorMap.TryGetValue(type, out connector))
+                return connector;
 
             foreach (var c in s_Connectors)
             {
-                if (!c.IsValid(graphic)) continue;
+                if (!c.IsValid(graphic))
+                    continue;
 
                 s_ConnectorMap.Add(type, c);
                 return c;
@@ -75,16 +78,12 @@ namespace Coffee.UIEffects
         /// <summary>
         /// This function is called when the object becomes enabled and active.
         /// </summary>
-        public virtual void OnEnable(Graphic graphic)
-        {
-        }
+        public virtual void OnEnable(Graphic graphic) { }
 
         /// <summary>
         /// This function is called when the behaviour becomes disabled () or inactive.
         /// </summary>
-        public virtual void OnDisable(Graphic graphic)
-        {
-        }
+        public virtual void OnDisable(Graphic graphic) { }
 
         /// <summary>
         /// Mark the vertices as dirty.
@@ -107,7 +106,14 @@ namespace Coffee.UIEffects
         /// <summary>
         /// Gets position factor for area.
         /// </summary>
-        public virtual void GetPositionFactor(EffectArea area, int index, Rect rect, Vector2 position, out float x, out float y)
+        public virtual void GetPositionFactor(
+            EffectArea area,
+            int index,
+            Rect rect,
+            Vector2 position,
+            out float x,
+            out float y
+        )
         {
             if (area == EffectArea.Fit)
             {
@@ -134,8 +140,13 @@ namespace Coffee.UIEffects
         /// <summary>
         /// Normalize vertex position by local matrix.
         /// </summary>
-        public virtual void GetNormalizedFactor(EffectArea area, int index, Matrix2x3 matrix, Vector2 position,
-            out Vector2 normalizedPos)
+        public virtual void GetNormalizedFactor(
+            EffectArea area,
+            int index,
+            Matrix2x3 matrix,
+            Vector2 position,
+            out Vector2 normalizedPos
+        )
         {
             normalizedPos = matrix * position;
         }

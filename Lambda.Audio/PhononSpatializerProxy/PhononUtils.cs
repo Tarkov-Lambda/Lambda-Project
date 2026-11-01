@@ -49,13 +49,16 @@ namespace PhononSpatializerProxy
 
         public float Calculate(float dist)
         {
-            if (_src == null) return 0f;
+            if (_src == null)
+                return 0f;
 
             float minDist = _src.minDistance;
             float maxDist = Mathf.Max(_src.maxDistance, minDist + 0.001f);
 
-            if (dist <= minDist) return 1f;
-            if (dist >= maxDist) return 0f;
+            if (dist <= minDist)
+                return 1f;
+            if (dist >= maxDist)
+                return 0f;
 
             if (_src.rolloffMode == AudioRolloffMode.Custom)
             {

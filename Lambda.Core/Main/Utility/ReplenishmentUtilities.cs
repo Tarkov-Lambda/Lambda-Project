@@ -50,12 +50,15 @@ public static class ReplenishmentUtilities
     {
         var vest = player.GetSlotItem(EquipmentSlot.TacticalVest) as CompoundItem;
         var pockets = player.GetPlayerPockets();
-        if (vest == null && pockets == null) return;
+        if (vest == null && pockets == null)
+            return;
 
         string weaponMagTemplate = weapon.GetMagTemplateForWeapon(player)?.TemplateId;
-        if (weaponMagTemplate == null) return;
+        if (weaponMagTemplate == null)
+            return;
 
-        if (!FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo)) return;
+        if (!FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
+            return;
 
         var existingMags = player.GetMatchingMags(weaponMagTemplate, vest).ToList();
 
@@ -65,12 +68,15 @@ public static class ReplenishmentUtilities
         }
 
         int missing = 3 - existingMags.Count;
-        if (missing <= 0) return;
+        if (missing <= 0)
+            return;
 
         for (int i = 0; i < missing; i++)
         {
-            if (!IU.TryCreateItem(weaponMagTemplate, out Item newItem)) continue;
-            if (newItem is not MagazineItemClass newMag) continue;
+            if (!IU.TryCreateItem(weaponMagTemplate, out Item newItem))
+                continue;
+            if (newItem is not MagazineItemClass newMag)
+                continue;
 
             ReplenishMagazine(newMag, ammo);
 
@@ -96,7 +102,7 @@ public static class ReplenishmentUtilities
     {
         weapon.SwitchFullAutoIfNeeded();
         weapon.TurnOffAllLights();
-        
+
         if (FU.TryGetGunAmmo(weapon, out AmmoItemClass ammo))
         {
             ReplenishGun(weapon, ammo);
@@ -108,7 +114,8 @@ public static class ReplenishmentUtilities
     // refactor this
     public static void ReplenishMagazines(Weapon weapon, Player player, AmmoItemClass ammo)
     {
-        if (player.GetSlotItem(EquipmentSlot.TacticalVest) is not CompoundItem vest) return;
+        if (player.GetSlotItem(EquipmentSlot.TacticalVest) is not CompoundItem vest)
+            return;
 
         string weaponMagTemplate = weapon.GetMagTemplateForWeapon(player)?.TemplateId;
         if (weaponMagTemplate == null)
@@ -131,7 +138,8 @@ public static class ReplenishmentUtilities
             ReplenishMagazine(mag, ammo);
         }
 
-        if (H.IsClient) return; // server gives new mags
+        if (H.IsClient)
+            return; // server gives new mags
 
         int missing = 3 - mags.Count();
         if (missing <= 0)
@@ -186,7 +194,10 @@ public static class ReplenishmentUtilities
 
             if (topAmmoItem != null)
             {
-                topAmmoItem.StackObjectsCount = Math.Min(topAmmoItem.Template.StackMaxSize, magazine.MaxCount);
+                topAmmoItem.StackObjectsCount = Math.Min(
+                    topAmmoItem.Template.StackMaxSize,
+                    magazine.MaxCount
+                );
             }
             else if (IU.TryCreateItem(ammo.TemplateId, out Item newItem))
             {
@@ -207,10 +218,7 @@ public static class ReplenishmentUtilities
         }
     }
 
-    public static void ReplaceMagIfNeeded(this Weapon weapon)
-    {
-
-    }
+    public static void ReplaceMagIfNeeded(this Weapon weapon) { }
 
     private static void Repair(this Item item)
     {
@@ -220,7 +228,6 @@ public static class ReplenishmentUtilities
             weapon.Repairable.Durability = 100f;
             weapon.MalfState.LastShotOverheat = 0f;
         }
-
         else if (item is CompoundItem compoundItem)
         {
             foreach (var slot in compoundItem.AllSlots)

@@ -1,11 +1,10 @@
-﻿using EFT.HealthSystem;
+﻿using System;
+using System.Reflection;
+using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
-
 using ItemsTabController = EFT.UI.ItemsPanel.GClass3802;
 
 namespace Lambda.Core.Patches.Tarkov.UI;
@@ -14,7 +13,8 @@ internal class Patch_ItemsTabController_Show : ModulePatch
 {
     public static event Action<CompoundItem> OnShow;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemsTabController), nameof(ItemsTabController.Show));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ItemsTabController), nameof(ItemsTabController.Show));
 
     [PatchPostfix]
     static void Postfix(ItemsTabController __instance)

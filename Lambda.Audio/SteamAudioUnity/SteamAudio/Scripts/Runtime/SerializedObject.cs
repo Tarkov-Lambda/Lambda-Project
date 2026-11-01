@@ -35,7 +35,11 @@ namespace SteamAudio
         {
             var serializedObjectSettings = new SerializedObjectSettings { };
 
-            API.iplSerializedObjectCreate(context.Get(), ref serializedObjectSettings, out mSerializedObject);
+            API.iplSerializedObjectCreate(
+                context.Get(),
+                ref serializedObjectSettings,
+                out mSerializedObject
+            );
         }
 
         public SerializedObject(Context context, SerializedData dataAsset)
@@ -47,9 +51,13 @@ namespace SteamAudio
 
             var serializedObjectSettings = new SerializedObjectSettings { };
             serializedObjectSettings.data = mDataBuffer;
-            serializedObjectSettings.size = (UIntPtr) data.Length;
+            serializedObjectSettings.size = (UIntPtr)data.Length;
 
-            API.iplSerializedObjectCreate(context.Get(), ref serializedObjectSettings, out mSerializedObject);
+            API.iplSerializedObjectCreate(
+                context.Get(),
+                ref serializedObjectSettings,
+                out mSerializedObject
+            );
         }
 
         public SerializedObject(SerializedObject serializedObject)
@@ -93,8 +101,8 @@ namespace SteamAudio
             var dataSize = GetSize();
             var dataBuffer = GetData();
 
-            dataAsset.data = new byte[(int) dataSize];
-            Marshal.Copy(dataBuffer, dataAsset.data, 0, (int) dataSize);
+            dataAsset.data = new byte[(int)dataSize];
+            Marshal.Copy(dataBuffer, dataAsset.data, 0, (int)dataSize);
 
             if (flush)
             {

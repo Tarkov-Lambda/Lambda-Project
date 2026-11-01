@@ -19,15 +19,13 @@ public class TeleportToMePacketPacketWarden : LambdaPacketWarden<TeleportToMePac
 
     public void Send(Vector3 Place)
     {
-        var packet = new TeleportToMePacketPacket
-        {
-            place = Place
-        };
+        var packet = new TeleportToMePacketPacket { place = Place };
         DispatchPacket(ref packet);
     }
 
     protected override void Apply(TeleportToMePacketPacket packet, int peerId)
     {
-        if (!H.IsHeadless) H.MainPlayer.Teleport(packet.place);
+        if (!H.IsHeadless)
+            H.MainPlayer.Teleport(packet.place);
     }
 }

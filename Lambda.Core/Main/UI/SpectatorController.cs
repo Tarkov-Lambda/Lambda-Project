@@ -1,6 +1,6 @@
-﻿using Lambda.UI;
+﻿using System;
 using EFT;
-using System;
+using Lambda.UI;
 
 namespace Lambda.Core.Main.UI
 {

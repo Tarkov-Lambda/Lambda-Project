@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Reflection;
-using UnityEngine;
+using Comfort.Common;
+using EFT.InventoryLogic;
 using EFT.UI;
 using Lambda.Core.Patches.Tarkov.UI.WeaponBuilds;
-using EFT.InventoryLogic;
-using Comfort.Common;
 using Lambda.UI;
+using UnityEngine;
+
 // Assuming you have access to your WeaponBuildClass namespace
 
 namespace Lambda.Core.Main.UI
 {
     internal class EditBuildController : IDisposable
     {
-        FieldInfo _weaponBuildClassField = typeof(EditBuildScreen).GetField("weaponBuildClass", BindingFlags.NonPublic | BindingFlags.Instance);
+        FieldInfo _weaponBuildClassField = typeof(EditBuildScreen).GetField(
+            "weaponBuildClass",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
 
         EditBuildLambdaPanel panel;
         EditBuildScreen editBuildScreen;
@@ -22,20 +26,26 @@ namespace Lambda.Core.Main.UI
 
         readonly GameObject prefabEditBuildPanel;
 
-
         internal EditBuildController(CommonUI commonUI, AssetBundle uibundle)
         {
             this.commonUI = commonUI;
             this.uibundle = uibundle;
 
-            prefabEditBuildPanel = uibundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/EditBuild/EditBuildLambdaPanel.prefab");
+            prefabEditBuildPanel = uibundle.LoadAsset<GameObject>(
+                "Packages/com.lambda.editor/Lambda.UI/EditBuild/EditBuildLambdaPanel.prefab"
+            );
 
             Initialize();
         }
 
         private void Initialize()
         {
-            panel = GameObject.Instantiate(prefabEditBuildPanel, commonUI.EditBuildScreen.transform.Find("ButtonsPanel")).GetComponent<EditBuildLambdaPanel>();
+            panel = GameObject
+                .Instantiate(
+                    prefabEditBuildPanel,
+                    commonUI.EditBuildScreen.transform.Find("ButtonsPanel")
+                )
+                .GetComponent<EditBuildLambdaPanel>();
 
             editBuildScreen = commonUI.EditBuildScreen;
             Patch_EditBuildScreen_Show.OnPostfix += EditBuildScreen_Show;
@@ -69,19 +79,28 @@ namespace Lambda.Core.Main.UI
             }
             panel.gameObject.SetActive(true);
 
-            WeaponBuildClass currentBuild = _weaponBuildClassField.GetValue(editBuildScreen) as WeaponBuildClass;
+            WeaponBuildClass currentBuild =
+                _weaponBuildClassField.GetValue(editBuildScreen) as WeaponBuildClass;
 
             bool isPreferredLambdaPreset = false;
 
             if (WeaponPresetManager.Instantiated && currentBuild != null)
             {
-                if (WeaponPresetManager.Instance.SelectedGunPresetMap.TryGetValue(newItem.TemplateId, out string preferredMongoId))
+                if (
+                    WeaponPresetManager.Instance.SelectedGunPresetMap.TryGetValue(
+                        newItem.TemplateId,
+                        out string preferredMongoId
+                    )
+                )
                 {
                     isPreferredLambdaPreset = currentBuild.Id.ToString() == preferredMongoId;
                 }
             }
 
-            panel.SetEquipped(isPreferredLambdaPreset, () => SetPreferredLambdaPreset(newItem, currentBuild));
+            panel.SetEquipped(
+                isPreferredLambdaPreset,
+                () => SetPreferredLambdaPreset(newItem, currentBuild)
+            );
         }
 
         void SetPreferredLambdaPreset(Item item, WeaponBuildClass build)
@@ -96,7 +115,5 @@ namespace Lambda.Core.Main.UI
 
             panel.SetEquipped(true, () => SetPreferredLambdaPreset(item, build));
         }
-
-
     }
 }

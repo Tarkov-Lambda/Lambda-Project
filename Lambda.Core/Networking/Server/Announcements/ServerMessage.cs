@@ -25,30 +25,20 @@ public class GenericMessagePacketWarden : LambdaPacketWarden<ServerMessagePacket
 
     public void Send(string msg)
     {
-        var packet = new ServerMessagePacket
-        {
-            msg = msg
-        };
+        var packet = new ServerMessagePacket { msg = msg };
         DispatchPacket(ref packet);
     }
 
     public void SendToPeer(string msg, int peerId)
     {
-        var packet = new ServerMessagePacket
-        {
-            msg = msg
-        };
+        var packet = new ServerMessagePacket { msg = msg };
 
         DispatchPacket(ref packet, peerId);
     }
 
     public void SendToFaction(Faction faction, string msg)
     {
-        var packet = new ServerMessagePacket
-        {
-            msg = msg,
-            specificFaction = faction
-        };
+        var packet = new ServerMessagePacket { msg = msg, specificFaction = faction };
 
         DispatchPacket(ref packet);
     }

@@ -1,5 +1,5 @@
-using PacketWarden.RateLimiting;
 using MemoryPack;
+using PacketWarden.RateLimiting;
 
 namespace PacketWarden.TimeSync;
 
@@ -13,17 +13,15 @@ public class TestPacketWarden : PacketWarden<TestPacket>
 {
     protected override bool ShouldLog => false;
 
-    protected override RateLimitConfig ServerRateLimit => RateLimitPresets.LimitPerSecond(3, RateLimitAction.Drop);
+    protected override RateLimitConfig ServerRateLimit =>
+        RateLimitPresets.LimitPerSecond(3, RateLimitAction.Drop);
     protected override DeliveryType DeliveryType => DeliveryType.Sequenced;
 
     public void Send()
     {
         H.Log("INSIDE Send TestPacketWarden");
 
-        var packet = new TestPacket
-        {
-            clientSendLocalSeconds = NetworkTime.LocalNowSeconds
-        };
+        var packet = new TestPacket { clientSendLocalSeconds = NetworkTime.LocalNowSeconds };
 
         DispatchPacket(ref packet);
     }

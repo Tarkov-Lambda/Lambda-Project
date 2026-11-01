@@ -1,6 +1,3 @@
 using UnityEngine;
 
-public class SteamAudioIgnore : MonoBehaviour
-{
-    
-}
+public class SteamAudioIgnore : MonoBehaviour { }

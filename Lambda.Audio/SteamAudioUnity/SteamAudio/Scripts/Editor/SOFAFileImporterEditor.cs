@@ -32,8 +32,14 @@ namespace SteamAudio
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("hrtfVolumeGainDB"), new UnityEngine.GUIContent("HRTF Volume Gain (dB)"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("hrtfNormalizationType"), new UnityEngine.GUIContent("HRTF Normalization Type"));
+            EditorGUILayout.PropertyField(
+                serializedObject.FindProperty("hrtfVolumeGainDB"),
+                new UnityEngine.GUIContent("HRTF Volume Gain (dB)")
+            );
+            EditorGUILayout.PropertyField(
+                serializedObject.FindProperty("hrtfNormalizationType"),
+                new UnityEngine.GUIContent("HRTF Normalization Type")
+            );
             serializedObject.ApplyModifiedProperties();
             ApplyRevertGUI();
         }

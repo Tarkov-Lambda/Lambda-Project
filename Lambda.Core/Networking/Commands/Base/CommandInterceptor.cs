@@ -21,9 +21,12 @@ namespace Lambda.Core.Networking.Commands
 
         public static void Initialize()
         {
-            var methods = Assembly.GetExecutingAssembly()
+            var methods = Assembly
+                .GetExecutingAssembly()
                 .GetTypes()
-                .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+                .SelectMany(t =>
+                    t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+                )
                 .Where(m => m.GetCustomAttribute<ChatCommandAttribute>() != null);
 
             foreach (var method in methods)
@@ -33,7 +36,7 @@ namespace Lambda.Core.Networking.Commands
                 {
                     Method = method,
                     Attribute = attr,
-                    Parameters = method.GetParameters().Skip(1).ToArray() // skip CommandContext
+                    Parameters = method.GetParameters().Skip(1).ToArray(), // skip CommandContext
                 };
             }
             D.Log($"[Lambda Commands] Registered {Commands.Count} chat commands.");
@@ -41,13 +44,24 @@ namespace Lambda.Core.Networking.Commands
 
         public static bool TryHandleLocal(string message)
         {
-            if (!message.StartsWith("!")) return false;
+            if (string.IsNullOrEmpty(message) || message[0] != '!')
+                return false;
 
             var (cmdName, args) = ParseRawMessage(message);
-            if (!Commands.TryGetValue(cmdName, out var cmdInfo)) return false;
+            if (!Commands.TryGetValue(cmdName, out var cmdInfo))
+                return false;
 
             if (cmdInfo.Attribute.Target == CommandTarget.ClientOnly)
             {
+                if (
+                    cmdInfo.Attribute.Authority == PacketAuthority.Admin
+                    && H.MainPlayerScore?.IsAdmin != true
+                )
+                {
+                    D.Notify("You do not have permission to use this command.");
+                    return true;
+                }
+
                 ExecuteCommand(cmdInfo, H.MainPlayer, INetworkBackend.LocalPeerId, message, args);
                 return true;
             }
@@ -61,11 +75,15 @@ namespace Lambda.Core.Networking.Commands
 
             if (!Commands.TryGetValue(cmdName, out var cmdInfo))
             {
-                Singleton<GenericMessagePacketWarden>.Instance.SendToPeer("Unknown command.", peerId);
+                Singleton<GenericMessagePacketWarden>.Instance.SendToPeer(
+                    "Unknown command.",
+                    peerId
+                );
                 return;
             }
 
-            if (cmdInfo.Attribute.Target != CommandTarget.ServerOnly) return;
+            if (cmdInfo.Attribute.Target != CommandTarget.ServerOnly)
+                return;
 
             // authority check
             if (cmdInfo.Attribute.Authority == PacketAuthority.Admin)
@@ -73,7 +91,10 @@ namespace Lambda.Core.Networking.Commands
                 var score = H.GetPlayerContext(sender);
                 if (score == null || !score.IsAdmin)
                 {
-                    Singleton<GenericMessagePacketWarden>.Instance.SendToPeer("You do not have permission to use this command.", peerId);
+                    Singleton<GenericMessagePacketWarden>.Instance.SendToPeer(
+                        "You do not have permission to use this command.",
+                        peerId
+                    );
                     return;
                 }
             }
@@ -81,7 +102,13 @@ namespace Lambda.Core.Networking.Commands
             ExecuteCommand(cmdInfo, sender, peerId, message, args);
         }
 
-        private static void ExecuteCommand(CommandMethodInfo cmdInfo, Player sender, int peerId, string rawMessage, string[] args)
+        private static void ExecuteCommand(
+            CommandMethodInfo cmdInfo,
+            Player sender,
+            int peerId,
+            string rawMessage,
+            string[] args
+        )
         {
             var context = new CommandContext(sender, peerId, rawMessage, args);
 
@@ -97,13 +124,19 @@ namespace Lambda.Core.Networking.Commands
                 for (int i = 0; i < cmdInfo.Parameters.Length; i++)
                 {
                     // If it's the last parameter and it's a string, consume the rest of the message
-                    if (i == cmdInfo.Parameters.Length - 1 && cmdInfo.Parameters[i].ParameterType == typeof(string))
+                    if (
+                        i == cmdInfo.Parameters.Length - 1
+                        && cmdInfo.Parameters[i].ParameterType == typeof(string)
+                    )
                     {
                         methodArgs[i + 1] = string.Join(" ", args.Skip(i));
                     }
                     else
                     {
-                        methodArgs[i + 1] = CommandArgumentParsers.Parse(args[i], cmdInfo.Parameters[i].ParameterType);
+                        methodArgs[i + 1] = CommandArgumentParsers.Parse(
+                            args[i],
+                            cmdInfo.Parameters[i].ParameterType
+                        );
                     }
                 }
 
@@ -123,7 +156,12 @@ namespace Lambda.Core.Networking.Commands
         private static (string name, string[] args) ParseRawMessage(string message)
         {
             // strings in quotes are not supported
-            var parts = message.Substring(1).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = message
+                .Substring(1)
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                return (string.Empty, Array.Empty<string>());
+
             return (parts[0].ToLowerInvariant(), parts.Skip(1).ToArray());
         }
     }

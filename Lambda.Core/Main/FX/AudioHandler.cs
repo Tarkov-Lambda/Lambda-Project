@@ -1,15 +1,15 @@
-using Comfort.Common;
-using Cysharp.Threading.Tasks;
-using EFT.InventoryLogic;
-using EFT.UI;
-using Lambda.Core.Main.AssetBundleHandling;
-using Lambda.Core.Main.Gamemode;
-using Lambda.Core.GameTypes;
-using Lambda.Shared.FX;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Comfort.Common;
+using Cysharp.Threading.Tasks;
+using EFT.InventoryLogic;
+using EFT.UI;
+using Lambda.Core.GameTypes;
+using Lambda.Core.Main.AssetBundleHandling;
+using Lambda.Core.Main.Gamemode;
+using Lambda.Shared.FX;
 using UnityEngine;
 
 namespace Lambda.Core.Main.FX;
@@ -20,7 +20,8 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
     private const string PREFAB_SOUNDS_PATH = "Assets/Audio/SoundData.asset";
     private const string MUSIC_KIT_SOUNDS_PATH = "Assets/Audio/MusicKitSoundData.asset";
 
-    private static string AudioBundlePath => Path.Combine(LambdaPlugin.pathToBundles, AUDIO_BUNDLE_NAME);
+    private static string AudioBundlePath =>
+        Path.Combine(LambdaPlugin.pathToBundles, AUDIO_BUNDLE_NAME);
 
     public AssetBundle AudioBundle { get; private set; }
     public LambdaSounds PrefabSounds { get; private set; }
@@ -29,7 +30,8 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
     public AudioHandler()
     {
         AudioBundle = AssetBundle.LoadFromFile(AudioBundlePath);
-        if (AudioBundle == null) throw new NullReferenceException("CRITICAL ERROR: Audio Bundle is missing!");
+        if (AudioBundle == null)
+            throw new NullReferenceException("CRITICAL ERROR: Audio Bundle is missing!");
 
         PrefabSounds = AudioBundle.LoadAsset<LambdaSounds>(PREFAB_SOUNDS_PATH);
         MusicKitSounds = AudioBundle.LoadAsset<MusicKit>(MUSIC_KIT_SOUNDS_PATH);
@@ -41,7 +43,14 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
         Release(this);
     }
 
-    public BetterSource PlayAtPoint(Vector3 pos, AudioClip clip, int rolloff = 75, BetterAudio.AudioSourceGroupType overrideSourceGroup = BetterAudio.AudioSourceGroupType.Weaponry, float volume = 1f)
+    public BetterSource PlayAtPoint(
+        Vector3 pos,
+        AudioClip clip,
+        int rolloff = 75,
+        BetterAudio.AudioSourceGroupType overrideSourceGroup =
+            BetterAudio.AudioSourceGroupType.Weaponry,
+        float volume = 1f
+    )
     {
         return H.BetterAudio.PlayAtPoint(
             pos,
@@ -56,6 +65,7 @@ public class AudioHandler : Singleton<AudioHandler>, IDisposable
     public static void PlayEquipSound(Item item)
     {
         AudioClip clip = H.EFTGUISounds.GetItemClip(item.ItemSound, EInventorySoundType.drop);
-        if (clip != null) H.EFTGUISounds.PlaySound(clip);
+        if (clip != null)
+            H.EFTGUISounds.PlaySound(clip);
     }
 }

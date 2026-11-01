@@ -1,16 +1,16 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Comfort.Common;
-using EFT;
-using EFT.InventoryLogic;
-using Lambda.Core.Networking;
-using UnityEngine;
 using Cysharp.Threading.Tasks;
+using EFT;
 using EFT.Interactive;
-using Lambda.Core.Main.UI;
-using Lambda.Shared.Models;
+using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
-using System.Linq;
+using Lambda.Core.Main.UI;
+using Lambda.Core.Networking;
+using Lambda.Shared.Models;
+using UnityEngine;
 
 namespace Lambda.Core.Main;
 
@@ -21,7 +21,8 @@ public static class ItemUtilities
 {
     private static readonly SemaphoreSlim _lock = new(1, 1);
 
-    public static Item CreateItemFromTemplateId(string templateId) => FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
+    public static Item CreateItemFromTemplateId(string templateId) =>
+        FU.ItemFactory.CreateItem(MongoID.Generate(), templateId, itemDiff: null);
 
     public static bool TryCreateItem(string templateId, out Item newItem)
     {
@@ -98,7 +99,10 @@ public static class ItemUtilities
                 return false;
             }
 
-            if (placement.Kind is not PlacementKind.ArmorPlate && clonedItem is not BackpackItemClass)
+            if (
+                placement.Kind is not PlacementKind.ArmorPlate
+                && clonedItem is not BackpackItemClass
+            )
             {
                 var addResult = placement.Address.Add(clonedItem, true);
                 if (addResult.Failed)
@@ -111,7 +115,9 @@ public static class ItemUtilities
             clonedItem.StackObjectsCount = 1;
 
 #if DEBUG
-            D.LogTransaction($"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})");
+            D.LogTransaction(
+                $"{H.MainPlayer.Profile.Nickname} requesting {clonedItem.LocalizedShortName()} ({clonedItem.Id}) at ({placement.Address})"
+            );
 #endif
 
             StripArmorPlatesIfNeeded(clonedItem);
@@ -139,7 +145,10 @@ public static class ItemUtilities
         return true;
     }
 
-    private static async UniTask<bool> TryClearEquipmentSlotAsync(Item clonedItem, ItemPlacement placement)
+    private static async UniTask<bool> TryClearEquipmentSlotAsync(
+        Item clonedItem,
+        ItemPlacement placement
+    )
     {
         if (placement.Kind != PlacementKind.EquipmentSlot)
             return true;
@@ -202,14 +211,21 @@ public static class ItemUtilities
             var magSlot = weapon.GetMagazineSlot();
             MagazineItemClass mag = magSlot.ContainedItem as MagazineItemClass;
 
-            bool needsReplacement = mag == null || mag.Cartridges.MaxCount > 40 || mag.Cartridges.Items.Any(cartridge => cartridge.TemplateId != itemData.ammoId);
+            bool needsReplacement =
+                mag == null
+                || mag.Cartridges.MaxCount > 40
+                || mag.Cartridges.Items.Any(cartridge => cartridge.TemplateId != itemData.ammoId);
 
             if (needsReplacement)
             {
-                WeaponBuildClass defaultPresetWeaponBuild = FU.Presets.FirstOrDefault(b => b.FromPreset && b.Item.TemplateId == weapon.TemplateId);
+                WeaponBuildClass defaultPresetWeaponBuild = FU.Presets.FirstOrDefault(b =>
+                    b.FromPreset && b.Item.TemplateId == weapon.TemplateId
+                );
                 Weapon defaultPresetWeapon = defaultPresetWeaponBuild.Item as Weapon;
 
-                MagazineItemClass defaultWeaponMag = defaultPresetWeapon.GetCurrentMagazine().CloneItem();
+                MagazineItemClass defaultWeaponMag = defaultPresetWeapon
+                    .GetCurrentMagazine()
+                    .CloneItem();
 
                 if (mag != null)
                 {
@@ -222,13 +238,15 @@ public static class ItemUtilities
 
     public static void AttachNightVisionIfNeeded(HeadwearItemClass headwear)
     {
-        if (!H.IsNightTime) return;
+        if (!H.IsNightTime)
+            return;
 
         foreach (var slot in headwear.Slots)
         {
             if (slot.Name == "mod_nvg")
             {
-                string targetNvgId = (headwear.TemplateId == Hardcode.STRAP_NVG) ? Hardcode.N15 : Hardcode.GPNVG;
+                string targetNvgId =
+                    (headwear.TemplateId == Hardcode.STRAP_NVG) ? Hardcode.N15 : Hardcode.GPNVG;
                 Item nvg = PresetItemsCache.Instance.GetPresetItem(targetNvgId).CloneItem();
 
                 TogglableComponent togglableComponent = nvg.GetItemComponent<TogglableComponent>();
@@ -244,15 +262,20 @@ public static class ItemUtilities
     {
         if (H.Gamemode is IGMTeam)
         {
-            string selectedArmband = player.Context.Faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
+            string selectedArmband =
+                player.Context.Faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
 
-            ArmBandItemClass armband = PresetItemsCache.Instance.GetPresetItem(selectedArmband).CloneItem() as ArmBandItemClass;
+            ArmBandItemClass armband =
+                PresetItemsCache.Instance.GetPresetItem(selectedArmband).CloneItem()
+                as ArmBandItemClass;
 
             var armbandSlot = player.Equipment.GetSlot(EquipmentSlot.ArmBand);
 
             if (armbandSlot.ContainedItem != null)
             {
-                armbandSlot.ContainedItem.CurrentAddress.RemoveWithoutRestrictions(armbandSlot.ContainedItem);
+                armbandSlot.ContainedItem.CurrentAddress.RemoveWithoutRestrictions(
+                    armbandSlot.ContainedItem
+                );
             }
 
             armbandSlot.CreateItemAddress().AddWithoutRestrictions(armband);
@@ -261,12 +284,17 @@ public static class ItemUtilities
 
     public static void GarbageCollectWorldLoot()
     {
-        ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(FindObjectsSortMode.None);
-        ObservedSmokeGrenade[] allSmokes = GameObject.FindObjectsByType<ObservedSmokeGrenade>(FindObjectsSortMode.None);
+        ObservedLootItem[] allLoot = GameObject.FindObjectsByType<ObservedLootItem>(
+            FindObjectsSortMode.None
+        );
+        ObservedSmokeGrenade[] allSmokes = GameObject.FindObjectsByType<ObservedSmokeGrenade>(
+            FindObjectsSortMode.None
+        );
 
         foreach (ObservedLootItem loot in allLoot)
         {
-            if (!loot.isActiveAndEnabled) continue;
+            if (!loot.isActiveAndEnabled)
+                continue;
             loot.Kill();
         }
 

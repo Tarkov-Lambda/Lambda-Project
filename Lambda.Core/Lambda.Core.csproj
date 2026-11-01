@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
@@ -60,7 +59,6 @@
     <Reference Include="$(ManagedPath)\DOTween.Modules.dll" />
     <Reference Include="$(ManagedPath)\AnimationSystem.Types.dll" />
 
-
     <Reference Include="..\.Binaries\*.dll" />
   </ItemGroup>
 
@@ -76,7 +74,6 @@
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-
     <ItemGroup>
       <Binaries Include="$(OutputPath)\Unitask.dll" />
       <Binaries Include="$(OutputPath)\Unitask.*.dll" />
@@ -85,10 +82,20 @@
       <JSON Include="../Configuration/*.jsonc" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy
+      SourceFiles="@(Binaries)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue"
+    />
     <Copy SourceFiles="@(Configs)" DestinationFolder="$(SPTPath)\BepInEx\config\" />
     <Copy SourceFiles="@(JSON)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\" />
-    <Copy SourceFiles="@(Presets)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\Presets\WeaponBuilds\" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy
+      SourceFiles="@(Presets)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Configuration\Presets\WeaponBuilds\"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue"
+    />
 
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
       <MainFilesToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
@@ -103,8 +110,16 @@
       <MainFilesToDelete Include="$(SPTPath)\BepInEx\plugins\ifp\$(MSBuildProjectName).pdb" />
     </ItemGroup>
 
-    <Copy Condition="'$(Configuration)' == 'Release'" SourceFiles="@(MainFilesToPlugins)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" />
-    <Copy Condition="'$(Configuration)' != 'Release'" SourceFiles="@(MainFilesToScripts)" DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp" />
+    <Copy
+      Condition="'$(Configuration)' == 'Release'"
+      SourceFiles="@(MainFilesToPlugins)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
+    />
+    <Copy
+      Condition="'$(Configuration)' != 'Release'"
+      SourceFiles="@(MainFilesToScripts)"
+      DestinationFolder="$(SPTPath)\BepInEx\scripts\ifp"
+    />
 
     <Delete Files="@(MainFilesToDelete)" />
   </Target>

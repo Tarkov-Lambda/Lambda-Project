@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace SteamAudio
 {
@@ -44,14 +44,19 @@ namespace SteamAudio
             {
                 EditorGUILayout.HelpBox(
                     "This scene has not been exported. Click Steam Audio > Export Active Scene to export.",
-                    MessageType.Warning);
+                    MessageType.Warning
+                );
             }
             else if (mSceneNameWhenExported.stringValue != scene.name)
             {
                 EditorGUILayout.HelpBox(
-                    string.Format("This geometry was last exported for the scene {0}. If this is not what you " +
-                        "intended, click Export As New Asset below.", mSceneNameWhenExported.stringValue),
-                    MessageType.Warning);
+                    string.Format(
+                        "This geometry was last exported for the scene {0}. If this is not what you "
+                            + "intended, click Export As New Asset below.",
+                        mSceneNameWhenExported.stringValue
+                    ),
+                    MessageType.Warning
+                );
 
                 if (GUILayout.Button("Export As New Asset"))
                 {
@@ -68,7 +73,10 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
     }

@@ -7,7 +7,8 @@ namespace Lambda.UI
     {
         public static void SetAlpha(this Graphic graphic, float alpha)
         {
-            if (graphic == null) return;
+            if (graphic == null)
+                return;
 
             Color color = graphic.color;
             color.a = alpha;
@@ -16,7 +17,8 @@ namespace Lambda.UI
 
         public static void SetColorKeepGraphicAlpha(this Graphic graphic, Color color)
         {
-            if (graphic == null) return;
+            if (graphic == null)
+                return;
 
             Color newColor = graphic.color;
             newColor.r = color.r;

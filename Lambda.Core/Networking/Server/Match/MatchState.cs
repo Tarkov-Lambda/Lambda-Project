@@ -1,6 +1,6 @@
 ﻿using Lambda.Core.Main.Gamemode;
-using PacketWarden;
 using MemoryPack;
+using PacketWarden;
 using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
@@ -8,8 +8,8 @@ namespace Lambda.Core.Networking;
 [MemoryPackable]
 public partial struct MatchStateSyncPacket : IPacket, IServerTimestampedPacket
 {
-    public double Timestamp { get; set; }  // Phase start time (server clock)
-    public double ServerNowSeconds;        // Current server time at send — used for NTP bootstrap on late joiners
+    public double Timestamp { get; set; } // Phase start time (server clock)
+    public double ServerNowSeconds; // Current server time at send — used for NTP bootstrap on late joiners
     public double PhaseDurationSeconds;
 
     public MatchState matchState;
@@ -20,15 +20,19 @@ public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacke
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
-    public void Send(MatchState matchState, double phaseDurationSeconds, RoundActionPhaseEnd? roundActionEnd)
+    public void Send(
+        MatchState matchState,
+        double phaseDurationSeconds,
+        RoundActionPhaseEnd? roundActionEnd
+    )
     {
         var packet = new MatchStateSyncPacket
         {
             matchState = matchState,
-            Timestamp = NetworkTime.ServerNowSeconds,           // phase start = right now
-            ServerNowSeconds = NetworkTime.ServerNowSeconds,    // same value; both fields identical for new phase starts
+            Timestamp = NetworkTime.ServerNowSeconds, // phase start = right now
+            ServerNowSeconds = NetworkTime.ServerNowSeconds, // same value; both fields identical for new phase starts
             PhaseDurationSeconds = phaseDurationSeconds,
-            roundActionEnd = roundActionEnd
+            roundActionEnd = roundActionEnd,
         };
         DispatchPacket(ref packet);
     }
@@ -41,14 +45,18 @@ public class MatchStateSyncPacketWarden : LambdaPacketWarden<MatchStateSyncPacke
         var packet = new MatchStateSyncPacket
         {
             matchState = H.Session.matchState,
-            Timestamp = H.Arena.ServerPhaseStartSeconds,        // historical phase start — preserved by DispatchPacket fix
-            ServerNowSeconds = NetworkTime.ServerNowSeconds,    // current time — used for NTP bootstrap
-            roundActionEnd = H.Arena.PendingRoundActionEnd
+            Timestamp = H.Arena.ServerPhaseStartSeconds, // historical phase start — preserved by DispatchPacket fix
+            ServerNowSeconds = NetworkTime.ServerNowSeconds, // current time — used for NTP bootstrap
+            roundActionEnd = H.Arena.PendingRoundActionEnd,
         };
         DispatchPacket(ref packet, peerId);
     }
 
-    protected override bool ValidatePacket(MatchStateSyncPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        MatchStateSyncPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }

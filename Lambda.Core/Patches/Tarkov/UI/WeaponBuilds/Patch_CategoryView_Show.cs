@@ -1,4 +1,6 @@
-﻿using Comfort.Common;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using Comfort.Common;
 using EFT;
 using EFT.UI.Ragfair;
 using HarmonyLib;
@@ -6,8 +8,6 @@ using Lambda.Core.Main;
 using Lambda.Core.Main.Economy;
 using Lambda.Shared.Models;
 using SPT.Reflection.Patching;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +21,17 @@ namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
         }
 
         [PatchPrefix]
-        private static void PatchPrefix(CategoryView __instance, RagFairClass ragfair, NodeBaseView categoryView, NodeBaseView subcategoryView, EntityNodeClass node, EViewListType viewListType, EWindowType windowType, Dictionary<string, NodeBaseView> viewNodes, string forbiddenItem)
+        private static void PatchPrefix(
+            CategoryView __instance,
+            RagFairClass ragfair,
+            NodeBaseView categoryView,
+            NodeBaseView subcategoryView,
+            EntityNodeClass node,
+            EViewListType viewListType,
+            EWindowType windowType,
+            Dictionary<string, NodeBaseView> viewNodes,
+            string forbiddenItem
+        )
         {
             if (viewListType != EViewListType.WeaponBuild)
                 return;
@@ -30,8 +40,10 @@ namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
             if (bsgTemplateId.IsNullOrEmpty())
                 return;
 
-
-            bool isInEconomy = BuyMenuSelection.TryGetItemData(bsgTemplateId, out ShopItem shopItem);
+            bool isInEconomy = BuyMenuSelection.TryGetItemData(
+                bsgTemplateId,
+                out ShopItem shopItem
+            );
 
             node.Data.BackgroundColor_1 = isInEconomy ? Color.blue : Color.clear;
 

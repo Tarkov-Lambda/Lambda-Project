@@ -1,19 +1,23 @@
+using System;
+using System.Collections.Generic;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main;
 using Lambda.Core.Main.Economy;
-using Lambda.Shared.Models;
-using System;
-using PacketWarden.RateLimiting;
-using MemoryPack;
 using Lambda.Core.Main.Gamemode;
-using System.Collections.Generic;
+using Lambda.Shared.Models;
+using MemoryPack;
+using PacketWarden.RateLimiting;
 using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
 
 [MemoryPackable]
-public partial struct BuyItemPacket : IPacket, IAuthoredPacket, ITrackablePacket, IServerTimestampedPacket
+public partial struct BuyItemPacket
+    : IPacket,
+        IAuthoredPacket,
+        ITrackablePacket,
+        IServerTimestampedPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
@@ -57,7 +61,8 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
 
     public void OnMatchStateEnter(MatchState state)
     {
-        if (state is MatchState.Cleanup)
+        // modes without a Cleanup phase (FFA, Gun Game, Hardpoint) only pass through None
+        if (state is MatchState.Cleanup or MatchState.None)
         {
             RoundTransactions.Clear();
             // _resyncDebouncer.Dispose();
@@ -76,7 +81,11 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         DispatchPacket(ref packet);
     }
 
-    protected override bool ValidatePacket(BuyItemPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        BuyItemPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         if (H.Session.matchState != MatchState.Cleanup)
         {
@@ -111,19 +120,33 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         return base.ValidatePacket(packet, peerId, out rejectionReason);
     }
 
+    protected override void ProcessApprovedPacket(ref BuyItemPacket packet, int peerId)
+    {
+        MutateApprovedPacket(ref packet, peerId);
+
+        if (packet.placement.Kind == PlacementKind.None)
+        {
+            SendRejection(ref packet, peerId, "Can't find placement for your item");
+            return;
+        }
+
+        Network.SendData(ref packet, DeliveryType);
+        ApplyInternal(packet, peerId);
+    }
+
     protected override void MutateApprovedPacket(ref BuyItemPacket packet, int peerId)
     {
         try
         {
+            if (packet.ID == Guid.Empty)
+                packet.ID = Guid.NewGuid();
+
             packet.item = packet.item.CloneItem();
             packet.placement = AU.GetItemPlacement(packet.item, packet.Player);
             packet.Timestamp = NetworkTime.ServerNowSeconds;
 
             if (packet.placement.Kind == PlacementKind.None)
-            {
-                SendRejection(ref packet, peerId, "Can't find placement for your item");
                 return;
-            }
 
             if (packet.item is Weapon weapon)
             {
@@ -151,7 +174,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
         }
         catch (Exception ex)
         {
-            D.Log(ex.StackTrace);
+            D.Log(ex.ToString());
         }
     }
 
@@ -164,11 +187,11 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
                 if (BuyMenuSelection.TryGetItemData(packet.item.TemplateId, out ShopItem itemData))
                 {
                     // we deduct money before sending it as a client
-                    if (!packet.Player.IsYourPlayer) packet.Player.Context.SpendMoney(itemData.price);
+                    if (!packet.Player.IsYourPlayer)
+                        packet.Player.Context.SpendMoney(itemData.price);
 
                     packet.Player.Context.AddItemQuantity(itemData);
                 }
-
 
                 if (packet.placement.Kind == PlacementKind.EquipmentSlot && packet.item is Weapon)
                 {
@@ -182,7 +205,7 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             }
             catch (Exception ex)
             {
-                D.Log(ex.StackTrace);
+                D.Log(ex.ToString());
             }
 
             var success = packet.Player.PlaceItem(packet.item, packet.placement);
@@ -198,11 +221,10 @@ public class BuyItemPacketWarden : LambdaPacketWarden<BuyItemPacket>
             //         }
             //     );
             // }
-
         }
         catch (Exception ex)
         {
-            D.Log(ex.StackTrace);
+            D.Log(ex.ToString());
         }
     }
 

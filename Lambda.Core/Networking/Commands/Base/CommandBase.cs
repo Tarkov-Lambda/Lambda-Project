@@ -12,7 +12,12 @@ public enum CommandTarget
 }
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public class ChatCommandAttribute(string name, string description, CommandTarget target, PacketAuthority authority = PacketAuthority.Admin) : Attribute
+public class ChatCommandAttribute(
+    string name,
+    string description,
+    CommandTarget target,
+    PacketAuthority authority = PacketAuthority.Admin
+) : Attribute
 {
     public string Name { get; } = name.ToLowerInvariant();
     public string Description { get; } = description;

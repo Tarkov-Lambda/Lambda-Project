@@ -1,8 +1,8 @@
-﻿using EFT.UI;
+﻿using System.Reflection;
+using EFT.UI;
 using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,16 +16,17 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
 
     class Patch_GrenadeSelector_Awake : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(GrenadeSelector), nameof(GrenadeSelector.Awake));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(GrenadeSelector), nameof(GrenadeSelector.Awake));
 
         [PatchPostfix]
-        private static void PatchPostfix(GrenadeSelector __instance,
+        private static void PatchPostfix(
+            GrenadeSelector __instance,
             ref Vector2 ____arrowOffset,
-
             ref Image ____cancelBackground,
             ref Color ____normalCancelColor,
             ref Color ____selectedCancelColor
-            )
+        )
         {
             var cross = __instance.transform.Find("Cancel/Image");
             if (cross != null && cross.TryGetComponent<Image>(out var crossImage))
@@ -46,12 +47,28 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
 
     class Patch_FastAccessGrenadeGridItemView_Create : ModulePatch
     {
-        static readonly FieldInfo Field_ItemView__border = AccessTools.Field(typeof(ItemView), "_border");
-        static readonly FieldInfo Field_ItemView_ColorPanel = AccessTools.Field(typeof(ItemView), "ColorPanel");
-        static readonly FieldInfo Field_ItemView_MainImage = AccessTools.Field(typeof(ItemView), "MainImage");
-        static readonly FieldInfo Field_ItemView_Caption = AccessTools.Field(typeof(ItemView), "Caption");
+        static readonly FieldInfo Field_ItemView__border = AccessTools.Field(
+            typeof(ItemView),
+            "_border"
+        );
+        static readonly FieldInfo Field_ItemView_ColorPanel = AccessTools.Field(
+            typeof(ItemView),
+            "ColorPanel"
+        );
+        static readonly FieldInfo Field_ItemView_MainImage = AccessTools.Field(
+            typeof(ItemView),
+            "MainImage"
+        );
+        static readonly FieldInfo Field_ItemView_Caption = AccessTools.Field(
+            typeof(ItemView),
+            "Caption"
+        );
 
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FastAccessGrenadeGridItemView), nameof(FastAccessGrenadeGridItemView.Create));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(
+                typeof(FastAccessGrenadeGridItemView),
+                nameof(FastAccessGrenadeGridItemView.Create)
+            );
 
         [PatchPostfix]
         private static void PatchPostfix(ref FastAccessGrenadeGridItemView __result)
@@ -77,7 +94,11 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
 
     class Patch_FastAccessGrenadeItemView_Awake : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FastAccessGrenadeItemView), nameof(FastAccessGrenadeItemView.Awake));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(
+                typeof(FastAccessGrenadeItemView),
+                nameof(FastAccessGrenadeItemView.Awake)
+            );
 
         [PatchPostfix]
         private static void PatchPostfix(FastAccessGrenadeItemView __instance)
@@ -88,10 +109,18 @@ internal class PatchGroup_GrenadeSelector_NewLook : PatchGroup
 
     class Patch_FastAccessGrenadeGridItemView_Highlight : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(FastAccessGrenadeGridItemView), nameof(FastAccessGrenadeGridItemView.Highlight));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(
+                typeof(FastAccessGrenadeGridItemView),
+                nameof(FastAccessGrenadeGridItemView.Highlight)
+            );
 
         [PatchPostfix]
-        private static void PatchPostfix(FastAccessGrenadeGridItemView __instance, Image ___MainImage, bool highlight)
+        private static void PatchPostfix(
+            FastAccessGrenadeGridItemView __instance,
+            Image ___MainImage,
+            bool highlight
+        )
         {
             if (__instance.GetComponentInParent<GrenadeSelector>() == null)
                 return;

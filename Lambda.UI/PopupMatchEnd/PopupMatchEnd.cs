@@ -8,18 +8,28 @@ namespace Lambda.UI
 {
     public class PopupMatchEnd : MonoBehaviour
     {
-        [SerializeField] private Color colorWon;
-        [SerializeField] private Color colorLost;
-        [SerializeField] private Graphic[] coloredGraphic;
-        [SerializeField] private TMP_Text textMain;
-        [SerializeField] private TMP_Text textSub;
+        [SerializeField]
+        private Color colorWon;
+
+        [SerializeField]
+        private Color colorLost;
+
+        [SerializeField]
+        private Graphic[] coloredGraphic;
+
+        [SerializeField]
+        private TMP_Text textMain;
+
+        [SerializeField]
+        private TMP_Text textSub;
 
         Animator animator;
 
         readonly int TR_POP = Animator.StringToHash("RoundEnd");
 
 #if UNITY_EDITOR
-        [SerializeField] private bool testwin;
+        [SerializeField]
+        private bool testwin;
 
         private void OnValidate()
         {
@@ -58,9 +68,6 @@ namespace Lambda.UI
             }
         }
 
-        void Update()
-        {
-        
-        }
+        void Update() { }
     }
 }

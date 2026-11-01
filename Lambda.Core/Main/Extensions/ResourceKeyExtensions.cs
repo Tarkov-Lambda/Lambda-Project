@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EFT;
@@ -15,10 +14,7 @@ public static class ResourceKeyExtensions
             return false;
 
         var task = entry.Source?.Task;
-        return task != null &&
-               task.IsCompleted &&
-               !task.IsCanceled &&
-               !task.IsFaulted;
+        return task != null && task.IsCompleted && !task.IsCanceled && !task.IsFaulted;
     }
 
     public static async UniTask LoadBundles(this List<ResourceKey> resourceKeys)
@@ -29,6 +25,7 @@ public static class ResourceKeyExtensions
             resourceKeys,
             JobPriorityClass.Immediate,
             null,
-            default);
+            default
+        );
     }
 }

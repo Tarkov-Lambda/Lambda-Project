@@ -13,7 +13,8 @@ namespace PhononSpatializerProxy
 
         public static void Initialize()
         {
-            if (Instance != null) return;
+            if (Instance != null)
+                return;
             var go = new GameObject("PhononUpdateManager");
             DontDestroyOnLoad(go);
             Instance = go.AddComponent<ProxyDSPBridgeUpdateManager>();
@@ -54,9 +55,13 @@ namespace PhononSpatializerProxy
         private void Update()
         {
             SteamAudioListener listener = SteamAudioManager.GetSteamAudioListener();
-            if (listener == null) return;
+            if (listener == null)
+                return;
 
-            listener.transform.GetPositionAndRotation(out UnityEngine.Vector3 listenerPos, out Quaternion listenerRot);
+            listener.transform.GetPositionAndRotation(
+                out UnityEngine.Vector3 listenerPos,
+                out Quaternion listenerRot
+            );
 
             for (int i = ActiveBridges.Count - 1; i >= 0; i--)
             {

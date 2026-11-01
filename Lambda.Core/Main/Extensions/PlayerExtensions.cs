@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using Comfort.Common;
+using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -9,7 +11,7 @@ using UnityEngine;
 using static EFT.Player;
 using static EFT.PlayerAnimator;
 
-// class full of bruteforce player manipulations 
+// class full of bruteforce player manipulations
 public static class PlayerExtensions
 {
     extension(Player player)
@@ -25,7 +27,57 @@ public static class PlayerExtensions
         return player.Inventory.Equipment.GetSlot(equipmentSlotType);
     }
 
+    private static readonly TimeSpan HandsReleaseTimeout = TimeSpan.FromSeconds(2);
+
+    public static bool IsHolding(this Player player, Item item) =>
+        player.HandsController != null && player.HandsController.Item == item;
+
+    public static async UniTask<bool> TryReleaseFromHands(this Player player, Item item)
+    {
+        if (!player.IsHolding(item))
+            return true;
+
+        if (await player.SetEmptyHandsAndWait(item))
+            return true;
+
+        // tear the controller down, then spawn empty hands right away. SpawnController assigns
+        // HandsController synchronously, so it is never left null for a frame.
+        D.LogInventory(
+            $"{player.Profile.Nickname} couldn't put away {item.LocalizedShortName()}, forcing empty hands"
+        );
+        player.PolitelyNukeHands();
+
+        if (await player.SetEmptyHandsAndWait(item))
+            return true;
+
+        D.LogError($"{player.Profile.Nickname} failed to restore empty hands after forcing them");
+        return false;
+    }
+
+    // Don't act on SetEmptyHands' callback: it fires from inside Process.Complete(), before ExecuteNext()
+    // resets ProcessStatus, so the inventory still reports itself blocked at that point. Wait for the state
+    // instead; the callback only ends the wait early when the swap is refused.
+    private static async UniTask<bool> SetEmptyHandsAndWait(this Player player, Item item)
+    {
+        bool refused = false;
+        player.SetEmptyHands(result => refused = result.Failed);
+
+        using var timeout = new CancellationTokenSource(HandsReleaseTimeout);
+        await UniTask
+            .WaitUntil(() => refused || player.IsReleased(item), cancellationToken: timeout.Token)
+            .SuppressCancellationThrow();
+
+        return player.IsReleased(item);
+    }
+
+    // Out of the hands, and Tarkov accepts actions on it again: Item.CheckAction is the same gate the
+    // remove/throw transaction checks (fails while ProcessStatus > None or while the item has pending events).
+    private static bool IsReleased(this Player player, Item item) =>
+        !player.IsHolding(item) && item.CheckAction(null).Succeeded;
+
     // this needs to go ASAP
+    // Leaves HandsController == null: the caller must spawn a new controller in the same frame
+    // (SetEmptyHands / SetInHands), otherwise Player.LateUpdate -> MouseLook throws every frame.
     public static void PolitelyNukeHands(this Player player)
     {
         try
@@ -119,7 +171,6 @@ public static class PlayerExtensions
         }
     }
 
-    // Lord forgive me
     public static void UpdateVisuals(this Player player, InventoryEquipment newEquipment)
     {
         UpdateObserver(player.NightVisionObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
@@ -127,17 +178,22 @@ public static class PlayerExtensions
         UpdateObserver(player.FaceShieldObserver, newEquipment.GetSlot(EquipmentSlot.Headwear));
         UpdateObserver(player.FaceCoverObserver, newEquipment.GetSlot(EquipmentSlot.FaceCover));
 
-        if (player.PlayerBody == null) return;
+        if (player.PlayerBody == null)
+            return;
 
         player.PlayerBody.Equipment = newEquipment;
 
         var backpackSlot = newEquipment.GetSlot(EquipmentSlot.Backpack);
-        var slotNames = (EquipmentSlot[])AccessTools.Field(typeof(PlayerBody), "SlotNames").GetValue(null);
+        var slotNames = (EquipmentSlot[])
+            AccessTools.Field(typeof(PlayerBody), "SlotNames").GetValue(null);
         var slotViews = player.PlayerBody.SlotViews;
 
         var getByKeyMethod = AccessTools.Method(slotViews.GetType(), "GetByKey");
         var addOrReplaceMethod = AccessTools.Method(slotViews.GetType(), "AddOrReplace");
-        var equipmentSlotClassType = typeof(PlayerBody).GetNestedType("EquipmentSlotClass", BindingFlags.Public | BindingFlags.NonPublic);
+        var equipmentSlotClassType = typeof(PlayerBody).GetNestedType(
+            "EquipmentSlotClass",
+            BindingFlags.Public | BindingFlags.NonPublic
+        );
         var disposeMethod = AccessTools.Method(equipmentSlotClassType, "Dispose");
 
         foreach (EquipmentSlot slotName in slotNames)
@@ -150,8 +206,10 @@ public static class PlayerExtensions
 
             if (oldSlotView != null)
             {
-                bone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_0").GetValue(oldSlotView);
-                altBone = (Transform)AccessTools.Field(equipmentSlotClassType, "Transform_1").GetValue(oldSlotView);
+                bone = (Transform)
+                    AccessTools.Field(equipmentSlotClassType, "Transform_0").GetValue(oldSlotView);
+                altBone = (Transform)
+                    AccessTools.Field(equipmentSlotClassType, "Transform_1").GetValue(oldSlotView);
             }
             else
             {
@@ -176,16 +234,28 @@ public static class PlayerExtensions
 
         if (compositeDisposable != null)
         {
-            var addDisposableMethod = AccessTools.Method(compositeDisposable.GetType(), "AddDisposable", [typeof(Action)]);
+            var addDisposableMethod = AccessTools.Method(
+                compositeDisposable.GetType(),
+                "AddDisposable",
+                [typeof(Action)]
+            );
 
             var headwearSlotView = getByKeyMethod.Invoke(slotViews, [EquipmentSlot.Headwear]);
             var faceCoverSlotView = getByKeyMethod.Invoke(slotViews, [EquipmentSlot.FaceCover]);
 
-            var headwearParentedModel = AccessTools.Field(equipmentSlotClassType, "ParentedModel").GetValue(headwearSlotView);
-            var faceCoverParentedModel = AccessTools.Field(equipmentSlotClassType, "ParentedModel").GetValue(faceCoverSlotView);
+            var headwearParentedModel = AccessTools
+                .Field(equipmentSlotClassType, "ParentedModel")
+                .GetValue(headwearSlotView);
+            var faceCoverParentedModel = AccessTools
+                .Field(equipmentSlotClassType, "ParentedModel")
+                .GetValue(faceCoverSlotView);
 
             var bindMethod = AccessTools.Method(headwearParentedModel.GetType(), "Bind");
-            var method1Delegate = Delegate.CreateDelegate(typeof(Action<GameObject>), player.PlayerBody, "method_1");
+            var method1Delegate = Delegate.CreateDelegate(
+                typeof(Action<GameObject>),
+                player.PlayerBody,
+                "method_1"
+            );
 
             var hwDisposable = bindMethod.Invoke(headwearParentedModel, [method1Delegate]);
             var fcDisposable = bindMethod.Invoke(faceCoverParentedModel, [method1Delegate]);
@@ -196,11 +266,19 @@ public static class PlayerExtensions
 
         AccessTools.Method(typeof(PlayerBody), "method_1").Invoke(player.PlayerBody, [null]);
 
-        var method86Delegate = Delegate.CreateDelegate(typeof(Action<GameObject>), player, "method_86");
-        player.BindSlotViewChangedAction(EquipmentSlot.Headwear, (Action<GameObject>)method86Delegate);
+        var method86Delegate = Delegate.CreateDelegate(
+            typeof(Action<GameObject>),
+            player,
+            "method_86"
+        );
+        player.BindSlotViewChangedAction(
+            EquipmentSlot.Headwear,
+            (Action<GameObject>)method86Delegate
+        );
     }
 
-    private static void UpdateObserver<T>(Player.GClass2059<T> observer, Slot newSlot) where T : class, IItemComponent
+    private static void UpdateObserver<T>(Player.GClass2059<T> observer, Slot newSlot)
+        where T : class, IItemComponent
     {
         if (observer == null || newSlot == null)
             return;
@@ -213,7 +291,12 @@ public static class PlayerExtensions
 
     public static bool TryGetHandsResourceKey(this Player player, out ResourceKey resourceKey)
     {
-        if (player.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID handsId))
+        if (
+            player.PlayerBody.BodyCustomization.TryGetValue(
+                EBodyModelPart.Hands,
+                out MongoID handsId
+            )
+        )
         {
             resourceKey = H.CustomizationSolverClass.GetBundle(handsId);
             return true;

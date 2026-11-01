@@ -15,20 +15,26 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
 {
     public static bool AllowOpenInventory = false;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftGamePlayerOwner), nameof(EftGamePlayerOwner.TranslateInventoryScreenInput));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(EftGamePlayerOwner),
+            nameof(EftGamePlayerOwner.TranslateInventoryScreenInput)
+        );
 
     [PatchPrefix]
     static bool Prefix(EftGamePlayerOwner __instance, ECommand command, ref bool __result)
     {
         if (command == ECommand.ToggleInventory)
         {
-            if (H.Session.matchState
+            if (
+                H.Session.matchState
                 is MatchState.SideSwap
-                or MatchState.MatchEnd
-                or MatchState.Warmup
-                or MatchState.WarmupEnd
-                // or MatchState.None
-                or MatchState.Cleanup)
+                    or MatchState.MatchEnd
+                    or MatchState.Warmup
+                    or MatchState.WarmupEnd
+                    // or MatchState.None
+                    or MatchState.Cleanup
+            )
             {
                 AllowOpenInventory = false;
                 __result = true;
@@ -43,7 +49,6 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
                 return true;
             }
 
-
             __result = true;
             return false;
         }
@@ -54,7 +59,8 @@ internal class Patch_EftGamePlayerOwner_TranslateInventoryScreenInput : ModulePa
 
 internal class Patch_EftGamePlayerOwner_BlockScrollDuringMagSelect : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(EftGamePlayerOwner), nameof(EftGamePlayerOwner.TranslateCommand));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(EftGamePlayerOwner), nameof(EftGamePlayerOwner.TranslateCommand));
 
     [PatchPrefix]
     static bool Prefix(EftGamePlayerOwner __instance, ECommand command)

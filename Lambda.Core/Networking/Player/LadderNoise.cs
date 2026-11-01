@@ -21,7 +21,7 @@ public class LadderNoisePacketWarden : LambdaPacketWarden<LadderNoisePacket>
         var packet = new LadderNoisePacket
         {
             Player = H.MainPlayer,
-            ladderMaterial = ladderMaterial
+            ladderMaterial = ladderMaterial,
         };
 
         DispatchPacket(ref packet);
@@ -34,7 +34,8 @@ public class LadderNoisePacketWarden : LambdaPacketWarden<LadderNoisePacket>
 
     protected override void Apply(LadderNoisePacket packet, int peerId)
     {
-        if (packet.Player.IsYourPlayer) return;
+        if (packet.Player.IsYourPlayer)
+            return;
 
         MakeLadderNoise(packet.Player, packet);
     }
@@ -43,8 +44,10 @@ public class LadderNoisePacketWarden : LambdaPacketWarden<LadderNoisePacket>
     {
         Vector3 pos = player.PlayerBody.transform.position;
 
-        AudioClip[] audioClips = packet.ladderMaterial == LadderMaterial.Metal ? H.Sounds.LadderNoiseMetal : H.Sounds.LadderNoiseWood;
+        AudioClip[] audioClips =
+            packet.ladderMaterial == LadderMaterial.Metal
+                ? H.Sounds.LadderNoiseMetal
+                : H.Sounds.LadderNoiseWood;
         H.AudioHandler.PlayAtPoint(pos, audioClips.RandomElement());
     }
 }
-

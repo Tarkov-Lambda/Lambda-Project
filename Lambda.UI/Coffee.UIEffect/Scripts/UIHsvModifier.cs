@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-
 namespace Coffee.UIEffects
 {
     /// <summary>
@@ -13,21 +12,37 @@ namespace Coffee.UIEffects
     public class UIHsvModifier : BaseMaterialEffect
     {
         private const uint k_ShaderId = 6 << 3;
-        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(7, 128, "_ParamTex");
+        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(
+            7,
+            128,
+            "_ParamTex"
+        );
 
-        [Header("Target")] [Tooltip("Target color to affect hsv shift.")] [SerializeField] [ColorUsage(false)]
+        [Header("Target")]
+        [Tooltip("Target color to affect hsv shift.")]
+        [SerializeField]
+        [ColorUsage(false)]
         Color m_TargetColor = Color.red;
 
-        [Tooltip("Color range to affect hsv shift [0 ~ 1].")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Color range to affect hsv shift [0 ~ 1].")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_Range = 0.1f;
 
-        [Header("Adjustment")] [Tooltip("Hue shift [-0.5 ~ 0.5].")] [SerializeField] [Range(-0.5f, 0.5f)]
+        [Header("Adjustment")]
+        [Tooltip("Hue shift [-0.5 ~ 0.5].")]
+        [SerializeField]
+        [Range(-0.5f, 0.5f)]
         float m_Hue;
 
-        [Tooltip("Saturation shift [-0.5 ~ 0.5].")] [SerializeField] [Range(-0.5f, 0.5f)]
+        [Tooltip("Saturation shift [-0.5 ~ 0.5].")]
+        [SerializeField]
+        [Range(-0.5f, 0.5f)]
         float m_Saturation;
 
-        [Tooltip("Value shift [-0.5 ~ 0.5].")] [SerializeField] [Range(-0.5f, 0.5f)]
+        [Tooltip("Value shift [-0.5 ~ 0.5].")]
+        [SerializeField]
+        [Range(-0.5f, 0.5f)]
         float m_Value;
 
         /// <summary>
@@ -38,7 +53,8 @@ namespace Coffee.UIEffects
             get { return m_TargetColor; }
             set
             {
-                if (m_TargetColor == value) return;
+                if (m_TargetColor == value)
+                    return;
                 m_TargetColor = value;
                 SetEffectParamsDirty();
             }
@@ -53,7 +69,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_Range, value)) return;
+                if (Mathf.Approximately(m_Range, value))
+                    return;
                 m_Range = value;
                 SetEffectParamsDirty();
             }
@@ -68,7 +85,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, -0.5f, 0.5f);
-                if (Mathf.Approximately(m_Saturation, value)) return;
+                if (Mathf.Approximately(m_Saturation, value))
+                    return;
                 m_Saturation = value;
                 SetEffectParamsDirty();
             }
@@ -83,7 +101,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, -0.5f, 0.5f);
-                if (Mathf.Approximately(m_Value, value)) return;
+                if (Mathf.Approximately(m_Value, value))
+                    return;
                 m_Value = value;
                 SetEffectParamsDirty();
             }
@@ -98,7 +117,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, -0.5f, 0.5f);
-                if (Mathf.Approximately(m_Hue, value)) return;
+                if (Mathf.Approximately(m_Hue, value))
+                    return;
                 m_Hue = value;
                 SetEffectParamsDirty();
             }
@@ -117,19 +137,16 @@ namespace Coffee.UIEffects
             if (!isActiveAndEnabled || !material || !material.shader)
                 return k_InvalidHash;
 
-            return new Hash128(
-                (uint) material.GetInstanceID(),
-                k_ShaderId,
-                0,
-                0
-            );
+            return new Hash128((uint)material.GetInstanceID(), k_ShaderId, 0, 0);
         }
 
         public override void ModifyMaterial(Material newMaterial, Graphic graphic)
         {
             var connector = GraphicConnector.FindConnector(graphic);
 
-            newMaterial.shader = FindShader(string.Format("Hidden/{0} (UIHsvModifier)", newMaterial.shader.name));
+            newMaterial.shader = FindShader(
+                string.Format("Hidden/{0} (UIHsvModifier)", newMaterial.shader.name)
+            );
             paramTex.RegisterMaterial(newMaterial);
         }
 
@@ -155,7 +172,9 @@ namespace Coffee.UIEffects
 
         protected override void SetEffectParamsDirty()
         {
-            float h, s, v;
+            float h,
+                s,
+                v;
             Color.RGBToHSV(m_TargetColor, out h, out s, out v);
 
             paramTex.SetData(this, 0, h); // param1.x : target hue

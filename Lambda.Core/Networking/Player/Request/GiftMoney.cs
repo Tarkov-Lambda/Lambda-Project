@@ -1,10 +1,10 @@
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using Lambda.Core.Main.Economy;
-using Lambda.Shared.Models;
-using Comfort.Common;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Main.UI;
+using Lambda.Shared.Models;
 using MemoryPack;
 
 namespace Lambda.Core.Networking;
@@ -14,7 +14,7 @@ public partial struct GiveMoneyPacket : IPacket, IAuthoredPacket
 {
     [MemoryPackAllowSerialize]
     public Player Player { get; set; }
-    
+
     [MemoryPackAllowSerialize]
     public Player TargetPlayer { get; set; }
 
@@ -35,7 +35,7 @@ public class GiftMoneyPacketWarden : LambdaPacketWarden<GiveMoneyPacket>
         {
             Player = H.MainPlayer,
             TargetPlayer = targetPlayer,
-            ItemBsgId = itemBsgId
+            ItemBsgId = itemBsgId,
         };
 
         DispatchPacket(ref packet);
@@ -49,44 +49,73 @@ public class GiftMoneyPacketWarden : LambdaPacketWarden<GiveMoneyPacket>
         }
     }
 
-    protected override bool ValidatePacket(GiveMoneyPacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        GiveMoneyPacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         rejectionReason = null;
 
-        AskForMoneyPacketWarden askForMoneyPacketWarden = Singleton<AskForMoneyPacketWarden>.Instance;
-
-        if (askForMoneyPacketWarden.playerToItem.TryGetValue(packet.TargetPlayer, out string ItemBsgId))
+        if (packet.TargetPlayer == null)
         {
-            if (ItemBsgId != packet.ItemBsgId)
-            {
-                rejectionReason = $"{packet.TargetPlayer} is not requesting this item.";
-                return false;
-            }
-
-            return true;
+            rejectionReason = "Unknown player.";
+            return false;
         }
 
-        rejectionReason = $"{packet.TargetPlayer} is not requesting an item at the moment.";
-        return false;
+        string targetName = packet.TargetPlayer.Profile.Nickname;
+
+        if (
+            !Singleton<AskForMoneyPacketWarden>.Instance.playerToItem.TryGetValue(
+                packet.TargetPlayer,
+                out string ItemBsgId
+            )
+        )
+        {
+            rejectionReason = $"{targetName} is not requesting an item at the moment.";
+            return false;
+        }
+
+        if (ItemBsgId != packet.ItemBsgId)
+        {
+            rejectionReason = $"{targetName} is not requesting this item.";
+            return false;
+        }
+
+        if (
+            !BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData)
+            || packet.Player.Context.Money < itemData.price
+        )
+        {
+            rejectionReason = "You don't have enough money";
+            return false;
+        }
+
+        return true;
     }
 
-    protected override async void Apply(GiveMoneyPacket packet, int peerId)
+    protected override void Apply(GiveMoneyPacket packet, int peerId)
     {
         if (BuyMenuSelection.TryGetItemData(packet.ItemBsgId, out ShopItem itemData))
         {
-            H.GetPlayerContext(packet.Player.Id).SpendMoney(itemData.price);
+            // the gifter already paid in ApplyOptimistically
+            if (!packet.Player.IsYourPlayer)
+                H.GetPlayerContext(packet.Player.Id).SpendMoney(itemData.price);
             H.GetPlayerContext(packet.TargetPlayer.Id).AddMoney(itemData.price);
 
             if (packet.TargetPlayer.IsYourPlayer)
             {
                 var presetItem = PresetItemsCache.Instance.GetPresetItem(packet.ItemBsgId);
-                D.Notify($"{packet.Player} bought {presetItem.LocalizedName()} for you");
+                D.Notify(
+                    $"{packet.Player.Profile.Nickname} bought {presetItem.LocalizedName()} for you"
+                );
                 Purchasing.BuyItem(itemData);
             }
 
-            AskForMoneyPacketWarden askForMoneyPacketWarden = Singleton<AskForMoneyPacketWarden>.Instance;
+            AskForMoneyPacketWarden askForMoneyPacketWarden =
+                Singleton<AskForMoneyPacketWarden>.Instance;
             askForMoneyPacketWarden.playerToItem.Remove(packet.TargetPlayer);
-            EventBus.OnBuyAskCancelled?.Invoke(packet.Player);
+            EventBus.OnBuyAskCancelled?.Invoke(packet.TargetPlayer);
         }
     }
 

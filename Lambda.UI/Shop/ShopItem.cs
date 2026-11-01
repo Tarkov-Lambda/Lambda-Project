@@ -1,9 +1,9 @@
-using Lambda.Shared;
-using Lambda.Shared.Models;
-using Lambda.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Lambda.Shared;
+using Lambda.Shared.Models;
+using Lambda.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,12 +12,20 @@ namespace Lambda.UI
 {
     public class ShopItemButton : MonoBehaviour
     {
-        [SerializeField] private TMP_Text textName;
-        [SerializeField] private TMP_Text textSubtext;
-        [SerializeField] private TMP_Text textPrice;
-        [SerializeField] private Image icon;
+        [SerializeField]
+        private TMP_Text textName;
 
-        [SerializeField] private Button mainButton;
+        [SerializeField]
+        private TMP_Text textSubtext;
+
+        [SerializeField]
+        private TMP_Text textPrice;
+
+        [SerializeField]
+        private Image icon;
+
+        [SerializeField]
+        private Button mainButton;
 
         public event Action OnClick;
 
@@ -34,7 +42,9 @@ namespace Lambda.UI
         public void Set(ShopItem shopItem, IItemInfoProvider itemInfoProvider)
         {
             textName.text = itemInfoProvider.ShortName(shopItem.bsgId);
-            textSubtext.text = string.IsNullOrEmpty(shopItem.ammoId) ? string.Empty : itemInfoProvider.ShortName(shopItem.ammoId);
+            textSubtext.text = string.IsNullOrEmpty(shopItem.ammoId)
+                ? string.Empty
+                : itemInfoProvider.ShortName(shopItem.ammoId);
             textPrice.text = MoneyFormat.FormatMoney(shopItem.price);
 
             itemInfoProvider.RequestIcon(shopItem.bsgId, SetIconSprite);
@@ -44,7 +54,7 @@ namespace Lambda.UI
         {
             icon.sprite = sprite;
 
-            if (sprite == null) 
+            if (sprite == null)
                 return;
 
             RectTransform parentRect = icon.rectTransform.parent as RectTransform;

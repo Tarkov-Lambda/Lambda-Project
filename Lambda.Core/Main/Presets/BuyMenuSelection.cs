@@ -1,14 +1,17 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using System.IO;
-using Lambda.Shared.Models;
 using EFT.InventoryLogic;
+using Lambda.Shared.Models;
+using Newtonsoft.Json;
 
 namespace Lambda.Core.Main.Economy;
 
 public static class BuyMenuSelection
 {
-    private readonly static string EconomyDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "Economy.jsonc");
+    private static readonly string EconomyDataPath = Path.Combine(
+        LambdaPlugin.pathToConfigs,
+        "Economy.jsonc"
+    );
 
     public static List<BuyCategory> buyCategories = new();
 
@@ -30,7 +33,11 @@ public static class BuyMenuSelection
         return result;
     }
 
-    public static bool TryGetItemData(this List<BuyCategory> buyMenu, string bsgId, out ShopItem itemData)
+    public static bool TryGetItemData(
+        this List<BuyCategory> buyMenu,
+        string bsgId,
+        out ShopItem itemData
+    )
     {
         foreach (var category in buyMenu)
         {

@@ -18,7 +18,12 @@ public static class ObservedPlayerExtensions
             if (stateObject != null)
             {
                 var stateType = stateObject.GetType();
-                var ctor = stateType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [typeof(Vector3), typeof(Vector2)], null);
+                var ctor = stateType.GetConstructor(
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                    null,
+                    [typeof(Vector3), typeof(Vector2)],
+                    null
+                );
                 if (ctor != null)
                 {
                     var newState = ctor.Invoke([observedPlayer.Position, observedPlayer.Rotation]);

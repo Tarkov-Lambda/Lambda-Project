@@ -6,12 +6,10 @@ namespace Lambda.UI
 {
     public class Spinner : MonoBehaviour
     {
-        [SerializeField] private float speed = -50f;
+        [SerializeField]
+        private float speed = -50f;
 
-        void Start()
-        {
-        
-        }
+        void Start() { }
 
         public void SetSpeed(float newSpeed)
         {

@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Serialization;
-using System;
+using UnityEngine.UI;
 
 namespace Coffee.UIEffects
 {
@@ -23,36 +23,54 @@ namespace Coffee.UIEffects
 
         private const uint k_ShaderId = 5 << 3;
         private static readonly int k_TransitionTexId = Shader.PropertyToID("_TransitionTex");
-        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(8, 128, "_ParamTex");
+        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(
+            8,
+            128,
+            "_ParamTex"
+        );
 
         private bool _lastKeepAspectRatio;
         private static Texture _defaultTransitionTexture;
 
-        [Tooltip("Effect mode.")] [SerializeField]
+        [Tooltip("Effect mode.")]
+        [SerializeField]
         EffectMode m_EffectMode = EffectMode.Cutoff;
 
-        [Tooltip("Effect factor between 0(hidden) and 1(shown).")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Effect factor between 0(hidden) and 1(shown).")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_EffectFactor = 0.5f;
 
-        [Tooltip("Transition texture (single channel texture).")] [SerializeField]
+        [Tooltip("Transition texture (single channel texture).")]
+        [SerializeField]
         Texture m_TransitionTexture;
 
-        [Header("Advanced Option")] [Tooltip("The area for effect.")] [SerializeField]
+        [Header("Advanced Option")]
+        [Tooltip("The area for effect.")]
+        [SerializeField]
         EffectArea m_EffectArea = EffectArea.RectTransform;
 
-        [Tooltip("Keep effect aspect ratio.")] [SerializeField]
+        [Tooltip("Keep effect aspect ratio.")]
+        [SerializeField]
         bool m_KeepAspectRatio;
 
-        [Tooltip("Dissolve edge width.")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Dissolve edge width.")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_DissolveWidth = 0.5f;
 
-        [Tooltip("Dissolve edge softness.")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Dissolve edge softness.")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_DissolveSoftness = 0.5f;
 
-        [Tooltip("Dissolve edge color.")] [SerializeField] [ColorUsage(false)]
+        [Tooltip("Dissolve edge color.")]
+        [SerializeField]
+        [ColorUsage(false)]
         Color m_DissolveColor = new Color(0.0f, 0.25f, 1.0f);
 
-        [Tooltip("Disable the graphic's raycast target on hidden.")] [SerializeField]
+        [Tooltip("Disable the graphic's raycast target on hidden.")]
+        [SerializeField]
         bool m_PassRayOnHidden;
 
         /// <summary>
@@ -64,7 +82,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_EffectFactor, value)) return;
+                if (Mathf.Approximately(m_EffectFactor, value))
+                    return;
                 m_EffectFactor = value;
                 SetEffectParamsDirty();
             }
@@ -75,15 +94,11 @@ namespace Coffee.UIEffects
         /// </summary>
         public Texture transitionTexture
         {
-            get
-            {
-                return m_TransitionTexture
-                    ? m_TransitionTexture
-                    : defaultTransitionTexture;
-            }
+            get { return m_TransitionTexture ? m_TransitionTexture : defaultTransitionTexture; }
             set
             {
-                if (m_TransitionTexture == value) return;
+                if (m_TransitionTexture == value)
+                    return;
                 m_TransitionTexture = value;
                 SetMaterialDirty();
             }
@@ -107,7 +122,8 @@ namespace Coffee.UIEffects
             get { return m_EffectMode; }
             set
             {
-                if (m_EffectMode == value) return;
+                if (m_EffectMode == value)
+                    return;
                 m_EffectMode = value;
                 SetMaterialDirty();
             }
@@ -121,7 +137,8 @@ namespace Coffee.UIEffects
             get { return m_KeepAspectRatio; }
             set
             {
-                if (m_KeepAspectRatio == value) return;
+                if (m_KeepAspectRatio == value)
+                    return;
                 m_KeepAspectRatio = value;
                 SetVerticesDirty();
             }
@@ -144,7 +161,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_DissolveWidth, value)) return;
+                if (Mathf.Approximately(m_DissolveWidth, value))
+                    return;
                 m_DissolveWidth = value;
                 SetEffectParamsDirty();
             }
@@ -159,7 +177,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_DissolveSoftness, value)) return;
+                if (Mathf.Approximately(m_DissolveSoftness, value))
+                    return;
                 m_DissolveSoftness = value;
                 SetEffectParamsDirty();
             }
@@ -173,7 +192,8 @@ namespace Coffee.UIEffects
             get { return m_DissolveColor; }
             set
             {
-                if (m_DissolveColor == value) return;
+                if (m_DissolveColor == value)
+                    return;
                 m_DissolveColor = value;
                 SetEffectParamsDirty();
             }
@@ -193,10 +213,10 @@ namespace Coffee.UIEffects
             if (!isActiveAndEnabled || !material || !material.shader)
                 return k_InvalidHash;
 
-            var shaderVariantId = (uint) ((int) m_EffectMode << 6);
-            var resourceId = (uint) transitionTexture.GetInstanceID();
+            var shaderVariantId = (uint)((int)m_EffectMode << 6);
+            var resourceId = (uint)transitionTexture.GetInstanceID();
             return new Hash128(
-                (uint) material.GetInstanceID(),
+                (uint)material.GetInstanceID(),
                 k_ShaderId + shaderVariantId,
                 resourceId,
                 0
@@ -227,7 +247,7 @@ namespace Coffee.UIEffects
 
             // rect.
             var tex = transitionTexture;
-            var aspectRatio = m_KeepAspectRatio && tex ? ((float) tex.width) / tex.height : -1;
+            var aspectRatio = m_KeepAspectRatio && tex ? ((float)tex.width) / tex.height : -1;
             var rect = m_EffectArea.GetEffectArea(vh, rectTransform.rect, aspectRatio);
 
             // Set parameters to vertex.

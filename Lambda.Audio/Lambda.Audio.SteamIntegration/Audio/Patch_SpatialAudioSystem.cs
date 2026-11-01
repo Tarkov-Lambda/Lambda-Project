@@ -1,18 +1,19 @@
-using HarmonyLib;
-using SPT.Reflection.Patching;
-using System.Reflection;
-using UnityEngine;
-using EFT;
-using Audio.SpatialSystem;
-using Lambda.Audio.SteamIntegration.AudioRooms;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
+using Audio.SpatialSystem;
+using EFT;
+using HarmonyLib;
+using Lambda.Audio.SteamIntegration.AudioRooms;
+using SPT.Reflection.Patching;
+using UnityEngine;
 
 namespace Lambda.Audio.SteamIntegration.Patches;
 
 internal class Transpiler_SpatialAudioSystem_Update : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.Update));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.Update));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -23,7 +24,8 @@ internal class Transpiler_SpatialAudioSystem_Update : ModulePatch
 
 internal class Transpiler_SpatialAudioSystem_LateUpdate : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.LateUpdate));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.LateUpdate));
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -35,8 +37,11 @@ internal class Transpiler_SpatialAudioSystem_LateUpdate : ModulePatch
 internal class Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1 : ModulePatch
 {
     protected override MethodBase GetTargetMethod() =>
-    AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ProcessSourceOcclusion),
-    new[] { typeof(IPlayer), typeof(BetterSource), typeof(bool) });
+        AccessTools.Method(
+            typeof(SpatialAudioSystem),
+            nameof(SpatialAudioSystem.ProcessSourceOcclusion),
+            new[] { typeof(IPlayer), typeof(BetterSource), typeof(bool) }
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -49,8 +54,19 @@ internal class Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_1 : ModulePa
 internal class Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2 : ModulePatch
 {
     protected override MethodBase GetTargetMethod() =>
-    AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ProcessSourceOcclusion),
-    new[] { typeof(GameObject), typeof(BetterSource), typeof(EOcclusionTest), typeof(float), typeof(Vector3), typeof(bool) });
+        AccessTools.Method(
+            typeof(SpatialAudioSystem),
+            nameof(SpatialAudioSystem.ProcessSourceOcclusion),
+            new[]
+            {
+                typeof(GameObject),
+                typeof(BetterSource),
+                typeof(EOcclusionTest),
+                typeof(float),
+                typeof(Vector3),
+                typeof(bool),
+            }
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -63,8 +79,11 @@ internal class Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_2 : ModulePa
 internal class Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3 : ModulePatch
 {
     protected override MethodBase GetTargetMethod() =>
-    AccessTools.Method(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ProcessSourceOcclusion),
-    new[] { typeof(BetterSource), typeof(EOcclusionTest), typeof(Vector3) });
+        AccessTools.Method(
+            typeof(SpatialAudioSystem),
+            nameof(SpatialAudioSystem.ProcessSourceOcclusion),
+            new[] { typeof(BetterSource), typeof(EOcclusionTest), typeof(Vector3) }
+        );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -76,11 +95,18 @@ internal class Transpiler_SpatialAudioSystem_ProcessSourceOcclusion_3 : ModulePa
 
 internal class Transpiler_SpatialAudioSystem_ListenerCurrentRoom : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(SpatialAudioSystem), nameof(SpatialAudioSystem.ListenerCurrentRoom));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(SpatialAudioSystem),
+            nameof(SpatialAudioSystem.ListenerCurrentRoom)
+        );
 
     static ISpatialAudioRoom GetLambdaRoomHelper() => LambdaAudioRoomController.Instance.audioRoom;
 
-    static readonly MethodInfo GetLambdaRoomHelperMethod = AccessTools.Method(typeof(Transpiler_SpatialAudioSystem_ListenerCurrentRoom), nameof(GetLambdaRoomHelper));
+    static readonly MethodInfo GetLambdaRoomHelperMethod = AccessTools.Method(
+        typeof(Transpiler_SpatialAudioSystem_ListenerCurrentRoom),
+        nameof(GetLambdaRoomHelper)
+    );
 
     [PatchTranspiler]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

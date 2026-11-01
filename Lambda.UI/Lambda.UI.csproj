@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
@@ -33,7 +32,11 @@
       <FilesToCopy Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
-      SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" />
+    <Copy
+      SourceFiles="@(FilesToCopy)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp"
+      SkipUnchangedFiles="true"
+      ContinueOnError="WarnAndContinue"
+    />
   </Target>
 </Project>

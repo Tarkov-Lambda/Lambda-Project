@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using System.Linq;
-using System.Data;
-using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace SteamAudio
 {
@@ -29,7 +29,13 @@ namespace SteamAudio
     {
 #if STEAMAUDIO_ENABLED
         private int[] alllowedSampleRates = new int[] { 24000, 44100, 48000, 96000 };
-        private string[] displaySampleRates = new string[] { "24000 Hz", "44100 Hz", "48000 Hz", "96000 Hz" };
+        private string[] displaySampleRates = new string[]
+        {
+            "24000 Hz",
+            "44100 Hz",
+            "48000 Hz",
+            "96000 Hz",
+        };
         public SerializedProperty mSamplingRate;
 
         public SerializedProperty mAmbisonicOrder;
@@ -69,7 +75,11 @@ namespace SteamAudio
 
             if (allProbes.Length == 0)
             {
-                EditorUtility.DisplayDialog("No Steam Audio Reverb Data Points Found", "No Steam Audio Reverb Data Point components were found in the currently-open scene.", "OK");
+                EditorUtility.DisplayDialog(
+                    "No Steam Audio Reverb Data Points Found",
+                    "No Steam Audio Reverb Data Point components were found in the currently-open scene.",
+                    "OK"
+                );
                 return;
             }
 
@@ -84,15 +94,24 @@ namespace SteamAudio
             AssetDatabase.StartAssetEditing();
 
             // Find all assets in SteamAudioProbe.GetAssetFolderPath() path.
-            string[] reverbDataFolder = new string[] { SteamAudioReverbDataPoint.GetAssetFolderPath() };
+            string[] reverbDataFolder = new string[]
+            {
+                SteamAudioReverbDataPoint.GetAssetFolderPath(),
+            };
             string assetType = typeof(SteamAudioReverbData).Name;
 
             // Createa a list of all SteamAudioReverbData Assets which are inside reverbDataFolder folder.
-            string[] reverbDataAssets = AssetDatabase.FindAssets("t:" + assetType, reverbDataFolder);
+            string[] reverbDataAssets = AssetDatabase.FindAssets(
+                "t:" + assetType,
+                reverbDataFolder
+            );
 
             if (reverbDataAssets.Length == 0)
             {
-                Debug.Log("No cleanup needed. No Steam Audio Reverb Data assets found in " + reverbDataFolder[0] );
+                Debug.Log(
+                    "No cleanup needed. No Steam Audio Reverb Data assets found in "
+                        + reverbDataFolder[0]
+                );
                 AssetDatabase.StopAssetEditing();
                 return;
             }
@@ -122,7 +141,9 @@ namespace SteamAudio
                 if (string.IsNullOrEmpty(reverbDataAssetPath))
                     continue;
 
-                bool deleteReverbDataAsset = !referencedReverbDataAssetPaths.Contains(reverbDataAssetPath);
+                bool deleteReverbDataAsset = !referencedReverbDataAssetPaths.Contains(
+                    reverbDataAssetPath
+                );
                 if (deleteReverbDataAsset)
                 {
                     bool deleteSuccessful = AssetDatabase.DeleteAsset(reverbDataAssetPath);
@@ -137,7 +158,9 @@ namespace SteamAudio
                 }
             }
 
-            Debug.Log("Number of SteamAudioReverbData Assets deleted: " + numReverbDataAssetsDeleted);
+            Debug.Log(
+                "Number of SteamAudioReverbData Assets deleted: " + numReverbDataAssetsDeleted
+            );
             AssetDatabase.StopAssetEditing();
         }
 
@@ -161,7 +184,12 @@ namespace SteamAudio
 
             EditorGUI.showMixedValue = mSamplingRate.hasMultipleDifferentValues;
             EditorGUI.BeginChangeCheck();
-            int newSampleRate = EditorGUILayout.IntPopup("Sampling Rate", tgt.sampleRate, displaySampleRates, alllowedSampleRates);
+            int newSampleRate = EditorGUILayout.IntPopup(
+                "Sampling Rate",
+                tgt.sampleRate,
+                displaySampleRates,
+                alllowedSampleRates
+            );
             var selectedProbes = targets.Cast<SteamAudioReverbDataPoint>().ToArray();
 
             if (EditorGUI.EndChangeCheck())
@@ -177,13 +205,18 @@ namespace SteamAudio
             }
 
             EditorGUILayout.PropertyField(mAmbisonicOrder);
-            EditorGUILayout.PropertyField(mReverbDuration, new UnityEngine.GUIContent("Reverb Duration (seconds)"));
+            EditorGUILayout.PropertyField(
+                mReverbDuration,
+                new UnityEngine.GUIContent("Reverb Duration (seconds)")
+            );
             EditorGUILayout.PropertyField(mStoreEnergyField);
             EditorGUILayout.PropertyField(mStoreImpulseResponse);
 
             GUI.enabled = !Baker.IsBakeActive() && !EditorApplication.isPlayingOrWillChangePlaymode;
             EditorGUILayout.Space();
-            string bakeButtonString = serializedObject.isEditingMultipleObjects ? "Bake Selected Probes" : "Bake";
+            string bakeButtonString = serializedObject.isEditingMultipleObjects
+                ? "Bake Selected Probes"
+                : "Bake";
             if (GUILayout.Button(bakeButtonString))
             {
                 SteamAudioReverbDataPoint.BeginBake(selectedProbes);
@@ -209,11 +242,16 @@ namespace SteamAudio
             EditorGUILayout.Space();
             if (mReverbDataAsset.objectReferenceValue != null)
             {
-                Editor.CreateCachedEditor(mReverbDataAsset.objectReferenceValue, null, ref mReverbDataEditor);
+                Editor.CreateCachedEditor(
+                    mReverbDataAsset.objectReferenceValue,
+                    null,
+                    ref mReverbDataEditor
+                );
 
                 // Pass the flag down for multi editing.
                 if (mReverbDataEditor is ReverbDataEditor reverbDataEditor)
-                    reverbDataEditor.mOwnerIsMultiEditing = serializedObject.isEditingMultipleObjects;
+                    reverbDataEditor.mOwnerIsMultiEditing =
+                        serializedObject.isEditingMultipleObjects;
 
                 mReverbDataEditor.OnInspectorGUI();
             }
@@ -225,9 +263,11 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
-
     }
 }

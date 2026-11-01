@@ -1,5 +1,5 @@
-﻿using PacketWarden;
-using MemoryPack;
+﻿using MemoryPack;
+using PacketWarden;
 
 namespace Lambda.Core.Networking;
 
@@ -15,21 +15,15 @@ public class GameplayVariablesSyncPacketWarden : LambdaPacketWarden<GameplayVari
 
     public void Send()
     {
-        var packet = new GameplayVariablesSyncPacket
-        {
-            variables = GameplayVariables.vars
-        };
+        var packet = new GameplayVariablesSyncPacket { variables = GameplayVariables.vars };
 
         DispatchPacket(ref packet);
     }
 
     public void SendToPeer(int peerId)
     {
-        var packet = new GameplayVariablesSyncPacket
-        {
-            variables = GameplayVariables.vars
-        };
-        
+        var packet = new GameplayVariablesSyncPacket { variables = GameplayVariables.vars };
+
         DispatchPacket(ref packet, peerId);
     }
 

@@ -1,17 +1,19 @@
-﻿using EFT.Interactive;
+﻿using System.Reflection;
+using EFT.Interactive;
 using Fika.Core.Main.Components;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lambda.Core.Patches;
 
 internal sealed class Patch_ItemPositionSyncer_FixedUpdate : ModulePatch
 {
-    private static readonly AccessTools.FieldRef<ItemPositionSyncer, ObservedLootItem> LootItemRef = AccessTools.FieldRefAccess<ItemPositionSyncer, ObservedLootItem>("_lootItem");
+    private static readonly AccessTools.FieldRef<ItemPositionSyncer, ObservedLootItem> LootItemRef =
+        AccessTools.FieldRefAccess<ItemPositionSyncer, ObservedLootItem>("_lootItem");
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemPositionSyncer), nameof(ItemPositionSyncer.FixedUpdate));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ItemPositionSyncer), nameof(ItemPositionSyncer.FixedUpdate));
 
     [PatchPrefix]
     private static bool Prefix(ItemPositionSyncer __instance)
@@ -27,9 +29,11 @@ internal sealed class Patch_ItemPositionSyncer_FixedUpdate : ModulePatch
 
 internal sealed class Patch_ItemPositionSyncer_NotifyDone : ModulePatch
 {
-    private static readonly AccessTools.FieldRef<ItemPositionSyncer, ObservedLootItem> LootItemRef = AccessTools.FieldRefAccess<ItemPositionSyncer, ObservedLootItem>("_lootItem");
+    private static readonly AccessTools.FieldRef<ItemPositionSyncer, ObservedLootItem> LootItemRef =
+        AccessTools.FieldRefAccess<ItemPositionSyncer, ObservedLootItem>("_lootItem");
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ItemPositionSyncer), "NotifyDone");
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(ItemPositionSyncer), "NotifyDone");
 
     [PatchPrefix]
     private static bool Prefix(ItemPositionSyncer __instance)

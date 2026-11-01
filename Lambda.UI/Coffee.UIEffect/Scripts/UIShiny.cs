@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
-using System.Collections;
 
 namespace Coffee.UIEffects
 {
@@ -14,30 +14,51 @@ namespace Coffee.UIEffects
     public class UIShiny : BaseMaterialEffect
     {
         private const uint k_ShaderId = 1 << 3;
-        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(8, 128, "_ParamTex");
+        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(
+            8,
+            128,
+            "_ParamTex"
+        );
 
         float _lastRotation;
         EffectArea _lastEffectArea;
 
-        [Tooltip("Location for shiny effect.")] [FormerlySerializedAs("m_Location")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Location for shiny effect.")]
+        [FormerlySerializedAs("m_Location")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_EffectFactor = 0.5f;
 
-        [Tooltip("Width for shiny effect.")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Width for shiny effect.")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_Width = 0.25f;
 
-        [Tooltip("Rotation for shiny effect.")] [SerializeField] [Range(-180, 180)]
+        [Tooltip("Rotation for shiny effect.")]
+        [SerializeField]
+        [Range(-180, 180)]
         float m_Rotation = 135;
 
-        [Tooltip("Softness for shiny effect.")] [SerializeField] [Range(0.01f, 1)]
+        [Tooltip("Softness for shiny effect.")]
+        [SerializeField]
+        [Range(0.01f, 1)]
         float m_Softness = 1f;
 
-        [Tooltip("Brightness for shiny effect.")] [FormerlySerializedAs("m_Alpha")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Brightness for shiny effect.")]
+        [FormerlySerializedAs("m_Alpha")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_Brightness = 1f;
 
-        [Tooltip("Gloss factor for shiny effect.")] [FormerlySerializedAs("m_Highlight")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Gloss factor for shiny effect.")]
+        [FormerlySerializedAs("m_Highlight")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_Gloss = 1;
 
-        [Header("Advanced Option")] [Tooltip("The area for effect.")] [SerializeField]
+        [Header("Advanced Option")]
+        [Tooltip("The area for effect.")]
+        [SerializeField]
         protected EffectArea m_EffectArea;
 
         /// <summary>
@@ -49,7 +70,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_EffectFactor, value)) return;
+                if (Mathf.Approximately(m_EffectFactor, value))
+                    return;
                 m_EffectFactor = value;
                 SetEffectParamsDirty();
             }
@@ -64,7 +86,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_Width, value)) return;
+                if (Mathf.Approximately(m_Width, value))
+                    return;
                 m_Width = value;
                 SetEffectParamsDirty();
             }
@@ -79,7 +102,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0.01f, 1);
-                if (Mathf.Approximately(m_Softness, value)) return;
+                if (Mathf.Approximately(m_Softness, value))
+                    return;
                 m_Softness = value;
                 SetEffectParamsDirty();
             }
@@ -94,7 +118,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_Brightness, value)) return;
+                if (Mathf.Approximately(m_Brightness, value))
+                    return;
                 m_Brightness = value;
                 SetEffectParamsDirty();
             }
@@ -109,7 +134,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_Gloss, value)) return;
+                if (Mathf.Approximately(m_Gloss, value))
+                    return;
                 m_Gloss = value;
                 SetEffectParamsDirty();
             }
@@ -123,7 +149,8 @@ namespace Coffee.UIEffects
             get { return m_Rotation; }
             set
             {
-                if (Mathf.Approximately(m_Rotation, value)) return;
+                if (Mathf.Approximately(m_Rotation, value))
+                    return;
                 m_Rotation = value;
                 SetVerticesDirty();
             }
@@ -137,7 +164,8 @@ namespace Coffee.UIEffects
             get { return m_EffectArea; }
             set
             {
-                if (m_EffectArea == value) return;
+                if (m_EffectArea == value)
+                    return;
                 m_EffectArea = value;
                 SetVerticesDirty();
             }
@@ -156,19 +184,16 @@ namespace Coffee.UIEffects
             if (!isActiveAndEnabled || !material || !material.shader)
                 return k_InvalidHash;
 
-            return new Hash128(
-                (uint) material.GetInstanceID(),
-                k_ShaderId,
-                0,
-                0
-            );
+            return new Hash128((uint)material.GetInstanceID(), k_ShaderId, 0, 0);
         }
 
         public override void ModifyMaterial(Material newMaterial, Graphic graphic)
         {
             var connector = GraphicConnector.FindConnector(graphic);
 
-            newMaterial.shader = FindShader(string.Format("Hidden/{0} (UIShiny)", newMaterial.shader.name));
+            newMaterial.shader = FindShader(
+                string.Format("Hidden/{0} (UIShiny)", newMaterial.shader.name)
+            );
             paramTex.RegisterMaterial(newMaterial);
         }
 
@@ -196,7 +221,13 @@ namespace Coffee.UIEffects
             {
                 vh.PopulateUIVertex(ref vertex, i);
                 Vector2 normalizedPos;
-                connector.GetNormalizedFactor(m_EffectArea, i, localMatrix, vertex.position, out normalizedPos);
+                connector.GetNormalizedFactor(
+                    m_EffectArea,
+                    i,
+                    localMatrix,
+                    vertex.position,
+                    out normalizedPos
+                );
 
                 vertex.uv0 = new Vector2(
                     Packer.ToFloat(vertex.uv0.x, vertex.uv0.y),
@@ -228,8 +259,7 @@ namespace Coffee.UIEffects
         {
             base.OnDidApplyAnimationProperties();
 
-            if (!Mathf.Approximately(_lastRotation, m_Rotation)
-                || _lastEffectArea != m_EffectArea)
+            if (!Mathf.Approximately(_lastRotation, m_Rotation) || _lastEffectArea != m_EffectArea)
                 SetVerticesDirty();
         }
     }

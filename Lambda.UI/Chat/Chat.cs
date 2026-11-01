@@ -1,12 +1,10 @@
 using System;
-using System.Text;
 using System.Collections.Generic;
-
+using System.Text;
+using Lambda.Shared.Models;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-
-using Lambda.Shared.Models;
 
 namespace Lambda.UI
 {
@@ -18,20 +16,35 @@ namespace Lambda.UI
             public float TimeRemaining;
         }
 
-        [SerializeField] private ScrollRect scrollRectMessages;
-        [SerializeField] private TextMeshProUGUI prefabMessage;
+        [SerializeField]
+        private ScrollRect scrollRectMessages;
 
-        [SerializeField] private GameObject[] gameObjectsWhenFocused;
-        [SerializeField] private TextMeshProUGUI textCurrentScope;
-        [SerializeField] private TMP_InputField inputField;
+        [SerializeField]
+        private TextMeshProUGUI prefabMessage;
 
-        [SerializeField] private FactionColors factionColors;
-        [SerializeField] private Color announcementColor = Color.green;
+        [SerializeField]
+        private GameObject[] gameObjectsWhenFocused;
 
-        [SerializeField] private float timeMessageVisible = 12f;
-        [SerializeField] private int maxMessages = 50;
+        [SerializeField]
+        private TextMeshProUGUI textCurrentScope;
 
-        [SerializeField] private KeyCode keybindCycleScope = KeyCode.Tab;
+        [SerializeField]
+        private TMP_InputField inputField;
+
+        [SerializeField]
+        private FactionColors factionColors;
+
+        [SerializeField]
+        private Color announcementColor = Color.green;
+
+        [SerializeField]
+        private float timeMessageVisible = 12f;
+
+        [SerializeField]
+        private int maxMessages = 50;
+
+        [SerializeField]
+        private KeyCode keybindCycleScope = KeyCode.Tab;
 
         private Queue<ChatMessageData> messages = new Queue<ChatMessageData>();
 
@@ -44,11 +57,13 @@ namespace Lambda.UI
         {
             inputField.SetTextWithoutNotify(string.Empty);
 
-            inputField.onSubmit.AddListener((inputText) =>
-            {
-                inputField.SetTextWithoutNotify(string.Empty);
-                OnSubmit?.Invoke(_scope, inputText);
-            });
+            inputField.onSubmit.AddListener(
+                (inputText) =>
+                {
+                    inputField.SetTextWithoutNotify(string.Empty);
+                    OnSubmit?.Invoke(_scope, inputText);
+                }
+            );
 
             SetCurrentScope(_scope);
 
@@ -61,7 +76,8 @@ namespace Lambda.UI
 
             foreach (var go in gameObjectsWhenFocused)
             {
-                if (go == null) continue;
+                if (go == null)
+                    continue;
                 go.SetActive(focus);
             }
 
@@ -100,14 +116,20 @@ namespace Lambda.UI
 
             messageRichText.Append("</color>");
 
-            TextMeshProUGUI newMessageObject = Instantiate(prefabMessage.gameObject, scrollRectMessages.content).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI newMessageObject = Instantiate(
+                    prefabMessage.gameObject,
+                    scrollRectMessages.content
+                )
+                .GetComponent<TextMeshProUGUI>();
             newMessageObject.text = messageRichText.ToString();
 
-            messages.Enqueue(new ChatMessageData
-            {
-                TextComponent = newMessageObject,
-                TimeRemaining = timeMessageVisible
-            });
+            messages.Enqueue(
+                new ChatMessageData
+                {
+                    TextComponent = newMessageObject,
+                    TimeRemaining = timeMessageVisible,
+                }
+            );
 
             while (messages.Count > maxMessages)
             {
@@ -119,7 +141,12 @@ namespace Lambda.UI
             scrollRectMessages.normalizedPosition = Vector2.zero;
         }
 
-        public void PopMessage(ChatMessageScope scope, Faction senderFaction, string senderName, string msg)
+        public void PopMessage(
+            ChatMessageScope scope,
+            Faction senderFaction,
+            string senderName,
+            string msg
+        )
         {
             StringBuilder messageRichText = new StringBuilder();
 
@@ -148,14 +175,20 @@ namespace Lambda.UI
             if (scope == ChatMessageScope.Team)
                 messageRichText.Append("</color>");
 
-            TextMeshProUGUI newMessageObject = Instantiate(prefabMessage.gameObject, scrollRectMessages.content).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI newMessageObject = Instantiate(
+                    prefabMessage.gameObject,
+                    scrollRectMessages.content
+                )
+                .GetComponent<TextMeshProUGUI>();
             newMessageObject.text = messageRichText.ToString();
 
-            messages.Enqueue(new ChatMessageData
-            {
-                TextComponent = newMessageObject,
-                TimeRemaining = timeMessageVisible
-            });
+            messages.Enqueue(
+                new ChatMessageData
+                {
+                    TextComponent = newMessageObject,
+                    TimeRemaining = timeMessageVisible,
+                }
+            );
 
             while (messages.Count > maxMessages)
             {

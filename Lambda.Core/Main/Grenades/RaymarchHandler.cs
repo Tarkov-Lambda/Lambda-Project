@@ -88,8 +88,6 @@ namespace Lambda.Core.Main;
 //                 "Packages/com.lambda.shared/FX/Smokes/Resources/RenderSmoke.compute");
 //         Raymarcher.enabled = false;
 
-
-
 //         GunObject = new GameObject("Gun");
 //         Gun = GunObject.AddComponent<Gun>();
 //         Raymarcher.gun = Gun;
@@ -107,7 +105,6 @@ namespace Lambda.Core.Main;
 //                     "Packages/com.lambda.shared/FX/Smokes/Resources/Voxelize.compute");
 
 //             // localVoxelizer.cam = CameraClass.Instance.Camera;
-
 
 //             Raymarcher.smokeVoxelData = localVoxelizer;
 //             Raymarcher.enabled        = true;

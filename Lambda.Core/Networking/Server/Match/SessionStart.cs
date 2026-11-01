@@ -1,13 +1,12 @@
-﻿using Comfort.Common;
-using Lambda.Core.Main.AssetBundleHandling;
-using PacketWarden;
-using MemoryPack;
-using EFT.InventoryLogic;
+﻿using System.Collections.Generic;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
-using Lambda.Core.Main.Gamemode;
 using EFT;
 using Lambda.Core.Main;
+using Lambda.Core.Main.AssetBundleHandling;
+using Lambda.Core.Main.Gamemode;
+using MemoryPack;
+using PacketWarden;
 using PacketWarden.TimeSync;
 
 namespace Lambda.Core.Networking;
@@ -17,7 +16,7 @@ public partial struct SessionStartPacket : IPacket
 {
     public string level;
     public string gamemode;
-    public List<Item> itemsToLoad; // this needs to change to ResourceKeys (если это ваще имеет смысл)
+    public List<string> templateIds;
     public bool isForLateJoiner;
 }
 
@@ -43,7 +42,8 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     public void Send()
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsInRaid())
+            return;
 
         var packet = new SessionStartPacket
         {
@@ -57,12 +57,13 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
     // if a player was not present at the start of this session, send them the sitrep
     public void SendToPeer(int peerId)
     {
-        if (!H.IsInRaid()) return;
+        if (!H.IsInRaid())
+            return;
 
         var packet = new SessionStartPacket
         {
             level = H.Session.level,
-            gamemode = H.Gamemode.GetType().Name, // deal with it
+            gamemode = H.Gamemode.GetType().Name,
             isForLateJoiner = true,
         };
 
@@ -71,16 +72,19 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
     protected override void MutateApprovedPacket(ref SessionStartPacket packet, int peerId)
     {
-        packet.itemsToLoad = RuntimeBundleLoader.Instance.ItemsToLoad;
+        packet.templateIds = RuntimeBundleLoader.Instance.TemplateIdsToLoad;
     }
 
     protected override async void Apply(SessionStartPacket packet, int peerId)
     {
+        string previousLevel = H.Session.level;
+
         PrepareForStart(packet);
 
+        H.Arena.gamemode?.Dispose();
         H.Arena.gamemode = GetGamemodeByName(packet.gamemode);
         H.Arena.inventoryManager = H.Arena.gamemode.InventoryManager;
-        
+
         if (!H.IsClient)
         {
             Singleton<SessionManagerSyncPacketWarden>.Instance.Send();
@@ -89,7 +93,7 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
 
         NetworkTime.Reset();
 
-        RuntimeBundleLoader.Instance.AddToCache(packet.itemsToLoad);
+        RuntimeBundleLoader.Instance.AddToCache(packet.templateIds);
 
         List<ResourceKey> firstPersonHands = new();
         foreach (var player in H.AllPlayers)
@@ -98,6 +102,14 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
             {
                 firstPersonHands.Add(handsBundle);
             }
+        }
+
+        // a different map would otherwise stay loaded (and rendered) for the rest of the raid
+        if (!string.IsNullOrEmpty(previousLevel) && previousLevel != packet.level)
+        {
+            if (!H.IsHeadless)
+                Teleporter.Teleport(H.MainPlayer, "lobby", Faction.None);
+            await MapAssetBundleLoader.Instance.UnloadMap(previousLevel);
         }
 
         await UniTask.WhenAll(
@@ -117,7 +129,6 @@ public class SessionStartPacketWarden : LambdaPacketWarden<SessionStartPacket>
         }
     }
 
-    // you gonna have to prefix patch this bro
     public LambdaGamemode GetGamemodeByName(string gamemodeName)
     {
         if (gamemodeName == "SNDGamemode")

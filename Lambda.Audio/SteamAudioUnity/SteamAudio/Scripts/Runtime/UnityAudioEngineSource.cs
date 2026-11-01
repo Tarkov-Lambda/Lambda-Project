@@ -68,24 +68,38 @@ namespace SteamAudio
             mAudioSource.SetSpatializerFloat(index++, (source.transmission) ? 1.0f : 0.0f);
             mAudioSource.SetSpatializerFloat(index++, (source.reflections) ? 1.0f : 0.0f);
             mAudioSource.SetSpatializerFloat(index++, (source.pathing) ? 1.0f : 0.0f);
-            mAudioSource.SetSpatializerFloat(index++, (float) source.interpolation);
+            mAudioSource.SetSpatializerFloat(index++, (float)source.interpolation);
             mAudioSource.SetSpatializerFloat(index++, source.distanceAttenuationValue);
-            mAudioSource.SetSpatializerFloat(index++, (source.distanceAttenuationInput == DistanceAttenuationInput.CurveDriven) ? 1.0f : 0.0f);
+            mAudioSource.SetSpatializerFloat(
+                index++,
+                (source.distanceAttenuationInput == DistanceAttenuationInput.CurveDriven)
+                    ? 1.0f
+                    : 0.0f
+            );
             mAudioSource.SetSpatializerFloat(index++, source.airAbsorptionLow);
             mAudioSource.SetSpatializerFloat(index++, source.airAbsorptionMid);
             mAudioSource.SetSpatializerFloat(index++, source.airAbsorptionHigh);
-            mAudioSource.SetSpatializerFloat(index++, (source.airAbsorptionInput == AirAbsorptionInput.UserDefined) ? 1.0f : 0.0f);
+            mAudioSource.SetSpatializerFloat(
+                index++,
+                (source.airAbsorptionInput == AirAbsorptionInput.UserDefined) ? 1.0f : 0.0f
+            );
             mAudioSource.SetSpatializerFloat(index++, source.directivityValue);
             mAudioSource.SetSpatializerFloat(index++, source.dipoleWeight);
             mAudioSource.SetSpatializerFloat(index++, source.dipolePower);
-            mAudioSource.SetSpatializerFloat(index++, (source.directivityInput == DirectivityInput.UserDefined) ? 1.0f : 0.0f);
+            mAudioSource.SetSpatializerFloat(
+                index++,
+                (source.directivityInput == DirectivityInput.UserDefined) ? 1.0f : 0.0f
+            );
             mAudioSource.SetSpatializerFloat(index++, source.occlusionValue);
-            mAudioSource.SetSpatializerFloat(index++, (float) source.transmissionType);
+            mAudioSource.SetSpatializerFloat(index++, (float)source.transmissionType);
             mAudioSource.SetSpatializerFloat(index++, source.transmissionLow);
             mAudioSource.SetSpatializerFloat(index++, source.transmissionMid);
             mAudioSource.SetSpatializerFloat(index++, source.transmissionHigh);
             mAudioSource.SetSpatializerFloat(index++, source.directMixLevel);
-            mAudioSource.SetSpatializerFloat(index++, (source.applyHRTFToReflections) ? 1.0f : 0.0f);
+            mAudioSource.SetSpatializerFloat(
+                index++,
+                (source.applyHRTFToReflections) ? 1.0f : 0.0f
+            );
             mAudioSource.SetSpatializerFloat(index++, source.reflectionsMixLevel);
             mAudioSource.SetSpatializerFloat(index++, (source.applyHRTFToPathing) ? 1.0f : 0.0f);
             mAudioSource.SetSpatializerFloat(index++, source.pathingMixLevel);

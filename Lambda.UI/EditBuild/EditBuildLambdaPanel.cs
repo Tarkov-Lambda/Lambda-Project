@@ -6,8 +6,11 @@ namespace Lambda.UI
 {
     public class EditBuildLambdaPanel : MonoBehaviour
     {
-        [SerializeField] private Button ButtonEquip;
-        [SerializeField] private Button ButtonNonInteractable;
+        [SerializeField]
+        private Button ButtonEquip;
+
+        [SerializeField]
+        private Button ButtonNonInteractable;
 
         Action onClickEquip;
 
@@ -29,9 +32,6 @@ namespace Lambda.UI
             onClickEquip?.Invoke();
         }
 
-        void Update()
-        {
-        
-        }
+        void Update() { }
     }
 }

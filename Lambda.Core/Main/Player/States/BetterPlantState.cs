@@ -5,7 +5,8 @@ public class BetterPlantStateClass : PlantStateClass
 {
     private readonly GClass777 Gclass777_0;
 
-    public BetterPlantStateClass(MovementContext movementContext) : base(movementContext)
+    public BetterPlantStateClass(MovementContext movementContext)
+        : base(movementContext)
     {
         if (!MovementContext.IsAI)
         {
@@ -18,7 +19,10 @@ public class BetterPlantStateClass : PlantStateClass
     {
         base.Enter(isFromSameState);
 
-        MovementContext.SetRotationLimit(Player.PlayerMovementConstantsClass.FULL_YAW_RANGE, Player.PlayerMovementConstantsClass.STAND_POSE_ROTATION_PITCH_RANGE);
+        MovementContext.SetRotationLimit(
+            Player.PlayerMovementConstantsClass.FULL_YAW_RANGE,
+            Player.PlayerMovementConstantsClass.STAND_POSE_ROTATION_PITCH_RANGE
+        );
 
         GClass777 gclass777_ = Gclass777_0;
         if (gclass777_ == null)
@@ -32,8 +36,20 @@ public class BetterPlantStateClass : PlantStateClass
     {
         if (Mathf.Abs(step) > 0)
         {
-            Vector3 vector = new(MovementContext.TransformForwardVector.z, 0f, -MovementContext.TransformForwardVector.x);
-            if (MovementContext.OverlapOrHasNoGround(0.3f, new Vector3?(vector * Mathf.Sign((float)step)), 0.2f, 3f, 0f))
+            Vector3 vector = new(
+                MovementContext.TransformForwardVector.z,
+                0f,
+                -MovementContext.TransformForwardVector.x
+            );
+            if (
+                MovementContext.OverlapOrHasNoGround(
+                    0.3f,
+                    new Vector3?(vector * Mathf.Sign((float)step)),
+                    0.2f,
+                    3f,
+                    0f
+                )
+            )
             {
                 MovementContext.Step = 0;
                 return;
@@ -51,7 +67,8 @@ public class BetterPlantStateClass : PlantStateClass
     public override void Cancel()
     {
         // cancelling the freelook doesn't cancel planting
-        if (Patch_GamePlayerOwner_TranslateCommand.IsRessetingFreelook) return;
+        if (Patch_GamePlayerOwner_TranslateCommand.IsRessetingFreelook)
+            return;
 
         if (MovementContext.PlantAction == null)
         {
@@ -64,6 +81,10 @@ public class BetterPlantStateClass : PlantStateClass
 
     public override void BlendMotion(ref Vector3 motion, float deltaTime)
     {
-        motion = Vector3.Lerp(motion, MovementContext.LastBlendMotionDelta * deltaTime, EFTHardSettings.Instance.IdleStateMotionPreservation);
+        motion = Vector3.Lerp(
+            motion,
+            MovementContext.LastBlendMotionDelta * deltaTime,
+            EFTHardSettings.Instance.IdleStateMotionPreservation
+        );
     }
 }

@@ -11,19 +11,20 @@ using UnityEngine;
 
 public class ShopTester : MonoBehaviour
 {
-    [SerializeField] private string pathJsonAssortment;
+    [SerializeField]
+    private string pathJsonAssortment;
 
-    [SerializeField] private Sprite dummySprite;
-    [SerializeField] private Faction faction;
+    [SerializeField]
+    private Sprite dummySprite;
+
+    [SerializeField]
+    private Faction faction;
 
     public List<BuyCategory> buyCategories;
 
     Shop instance;
 
-
-    void BuyRequest(ShopItem shopItem)
-    {
-    }
+    void BuyRequest(ShopItem shopItem) { }
 
     void Update()
     {
@@ -33,7 +34,6 @@ public class ShopTester : MonoBehaviour
 
             if (instance != null)
             {
-
                 string json = System.IO.File.ReadAllText(pathJsonAssortment);
                 buyCategories = JsonConvert.DeserializeObject<List<BuyCategory>>(json);
                 foreach (var category in buyCategories)
@@ -46,7 +46,11 @@ public class ShopTester : MonoBehaviour
                     }
                 }
 
-                instance.SetAssortment(buyCategories, new DummyItemInfoProvider(dummySprite), BuyRequest);
+                instance.SetAssortment(
+                    buyCategories,
+                    new DummyItemInfoProvider(dummySprite),
+                    BuyRequest
+                );
             }
         }
     }

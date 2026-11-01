@@ -17,11 +17,7 @@ public class RaiseErrorPacketWarden : LambdaPacketWarden<RaiseErrorPacket>
 {
     public void Send(string error, bool isForAdmin = true)
     {
-        var packet = new RaiseErrorPacket
-        {
-            error = error,
-            isForAdmin = isForAdmin
-        };
+        var packet = new RaiseErrorPacket { error = error, isForAdmin = isForAdmin };
 
         if (!H.IsHeadless)
         {

@@ -1,9 +1,9 @@
-﻿using EFT.InventoryLogic;
+﻿using System;
+using System.Reflection;
+using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
 {
@@ -13,8 +13,11 @@ namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
 
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EditBuildScreen), nameof(EditBuildScreen.Show), 
-                [typeof(Item), typeof(Item), typeof(InventoryController), typeof(ISession)]);
+            return AccessTools.Method(
+                typeof(EditBuildScreen),
+                nameof(EditBuildScreen.Show),
+                [typeof(Item), typeof(Item), typeof(InventoryController), typeof(ISession)]
+            );
         }
 
         [PatchPostfix]

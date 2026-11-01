@@ -1,16 +1,16 @@
-﻿using Lambda.UI;
-using Comfort.Common;
-using EFT;
-using Lambda.Core.Patches.Tarkov;
-using Lambda.Shared.Models;
-using System;
-using UnityEngine;
+﻿using System;
 using System.Linq;
+using Comfort.Common;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using EFT;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
+using Lambda.Core.Patches.Tarkov;
+using Lambda.Shared.Models;
+using Lambda.UI;
 using Lambda.UI.scoreboard;
-using DG.Tweening;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace Lambda.Core.Main.UI
 {
@@ -55,7 +55,9 @@ namespace Lambda.Core.Main.UI
         }
 
         private void OnPlayerKill(PlayerKilledPacket packet) => Refresh();
+
         private void OnPlayerReadiness(PlayerReadinessPacket packet) => Refresh();
+
         private void OnPlayerSetClanTag(ClanTagResyncPacket packet) => Refresh();
 
         private void OnMatchStateEnter(MatchState state)
@@ -80,7 +82,8 @@ namespace Lambda.Core.Main.UI
 
         private void AddInventoryHotkeyInterceptor()
         {
-            inventoryHotkeyListener = H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
+            inventoryHotkeyListener =
+                H.MainPlayer.gameObject.AddComponent<InventoryHotkeyListener>();
 
             inventoryHotkeyListener.OnHoldBegin += () =>
             {
@@ -109,11 +112,14 @@ namespace Lambda.Core.Main.UI
 
         void Refresh()
         {
-            PlayerContextInfo[] allPlayerStats = H.Scoreboard.Values.Select(p => p.Context).ToArray();
+            PlayerContextInfo[] allPlayerStats = H
+                .Scoreboard.Values.Select(p => p.Context)
+                .ToArray();
             scoreboardUI.SetPlayers(
                 allPlayerStats,
                 H.Session.factionWins,
-                H.MainPlayerScore.Faction);
+                H.MainPlayerScore.Faction
+            );
         }
 
         void ToggleVisibility(bool show)
@@ -133,7 +139,8 @@ namespace Lambda.Core.Main.UI
                 canvasGroup.alpha = 0f;
             }
 
-            canvasGroup.DOFade(fadeAlphaTarget, fadeDuration)
+            canvasGroup
+                .DOFade(fadeAlphaTarget, fadeDuration)
                 .OnComplete(() =>
                 {
                     if (!show)

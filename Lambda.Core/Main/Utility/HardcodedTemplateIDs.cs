@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -33,9 +32,7 @@ internal static class Hardcode
     {
         var values = typeof(Hardcode)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.IsLiteral &&
-            !f.IsInitOnly &&
-            f.FieldType == typeof(string))
+            .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
             .Select(f => (string)f.GetRawConstantValue()!);
 
         return values;

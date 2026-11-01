@@ -22,7 +22,12 @@ namespace SteamAudio
 {
     public sealed class UnityAudioEngineState : AudioEngineState
     {
-        public override void Initialize(IntPtr context, IntPtr defaultHRTF, SimulationSettings simulationSettings, PerspectiveCorrection correction)
+        public override void Initialize(
+            IntPtr context,
+            IntPtr defaultHRTF,
+            SimulationSettings simulationSettings,
+            PerspectiveCorrection correction
+        )
         {
             API.iplUnityInitialize(context);
             API.iplUnitySetHRTF(defaultHRTF);

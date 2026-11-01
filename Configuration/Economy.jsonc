@@ -224,14 +224,14 @@
       },
       {
         "bsgId": "617fd91e5539a84ec44ce155",
-        "price": 50000,
-        "maxQuantity": 1,
-        "maxBuy": 1,
+        "price": 1,
+        "maxQuantity": 10000,
+        "maxBuy": 10000,
         "faction": "T"
       },
       {
         "bsgId": "617fd91e5539a84ec44ce155",
-        "price": 50000,
+        "price": 1,
         "maxQuantity": 1,
         "maxBuy": 1,
         "faction": "CT"

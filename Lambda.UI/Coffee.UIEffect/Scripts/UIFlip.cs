@@ -9,10 +9,12 @@ namespace Coffee.UIEffects
     [AddComponentMenu("UI/UIEffects/UIFlip", 102)]
     public class UIFlip : BaseMeshEffect
     {
-        [Tooltip("Flip horizontally.")] [SerializeField]
+        [Tooltip("Flip horizontally.")]
+        [SerializeField]
         private bool m_Horizontal = false;
 
-        [Tooltip("Flip vertically.")] [SerializeField]
+        [Tooltip("Flip vertically.")]
+        [SerializeField]
         private bool m_Veritical = false;
 
         /// <summary>
@@ -24,7 +26,8 @@ namespace Coffee.UIEffects
             get { return m_Horizontal; }
             set
             {
-                if (m_Horizontal == value) return;
+                if (m_Horizontal == value)
+                    return;
                 m_Horizontal = value;
                 SetEffectParamsDirty();
             }
@@ -39,7 +42,8 @@ namespace Coffee.UIEffects
             get { return m_Veritical; }
             set
             {
-                if (m_Veritical == value) return;
+                if (m_Veritical == value)
+                    return;
                 m_Veritical = value;
                 SetEffectParamsDirty();
             }
@@ -51,7 +55,8 @@ namespace Coffee.UIEffects
         /// <param name="vh">VertexHelper.</param>
         public override void ModifyMesh(VertexHelper vh, Graphic graphic)
         {
-            if (!isActiveAndEnabled) return;
+            if (!isActiveAndEnabled)
+                return;
 
             var vt = default(UIVertex);
             for (var i = 0; i < vh.currentVertCount; i++)

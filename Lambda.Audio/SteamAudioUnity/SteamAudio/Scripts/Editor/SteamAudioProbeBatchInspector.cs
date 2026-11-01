@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace SteamAudio
 {
@@ -52,7 +52,10 @@ namespace SteamAudio
             EditorGUILayout.PropertyField(mAsset);
 
             EditorGUILayout.PropertyField(mPlacementStrategy);
-            if ((ProbeGenerationType) mPlacementStrategy.enumValueIndex == ProbeGenerationType.UniformFloor)
+            if (
+                (ProbeGenerationType)mPlacementStrategy.enumValueIndex
+                == ProbeGenerationType.UniformFloor
+            )
             {
                 EditorGUILayout.PropertyField(mHorizontalSpacing);
                 EditorGUILayout.PropertyField(mHeightAboveFloor);
@@ -95,7 +98,10 @@ namespace SteamAudio
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Probe Statistics", EditorStyles.boldLabel);
                 EditorGUILayout.LabelField("Probes", tgt.GetNumProbes().ToString());
-                EditorGUILayout.LabelField("Data Size", Common.HumanReadableDataSize(tgt.probeDataSize));
+                EditorGUILayout.LabelField(
+                    "Data Size",
+                    Common.HumanReadableDataSize(tgt.probeDataSize)
+                );
 
                 if (tgt.GetNumLayers() > 0)
                 {
@@ -120,7 +126,10 @@ namespace SteamAudio
                         }
 
                         EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(name, Common.HumanReadableDataSize(layerInfo.dataSize));
+                        EditorGUILayout.LabelField(
+                            name,
+                            Common.HumanReadableDataSize(layerInfo.dataSize)
+                        );
                         if (GUILayout.Button("Clear"))
                         {
                             tgt.DeleteBakedDataForIdentifier(layerInfo.identifier);
@@ -134,7 +143,11 @@ namespace SteamAudio
             serializedObject.ApplyModifiedProperties();
         }
 
-        [MenuItem("Steam Audio/Steam Audio Probe Batch/Bake All Pathing In Current Scene", false, 63)]
+        [MenuItem(
+            "Steam Audio/Steam Audio Probe Batch/Bake All Pathing In Current Scene",
+            false,
+            63
+        )]
         public static void BakeAllPathingInScene()
         {
             var probeBatches = FindObjectsByType<SteamAudioProbeBatch>(FindObjectsSortMode.None);
@@ -143,7 +156,8 @@ namespace SteamAudio
                 EditorUtility.DisplayDialog(
                     "No Steam Audio Probe Batches Found",
                     "No Steam Audio Probe Batch components were found in the currently-open scene.",
-                    "OK");
+                    "OK"
+                );
                 return;
             }
 
@@ -153,7 +167,10 @@ namespace SteamAudio
 #else
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.", MessageType.Warning);
+            EditorGUILayout.HelpBox(
+                "Steam Audio is not supported for the target platform or STEAMAUDIO_ENABLED define symbol is missing.",
+                MessageType.Warning
+            );
         }
 #endif
     }

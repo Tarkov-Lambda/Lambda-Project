@@ -1,11 +1,11 @@
-﻿using Comfort.Common;
+﻿using System.Collections.Generic;
+using Comfort.Common;
 using EFT;
 using EFT.AssetsManager;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using RootMotion.FinalIK;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using EasyAssetsExtensions = GClass1857;
@@ -33,7 +33,8 @@ public class FakeCorpse : Corpse
     public void PreInitRagdollData(
         RigidbodySpawner[] rigidbodySpawners,
         CharacterJointSpawner[] jointSpawners,
-        List<PlayerRigidbodySleepHierarchy> sleepHierarchy)
+        List<PlayerRigidbodySleepHierarchy> sleepHierarchy
+    )
     {
         _preInitRbSpawners = rigidbodySpawners;
         _preInitJointSpawners = jointSpawners;
@@ -43,7 +44,9 @@ public class FakeCorpse : Corpse
     public new void Awake()
     {
         AccessTools.Field(typeof(Corpse), "rigidbodySpawner_0").SetValue(this, _preInitRbSpawners);
-        AccessTools.Field(typeof(Corpse), "characterJointSpawner_0").SetValue(this, _preInitJointSpawners);
+        AccessTools
+            .Field(typeof(Corpse), "characterJointSpawner_0")
+            .SetValue(this, _preInitJointSpawners);
         AccessTools.Field(typeof(Corpse), "list_0").SetValue(this, _preInitSleepHierarchy);
     }
 
@@ -99,9 +102,14 @@ public class FakeCorpse : Corpse
             return;
         }
 
-        BetterSource speaker = H.BetterAudio.GetSource(BetterAudio.AudioSourceGroupType.Speech, true);
+        BetterSource speaker = H.BetterAudio.GetSource(
+            BetterAudio.AudioSourceGroupType.Speech,
+            true
+        );
         speaker.StartTrackingPosition(head);
-        AudioMixerGroup targetMixerGroup = player.IsYourPlayer ? H.BetterAudio.ClientPlayerSpeechMixer : H.BetterAudio.ObservedPlayerSpeechMixer;
+        AudioMixerGroup targetMixerGroup = player.IsYourPlayer
+            ? H.BetterAudio.ClientPlayerSpeechMixer
+            : H.BetterAudio.ObservedPlayerSpeechMixer;
         speaker.SetMixerGroup(H.BetterAudio.ObservedPlayerSpeechMixer);
         speaker.Play(taggedClip.Clip, null, 1f);
 
@@ -118,7 +126,11 @@ public class FakeCorpse : Corpse
         if (attachedCamera != null)
         {
             Matrix4x4 parentMatrix = bones.HeadCameraCollider.transform.localToWorldMatrix;
-            Matrix4x4 localMatrix = Matrix4x4.TRS(attacthedCameraLocalPos, attacthedCameraLocalRot, Vector3.one);
+            Matrix4x4 localMatrix = Matrix4x4.TRS(
+                attacthedCameraLocalPos,
+                attacthedCameraLocalRot,
+                Vector3.one
+            );
             Matrix4x4 worldMatrix = parentMatrix * localMatrix;
 
             attachedCamera.transform.position = worldMatrix.GetColumn(3);
@@ -126,9 +138,7 @@ public class FakeCorpse : Corpse
         }
     }
 
-    public void OnRigidbodyStopped()
-    {
-    }
+    public void OnRigidbodyStopped() { }
 
     void OnDestroy()
     {

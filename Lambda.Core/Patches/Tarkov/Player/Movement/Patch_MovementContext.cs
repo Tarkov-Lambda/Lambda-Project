@@ -1,12 +1,12 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Reflection;
+using Comfort.Common;
 using EFT;
 using HarmonyLib;
 using Lambda.Core.Main;
-using Lambda.Core.Networking;
 using Lambda.Core.Main.MovementStates;
+using Lambda.Core.Networking;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lambda.Core.Patches.Tarkov;
@@ -15,13 +15,16 @@ internal class Patch_MovementContext_CanWalk : ModulePatch
 {
     private static bool wasOnLadder = false;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanWalk));
 
     [PatchPostfix]
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
-        if (!H.IsArenaReady) return;
-        if (!____player.IsYourPlayer) return;
+        if (!H.IsArenaReady)
+            return;
+        if (!____player.IsYourPlayer)
+            return;
 
         if (____player.Context.IsControllerPartiallyLocked())
         {
@@ -34,7 +37,7 @@ internal class Patch_MovementContext_CanWalk : ModulePatch
             wasOnLadder = true;
             __result = false;
         }
-        else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground after ladder use to move 
+        else if (wasOnLadder && !H.MainPlayer.MovementContext.IsGrounded) // wait until the player is on the ground after ladder use to move
         {
             wasOnLadder = false;
             __result = false;
@@ -52,13 +55,16 @@ internal class Patch_MovementContext_CanWalk : ModulePatch
 
 internal class Patch_MovementContext_CanJump : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanJump));
 
     [PatchPostfix]
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
-        if (!H.IsArenaReady) return;
-        if (!____player.IsYourPlayer) return;
+        if (!H.IsArenaReady)
+            return;
+        if (!____player.IsYourPlayer)
+            return;
 
         if (____player.Context.IsControllerPartiallyLocked())
         {
@@ -80,21 +86,26 @@ internal class Patch_MovementContext_CanJump : ModulePatch
 
 internal class Patch_MovementContext_CanProne : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanProne));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.CanProne));
 
     [PatchPostfix]
     static void Postfix(MovementContext __instance, Player ____player, ref bool __result)
     {
-        if (!H.IsArenaReady) return;
+        if (!H.IsArenaReady)
+            return;
         __result = false;
     }
 }
 
-
 // BLINDFIRE
 internal class Patch_MovementContext_PlayerAnimatorSetBlindFire : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.PlayerAnimatorSetBlindFire));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(MovementContext),
+            nameof(MovementContext.PlayerAnimatorSetBlindFire)
+        );
 
     [PatchPrefix]
     private static bool Prefix() => false;
@@ -104,12 +115,18 @@ internal class Patch_MovementContext_SetBlindFire : ModulePatch
 {
     private static int lastSentState;
 
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetBlindFire), [typeof(int)]);
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(MovementContext),
+            nameof(MovementContext.SetBlindFire),
+            [typeof(int)]
+        );
 
     [PatchPrefix]
     private static bool Prefix(Player ____player, MovementContext __instance, int b)
     {
-        if (____player.MovementContext.CurrentState is SprintStateClass) return true;
+        if (____player.MovementContext.CurrentState is SprintStateClass)
+            return true;
         if (____player != null && ____player.HandsController != null)
         {
             ____player.HandsController.BlindFire(b);
@@ -118,7 +135,6 @@ internal class Patch_MovementContext_SetBlindFire : ModulePatch
                 Singleton<BlindFirePacketWarden>.Instance?.Send(b);
                 lastSentState = b;
             }
-
         }
         return false;
     }
@@ -126,7 +142,8 @@ internal class Patch_MovementContext_SetBlindFire : ModulePatch
 
 internal class Patch_MovementContext_ManualUpdate : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ManualUpdate));
 
     [PatchPostfix]
     private static void Prefix(MovementContext __instance, Player ____player, float deltaTime)
@@ -141,7 +158,11 @@ internal class Patch_MovementContext_ManualUpdate : ModulePatch
             }
             if (num > 0.001f)
             {
-                __instance.SmoothedCharacterMovementSpeed = Mathf.Lerp(__instance.SmoothedCharacterMovementSpeed, clampedSpeed, deltaTime * EFTHardSettings.Instance.CHARACTER_SPEED_CHANGING_SPEED);
+                __instance.SmoothedCharacterMovementSpeed = Mathf.Lerp(
+                    __instance.SmoothedCharacterMovementSpeed,
+                    clampedSpeed,
+                    deltaTime * EFTHardSettings.Instance.CHARACTER_SPEED_CHANGING_SPEED
+                );
                 return;
             }
             __instance.SmoothedCharacterMovementSpeed = clampedSpeed;
@@ -153,10 +174,16 @@ internal class Patch_MovementContext_ManualUpdate : ModulePatch
 
 internal class Patch_MovementContext_GetNewState : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.GetNewState));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(MovementContext), nameof(MovementContext.GetNewState));
 
     [PatchPrefix]
-    private static bool Prefix(MovementContext __instance, ref BaseMovementState __result, EPlayerState name, bool isAI = false)
+    private static bool Prefix(
+        MovementContext __instance,
+        ref BaseMovementState __result,
+        EPlayerState name,
+        bool isAI = false
+    )
     {
         if (name == EPlayerState.Run && !isAI)
         {
@@ -175,7 +202,8 @@ internal class Patch_MovementContext_GetNewState : ModulePatch
 
 internal class Patch_MovementContext_SetAimingSlowdown : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(MovementContext), nameof(MovementContext.SetAimingSlowdown));
 
     [PatchPrefix]
     private static bool Prefix(MovementContext __instance, bool isAiming, ref float slow)
@@ -187,10 +215,15 @@ internal class Patch_MovementContext_SetAimingSlowdown : ModulePatch
 
 internal class Patch_MovementContext_method_15 : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_15));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_15));
 
     [PatchPrefix]
-    private static bool Prefix(MovementContext __instance, ref float smoothDiff, ref float deltaTime)
+    private static bool Prefix(
+        MovementContext __instance,
+        ref float smoothDiff,
+        ref float deltaTime
+    )
     {
         deltaTime *= GameplayVariables.vars.LeanSpeed;
         // __instance.method_14(smoothDiff, deltaTime);
@@ -200,7 +233,8 @@ internal class Patch_MovementContext_method_15 : ModulePatch
 
 internal class Patch_MovementContext_ApplyDamageByVaulting : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ApplyDamageByVaulting));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(typeof(MovementContext), nameof(MovementContext.ApplyDamageByVaulting));
 
     [PatchPrefix]
     private static bool Prefix() => false;

@@ -29,6 +29,8 @@ public class MolotovPhysicsTrigger : DamageTrigger, IPhysicsTrigger, IPhysicsTri
     }
 
     public override void AddPenalty(IPlayerOwner player) { }
+
     public override void RemovePenalty(IPlayerOwner player) { }
+
     public override void PlaySound(bool useOcclusion = false) { }
 }

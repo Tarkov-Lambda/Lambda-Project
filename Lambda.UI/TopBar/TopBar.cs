@@ -1,8 +1,8 @@
 using System;
-using TMPro;
-using UnityEngine;
 using Lambda.Shared;
 using Lambda.Shared.Models;
+using TMPro;
+using UnityEngine;
 
 namespace Lambda.UI
 {
@@ -10,17 +10,27 @@ namespace Lambda.UI
     [RequireComponent(typeof(CanvasGroup))]
     public class TopBar : MonoBehaviour
     {
-        [SerializeField] private TopBarTeamScore teamScoreLeft;
-        [SerializeField] private TopBarTeamScore teamScoreRight;
+        [SerializeField]
+        private TopBarTeamScore teamScoreLeft;
 
-        [field: SerializeField] public TMP_Text TextTimer { get; private set; }
-        [SerializeField] private float textTimerMonospacing = 16;
+        [SerializeField]
+        private TopBarTeamScore teamScoreRight;
 
-        [SerializeField] private FactionColors factionColors;
+        [field: SerializeField]
+        public TMP_Text TextTimer { get; private set; }
+
+        [SerializeField]
+        private float textTimerMonospacing = 16;
+
+        [SerializeField]
+        private FactionColors factionColors;
 
         [Space(10)]
-        [SerializeField] private TeamStatus teamStatusLeft;
-        [SerializeField] private TeamStatus teamStatusRight;
+        [SerializeField]
+        private TeamStatus teamStatusLeft;
+
+        [SerializeField]
+        private TeamStatus teamStatusRight;
 
         public RectTransform Rect { get; private set; }
         public CanvasGroup Canvas { get; private set; }
@@ -45,7 +55,8 @@ namespace Lambda.UI
         public void SetTime(float seconds)
         {
             int intSeconds = Mathf.CeilToInt(seconds);
-            if (intSeconds == _lastSeconds) return;
+            if (intSeconds == _lastSeconds)
+                return;
 
             _lastSeconds = intSeconds;
             TextTimer.text = $"<mspace={textTimerMonospacing}>{FormatTime(intSeconds)}</mspace>";
@@ -59,7 +70,8 @@ namespace Lambda.UI
 
         string FormatTime(float seconds)
         {
-            if (seconds < 0) seconds = 0;
+            if (seconds < 0)
+                seconds = 0;
             TimeSpan t = TimeSpan.FromSeconds(seconds);
             return $"{t.Minutes:D2}:{t.Seconds:D2}";
         }

@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Rendering;
-using System.Collections;
 
 namespace Lambda.Core.Main.UI;
 
@@ -40,13 +40,15 @@ internal class EFTScreenGrabber : MonoBehaviour
 
     IEnumerator RebuildResourcesCoroutine()
     {
-        if (_commandBuffer == null) yield break;
+        if (_commandBuffer == null)
+            yield break;
 
         _commandBuffer.Clear();
 
         if (_screenCapture != null)
         {
             _screenCapture.Release();
+            Destroy(_screenCapture);
             _screenCapture = null;
         }
 
@@ -61,7 +63,8 @@ internal class EFTScreenGrabber : MonoBehaviour
 
         if (_ssaa != null)
         {
-            RenderTexture src, dst;
+            RenderTexture src,
+                dst;
             var prop = _ssaa.GetComponent<SSAAPropagator>();
             if (prop != null && prop.GetSourceDestination(out src, out dst) && src != null)
             {
@@ -81,10 +84,16 @@ internal class EFTScreenGrabber : MonoBehaviour
         if (_ssaa != null)
         {
             var impl = _ssaa.GetComponent<SSAAImpl>();
-            if (impl != null) impl.RenderTexturesAreChanged -= RebuildResources;
+            if (impl != null)
+                impl.RenderTexturesAreChanged -= RebuildResources;
         }
 
-        if (_commandBuffer != null) _commandBuffer.Release();
-        if (_screenCapture != null) _screenCapture.Release();
+        if (_commandBuffer != null)
+            _commandBuffer.Release();
+        if (_screenCapture != null)
+        {
+            _screenCapture.Release();
+            Destroy(_screenCapture);
+        }
     }
 }

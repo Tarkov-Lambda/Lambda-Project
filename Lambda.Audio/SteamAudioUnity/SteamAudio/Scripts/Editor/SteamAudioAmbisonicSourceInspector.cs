@@ -34,8 +34,10 @@ namespace SteamAudio
             if (SteamAudioSettings.Singleton.audioEngine != AudioEngineType.Unity)
             {
                 EditorGUILayout.HelpBox(
-                    "This component requires the audio engine to be set to Unity. Click" +
-                    "Steam Audio > Settings to change this.", MessageType.Warning);
+                    "This component requires the audio engine to be set to Unity. Click"
+                        + "Steam Audio > Settings to change this.",
+                    MessageType.Warning
+                );
 
                 return;
             }

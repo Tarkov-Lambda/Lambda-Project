@@ -1,12 +1,18 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using MemoryPack;
-using PacketWarden;
+using Lambda.Core.Main;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Shared.Models;
-using Lambda.Core.Main;
+using MemoryPack;
+using PacketWarden;
 
 namespace Lambda.Core.Networking;
+
+[MemoryPackable]
+public partial struct PlayerContextEntry
+{
+    public int playerId;
+    public PlayerContextInfo info;
+}
 
 [MemoryPackable]
 public partial struct SessionManagerSyncPacket : IPacket
@@ -17,7 +23,7 @@ public partial struct SessionManagerSyncPacket : IPacket
     public string mapName;
 
     public Dictionary<Faction, int> factionWins;
-    public PlayerContextInfo?[] scores;
+    public PlayerContextEntry[] scores;
 }
 
 // Runs on MatchState.RoundEnd
@@ -27,11 +33,16 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
 
     public SessionManagerSyncPacket FormatPacket()
     {
-        var scores = new PlayerContextInfo?[256];
+        List<PlayerContext> contexts = H.Scoreboard.Values;
+        var scores = new PlayerContextEntry[contexts.Count];
 
-        foreach (var (id, player) in H.Scoreboard.Entries)
+        for (int i = 0; i < contexts.Count; i++)
         {
-            scores[id] = player.Context;
+            scores[i] = new PlayerContextEntry
+            {
+                playerId = contexts[i].Id,
+                info = contexts[i].Context,
+            };
         }
 
         return new SessionManagerSyncPacket
@@ -41,14 +52,14 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
             mvpId = H.Session.mvpId,
             mapName = H.Session.level,
             factionWins = H.Session.factionWins,
-            scores = scores
+            scores = scores,
         };
     }
 
     public void Send()
     {
-        var session = H.Session;
-        if (session == null) return;
+        if (H.Session == null)
+            return;
 
         var packet = FormatPacket();
         DispatchPacket(ref packet);
@@ -62,7 +73,8 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
 
     protected override void Apply(SessionManagerSyncPacket packet, int peerId)
     {
-        if (H.IsServer) return;
+        if (H.IsServer)
+            return;
 
         H.Session.matchState = packet.roundState;
         H.Session.bombState = packet.bombState;
@@ -70,27 +82,25 @@ public class SessionManagerSyncPacketWarden : LambdaPacketWarden<SessionManagerS
         H.Session.level = packet.mapName;
         H.Session.factionWins = packet.factionWins;
 
-        for (int id = 0; id < packet.scores.Length; id++)
-        {
-            var newInfo = packet.scores[id];
+        if (packet.scores == null)
+            return;
 
-            if (!newInfo.HasValue)
+        int mainPlayerId = H.IsHeadless ? -1 : H.MainPlayer.Id;
+
+        foreach (PlayerContextEntry entry in packet.scores)
+        {
+            // players that already left only exist on the server
+            if (H.GetPlayer(entry.playerId) == null)
                 continue;
 
-            var info = newInfo.Value;
+            PlayerContext playerScore = H.GetPlayerContext(entry.playerId);
 
-            if (!H.Scoreboard.ContainsKey(id))
-                H.Scoreboard.Add(id, new PlayerContext(id));
+            bool factionChanged = playerScore.Faction != entry.info.Faction;
 
-            var playerScore = H.Scoreboard[id]!;
+            playerScore.Apply(entry.info);
 
-            var oldFaction = playerScore.Faction;
-            bool factionChanged = oldFaction != info.Faction;
-
-            playerScore.Apply(info);
-
-            if (!H.IsHeadless && factionChanged && id == H.MainPlayer.Id)
-                EventBus.OnSelfFactionChanged?.Invoke(info.Faction);
+            if (factionChanged && entry.playerId == mainPlayerId)
+                EventBus.OnSelfFactionChanged?.Invoke(entry.info.Faction);
         }
     }
 }

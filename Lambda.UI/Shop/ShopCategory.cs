@@ -5,8 +5,11 @@ namespace Lambda.UI
 {
     public class ShopCategory : MonoBehaviour
     {
-        [SerializeField] private TMP_Text textLabel;
-        [SerializeField] private RectTransform containerShopItems;
+        [SerializeField]
+        private TMP_Text textLabel;
+
+        [SerializeField]
+        private RectTransform containerShopItems;
 
         public string label
         {

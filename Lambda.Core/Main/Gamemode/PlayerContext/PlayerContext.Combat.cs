@@ -49,12 +49,11 @@ public partial class PlayerContext
 
     public void RecordDamageTaken(Player attacker, float damage)
     {
-        if (attacker == null || attacker == player) return;
+        if (attacker == null || attacker == player)
+            return;
 
-        if (!_damageContributors.ContainsKey(attacker.Id))
-            _damageContributors[attacker.Id] = 0f;
-
-        _damageContributors[attacker.Id] += damage;
+        _damageContributors.TryGetValue(attacker.Id, out float total);
+        _damageContributors[attacker.Id] = total + damage;
     }
 
     public Player GetTopAssist(Player killer)
@@ -64,7 +63,8 @@ public partial class PlayerContext
 
         foreach (var kvp in _damageContributors)
         {
-            if (killer != null && kvp.Key == killer.Id) continue;
+            if (killer != null && kvp.Key == killer.Id)
+                continue;
 
             if (kvp.Value > maxDamage && kvp.Value >= 125f)
             {

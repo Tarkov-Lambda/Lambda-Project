@@ -6,10 +6,14 @@ namespace Lambda.UI
 {
     public class DeathInfo : MonoBehaviour
     {
-        [SerializeField] CanvasGroup frame;
+        [SerializeField]
+        CanvasGroup frame;
 
-        [SerializeField] private TMP_Text textKillerName;
-        [SerializeField] private FactionColors factionColors;
+        [SerializeField]
+        private TMP_Text textKillerName;
+
+        [SerializeField]
+        private FactionColors factionColors;
 
         float t;
 

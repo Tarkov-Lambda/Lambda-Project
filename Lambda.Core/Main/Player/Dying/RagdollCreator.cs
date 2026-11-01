@@ -1,14 +1,13 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using EFT;
 using EFT.AssetsManager;
 using EFT.CameraControl;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
-
 using CorpseRagdoll = RagdollClass;
 
 namespace Lambda.Core.Main.Dying;
@@ -44,43 +43,43 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
 
         // TODO: REFACTOR
         // this and spectator manager are just doing whatever the fuck they want here
-        PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
+        PlayerCameraController playerCameraController =
+            H.MainPlayer.GetComponent<PlayerCameraController>();
         fakeCorpse.SetAttachedCamera(playerCameraController.Camera);
         playerCameraController.enabled = false;
-        UniTask.Delay(4000).ContinueWith(() =>
-        {
-            playerCameraController.enabled = true;
-
-            if (H.Gamemode is IGMTeam and not IGMRespawnable)
+        UniTask
+            .Delay(4000)
+            .ContinueWith(() =>
             {
-                H.SpectatorManager.SwitchSpectatePlayer();
-            }
+                playerCameraController.enabled = true;
 
-            if (fakeCorpse != null)
-            {
-                fakeCorpse.SetAttachedCamera(null);
-            }
-        });
+                if (H.Gamemode is IGMTeam and not IGMRespawnable)
+                {
+                    H.SpectatorManager.SwitchSpectatePlayer();
+                }
+
+                if (fakeCorpse != null)
+                {
+                    fakeCorpse.SetAttachedCamera(null);
+                }
+            });
     }
-
 
     public FakeCorpse CreateRagdollFromPlayer(Player player)
     {
-        GameObject playerClone = CloneWithSpecificComponents(player.gameObject,
+        GameObject playerClone = CloneWithSpecificComponents(
+            player.gameObject,
             typeof(PlayerBody),
             typeof(PlayerBones),
             typeof(BodyPartCollider),
-
             typeof(RigidbodySpawner),
             typeof(CharacterJointSpawner),
-
             typeof(Rigidbody),
             typeof(Collider),
             typeof(Joint),
-
             typeof(MeshFilter),
             typeof(Renderer)
-            );
+        );
 
         playerClone.name = player.name + " (fake corpse)";
         foreach (var col in playerClone.GetComponentsInChildren<Collider>())
@@ -91,24 +90,32 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<Rigidbody>());
         UnityEngine.Object.DestroyImmediate(playerClone.GetComponent<CapsuleCollider>());
 
-        RigidbodySpawner[] rigidbodySpawners = playerClone.GetComponentsInChildren<RigidbodySpawner>();
+        RigidbodySpawner[] rigidbodySpawners =
+            playerClone.GetComponentsInChildren<RigidbodySpawner>();
         foreach (var rbs in rigidbodySpawners)
         {
             Rigidbody rb = rbs.GetComponent<Rigidbody>();
             rb.interpolation = RigidbodyInterpolation.Interpolate;
-            AccessTools.Field(typeof(RigidbodySpawner), "rigidbody_0").SetValue(rbs, rbs.GetComponent<Rigidbody>());
+            AccessTools
+                .Field(typeof(RigidbodySpawner), "rigidbody_0")
+                .SetValue(rbs, rbs.GetComponent<Rigidbody>());
         }
 
-        CharacterJointSpawner[] jointSpawners = playerClone.GetComponentsInChildren<CharacterJointSpawner>();
+        CharacterJointSpawner[] jointSpawners =
+            playerClone.GetComponentsInChildren<CharacterJointSpawner>();
         foreach (var js in jointSpawners)
         {
-            AccessTools.Field(typeof(CharacterJointSpawner), "_joint").SetValue(js, js.GetComponent<Joint>());
+            AccessTools
+                .Field(typeof(CharacterJointSpawner), "_joint")
+                .SetValue(js, js.GetComponent<Joint>());
         }
 
         List<PlayerRigidbodySleepHierarchy> rigidbodySleepHierarchy;
         try
         {
-            rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(rigidbodySpawners);
+            rigidbodySleepHierarchy = PlayerPoolObject.CreatePlayerRigidbodySleepHierarchy(
+                rigidbodySpawners
+            );
         }
         catch (InvalidOperationException)
         {
@@ -156,7 +163,10 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         float maxDepenetrationVelocity = EFTHardSettings.Instance.CorpseMaxDepenetrationVelocity;
         CollisionDetectionMode collisionDetectionMode = CollisionDetectionMode.Discrete;
         MonoBehaviour owner = fakeCorpse;
-        Func<bool, float, bool> checkCorpseIsStill = (sleeping, timePass) => { return sleeping || timePass >= 15f; };
+        Func<bool, float, bool> checkCorpseIsStill = (sleeping, timePass) =>
+        {
+            return sleeping || timePass >= 15f;
+        };
         PlayerBody clonePlayerBody = playerClone.GetComponentInChildren<PlayerBody>();
         Func<bool> isVisibleTest = () => true;
         Action onRigidbodyStopped = fakeCorpse.OnRigidbodyStopped;
@@ -177,17 +187,16 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
             onRigidbodyStopped,
             keepRigidbody,
             putToSleep
-            );
-
+        );
 
         if (player.HandsController != null && player.HandsController.ControllerGameObject != null)
         {
-            GameObject fakePhysicalItem = CloneWithSpecificComponents(player.HandsController.ControllerGameObject,
+            GameObject fakePhysicalItem = CloneWithSpecificComponents(
+                player.HandsController.ControllerGameObject,
                 typeof(MeshFilter),
                 typeof(Renderer),
-
                 typeof(BoxCollider)
-                );
+            );
 
             fakePhysicalItem.name += " (fake physical item)";
 
@@ -213,7 +222,6 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
             fakeCorpse.SetItemInHands(fakeDroppedItem);
         }
 
-
         if (regsitry.TryGetValue(player, out var corpse))
         {
             if (corpse != null)
@@ -222,7 +230,6 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
             }
         }
         regsitry[player] = fakeCorpse;
-
 
         if (player.IsYourPlayer)
         {
@@ -233,11 +240,13 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
             fakeCorpse.VocalizeDeath(player);
         }
 
-
         return fakeCorpse;
     }
 
-    private static GameObject CloneWithSpecificComponents(GameObject original, params Type[] componentsToKeep)
+    private static GameObject CloneWithSpecificComponents(
+        GameObject original,
+        params Type[] componentsToKeep
+    )
     {
         // a disabled parent prevents Awake() from firing on the clone
         GameObject dummyParent = new GameObject("TempDisabledParent");
@@ -252,7 +261,8 @@ public class RagdollCreator : Singleton<RagdollCreator>, IDisposable
         for (int i = allComponents.Length - 1; i >= 0; i--)
         {
             Component comp = allComponents[i];
-            if (comp == null) continue;
+            if (comp == null)
+                continue;
 
             Type compType = comp.GetType();
             bool shouldKeep = false;

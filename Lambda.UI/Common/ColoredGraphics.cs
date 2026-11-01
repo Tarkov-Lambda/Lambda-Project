@@ -7,7 +7,8 @@ namespace Lambda.UI
 {
     public class ColoredGraphics : MonoBehaviour
     {
-        [SerializeField] private Graphic[] coloredGraphics;
+        [SerializeField]
+        private Graphic[] coloredGraphics;
 
         public void Set(Color color)
         {

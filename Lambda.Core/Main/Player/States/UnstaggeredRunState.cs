@@ -6,7 +6,8 @@ namespace Lambda.Core.Main.MovementStates;
 
 public class UnstaggeredRunState : RunStateClass
 {
-    public UnstaggeredRunState(MovementContext movementContext) : base(movementContext)
+    public UnstaggeredRunState(MovementContext movementContext)
+        : base(movementContext)
     {
         animationCurve_0 = EFTHardSettings.Instance.DIRECTION_CURVE;
     }
@@ -40,7 +41,11 @@ public class UnstaggeredRunState : RunStateClass
             return;
         }
         method_1(deltaTime);
-        if (!HasNoInputForLongTime() && !(MovementContext.InteractionInfo.WorldInteractiveObject != null) && MovementContext.CanWalk)
+        if (
+            !HasNoInputForLongTime()
+            && !(MovementContext.InteractionInfo.WorldInteractiveObject != null)
+            && MovementContext.CanWalk
+        )
         {
             vector2_0 = Vector2.zero;
             UpdateRotationAndPosition(deltaTime);
@@ -59,7 +64,11 @@ public class UnstaggeredRunState : RunStateClass
             MovementContext.EnableSprint(true);
             bool_1 = false;
         }
-        if (MovementContext.IsSprintEnabled && MovementContext.PoseLevel > 0.9f && MovementContext.SmoothedCharacterMovementSpeed >= 1f)
+        if (
+            MovementContext.IsSprintEnabled
+            && MovementContext.PoseLevel > 0.9f
+            && MovementContext.SmoothedCharacterMovementSpeed >= 1f
+        )
         {
             MovementContext.PlayerAnimatorEnableSprint(true);
         }
@@ -72,7 +81,8 @@ public class UnstaggeredRunState : RunStateClass
 
     protected new virtual bool HasNoInputForLongTime()
     {
-        return int_0 > 10 /**EFTHardSettings.Instance.MAX_FRAMES_WITHOUT_INPUT*/ || int_0 > int_1;
+        return int_0 > 10
+            /**EFTHardSettings.Instance.MAX_FRAMES_WITHOUT_INPUT*/|| int_0 > int_1;
     }
 
     protected new virtual void UpdateRotationAndPosition(float deltaTime)
@@ -86,8 +96,14 @@ public class UnstaggeredRunState : RunStateClass
         base.UpdateRotationSpeed(deltaTime);
         float f = Mathf.DeltaAngle(MovementContext.Yaw, float_4);
         float num = Mathf.InverseLerp(10f, 45f, Mathf.Abs(f)) + 1f;
-        float_4 = Mathf.LerpAngle(float_4, MovementContext.Yaw, EFTHardSettings.Instance.TRANSFORM_ROTATION_LERP_SPEED * deltaTime * num);
-        MovementContext.ApplyRotation(Quaternion.AngleAxis(float_4, Vector3.up) * MovementContext.AnimatorDeltaRotation);
+        float_4 = Mathf.LerpAngle(
+            float_4,
+            MovementContext.Yaw,
+            EFTHardSettings.Instance.TRANSFORM_ROTATION_LERP_SPEED * deltaTime * num
+        );
+        MovementContext.ApplyRotation(
+            Quaternion.AngleAxis(float_4, Vector3.up) * MovementContext.AnimatorDeltaRotation
+        );
     }
 
     protected new virtual void UpdatePosition(float deltaTime)
@@ -143,7 +159,9 @@ public class UnstaggeredRunState : RunStateClass
 
     protected void method_2(Vector2 inputDirection, Vector2 lerpedDirection)
     {
-        EMovementDirection discreteDirection = GClass2076.ConvertToMovementDirection(inputDirection);
+        EMovementDirection discreteDirection = GClass2076.ConvertToMovementDirection(
+            inputDirection
+        );
         MovementContext.PlayerAnimatorSetDiscreteDirection(discreteDirection);
     }
 

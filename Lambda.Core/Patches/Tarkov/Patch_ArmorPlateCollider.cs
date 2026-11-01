@@ -1,13 +1,17 @@
-﻿using EFT.Ballistics;
+﻿using System.Reflection;
+using EFT.Ballistics;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov;
 
 internal class Patch_ArmorPlateCollider_RicochetChance : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(BallisticCollider), nameof(BallisticCollider.RicochetChance));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(BallisticCollider),
+            nameof(BallisticCollider.RicochetChance)
+        );
 
     [PatchPrefix]
     static bool Prefix(ref float __result)
@@ -19,7 +23,11 @@ internal class Patch_ArmorPlateCollider_RicochetChance : ModulePatch
 
 internal class Patch_BodyPartCollider_RicochetChance : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.PropertyGetter(typeof(BodyPartCollider), nameof(BodyPartCollider.RicochetChance));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.PropertyGetter(
+            typeof(BodyPartCollider),
+            nameof(BodyPartCollider.RicochetChance)
+        );
 
     [PatchPrefix]
     static bool Prefix(ref float __result)

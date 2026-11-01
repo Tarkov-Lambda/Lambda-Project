@@ -22,7 +22,10 @@ public struct PresetManagerSlotInfo
 // this manager deals with capturing the equipment that the player brings into the raid for inventory resetting
 public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisposable
 {
-    private readonly string PresetDataPath = Path.Combine(LambdaPlugin.pathToConfigs, "DefaultEquipment.jsonc");
+    private readonly string PresetDataPath = Path.Combine(
+        LambdaPlugin.pathToConfigs,
+        "DefaultEquipment.jsonc"
+    );
 
     private static Dictionary<EquipmentSlot, PresetManagerSlotInfo> PresetInfoConfig = new(); // Hardcoded default preset
 
@@ -35,7 +38,9 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
 
     private void LoadItems(string json)
     {
-        PresetInfoConfig = JsonConvert.DeserializeObject<Dictionary<EquipmentSlot, PresetManagerSlotInfo>>(json);
+        PresetInfoConfig = JsonConvert.DeserializeObject<
+            Dictionary<EquipmentSlot, PresetManagerSlotInfo>
+        >(json);
     }
 
     public static Dictionary<EquipmentSlot, Item> CapturePreset(Player player)
@@ -73,12 +78,18 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
 
             if (equippedItem == null && presetInfo.Value.isRequired)
             {
-                equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(presetInfo.Value.defaultBsgId);
+                equippedItem = Singleton<PresetItemsCache>.Instance.GetPresetItem(
+                    presetInfo.Value.defaultBsgId
+                );
             }
 
             if (presetInfo.Key is EquipmentSlot.ArmorVest)
             {
-                if (RecordedItems.TryGetValue(EquipmentSlot.TacticalVest, out Item tacVestItem) && tacVestItem is VestItemClass vest && PU.IsTacRigArmored(vest))
+                if (
+                    RecordedItems.TryGetValue(EquipmentSlot.TacticalVest, out Item tacVestItem)
+                    && tacVestItem is VestItemClass vest
+                    && PU.IsTacRigArmored(vest)
+                )
                 {
                     continue;
                 }
@@ -94,4 +105,3 @@ public class DefaultEquipmentManager : Singleton<DefaultEquipmentManager>, IDisp
         return RecordedItems;
     }
 }
-

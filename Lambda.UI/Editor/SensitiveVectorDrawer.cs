@@ -12,7 +12,11 @@ public class SensitiveVectorDrawer : PropertyDrawer
 
         if (!isVector2 && !isVector3)
         {
-            EditorGUI.LabelField(position, label.text, "Use SensitiveVectorAttribute with Vector2 or Vector3 only.");
+            EditorGUI.LabelField(
+                position,
+                label.text,
+                "Use SensitiveVectorAttribute with Vector2 or Vector3 only."
+            );
             return;
         }
 
@@ -21,7 +25,11 @@ public class SensitiveVectorDrawer : PropertyDrawer
 
         EditorGUI.BeginProperty(position, label, property);
 
-        Rect controlRect = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+        Rect controlRect = EditorGUI.PrefixLabel(
+            position,
+            GUIUtility.GetControlID(FocusType.Passive),
+            label
+        );
 
         int dimensions = isVector3 ? 3 : 2;
         Vector3 vector = isVector3 ? property.vector3Value : (Vector3)property.vector2Value;
@@ -34,7 +42,12 @@ public class SensitiveVectorDrawer : PropertyDrawer
 
         float currentX = controlRect.x;
 
-        GUIContent[] componentLabels = { new GUIContent("X"), new GUIContent("Y"), new GUIContent("Z") };
+        GUIContent[] componentLabels =
+        {
+            new GUIContent("X"),
+            new GUIContent("Y"),
+            new GUIContent("Z"),
+        };
 
         EditorGUI.BeginChangeCheck();
 
@@ -42,7 +55,12 @@ public class SensitiveVectorDrawer : PropertyDrawer
         {
             Rect labelRect = new Rect(currentX, controlRect.y, labelWidth, controlRect.height);
 
-            Rect fieldRect = new Rect(currentX + labelWidth, controlRect.y, fieldWidth, controlRect.height);
+            Rect fieldRect = new Rect(
+                currentX + labelWidth,
+                controlRect.y,
+                fieldWidth,
+                controlRect.height
+            );
 
             vector[i] = DragValue(labelRect, vector[i], sensitivity);
 

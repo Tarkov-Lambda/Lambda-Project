@@ -23,8 +23,13 @@ namespace SteamAudio
     {
         IntPtr mOpenCLDevice = IntPtr.Zero;
 
-        public OpenCLDevice(Context context, OpenCLDeviceType deviceType, int numCUsToReserve, float fractionCUsForIRUpdate,
-            bool requiresTAN)
+        public OpenCLDevice(
+            Context context,
+            OpenCLDeviceType deviceType,
+            int numCUsToReserve,
+            float fractionCUsForIRUpdate,
+            bool requiresTAN
+        )
         {
             var deviceSettings = new OpenCLDeviceSettings { };
             deviceSettings.type = deviceType;
@@ -33,9 +38,15 @@ namespace SteamAudio
             deviceSettings.requiresTAN = requiresTAN ? Bool.True : Bool.False;
 
             var deviceList = IntPtr.Zero;
-            var status = API.iplOpenCLDeviceListCreate(context.Get(), ref deviceSettings, out deviceList);
+            var status = API.iplOpenCLDeviceListCreate(
+                context.Get(),
+                ref deviceSettings,
+                out deviceList
+            );
             if (status != Error.Success)
-                throw new Exception(string.Format("Unable to enumerate OpenCL devices. [{0}]", status));
+                throw new Exception(
+                    string.Format("Unable to enumerate OpenCL devices. [{0}]", status)
+                );
 
             var numDevices = API.iplOpenCLDeviceListGetNumDevices(deviceList);
             if (numDevices <= 0)
@@ -47,14 +58,22 @@ namespace SteamAudio
                 if (requiresTAN || numCUsToReserve == 0)
                     throw new Exception(string.Format("No OpenCL devices found."));
 
-                Debug.LogWarning("No OpenCL devices found that match the provided parameters, attempting to " +
-                    "initialize without CU reservation.");
+                Debug.LogWarning(
+                    "No OpenCL devices found that match the provided parameters, attempting to "
+                        + "initialize without CU reservation."
+                );
 
                 deviceSettings.numCUsToReserve = 0;
                 deviceSettings.fractionCUsForIRUpdate = 0.0f;
-                status = API.iplOpenCLDeviceListCreate(context.Get(), ref deviceSettings, out deviceList);
+                status = API.iplOpenCLDeviceListCreate(
+                    context.Get(),
+                    ref deviceSettings,
+                    out deviceList
+                );
                 if (status != Error.Success)
-                    throw new Exception(string.Format("Unable to enumerate OpenCL devices. [{0}]", status));
+                    throw new Exception(
+                        string.Format("Unable to enumerate OpenCL devices. [{0}]", status)
+                    );
 
                 numDevices = API.iplOpenCLDeviceListGetNumDevices(deviceList);
                 if (numDevices <= 0)

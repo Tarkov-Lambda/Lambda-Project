@@ -29,11 +29,10 @@ public partial struct GameplayVariablesStruct
     // public double KillTradeWindow;
 }
 
-[MemoryPackable]
-public partial struct FireNode
+// Unmanaged, so MemoryPack copies FireNode[] as a single block
+public struct FireNode
 {
     public Vector3 Position;
-    public Quaternion Rotation;
-    public float Radius;
+    public Vector3 Normal;
     public float TimeOffset;
 }

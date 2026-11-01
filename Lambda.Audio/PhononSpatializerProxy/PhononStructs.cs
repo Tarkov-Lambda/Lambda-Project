@@ -13,7 +13,9 @@ namespace PhononSpatializerProxy
     [StructLayout(LayoutKind.Sequential)]
     internal struct PVec3
     {
-        public float x, y, z;
+        public float x,
+            y,
+            z;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -44,24 +46,28 @@ namespace PhononSpatializerProxy
         public int flags;
         public int transmissionType;
         public float distanceAttenuation;
-        public float airAbsorptionLow, airAbsorptionMid, airAbsorptionHigh;
+        public float airAbsorptionLow,
+            airAbsorptionMid,
+            airAbsorptionHigh;
         public float directivity;
         public float occlusion;
-        public float transmissionLow, transmissionMid, transmissionHigh;
+        public float transmissionLow,
+            transmissionMid,
+            transmissionHigh;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct PReflectionEffectSettings
     {
-        public int type;        // IPLReflectionEffectType
+        public int type; // IPLReflectionEffectType
         public int numChannels; // (maxOrder+1)^2
-        public int irSize;      // maxDuration * samplingRate
+        public int irSize; // maxDuration * samplingRate
     }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct PSpeakerLayout
     {
-        public int type;        // IPLSpeakerLayoutType: 1 = Stereo
+        public int type; // IPLSpeakerLayoutType: 1 = Stereo
         public int numSpeakers; // 0 for standard layouts
         public IntPtr speakers; // nullptr for standard layouts
     }

@@ -3,7 +3,7 @@
     None, // FFA
     CT,
     T,
-    Spectator
+    Spectator,
 }
 
 public enum ZoneOwnership : byte
@@ -11,5 +11,5 @@ public enum ZoneOwnership : byte
     None,
     CT,
     T,
-    Draw
+    Draw,
 }

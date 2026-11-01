@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
@@ -59,5 +58,4 @@
     <!-- <Copy SourceFiles="@(FilesToCopyToPlugins)"
     DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" SkipUnchangedFiles="true" /> -->
   </Target>
-
 </Project>

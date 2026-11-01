@@ -21,7 +21,7 @@ public class GroupFireLightFlicker : MonoBehaviour
     public float maxFlickerInterval = 0.12f;
 
     [Header("Burst")]
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float burstChance = 0.15f;
     public float burstStrength = 0.2f;
 
@@ -95,15 +95,9 @@ public class GroupFireLightFlicker : MonoBehaviour
 
     void PickNewValues()
     {
-        targetIntensityMult = Random.Range(
-            minIntensityMultiplier,
-            maxIntensityMultiplier
-        );
+        targetIntensityMult = Random.Range(minIntensityMultiplier, maxIntensityMultiplier);
 
-        targetRangeMult = Random.Range(
-            minRangeMultiplier,
-            maxRangeMultiplier
-        );
+        targetRangeMult = Random.Range(minRangeMultiplier, maxRangeMultiplier);
 
         // Random flame flare
         if (Random.value < burstChance)
@@ -111,9 +105,6 @@ public class GroupFireLightFlicker : MonoBehaviour
             targetIntensityMult += burstStrength;
         }
 
-        timer = Random.Range(
-            minFlickerInterval,
-            maxFlickerInterval
-        );
+        timer = Random.Range(minFlickerInterval, maxFlickerInterval);
     }
 }

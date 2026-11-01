@@ -1,7 +1,7 @@
-﻿using Lambda.UI;
-using Lambda.Core.Networking;
-using System;
+﻿using System;
 using Comfort.Common;
+using Lambda.Core.Networking;
+using Lambda.UI;
 
 namespace Lambda.Core.Main.UI
 {
@@ -32,12 +32,21 @@ namespace Lambda.Core.Main.UI
             Faction leftFaction = killer == null ? Faction.None : killer.Faction;
             Faction rightFaction = victim == null ? Faction.None : victim.Faction;
 
-            var pop = killFeed.Pop(leftName, leftFaction, rightName, rightFaction, packet.IsHeadshot);
+            var pop = killFeed.Pop(
+                leftName,
+                leftFaction,
+                rightName,
+                rightFaction,
+                packet.IsHeadshot
+            );
 
-            itemInfoProvider.RequestIcon(packet.weaponId, onRendered: (weaponSprite) =>
-            {
-                pop.SetWeaponSprite(weaponSprite);
-            });
+            itemInfoProvider.RequestIcon(
+                packet.weaponId,
+                onRendered: (weaponSprite) =>
+                {
+                    pop.SetWeaponSprite(weaponSprite);
+                }
+            );
         }
 
         private static string FormatPlayer(PlayerContext pContext)

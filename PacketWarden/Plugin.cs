@@ -1,24 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using Comfort.Common;
 using Cysharp.Threading.Tasks;
 using MemoryPack;
+using PacketWarden;
 using PacketWarden.TimeSync;
-using SPT.Reflection;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine.LowLevel;
-
 
 [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInPlugin("com.ifp.PacketWarden", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 internal class Plugin : BaseUnityPlugin
 {
-    public static readonly string pathToPacketWarden = Path.Combine(BepInEx.Paths.PluginPath, "ifp");
+    public static readonly string pathToPacketWarden = Path.Combine(
+        BepInEx.Paths.PluginPath,
+        "ifp"
+    );
 
     internal static new ManualLogSource Logger = null;
 
@@ -29,7 +31,8 @@ internal class Plugin : BaseUnityPlugin
 
     public readonly TimeSyncTicker Ticker = new();
 
-    private void RegisterSingleton<T>() where T : class, IDisposable, new()
+    private void RegisterSingleton<T>()
+        where T : class, IDisposable, new()
     {
         Logger.LogInfo($"Registering {typeof(T).Name}");
         var instance = new T();
@@ -50,12 +53,12 @@ internal class Plugin : BaseUnityPlugin
         MemoryPackFormatterProvider.Register(new ItemFormatter());
         MemoryPackFormatterProvider.Register(new InventoryDescriptorClassFormatter());
         MemoryPackFormatterProvider.Register(new ItemAddressFormatter());
-        MemoryPackFormatterProvider.Register(new WorldInteractiveObjectFormatter()); // WorldInteractiveObject.NetId
+        MemoryPackFormatterProvider.Register(new ResourceKeyFormatter());
+        MemoryPackFormatterProvider.Register(new WorldInteractiveObjectFormatter()); // WorldInteractiveObject.Id
 
         if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
         {
             InitFikaBackend();
-            RegisterSingleton<TimeSynchronizationPacketWarden>();
         }
         else
         {
@@ -63,10 +66,9 @@ internal class Plugin : BaseUnityPlugin
             Logger.LogInfo("PacketWarden running in Local Mode.");
         }
 
-        H.OnNetworkCreated += NetworkTime.Reset;
+        Network.OnNetworkCreated += NetworkTime.Reset;
 
-        RegisterSingleton<TestPacketWarden>();
-        Singleton<TestPacketWarden>.Instance.Send();
+        RegisterSingleton<TimeSynchronizationPacketWarden>();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -74,12 +76,18 @@ internal class Plugin : BaseUnityPlugin
     {
         try
         {
-            string fikaDllPath = Path.Combine(pathToPacketWarden, "PacketWarden.FikaIntegration.dll");
+            string fikaDllPath = Path.Combine(
+                pathToPacketWarden,
+                "PacketWarden.FikaIntegration.dll"
+            );
 
             Assembly fikaAssembly = Assembly.LoadFrom(fikaDllPath);
 
             Type bootstrapType = fikaAssembly.GetType("PacketWarden.FikaIntegration.FikaBootstrap");
-            MethodInfo initMethod = bootstrapType.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
+            MethodInfo initMethod = bootstrapType.GetMethod(
+                "Initialize",
+                BindingFlags.Public | BindingFlags.Static
+            );
 
             Network = (INetworkBackend)initMethod.Invoke(null, null);
 
@@ -88,7 +96,6 @@ internal class Plugin : BaseUnityPlugin
         catch (Exception ex)
         {
             Logger.LogError($"Failed to load Fika Integration: {ex}");
-            Logger.LogError(ex.StackTrace);
             Network = new LocalBackend();
         }
     }
@@ -109,6 +116,7 @@ internal class Plugin : BaseUnityPlugin
 
         _releases.Clear();
 
-        H.OnNetworkCreated -= NetworkTime.Reset;
+        Network.OnNetworkCreated -= NetworkTime.Reset;
+        Network.Dispose();
     }
 }

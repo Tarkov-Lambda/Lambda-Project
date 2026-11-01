@@ -6,13 +6,19 @@ namespace Lambda.UI
 {
     public class TeamStatus : MonoBehaviour
     {
-        [SerializeField] private TeamStatusPlayer prefabPlayer;
-        [SerializeField] private RectTransform container;
-        [SerializeField] private FactionColors factionColors;
+        [SerializeField]
+        private TeamStatusPlayer prefabPlayer;
+
+        [SerializeField]
+        private RectTransform container;
+
+        [SerializeField]
+        private FactionColors factionColors;
 
         private readonly List<TeamStatusPlayer> _playerPool = new List<TeamStatusPlayer>();
 
         bool init;
+
         void Init()
         {
             if (init)
@@ -28,7 +34,8 @@ namespace Lambda.UI
         public void Set(PlayerContextInfo[] players)
         {
             Init();
-            if (players == null) return;
+            if (players == null)
+                return;
 
             while (_playerPool.Count < players.Length)
             {

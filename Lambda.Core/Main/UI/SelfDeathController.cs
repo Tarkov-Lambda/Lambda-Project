@@ -1,10 +1,10 @@
-﻿using Lambda.UI;
+﻿using System;
 using Comfort.Common;
 using EFT.UI;
 using Lambda.Core.Main.Gamemode;
 using Lambda.Core.Networking;
 using Lambda.Shared.Models;
-using System;
+using Lambda.UI;
 
 namespace Lambda.Core.Main.UI
 {

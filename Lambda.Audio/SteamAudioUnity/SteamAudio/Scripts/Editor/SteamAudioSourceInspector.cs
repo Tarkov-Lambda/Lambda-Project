@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace SteamAudio
 {
@@ -103,7 +103,9 @@ namespace SteamAudio
             mDirectMixLevel = serializedObject.FindProperty("directMixLevel");
             mReflections = serializedObject.FindProperty("reflections");
             mReflectionsType = serializedObject.FindProperty("reflectionsType");
-            mUseDistanceCurveForReflections = serializedObject.FindProperty("useDistanceCurveForReflections");
+            mUseDistanceCurveForReflections = serializedObject.FindProperty(
+                "useDistanceCurveForReflections"
+            );
             mCurrentBakedSource = serializedObject.FindProperty("currentBakedSource");
             mApplyHRTFToReflections = serializedObject.FindProperty("applyHRTFToReflections");
             mReflectionsMixLevel = serializedObject.FindProperty("reflectionsMixLevel");
@@ -118,7 +120,9 @@ namespace SteamAudio
 
         public override void OnInspectorGUI()
         {
-            var audioEngineIsUnity = (SteamAudioSettings.Singleton.audioEngine == AudioEngineType.Unity);
+            var audioEngineIsUnity = (
+                SteamAudioSettings.Singleton.audioEngine == AudioEngineType.Unity
+            );
 
             serializedObject.Update();
 
@@ -145,7 +149,10 @@ namespace SteamAudio
                 if (mAirAbsorption.boolValue)
                 {
                     EditorGUILayout.PropertyField(mAirAbsorptionInput);
-                    if ((AirAbsorptionInput)mAirAbsorptionInput.enumValueIndex == AirAbsorptionInput.UserDefined)
+                    if (
+                        (AirAbsorptionInput)mAirAbsorptionInput.enumValueIndex
+                        == AirAbsorptionInput.UserDefined
+                    )
                     {
                         EditorGUILayout.PropertyField(mAirAbsorptionLow);
                         EditorGUILayout.PropertyField(mAirAbsorptionMid);
@@ -161,13 +168,19 @@ namespace SteamAudio
                 {
                     EditorGUILayout.PropertyField(mDirectivityInput);
 
-                    if ((DirectivityInput) mDirectivityInput.enumValueIndex == DirectivityInput.SimulationDefined)
+                    if (
+                        (DirectivityInput)mDirectivityInput.enumValueIndex
+                        == DirectivityInput.SimulationDefined
+                    )
                     {
                         EditorGUILayout.PropertyField(mDipoleWeight);
                         EditorGUILayout.PropertyField(mDipolePower);
                         DrawDirectivity(mDipoleWeight.floatValue, mDipolePower.floatValue);
                     }
-                    else if ((DirectivityInput) mDirectivityInput.enumValueIndex == DirectivityInput.UserDefined)
+                    else if (
+                        (DirectivityInput)mDirectivityInput.enumValueIndex
+                        == DirectivityInput.UserDefined
+                    )
                     {
                         EditorGUILayout.PropertyField(mDirectivityValue);
                     }
@@ -182,17 +195,22 @@ namespace SteamAudio
                     EditorGUILayout.PropertyField(mOcclusionInput);
                 }
 
-                if (!audioEngineIsUnity ||
-                    (OcclusionInput) mOcclusionInput.enumValueIndex == OcclusionInput.SimulationDefined)
+                if (
+                    !audioEngineIsUnity
+                    || (OcclusionInput)mOcclusionInput.enumValueIndex
+                        == OcclusionInput.SimulationDefined
+                )
                 {
                     EditorGUILayout.PropertyField(mOcclusionType);
-                    if ((OcclusionType) mOcclusionType.enumValueIndex == OcclusionType.Volumetric)
+                    if ((OcclusionType)mOcclusionType.enumValueIndex == OcclusionType.Volumetric)
                     {
                         EditorGUILayout.PropertyField(mOcclusionRadius);
                         EditorGUILayout.PropertyField(mOcclusionSamples);
                     }
                 }
-                else if ((OcclusionInput) mOcclusionInput.enumValueIndex == OcclusionInput.UserDefined)
+                else if (
+                    (OcclusionInput)mOcclusionInput.enumValueIndex == OcclusionInput.UserDefined
+                )
                 {
                     EditorGUILayout.PropertyField(mOcclusionValue);
                 }
@@ -204,9 +222,15 @@ namespace SteamAudio
                     {
                         EditorGUILayout.PropertyField(mTransmissionType);
                         EditorGUILayout.PropertyField(mTransmissionInput);
-                        if ((TransmissionInput)mTransmissionInput.enumValueIndex == TransmissionInput.UserDefined)
+                        if (
+                            (TransmissionInput)mTransmissionInput.enumValueIndex
+                            == TransmissionInput.UserDefined
+                        )
                         {
-                            if (mTransmissionType.enumValueIndex == (int)TransmissionType.FrequencyDependent)
+                            if (
+                                mTransmissionType.enumValueIndex
+                                == (int)TransmissionType.FrequencyDependent
+                            )
                             {
                                 EditorGUILayout.PropertyField(mTransmissionLow);
                                 EditorGUILayout.PropertyField(mTransmissionMid);
@@ -220,8 +244,11 @@ namespace SteamAudio
                     }
                 }
 
-                if (!audioEngineIsUnity ||
-                    (TransmissionInput) mTransmissionInput.enumValueIndex == TransmissionInput.SimulationDefined)
+                if (
+                    !audioEngineIsUnity
+                    || (TransmissionInput)mTransmissionInput.enumValueIndex
+                        == TransmissionInput.SimulationDefined
+                )
                 {
                     EditorGUILayout.PropertyField(mTransmissionRays);
                 }
@@ -237,14 +264,20 @@ namespace SteamAudio
             {
                 EditorGUILayout.PropertyField(mReflectionsType);
 
-                if (audioEngineIsUnity &&
-                    mDistanceAttenuation.boolValue &&
-                    (DistanceAttenuationInput) mDistanceAttenuationInput.enumValueIndex == DistanceAttenuationInput.CurveDriven)
+                if (
+                    audioEngineIsUnity
+                    && mDistanceAttenuation.boolValue
+                    && (DistanceAttenuationInput)mDistanceAttenuationInput.enumValueIndex
+                        == DistanceAttenuationInput.CurveDriven
+                )
                 {
                     EditorGUILayout.PropertyField(mUseDistanceCurveForReflections);
                 }
 
-                if ((ReflectionsType) mReflectionsType.enumValueIndex == ReflectionsType.BakedStaticSource)
+                if (
+                    (ReflectionsType)mReflectionsType.enumValueIndex
+                    == ReflectionsType.BakedStaticSource
+                )
                 {
                     EditorGUILayout.PropertyField(mCurrentBakedSource);
                 }
@@ -290,7 +323,10 @@ namespace SteamAudio
             for (var i = 0; i < mDirectivitySamples.Length; ++i)
             {
                 var theta = (i / 360.0f) * (2.0f * Mathf.PI);
-                mDirectivitySamples[i] = Mathf.Pow(Mathf.Abs((1.0f - dipoleWeight) + dipoleWeight * Mathf.Cos(theta)), dipolePower);
+                mDirectivitySamples[i] = Mathf.Pow(
+                    Mathf.Abs((1.0f - dipoleWeight) + dipoleWeight * Mathf.Cos(theta)),
+                    dipolePower
+                );
 
                 var r = 31 * Mathf.Abs(mDirectivitySamples[i]);
                 var x = r * Mathf.Cos(theta) + 32;
@@ -319,7 +355,11 @@ namespace SteamAudio
             for (var i = 0; i < mDirectivitySamples.Length; ++i)
             {
                 var color = (mDirectivitySamples[i] > 0.0f) ? Color.red : Color.blue;
-                mDirectivityPreview.SetPixel((int) mDirectivityPositions[i].x, (int) mDirectivityPositions[i].y, color);
+                mDirectivityPreview.SetPixel(
+                    (int)mDirectivityPositions[i].x,
+                    (int)mDirectivityPositions[i].y,
+                    color
+                );
             }
 
             mDirectivityPreview.Apply();

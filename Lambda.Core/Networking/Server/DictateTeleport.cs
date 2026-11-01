@@ -1,8 +1,8 @@
-using EFT;
-using PacketWarden;
-using MemoryPack;
-using UnityEngine;
 using Cysharp.Threading.Tasks;
+using EFT;
+using MemoryPack;
+using PacketWarden;
+using UnityEngine;
 
 namespace Lambda.Core.Networking;
 
@@ -26,7 +26,7 @@ public class DictateTeleportPacketWarden : LambdaPacketWarden<DictateTeleportPac
         {
             Player = player,
             position = position,
-            rotation = rotation
+            rotation = rotation,
         };
 
         // DispatchPacketToPlayer(packet, player);
@@ -37,7 +37,7 @@ public class DictateTeleportPacketWarden : LambdaPacketWarden<DictateTeleportPac
         MutateApprovedPacket(ref packet, peerId);
         if (!packet.Player.IsAI)
         {
-            PacketWardenUtils.Network.SendData(ref packet, DeliveryType, true);
+            Network.SendData(ref packet, DeliveryType);
         }
         ApplyInternal(packet, peerId);
     }

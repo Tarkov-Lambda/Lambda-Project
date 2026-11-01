@@ -1,24 +1,37 @@
-﻿using EFT;
+﻿using System.Reflection;
+using EFT;
 using EFT.Animations;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using UnityEngine;
 
 namespace Lambda.Core.Patches.Tarkov;
 
 internal class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ProcessEffectors));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ProceduralWeaponAnimation),
+            nameof(ProceduralWeaponAnimation.ProcessEffectors)
+        );
 
-    public static AccessTools.FieldRef<Player.FirearmController, Player> playerRef = AccessTools.FieldRefAccess<Player.FirearmController, Player>("_player");
+    public static AccessTools.FieldRef<Player.FirearmController, Player> playerRef =
+        AccessTools.FieldRefAccess<Player.FirearmController, Player>("_player");
 
     [PatchPrefix]
-    static bool Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 motion, ref Vector3 velocity)
+    static bool Postfix(
+        ProceduralWeaponAnimation __instance,
+        Player.FirearmController ____firearmController,
+        ref Vector3 motion,
+        ref Vector3 velocity
+    )
     {
-        if (!H.IsArenaReady) return true;
-        if (____firearmController is null) return true;
-        if (____firearmController.Item is not PistolItemClass) return true;
+        if (!H.IsArenaReady)
+            return true;
+        if (____firearmController is null)
+            return true;
+        if (____firearmController.Item is not PistolItemClass)
+            return true;
 
         if (__instance.IsAiming)
         {
@@ -28,7 +41,11 @@ internal class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
         }
         else
         {
-            if (playerRef(____firearmController).MovementContext.CurrentState is RunStateClass and not SprintStateClass)
+            if (
+                playerRef(____firearmController).MovementContext.CurrentState
+                is RunStateClass
+                    and not SprintStateClass
+            )
             {
                 __instance.Mask |= EProceduralAnimationMask.Walking;
             }
@@ -40,16 +57,25 @@ internal class Patch_ProceduralWeaponAnimation_ProcessEffectors : ModulePatch
 
 internal class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.UpdateSwayFactors));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ProceduralWeaponAnimation),
+            nameof(ProceduralWeaponAnimation.UpdateSwayFactors)
+        );
 
     [PatchPostfix]
-    static void Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController,
-    ref float ____displacementStr,
-    ref float ____swayStrength,
-    ref float ____aimSwayStrength)
+    static void Postfix(
+        ProceduralWeaponAnimation __instance,
+        Player.FirearmController ____firearmController,
+        ref float ____displacementStr,
+        ref float ____swayStrength,
+        ref float ____aimSwayStrength
+    )
     {
-        if (!H.IsArenaReady) return;
-        if (____firearmController is null) return;
+        if (!H.IsArenaReady)
+            return;
+        if (____firearmController is null)
+            return;
 
         if (____firearmController.Item is SniperRifleItemClass or MarksmanRifleItemClass)
         {
@@ -75,10 +101,17 @@ internal class Patch_ProceduralWeaponAnimation_UpdateSwayFactors : ModulePatch
 internal class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModulePatch
 {
     protected override MethodBase GetTargetMethod() =>
-    AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.CalculateCameraPosition));
+        AccessTools.Method(
+            typeof(ProceduralWeaponAnimation),
+            nameof(ProceduralWeaponAnimation.CalculateCameraPosition)
+        );
 
     [PatchPostfix]
-    static void Postfix(ProceduralWeaponAnimation __instance, Player.FirearmController ____firearmController, ref Vector3 ____vCameraTarget)
+    static void Postfix(
+        ProceduralWeaponAnimation __instance,
+        Player.FirearmController ____firearmController,
+        ref Vector3 ____vCameraTarget
+    )
     {
         if (__instance.IsAiming)
         {
@@ -90,37 +123,43 @@ internal class Patch_ProceduralWeaponAnimation_CalculateCameraPosition : ModuleP
     }
 }
 
-
 // Do blindfire procedure manually
 internal class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
 {
-    protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(ProceduralWeaponAnimation), nameof(ProceduralWeaponAnimation.ZeroAdjustments));
+    protected override MethodBase GetTargetMethod() =>
+        AccessTools.Method(
+            typeof(ProceduralWeaponAnimation),
+            nameof(ProceduralWeaponAnimation.ZeroAdjustments)
+        );
 
     [PatchPrefix]
     private static bool Prefix(
         ProceduralWeaponAnimation __instance,
         ref Vector3 ____blindFirePosition,
         ref Vector3 ____blindFireRotation,
-        ref float ____blindfireStrength)
+        ref float ____blindfireStrength
+    )
     {
-        __instance.PositionZeroSum.y =
-            __instance._shouldMoveWeaponCloser ? 0.05f : 0f;
+        __instance.PositionZeroSum.y = __instance._shouldMoveWeaponCloser ? 0.05f : 0f;
 
-        __instance.RotationZeroSum.y =
-            __instance.SmoothedTilt * __instance.PossibleTilt;
+        __instance.RotationZeroSum.y = __instance.SmoothedTilt * __instance.PossibleTilt;
 
         float value = __instance.BlindfireBlender.Value;
         float num = Mathf.Abs(value);
 
         if (num > 0f)
         {
-            ____blindfireStrength = Mathf.Abs(__instance.Pitch) < 45f ? 1f : (90f - Mathf.Abs(__instance.Pitch)) / 45f;
+            ____blindfireStrength =
+                Mathf.Abs(__instance.Pitch) < 45f ? 1f : (90f - Mathf.Abs(__instance.Pitch)) / 45f;
 
-            ____blindFirePosition = value > 0f ? __instance.BlindFireOffset * num : __instance.SideFireOffset * num;
+            ____blindFirePosition =
+                value > 0f ? __instance.BlindFireOffset * num : __instance.SideFireOffset * num;
 
-            ____blindFireRotation = value > 0f ? __instance.BlindFireRotation * num : __instance.SideFireRotation * num;
+            ____blindFireRotation =
+                value > 0f ? __instance.BlindFireRotation * num : __instance.SideFireRotation * num;
 
-            __instance.BlindFireEndPosition = value > 0f ? __instance.BlindFireOffset : __instance.SideFireOffset;
+            __instance.BlindFireEndPosition =
+                value > 0f ? __instance.BlindFireOffset : __instance.SideFireOffset;
 
             __instance.BlindFireEndPosition *= ____blindfireStrength;
         }
@@ -131,9 +170,11 @@ internal class Patch_ProceduralWeaponAnimation_ZeroAdjustments : ModulePatch
             ____blindfireStrength = 0f;
         }
 
-        __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + ____blindfireStrength * ____blindFirePosition;
+        __instance.HandsContainer.HandsPosition.Zero =
+            __instance.PositionZeroSum + ____blindfireStrength * ____blindFirePosition;
 
-        __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum + ____blindFireRotation;
+        __instance.HandsContainer.HandsRotation.Zero =
+            __instance.RotationZeroSum + ____blindFireRotation;
 
         return false;
     }

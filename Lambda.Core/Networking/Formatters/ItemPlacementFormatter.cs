@@ -6,7 +6,10 @@ namespace Lambda.Core.Networking;
 
 public class ItemPlacementFormatter : MemoryPackFormatter<ItemPlacement>
 {
-    public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ItemPlacement value)
+    public override void Serialize<TBufferWriter>(
+        ref MemoryPackWriter<TBufferWriter> writer,
+        scoped ref ItemPlacement value
+    )
     {
         writer.WriteObjectHeader(3);
         writer.WriteUnmanaged((int)value.Slot);

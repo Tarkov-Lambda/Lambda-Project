@@ -45,7 +45,9 @@ namespace SteamAudio
 
         public static Matrix4x4 ConvertTransform(Transform transform)
         {
-            UnityEngine.Matrix4x4 flipZ = UnityEngine.Matrix4x4.Scale(new UnityEngine.Vector3(1, 1, -1));
+            UnityEngine.Matrix4x4 flipZ = UnityEngine.Matrix4x4.Scale(
+                new UnityEngine.Vector3(1, 1, -1)
+            );
             UnityEngine.Matrix4x4 flippedMatrix = flipZ * transform.localToWorldMatrix * flipZ;
 
             var matrix = new Matrix4x4();
@@ -137,13 +139,15 @@ namespace SteamAudio
             try
             {
                 var streamingAssetLoader = new WWW(streamingAssetsFileName);
-                while (!streamingAssetLoader.isDone)
-                {
-                }
+                while (!streamingAssetLoader.isDone) { }
 
                 if (string.IsNullOrEmpty(streamingAssetLoader.error))
                 {
-                    using (var dataWriter = new BinaryWriter(new FileStream(tempFileName, FileMode.Create)))
+                    using (
+                        var dataWriter = new BinaryWriter(
+                            new FileStream(tempFileName, FileMode.Create)
+                        )
+                    )
                     {
                         dataWriter.Write(streamingAssetLoader.bytes);
                         dataWriter.Close();

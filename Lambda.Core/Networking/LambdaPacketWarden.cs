@@ -1,9 +1,10 @@
 using Comfort.Common;
-using Lambda.Core.Main;
+using EFT;
 using Lambda.Core.Networking;
 using PacketWarden;
 
-public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket, new()
+public abstract class LambdaPacketWarden<T> : PacketWarden<T>
+    where T : IPacket, new()
 {
     // Make sure arena is initialized before we apply this packet type
     // This is here to essentially ignore all packets until our client player is actually ready to receive them (ie the scoreboard is initialized)
@@ -17,38 +18,30 @@ public abstract class LambdaPacketWarden<T> : PacketWarden<T> where T : IPacket,
 
     protected override void WhenClientReceivesPacket(T packet, int peerId)
     {
-        if (!ShouldApplyBeforeArenaInitialized && !IsArenaReady) return;
+        if (!ShouldApplyBeforeArenaInitialized && !IsArenaReady)
+            return;
 
         base.WhenClientReceivesPacket(packet, peerId);
     }
 
-    protected override bool IsUnauthorized(int id)
+    protected override bool IsAdmin(int peerId)
     {
-        if (H.IsServer) return false;
-
-        if (Authority == PacketAuthority.Admin)
-        {
-            PlayerContext score = H.GetPlayerContext(id);
-            return score == null || !score.IsAdmin; // unauthorized only if NOT admin
-        }
-        else if (Authority == PacketAuthority.ServerOnly && id != H.MainPlayer.Id)
-        {
+        if (base.IsAdmin(peerId))
             return true;
-        }
 
-        return false;
+        Player player = Network.GetPlayerByPeerId(peerId);
+        return player != null && player.Context?.IsAdmin == true;
     }
 
     protected override void Notify(string rejectionReason)
     {
         if (ShouldDisplayRejectionInChat)
         {
-            ServerMessagePacket RejectionReasonChatWrapperPacket = new()
-            {
-                msg = rejectionReason
-            };
+            ServerMessagePacket RejectionReasonChatWrapperPacket = new() { msg = rejectionReason };
             // not the cleanest pattern, but at least we pass it through the Packet Warden in a sense?
-            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(RejectionReasonChatWrapperPacket);
+            Singleton<GenericMessagePacketWarden>.Instance.OnRejectionMessageInChat?.Invoke(
+                RejectionReasonChatWrapperPacket
+            );
         }
         else
         {

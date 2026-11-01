@@ -1,16 +1,16 @@
 using System;
-using Comfort.Common;
-using EFT;
-using UnityEngine;
-using EFT.CameraControl;
 using System.Collections.Generic;
-using Lambda.Core.Main.Gamemode;
 using System.Linq;
-using Lambda.Core.Networking;
-using Lambda.Core.Main.Dying;
+using Comfort.Common;
 using Cysharp.Threading.Tasks;
-using EFT.UI;
+using EFT;
+using EFT.CameraControl;
 using EFT.InputSystem;
+using EFT.UI;
+using Lambda.Core.Main.Dying;
+using Lambda.Core.Main.Gamemode;
+using Lambda.Core.Networking;
+using UnityEngine;
 
 namespace Lambda.Core.Main;
 
@@ -25,7 +25,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public SpectatorManager()
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         UnityTicker.OnLateUpdate += OnUpdate;
         EventBus.OnEnter += OnEnter;
         EventBus.OnSelfFactionChanged += OnFactionChanged;
@@ -34,7 +35,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void Dispose()
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         UnityTicker.OnLateUpdate -= OnUpdate;
         EventBus.OnEnter -= OnEnter;
         EventBus.OnSelfFactionChanged -= OnFactionChanged;
@@ -62,7 +64,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     private void OnPlayerKilled(PlayerKilledPacket packet)
     {
-        if (observedPlayer == null || packet.Player != observedPlayer) return;
+        if (observedPlayer == null || packet.Player != observedPlayer)
+            return;
 
         // Fetch the ragdoll from the creator to follow the death
         observedCorpse = H.RagdollCreator.GetCorpse(packet.Player);
@@ -103,21 +106,31 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     private void OnUpdate()
     {
-        if (observedPlayer == null) return;
+        if (observedPlayer == null)
+            return;
 
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.RightArrow))
+        if (
+            Input.GetMouseButtonDown(0)
+            || Input.GetKeyDown(KeyCode.E)
+            || Input.GetKeyDown(KeyCode.RightArrow)
+        )
         {
             SwitchSpectatePlayer();
         }
 
-        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.LeftArrow))
+        if (
+            Input.GetMouseButtonDown(1)
+            || Input.GetKeyDown(KeyCode.Q)
+            || Input.GetKeyDown(KeyCode.LeftArrow)
+        )
         {
             SwitchSpectatePlayer(false);
         }
 
         // Suspend modifying the camera if we are currently watching a corpse fall
         // Let FakeCorpse.Update() drive the camera directly.
-        if (observedCorpse != null) return;
+        if (observedCorpse != null)
+            return;
 
         Transform mainCameraTransform = CameraClass.Instance.Camera.transform;
         Vector3 offset = observedPlayerCameraTransform.position;
@@ -129,22 +142,23 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SwitchSpectatePlayer(bool next = true)
     {
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
 
         List<PlayerContext> validPlayersToSpectate = new();
 
         // Case 1: You are a dedicated Spectator
         if (H.MainPlayerScore.Faction == Faction.Spectator)
         {
-            validPlayersToSpectate = H.Scoreboard.Values
-                .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
+            validPlayersToSpectate = H
+                .Scoreboard.Values.Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
                 .ToList();
         }
         else
         {
             // First, try to find living teammates.
-            validPlayersToSpectate = H.AllTeammateScores
-                .Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
+            validPlayersToSpectate = H
+                .AllTeammateScores.Where(s => s.Faction != Faction.Spectator && s.IsAlive == true)
                 .ToList();
 
             // FALLBACK: If everyone in your faction is dead, get everyone else who isn't a spectator
@@ -165,7 +179,6 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         int currentIndex;
         if (observedPlayer != null)
         {
-
             currentIndex = validPlayersToSpectate.FindIndex(s => s.player.Id == observedPlayer.Id);
         }
         else
@@ -192,7 +205,8 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SpectatePlayer(Player player)
     {
-        if (player.IsYourPlayer) return;
+        if (player.IsYourPlayer)
+            return;
 
         if (observedPlayer != null)
         {
@@ -212,12 +226,17 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
 
     public void SetHandsSkin(Player player)
     {
-        var observedPlayerHandsKnown = observedPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID observedPlayerHandsId);
+        var observedPlayerHandsKnown = observedPlayer.PlayerBody.BodyCustomization.TryGetValue(
+            EBodyModelPart.Hands,
+            out MongoID observedPlayerHandsId
+        );
         ResourceKey selectedHandsBundle = null;
 
         if (observedPlayerHandsKnown)
         {
-            ResourceKey observedHandsBundle = H.CustomizationSolverClass.GetBundle(observedPlayerHandsId);
+            ResourceKey observedHandsBundle = H.CustomizationSolverClass.GetBundle(
+                observedPlayerHandsId
+            );
             if (observedHandsBundle.IsReadyNow())
             {
                 selectedHandsBundle = observedHandsBundle;
@@ -227,18 +246,26 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
         // Fallback to Main Player Hands
         if (selectedHandsBundle == null)
         {
-            H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(EBodyModelPart.Hands, out MongoID mainPlayerHandsId);
+            H.MainPlayer.PlayerBody.BodyCustomization.TryGetValue(
+                EBodyModelPart.Hands,
+                out MongoID mainPlayerHandsId
+            );
             selectedHandsBundle = H.CustomizationSolverClass.GetBundle(mainPlayerHandsId);
         }
 
-        var handsKvp = new KeyValuePair<EBodyModelPart, ResourceKey>(EBodyModelPart.Hands, selectedHandsBundle);
+        var handsKvp = new KeyValuePair<EBodyModelPart, ResourceKey>(
+            EBodyModelPart.Hands,
+            selectedHandsBundle
+        );
         observedPlayer.PlayerBody.SetSkin(handsKvp, observedPlayer.PlayerBody.SkeletonHands);
     }
 
     public void StopSpectating()
     {
-        if (!H.IsInRaid()) return;
-        if (H.IsHeadless) return;
+        if (!H.IsInRaid())
+            return;
+        if (H.IsHeadless)
+            return;
 
         if (observedPlayer != null)
         {
@@ -261,9 +288,12 @@ public class SpectatorManager : Singleton<SpectatorManager>, IDisposable
     {
         CameraClass.Instance.SetPlayer(player);
 
-        PlayerCameraController playerCameraController = H.MainPlayer.GetComponent<PlayerCameraController>();
+        PlayerCameraController playerCameraController =
+            H.MainPlayer.GetComponent<PlayerCameraController>();
         playerCameraController.enabled = player.IsYourPlayer;
-        observedPlayerCameraTransform = player.IsYourPlayer ? null : player.ProceduralWeaponAnimation.HandsContainer.CameraTransform;
+        observedPlayerCameraTransform = player.IsYourPlayer
+            ? null
+            : player.ProceduralWeaponAnimation.HandsContainer.CameraTransform;
     }
 
     private bool UpdatePointOfView(Player player, EPointOfView pointOfView)

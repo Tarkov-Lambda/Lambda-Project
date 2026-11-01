@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 #if UNITY_EDITOR
 using System.IO;
 using System.Linq;
@@ -22,7 +22,11 @@ namespace Coffee.UIEffects
     public class UIEffect : BaseMaterialEffect, IMaterialModifier
     {
         private const uint k_ShaderId = 2 << 3;
-        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(4, 1024, "_ParamTex");
+        private static readonly ParameterTexture s_ParamTex = new ParameterTexture(
+            4,
+            1024,
+            "_ParamTex"
+        );
 
         [FormerlySerializedAs("m_ToneLevel")]
         [Tooltip("Effect factor between 0(no effect) and 1(complete effect).")]
@@ -30,7 +34,9 @@ namespace Coffee.UIEffects
         [Range(0, 1)]
         float m_EffectFactor = 1;
 
-        [Tooltip("Color effect factor between 0(no effect) and 1(complete effect).")] [SerializeField] [Range(0, 1)]
+        [Tooltip("Color effect factor between 0(no effect) and 1(complete effect).")]
+        [SerializeField]
+        [Range(0, 1)]
         float m_ColorFactor = 1;
 
         [FormerlySerializedAs("m_Blur")]
@@ -39,16 +45,21 @@ namespace Coffee.UIEffects
         [Range(0, 1)]
         float m_BlurFactor = 1;
 
-        [FormerlySerializedAs("m_ToneMode")] [Tooltip("Effect mode")] [SerializeField]
+        [FormerlySerializedAs("m_ToneMode")]
+        [Tooltip("Effect mode")]
+        [SerializeField]
         EffectMode m_EffectMode = EffectMode.None;
 
-        [Tooltip("Color effect mode")] [SerializeField]
+        [Tooltip("Color effect mode")]
+        [SerializeField]
         ColorMode m_ColorMode = ColorMode.Multiply;
 
-        [Tooltip("Blur effect mode")] [SerializeField]
+        [Tooltip("Blur effect mode")]
+        [SerializeField]
         BlurMode m_BlurMode = BlurMode.None;
 
-        [Tooltip("Advanced blurring remove common artifacts in the blur effect for uGUI.")] [SerializeField]
+        [Tooltip("Advanced blurring remove common artifacts in the blur effect for uGUI.")]
+        [SerializeField]
         bool m_AdvancedBlur = false;
 
         private enum BlurEx
@@ -74,7 +85,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_EffectFactor, value)) return;
+                if (Mathf.Approximately(m_EffectFactor, value))
+                    return;
                 m_EffectFactor = value;
                 SetEffectParamsDirty();
             }
@@ -89,7 +101,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_ColorFactor, value)) return;
+                if (Mathf.Approximately(m_ColorFactor, value))
+                    return;
                 m_ColorFactor = value;
                 SetEffectParamsDirty();
             }
@@ -104,7 +117,8 @@ namespace Coffee.UIEffects
             set
             {
                 value = Mathf.Clamp(value, 0, 1);
-                if (Mathf.Approximately(m_BlurFactor, value)) return;
+                if (Mathf.Approximately(m_BlurFactor, value))
+                    return;
                 m_BlurFactor = value;
                 SetEffectParamsDirty();
             }
@@ -118,7 +132,8 @@ namespace Coffee.UIEffects
             get { return m_EffectMode; }
             set
             {
-                if (m_EffectMode == value) return;
+                if (m_EffectMode == value)
+                    return;
                 m_EffectMode = value;
                 SetMaterialDirty();
             }
@@ -132,7 +147,8 @@ namespace Coffee.UIEffects
             get { return m_ColorMode; }
             set
             {
-                if (m_ColorMode == value) return;
+                if (m_ColorMode == value)
+                    return;
                 m_ColorMode = value;
                 SetMaterialDirty();
             }
@@ -146,7 +162,8 @@ namespace Coffee.UIEffects
             get { return m_BlurMode; }
             set
             {
-                if (m_BlurMode == value) return;
+                if (m_BlurMode == value)
+                    return;
                 m_BlurMode = value;
                 SetMaterialDirty();
             }
@@ -168,7 +185,8 @@ namespace Coffee.UIEffects
             get { return m_AdvancedBlur; }
             set
             {
-                if (m_AdvancedBlur == value) return;
+                if (m_AdvancedBlur == value)
+                    return;
                 m_AdvancedBlur = value;
                 SetVerticesDirty();
                 SetMaterialDirty();
@@ -180,23 +198,29 @@ namespace Coffee.UIEffects
             if (!isActiveAndEnabled || !material || !material.shader)
                 return k_InvalidHash;
 
-            var shaderVariantId = (uint) (((int) m_EffectMode << 6) + ((int) m_ColorMode << 9) +
-                                          ((int) m_BlurMode << 11) + ((m_AdvancedBlur ? 1 : 0) << 13));
-            return new Hash128(
-                (uint) material.GetInstanceID(),
-                k_ShaderId + shaderVariantId,
-                0,
-                0
+            var shaderVariantId = (uint)(
+                ((int)m_EffectMode << 6)
+                + ((int)m_ColorMode << 9)
+                + ((int)m_BlurMode << 11)
+                + ((m_AdvancedBlur ? 1 : 0) << 13)
             );
+            return new Hash128((uint)material.GetInstanceID(), k_ShaderId + shaderVariantId, 0, 0);
         }
 
         public override void ModifyMaterial(Material newMaterial, Graphic graphic)
         {
             var connector = GraphicConnector.FindConnector(graphic);
 
-            newMaterial.shader = FindShader(string.Format("Hidden/{0} (UIEffect)", newMaterial.shader.name));
-            SetShaderVariants(newMaterial, m_EffectMode, m_ColorMode, m_BlurMode,
-                m_AdvancedBlur ? BlurEx.Ex : BlurEx.None);
+            newMaterial.shader = FindShader(
+                string.Format("Hidden/{0} (UIEffect)", newMaterial.shader.name)
+            );
+            SetShaderVariants(
+                newMaterial,
+                m_EffectMode,
+                m_ColorMode,
+                m_BlurMode,
+                m_AdvancedBlur ? BlurEx.Ex : BlurEx.None
+            );
 
             paramTex.RegisterMaterial(newMaterial);
         }
@@ -226,7 +250,7 @@ namespace Coffee.UIEffects
                 Vector3 size = default(Vector3);
                 Vector3 tPos = default(Vector3);
                 Vector3 tUV = default(Vector3);
-                float expand = (float) blurMode * 6 * 2;
+                float expand = (float)blurMode * 6 * 2;
 
                 for (int i = 0; i < count; i += bundleSize)
                 {
@@ -234,8 +258,10 @@ namespace Coffee.UIEffects
                     GetBounds(s_TempVerts, i, bundleSize, ref posBounds, ref uvBounds, true);
 
                     // Pack uv mask.
-                    Vector2 uvMask = new Vector2(Packer.ToFloat(uvBounds.xMin, uvBounds.yMin),
-                        Packer.ToFloat(uvBounds.xMax, uvBounds.yMax));
+                    Vector2 uvMask = new Vector2(
+                        Packer.ToFloat(uvBounds.xMin, uvBounds.yMin),
+                        Packer.ToFloat(uvBounds.xMax, uvBounds.yMax)
+                    );
 
                     // Quad
                     for (int j = 0; j < bundleSize; j += 6)
@@ -244,9 +270,10 @@ namespace Coffee.UIEffects
                         Vector3 cornerPos2 = s_TempVerts[i + j + 4].position;
 
                         // Is outer quad?
-                        bool hasOuterEdge = (bundleSize == 6)
-                                            || !posBounds.Contains(cornerPos1)
-                                            || !posBounds.Contains(cornerPos2);
+                        bool hasOuterEdge =
+                            (bundleSize == 6)
+                            || !posBounds.Contains(cornerPos1)
+                            || !posBounds.Contains(cornerPos2);
                         if (hasOuterEdge)
                         {
                             Vector3 cornerUv1 = s_TempVerts[i + j + 1].uv0;
@@ -284,8 +311,10 @@ namespace Coffee.UIEffects
                                 uv0.y = uv0.y * size.y + tUV.y;
                             }
 
-                            vt.uv0 = new Vector2(Packer.ToFloat((uv0.x + 0.5f) / 2f, (uv0.y + 0.5f) / 2f),
-                                normalizedIndex);
+                            vt.uv0 = new Vector2(
+                                Packer.ToFloat((uv0.x + 0.5f) / 2f, (uv0.y + 0.5f) / 2f),
+                                normalizedIndex
+                            );
                             vt.position = pos;
 
                             connector.SetExtraChannel(ref vt, uvMask);
@@ -322,8 +351,14 @@ namespace Coffee.UIEffects
             paramTex.SetData(this, 2, m_BlurFactor); // param.z : blur factor
         }
 
-        static void GetBounds(List<UIVertex> verts, int start, int count, ref Rect posBounds, ref Rect uvBounds,
-            bool global)
+        static void GetBounds(
+            List<UIVertex> verts,
+            int start,
+            int count,
+            ref Rect posBounds,
+            ref Rect uvBounds,
+            bool global
+        )
         {
             Vector2 minPos = new Vector2(float.MaxValue, float.MaxValue);
             Vector2 maxPos = new Vector2(float.MinValue, float.MinValue);
@@ -360,8 +395,12 @@ namespace Coffee.UIEffects
             }
 
             // Shrink coordinate for detect edge
-            posBounds.Set(minPos.x + 0.001f, minPos.y + 0.001f, maxPos.x - minPos.x - 0.002f,
-                maxPos.y - minPos.y - 0.002f);
+            posBounds.Set(
+                minPos.x + 0.001f,
+                minPos.y + 0.001f,
+                maxPos.x - minPos.x - 0.002f,
+                maxPos.y - minPos.y - 0.002f
+            );
             uvBounds.Set(minUV.x, minUV.y, maxUV.x - minUV.x, maxUV.y - minUV.y);
         }
     }

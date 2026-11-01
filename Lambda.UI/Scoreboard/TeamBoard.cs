@@ -9,17 +9,33 @@ namespace Lambda.UI.scoreboard
 {
     public class TeamBoard : MonoBehaviour
     {
-        [SerializeField] private GameObject scoreContainer;
-        [SerializeField] private TMP_Text textTeamScore;
-        [SerializeField] private GameObject header;
+        [SerializeField]
+        private GameObject scoreContainer;
 
-        [SerializeField] private RowPlayer prefabRowPlayer;
-        [SerializeField] private RectTransform containerPlayers;
-        [SerializeField] private Graphic[] coloredGraphicsKeepAlpha;
+        [SerializeField]
+        private TMP_Text textTeamScore;
+
+        [SerializeField]
+        private GameObject header;
+
+        [SerializeField]
+        private RowPlayer prefabRowPlayer;
+
+        [SerializeField]
+        private RectTransform containerPlayers;
+
+        [SerializeField]
+        private Graphic[] coloredGraphicsKeepAlpha;
 
         private readonly List<RowPlayer> pool = new List<RowPlayer>();
 
-        public void Set(List<PlayerContextInfo> players, Color teamColor, int score, Faction mainPlayerFaction, Faction teamBoardFaction)
+        public void Set(
+            List<PlayerContextInfo> players,
+            Color teamColor,
+            int score,
+            Faction mainPlayerFaction,
+            Faction teamBoardFaction
+        )
         {
             header.SetActive(teamBoardFaction is not Faction.Spectator);
             scoreContainer.SetActive(score >= 0 && teamBoardFaction is Faction.CT or Faction.T);

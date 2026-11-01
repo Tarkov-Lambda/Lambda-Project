@@ -1,13 +1,11 @@
 ﻿using System;
-using UnityEngine;
-
-using EFT.UI;
-using DG.Tweening;
-
-using Lambda.UI;
-using Lambda.Core.Networking;
-using Lambda.Core.Main.Gamemode;
 using Comfort.Common;
+using DG.Tweening;
+using EFT.UI;
+using Lambda.Core.Main.Gamemode;
+using Lambda.Core.Networking;
+using Lambda.UI;
+using UnityEngine;
 
 namespace Lambda.Core.Main.UI
 {
@@ -19,11 +17,16 @@ namespace Lambda.Core.Main.UI
 
         internal LoadingScreenController(CommonUI commonUI, AssetBundle uiBundle)
         {
-            var prefab = uiBundle.LoadAsset<GameObject>("Packages/com.lambda.editor/Lambda.UI/LoadingScreen/LoadingScreen.prefab");
-            screen = GameObject.Instantiate(prefab, commonUI.EftBattleUIScreen.transform).GetComponent<LoadingScreen>();
+            var prefab = uiBundle.LoadAsset<GameObject>(
+                "Packages/com.lambda.editor/Lambda.UI/LoadingScreen/LoadingScreen.prefab"
+            );
+            screen = GameObject
+                .Instantiate(prefab, commonUI.EftBattleUIScreen.transform)
+                .GetComponent<LoadingScreen>();
             screen.gameObject.SetActive(false);
 
-            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied += ReceivePlayerReadinessPacket;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied +=
+                ReceivePlayerReadinessPacket;
             EventBus.OnEnter += OnMatchStateEnter;
             EventBus.OnExit += OnMatchStateExit;
             MapLoadEvent.OnBeginLoad += OnBeginLoad;
@@ -32,7 +35,8 @@ namespace Lambda.Core.Main.UI
 
         public void Dispose()
         {
-            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied -= ReceivePlayerReadinessPacket;
+            Singleton<PlayerReadinessPacketWarden>.Instance.AfterPacketApplied -=
+                ReceivePlayerReadinessPacket;
             EventBus.OnEnter -= OnMatchStateEnter;
             MapLoadEvent.OnBeginLoad -= OnBeginLoad;
             MapLoadEvent.OnSuccessfulLoad -= OnSuccessfulMapLoad;
@@ -83,7 +87,6 @@ namespace Lambda.Core.Main.UI
                 ToggleVisibility(false);
         }
 
-
         bool IsWaitingOnOtherPlayers(out string text)
         {
             text = string.Empty;
@@ -131,7 +134,8 @@ namespace Lambda.Core.Main.UI
                 canvasGroup.alpha = 0f;
             }
 
-            canvasGroup.DOFade(fadeAlphaTarget, fadeDuration)
+            canvasGroup
+                .DOFade(fadeAlphaTarget, fadeDuration)
                 .OnComplete(() =>
                 {
                     if (!show)

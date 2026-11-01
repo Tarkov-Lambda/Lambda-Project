@@ -19,11 +19,11 @@ public partial class PlayerContext
         {
             context.Identity.ReadyState = readyState;
 
-            if (H.IsHeadless) return;
+            if (H.IsHeadless)
+                return;
             if (player == H.MainPlayer)
                 EventBus.OnSelfReadinessChanged?.Invoke(readyState);
         }
-
     }
 
     public void ChangeProgress(float loadingProgress)
@@ -33,7 +33,8 @@ public partial class PlayerContext
 
     public void SetClanTag(string newClanTag)
     {
-        if (newClanTag.IsNullOrEmpty()) return;
+        if (newClanTag.IsNullOrEmpty())
+            return;
 
         newClanTag = newClanTag.ToUpper();
         context.Identity.ClanTag = newClanTag;
@@ -43,7 +44,8 @@ public partial class PlayerContext
     {
         context.Identity.Faction = faction;
 
-        if (H.IsHeadless) return;
+        if (H.IsHeadless)
+            return;
         if (player == H.MainPlayer)
         {
             if (faction == Faction.Spectator)
@@ -51,7 +53,7 @@ public partial class PlayerContext
                 var damageInfo = new DamageInfoStruct
                 {
                     Damage = 1f,
-                    BodyPartColliderType = EBodyPartColliderType.RibcageUp
+                    BodyPartColliderType = EBodyPartColliderType.RibcageUp,
                 };
                 Singleton<PlayerKilledPacketWarden>.Instance.Send(damageInfo, player, player);
             }
@@ -73,7 +75,6 @@ public partial class PlayerContext
     {
         DefaultEquipment = defaultItems;
     }
-
 
     public void SetHardReset()
     {

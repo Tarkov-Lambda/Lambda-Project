@@ -1,9 +1,9 @@
-﻿using EFT;
+﻿using System;
+using System.Reflection;
+using EFT;
 using EFT.UI;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 
 namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
 {
@@ -15,14 +15,13 @@ namespace Lambda.Core.Patches.Tarkov.UI.WeaponBuilds
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(OpenBuildWindow __instance, 
-            RagFairClass ragfair, 
-            HandbookClass handbook, 
-            WeaponBuildsStorageClass storage, 
-            string? selectedWeaponTemplateId, 
-            Action<WeaponBuildClass> onBuildSelected)
-        {
-
-        }
+        private static void PatchPostfix(
+            OpenBuildWindow __instance,
+            RagFairClass ragfair,
+            HandbookClass handbook,
+            WeaponBuildsStorageClass storage,
+            string? selectedWeaponTemplateId,
+            Action<WeaponBuildClass> onBuildSelected
+        ) { }
     }
 }

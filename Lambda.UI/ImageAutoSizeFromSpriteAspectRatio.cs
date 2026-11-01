@@ -1,8 +1,8 @@
 ﻿// Written by Claude 4.6
 
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// Automatically sizes an Image to preserve its Sprite's aspect ratio
@@ -26,8 +26,7 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
     private RectTransform _rectTransform;
     private DrivenRectTransformTracker _tracker;
 
-    private Image CachedImage =>
-        _image != null ? _image : (_image = GetComponent<Image>());
+    private Image CachedImage => _image != null ? _image : (_image = GetComponent<Image>());
 
     private RectTransform CachedRectTransform =>
         _rectTransform != null ? _rectTransform : (_rectTransform = GetComponent<RectTransform>());
@@ -35,7 +34,7 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
     // ──────────────────────────────────────────────────────────────
     // Internal state
     // ──────────────────────────────────────────────────────────────
-    private float _cachedPreferredWidth  = -1f;
+    private float _cachedPreferredWidth = -1f;
     private float _cachedPreferredHeight = -1f;
 
     private bool _parentControlsWidth;
@@ -47,7 +46,8 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
         get
         {
             Sprite sprite = CachedImage.sprite;
-            if (sprite == null) return 1f;
+            if (sprite == null)
+                return 1f;
             Rect r = sprite.rect;
             return r.height > 0f ? r.width / r.height : 1f;
         }
@@ -58,20 +58,21 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
     // ──────────────────────────────────────────────────────────────
     private void DetectParentLayoutControl()
     {
-        _parentControlsWidth  = false;
+        _parentControlsWidth = false;
         _parentControlsHeight = false;
 
         Transform parent = transform.parent;
-        if (parent == null) return;
+        if (parent == null)
+            return;
 
         if (parent.TryGetComponent<HorizontalLayoutGroup>(out var hlg) && hlg.enabled)
         {
-            _parentControlsWidth  = hlg.childControlWidth;
+            _parentControlsWidth = hlg.childControlWidth;
             _parentControlsHeight = hlg.childControlHeight;
         }
         else if (parent.TryGetComponent<VerticalLayoutGroup>(out var vlg) && vlg.enabled)
         {
-            _parentControlsWidth  = vlg.childControlWidth;
+            _parentControlsWidth = vlg.childControlWidth;
             _parentControlsHeight = vlg.childControlHeight;
         }
     }
@@ -84,12 +85,12 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
     //   Returning -1 means "I have no opinion" — the system falls
     //   back to the next-lower-priority ILayoutElement (Image).
     // ──────────────────────────────────────────────────────────────
-    public int   layoutPriority  => 1;
-    public float minWidth        => -1f;
-    public float minHeight       => -1f;
-    public float flexibleWidth   => -1f;
-    public float flexibleHeight  => -1f;
-    public float preferredWidth  => _cachedPreferredWidth;
+    public int layoutPriority => 1;
+    public float minWidth => -1f;
+    public float minHeight => -1f;
+    public float flexibleWidth => -1f;
+    public float flexibleHeight => -1f;
+    public float preferredWidth => _cachedPreferredWidth;
     public float preferredHeight => _cachedPreferredHeight;
 
     /// <summary>
@@ -161,31 +162,28 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
 
     public void SetLayoutVertical()
     {
-        if (CachedImage.sprite == null) return;
+        if (CachedImage.sprite == null)
+            return;
 
         float aspect = SpriteAspectRatio;
 
         if (_parentControlsWidth && !_parentControlsHeight)
         {
             // Parent owns width → we drive height.
-            float width  = CachedRectTransform.rect.width;
+            float width = CachedRectTransform.rect.width;
             float height = width / aspect;
 
-            _tracker.Add(this, CachedRectTransform,
-                         DrivenTransformProperties.SizeDeltaY);
-            CachedRectTransform.SetSizeWithCurrentAnchors(
-                         RectTransform.Axis.Vertical, height);
+            _tracker.Add(this, CachedRectTransform, DrivenTransformProperties.SizeDeltaY);
+            CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
         }
         else if (_parentControlsHeight && !_parentControlsWidth)
         {
             // Parent owns height → we drive width.
             float height = CachedRectTransform.rect.height;
-            float width  = height * aspect;
+            float width = height * aspect;
 
-            _tracker.Add(this, CachedRectTransform,
-                         DrivenTransformProperties.SizeDeltaX);
-            CachedRectTransform.SetSizeWithCurrentAnchors(
-                         RectTransform.Axis.Horizontal, width);
+            _tracker.Add(this, CachedRectTransform, DrivenTransformProperties.SizeDeltaX);
+            CachedRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         }
     }
 
@@ -217,7 +215,8 @@ public class ImageAutoSizeFromSpriteAspectRatio : UIBehaviour, ILayoutSelfContro
 
     private void SetDirty()
     {
-        if (!IsActive()) return;
+        if (!IsActive())
+            return;
         LayoutRebuilder.MarkLayoutForRebuild(CachedRectTransform);
     }
 

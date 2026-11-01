@@ -9,16 +9,17 @@ namespace PhononSpatializerProxy.BepInEx.Patches
         [HarmonyPrefix]
         public static bool Prefix(AudioSource __instance, ref float value)
         {
-            if (AudioSourceStateBypass.Bypass) return true;
+            if (AudioSourceStateBypass.Bypass)
+                return true;
 
             if (SteamAudioSourceController.cache.TryGetValue(__instance, out var box))
             {
                 box.Value.proxy.spatialBlend = Mathf.Clamp01(value);
-                
+
                 // If we are actively spatializing via Steam Audio, spoof Unity to 0.
                 if (box.Value.proxy.spatialize)
                 {
-                    value = 0f; 
+                    value = 0f;
                 }
             }
             return true;
@@ -31,17 +32,18 @@ namespace PhononSpatializerProxy.BepInEx.Patches
         [HarmonyPrefix]
         public static bool Prefix(AudioSource __instance, ref bool value)
         {
-            if (AudioSourceStateBypass.Bypass) return true;
+            if (AudioSourceStateBypass.Bypass)
+                return true;
 
             if (SteamAudioSourceController.cache.TryGetValue(__instance, out var box))
             {
                 box.Value.proxy.spatialize = value;
-                
+
                 if (value)
                 {
                     // Steam Audio is taking over. Turn off Unity's spatializer and spatial blend.
                     value = false;
-                    
+
                     AudioSourceStateBypass.Bypass = true;
                     __instance.spatialBlend = 0f;
                     AudioSourceStateBypass.Bypass = false;
@@ -65,7 +67,8 @@ namespace PhononSpatializerProxy.BepInEx.Patches
         [HarmonyPrefix]
         public static bool Prefix(AudioSource __instance, ref float __result)
         {
-            if (AudioSourceStateBypass.Bypass) return true;
+            if (AudioSourceStateBypass.Bypass)
+                return true;
 
             if (SteamAudioSourceController.cache.TryGetValue(__instance, out var box))
             {
@@ -82,7 +85,8 @@ namespace PhononSpatializerProxy.BepInEx.Patches
         [HarmonyPrefix]
         public static bool Prefix(AudioSource __instance, ref bool __result)
         {
-            if (AudioSourceStateBypass.Bypass) return true;
+            if (AudioSourceStateBypass.Bypass)
+                return true;
 
             if (SteamAudioSourceController.cache.TryGetValue(__instance, out var box))
             {

@@ -40,24 +40,24 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 
     bool CanChangeFaction(PlayerContext playerScore, Faction faction)
     {
-        if (!playerScore.IsAlive) return true;
+        if (!playerScore.IsAlive)
+            return true;
 
-        if (faction == Faction.Spectator) return true;
+        if (faction == Faction.Spectator)
+            return true;
 
-        if (H.Session.matchState < MatchState.RoundPrepare) return true;
+        if (H.Session.matchState < MatchState.RoundPrepare)
+            return true;
 
         return false;
     }
 
     public async void Send(Faction faction)
     {
-        var packet = new FactionChangePacket
-        {
-            Player = H.MainPlayer,
-            faction = faction
-        };
+        var packet = new FactionChangePacket { Player = H.MainPlayer, faction = faction };
 
-        if (FikaBackendUtils.IsSpectator) packet.faction = Faction.Spectator;
+        if (FikaBackendUtils.IsSpectator)
+            packet.faction = Faction.Spectator;
 
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
@@ -67,7 +67,10 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
             if (!CanChangeFaction(H.MainPlayerScore, packet.faction))
             {
                 D.Notify("You will change factions at the start of the next round.");
-                await UniTask.WaitUntil(() => CanChangeFaction(H.MainPlayerScore, packet.faction), cancellationToken: _cts.Token);
+                await UniTask.WaitUntil(
+                    () => CanChangeFaction(H.MainPlayerScore, packet.faction),
+                    cancellationToken: _cts.Token
+                );
             }
 
             DispatchPacket(ref packet);
@@ -80,16 +83,16 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 
     public void SendForPlayer(Player player, Faction faction)
     {
-        var packet = new FactionChangePacket
-        {
-            Player = player,
-            faction = faction
-        };
+        var packet = new FactionChangePacket { Player = player, faction = faction };
 
         DispatchPacket(ref packet);
     }
 
-    protected override bool ValidatePacket(FactionChangePacket packet, int peerId, out string rejectionReason)
+    protected override bool ValidatePacket(
+        FactionChangePacket packet,
+        int peerId,
+        out string rejectionReason
+    )
     {
         if (!CanChangeFaction(H.GetPlayerContext(packet.Player.Id), packet.faction))
         {
@@ -104,8 +107,11 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
     {
         if (H.Gamemode is IGMTeam)
         {
-            string selectedArmband = packet.faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
-            packet.armband = PresetItemsCache.Instance.GetPresetItem(selectedArmband).CloneItem() as ArmBandItemClass;
+            string selectedArmband =
+                packet.faction == Faction.CT ? Hardcode.ARMBAND_CT : Hardcode.ARMBAND_T;
+            packet.armband =
+                PresetItemsCache.Instance.GetPresetItem(selectedArmband).CloneItem()
+                as ArmBandItemClass;
 
             var armbandSlot = packet.Player.Equipment.GetSlot(EquipmentSlot.ArmBand);
             packet.armbandAddress = armbandSlot.CreateItemAddress();
@@ -114,7 +120,8 @@ public class FactionChangePacketWarden : LambdaPacketWarden<FactionChangePacket>
 
     protected override void Apply(FactionChangePacket packet, int peerId)
     {
-        if (packet.Player.IsYourPlayer) _cts?.Cancel();
+        if (packet.Player.IsYourPlayer)
+            _cts?.Cancel();
 
         H.GetPlayerContext(packet.Player)?.ChangeFaction(packet.faction);
 

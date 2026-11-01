@@ -1,7 +1,7 @@
-﻿using EFT.UI.DragAndDrop;
+﻿using System.Reflection;
+using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +12,8 @@ internal class PatchGroup_QuickAccessPanel_HideItemBG : PatchGroup
 {
     private class Patch_QuickSlotView_ShowArrow : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.ShowArrow));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.ShowArrow));
 
         [PatchPrefix]
         static void Prefix(ref bool show)
@@ -23,10 +24,17 @@ internal class PatchGroup_QuickAccessPanel_HideItemBG : PatchGroup
 
     private class Patch_QuickSlotView_Awake : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.Awake));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.Awake));
 
         [PatchPostfix]
-        private static void PatchPostfix(QuickSlotView __instance, Image ___Background, Image ____arrow, TMP_Text ___Caption, TMP_Text ___HotKey)
+        private static void PatchPostfix(
+            QuickSlotView __instance,
+            Image ___Background,
+            Image ____arrow,
+            TMP_Text ___Caption,
+            TMP_Text ___HotKey
+        )
         {
             Transform mainWeapon = __instance.transform.Find("MainWeapon");
             if (mainWeapon != null)
@@ -80,7 +88,8 @@ internal class PatchGroup_QuickAccessPanel_HideItemBG : PatchGroup
 
     private class Patch_QuickSlotView_RefreshMalfunctionForWeapon : ModulePatch
     {
-        protected override MethodBase GetTargetMethod() => AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.method_0));
+        protected override MethodBase GetTargetMethod() =>
+            AccessTools.Method(typeof(QuickSlotView), nameof(QuickSlotView.method_0));
 
         [PatchPostfix]
         private static void PatchPostfix(QuickSlotView __instance, Image ___InstallPlace)

@@ -5,20 +5,39 @@ namespace Lambda.Shared.FX
 {
     public class MolotovFXController : MonoBehaviour
     {
-        private enum State { Disabled, Igniting, IdleOnFire, FadingOut }
+        private enum State
+        {
+            Disabled,
+            Igniting,
+            IdleOnFire,
+            FadingOut,
+        }
 
-        [SerializeField] private ParticleSystem[] particleSystems;
-        [SerializeField] private Light[] pointLights;
+        [SerializeField]
+        private ParticleSystem[] particleSystems;
+
+        [SerializeField]
+        private Light[] pointLights;
 
         [Space(10)]
-        [SerializeField] private float maxLightIntensity = 2f;
-        [SerializeField] private float fadeInDuration = 0.5f;
-        [SerializeField] private float fadeOutDuration = 1f;
-        [SerializeField] private AnimationCurve fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        [SerializeField] private AnimationCurve fadeOutCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField]
+        private float maxLightIntensity = 2f;
+
+        [SerializeField]
+        private float fadeInDuration = 0.5f;
+
+        [SerializeField]
+        private float fadeOutDuration = 1f;
+
+        [SerializeField]
+        private AnimationCurve fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+        [SerializeField]
+        private AnimationCurve fadeOutCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
         [Space(10)]
-        [SerializeField] private AnimationCurve flickerCurve = AnimationCurve.EaseInOut(0, 1, 1, 1);
+        [SerializeField]
+        private AnimationCurve flickerCurve = AnimationCurve.EaseInOut(0, 1, 1, 1);
 
         private Action<MolotovFXController> returnToPoolCallback;
 
@@ -59,25 +78,27 @@ namespace Lambda.Shared.FX
             switch (currentState)
             {
                 case State.Disabled:
-                    {
-                        SetLightIntensityWithFlicker(0f);
-                        break;
-                    }
+                {
+                    SetLightIntensityWithFlicker(0f);
+                    break;
+                }
                 case State.Igniting:
+                {
+                    float t = fadeInCurve.Evaluate(
+                        Mathf.Clamp01(stateTimeElapsed / fadeInDuration)
+                    );
+                    SetLightIntensityWithFlicker(Mathf.Lerp(0, maxLightIntensity, t));
+                    if (stateTimeElapsed > fadeInDuration)
                     {
-                        float t = fadeInCurve.Evaluate(Mathf.Clamp01(stateTimeElapsed / fadeInDuration));
-                        SetLightIntensityWithFlicker(Mathf.Lerp(0, maxLightIntensity, t));
-                        if (stateTimeElapsed > fadeInDuration)
-                        {
-                            stateTimeElapsed = 0f;
-                            currentState = State.IdleOnFire;
-                        }
-                        foreach (var item in particleSystems)
-                        {
-                            item.transform.localScale = Vector3.one * t;
-                        }
-                        break;
+                        stateTimeElapsed = 0f;
+                        currentState = State.IdleOnFire;
                     }
+                    foreach (var item in particleSystems)
+                    {
+                        item.transform.localScale = Vector3.one * t;
+                    }
+                    break;
+                }
                 case State.IdleOnFire:
                     {
                         SetLightIntensityWithFlicker(maxLightIntensity);
@@ -85,7 +106,9 @@ namespace Lambda.Shared.FX
                     break;
                 case State.FadingOut:
                     {
-                        float t = fadeOutCurve.Evaluate(Mathf.Clamp01(stateTimeElapsed / fadeOutDuration));
+                        float t = fadeOutCurve.Evaluate(
+                            Mathf.Clamp01(stateTimeElapsed / fadeOutDuration)
+                        );
                         SetLightIntensityWithFlicker(Mathf.Lerp(maxLightIntensity, 0, t));
                         if (AreAllParticlesDead() && stateTimeElapsed > fadeOutDuration)
                         {
@@ -107,7 +130,8 @@ namespace Lambda.Shared.FX
         {
             foreach (var ps in particleSystems)
             {
-                if (ps.IsAlive()) return false;
+                if (ps.IsAlive())
+                    return false;
             }
             return true;
         }

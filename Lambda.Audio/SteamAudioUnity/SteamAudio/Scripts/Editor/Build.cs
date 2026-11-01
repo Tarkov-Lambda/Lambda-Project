@@ -15,12 +15,13 @@
 //
 
 using System;
-using UnityEngine; // deleteme?
 using UnityEditor;
+using UnityEditor.Callbacks;
+using UnityEngine; // deleteme?
 #if UNITY_2021_2_OR_NEWER
 using UnityEditor.Build;
 #endif
-using UnityEditor.Callbacks;
+
 #if UNITY_IOS
 using UnityEditor.iOS.Xcode;
 #endif
@@ -39,7 +40,6 @@ namespace SteamAudio
                 "Assets/Plugins/SteamAudio/Scripts/Runtime",
                 "Assets/Plugins/SteamAudio/Scripts/Editor",
             };
-
 
             var fmodAssets = new string[]
             {
@@ -100,7 +100,8 @@ namespace SteamAudio
         static Defines()
         {
 #if UNITY_2021_2_OR_NEWER
-            NamedBuildTarget[] supportedPlatforms = {
+            NamedBuildTarget[] supportedPlatforms =
+            {
                 NamedBuildTarget.Standalone,
                 NamedBuildTarget.Android,
                 NamedBuildTarget.iOS,
@@ -139,7 +140,11 @@ namespace SteamAudio
                 var project = new PBXProject();
                 project.ReadFromFile(projectPath);
 
-                var file = project.AddFile("usr/lib/libz.tbd", "Frameworks/libz.tbd", PBXSourceTree.Sdk);
+                var file = project.AddFile(
+                    "usr/lib/libz.tbd",
+                    "Frameworks/libz.tbd",
+                    PBXSourceTree.Sdk
+                );
                 var target = project.TargetGuidByName("UnityFramework");
                 project.AddFileToBuild(target, file);
 

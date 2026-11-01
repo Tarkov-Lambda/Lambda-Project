@@ -1,10 +1,6 @@
-using Cysharp.Threading.Tasks;
+using System;
 using EFT;
 using EFT.InventoryLogic;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib.Utils;
-using Lambda.Core.Main;
-using System;
 using Fika.Core.Main.Players;
 using MemoryPack;
 using PacketWarden.RateLimiting;
@@ -40,7 +36,7 @@ public class ForceRemoveItemPacketWarden : LambdaPacketWarden<PopPacket>
         DispatchPacket(ref packet);
     }
 
-    protected override async void Apply(PopPacket packet, int peerId)
+    protected override void Apply(PopPacket packet, int peerId)
     {
         try
         {

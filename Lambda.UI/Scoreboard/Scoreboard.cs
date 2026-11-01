@@ -7,14 +7,24 @@ namespace Lambda.UI.scoreboard
 {
     public class Scoreboard : MonoBehaviour
     {
-        [SerializeField] private TeamBoard prefabTeamboard;
-        [SerializeField] private RectTransform containerTeams;
-        [SerializeField] private FactionColors factionColors;
+        [SerializeField]
+        private TeamBoard prefabTeamboard;
+
+        [SerializeField]
+        private RectTransform containerTeams;
+
+        [SerializeField]
+        private FactionColors factionColors;
 
         private readonly List<TeamBoard> pool = new();
-        private readonly Dictionary<Faction, List<PlayerContextInfo>> buckets = new Dictionary<Faction, List<PlayerContextInfo>>();
+        private readonly Dictionary<Faction, List<PlayerContextInfo>> buckets =
+            new Dictionary<Faction, List<PlayerContextInfo>>();
 
-        public void SetPlayers(PlayerContextInfo[] players, Dictionary<Faction, int> teamScores, Faction mainPlayerFaction)
+        public void SetPlayers(
+            PlayerContextInfo[] players,
+            Dictionary<Faction, int> teamScores,
+            Faction mainPlayerFaction
+        )
         {
             buckets.Clear();
 

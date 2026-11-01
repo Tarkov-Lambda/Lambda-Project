@@ -29,7 +29,9 @@ public class BaseInventoryManager : IInventoryManager
             else
             {
                 secondPrimaryWeapon.CurrentAddress.RemoveWithoutRestrictions(secondPrimaryWeapon);
-                player.Equipment.GetSlot(EquipmentSlot.FirstPrimaryWeapon).AddWithoutRestrictions(secondPrimaryWeapon);
+                player
+                    .Equipment.GetSlot(EquipmentSlot.FirstPrimaryWeapon)
+                    .AddWithoutRestrictions(secondPrimaryWeapon);
                 firstPrimaryWeapon = secondPrimaryWeapon;
             }
         }
@@ -76,7 +78,9 @@ public class BaseInventoryManager : IInventoryManager
             }
             else
             {
-                var NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem() as HeadwearItemClass;
+                var NVGStrap =
+                    PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem()
+                    as HeadwearItemClass;
                 IU.AttachNightVisionIfNeeded(NVGStrap);
 
                 var placement = AU.GetItemPlacement(NVGStrap, player);
@@ -96,7 +100,8 @@ public class BaseInventoryManager : IInventoryManager
 
         foreach (EquipmentSlot slot in Enum.GetValues(typeof(EquipmentSlot)))
         {
-            if (slot is EquipmentSlot.Pockets or EquipmentSlot.Dogtag) continue;
+            if (slot is EquipmentSlot.Pockets or EquipmentSlot.Dogtag)
+                continue;
 
             var currentItem = player.GetSlotItem(slot);
             AddItem(ref itemsToRemove, currentItem);
@@ -125,7 +130,9 @@ public class BaseInventoryManager : IInventoryManager
 
         if (H.IsNightTime)
         {
-            var NVGStrap = PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem() as HeadwearItemClass;
+            var NVGStrap =
+                PresetItemsCache.Instance.GetPresetItem(Hardcode.STRAP_NVG).CloneItem()
+                as HeadwearItemClass;
             IU.AttachNightVisionIfNeeded(NVGStrap);
 
             var placement = AU.GetItemPlacement(NVGStrap, player);
@@ -143,7 +150,8 @@ public class BaseInventoryManager : IInventoryManager
         foreach (var kvp in player.Context.DefaultEquipment)
         {
             Item defaultItem = kvp.Value;
-            if (defaultItem == null) continue;
+            if (defaultItem == null)
+                continue;
 
             var currentItem = player.GetSlotItem(kvp.Key);
             if (currentItem == null)
@@ -154,7 +162,8 @@ public class BaseInventoryManager : IInventoryManager
                 IU.StripArmorPlatesIfNeeded(clonedItem);
 
                 var addResult = placement.Address.Add(clonedItem, simulate: true);
-                if (addResult.Failed) continue;
+                if (addResult.Failed)
+                    continue;
 
                 placement.Address.AddWithoutRestrictions(clonedItem);
             }
@@ -194,9 +203,12 @@ public class BaseInventoryManager : IInventoryManager
             ShopItem playerShopItem = BuySelectionPair.Key;
             Item item = BuySelectionPair.Value;
 
-            var isValidFaction = playerShopItem.faction is Faction.None || playerShopItem.faction == pContext.Faction;
+            var isValidFaction =
+                playerShopItem.faction is Faction.None
+                || playerShopItem.faction == pContext.Faction;
 
-            if (playerShopItem.bsgId == bsgId && isValidFaction) return item;
+            if (playerShopItem.bsgId == bsgId && isValidFaction)
+                return item;
         }
 
         return null;
@@ -223,13 +235,14 @@ public class BaseInventoryManager : IInventoryManager
         return null;
     }
 
-
-
     public static void AddItem(ref List<Item> itemList, Item item)
     {
-        if (itemList.Contains(item)) return;
-        if (item == null) return;
-        if (H.ShouldLog) D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+        if (itemList.Contains(item))
+            return;
+        if (item == null)
+            return;
+        if (H.ShouldLog)
+            D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
 
         itemList.Add(item);
     }
@@ -238,7 +251,8 @@ public class BaseInventoryManager : IInventoryManager
     {
         foreach (Item item in itemCollection)
         {
-            if (H.ShouldLog) D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
+            if (H.ShouldLog)
+                D.LogInventory($"Adding {item.LocalizedName()} ({item.Id}) to removal list");
         }
 
         itemList.AddRange(itemCollection);

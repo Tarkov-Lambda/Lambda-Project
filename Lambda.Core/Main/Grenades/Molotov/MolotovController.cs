@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Lambda.Core.Networking;
 using UnityEngine;
 
@@ -8,36 +7,37 @@ namespace Lambda.Core.Main;
 public static class MolotovController
 {
     public static float duration = 7f;
-    
-    // maximum absolute distance from the origin the fire is allowed to travel
-    public static float maxSpreadDistance = 12.0f; 
 
-    public static async UniTask Spawn(MolotovExplosionPacket packet)
+    // maximum absolute distance from the origin the fire is allowed to travel
+    public static float maxSpreadDistance = 12.0f;
+
+    public static void Spawn(MolotovExplosionPacket packet)
     {
-        GameObject molotovRoot = new($"MolotovExplosion_{packet.Timestamp}");
+        GameObject molotovRoot = new("MolotovExplosion");
         molotovRoot.transform.position = packet.explosionPos;
 
         MolotovInstance spawner = molotovRoot.AddComponent<MolotovInstance>();
         spawner.Initialize(packet);
-
-        await UniTask.CompletedTask;
     }
 
     // 6 directions for hexagonal packing
-    private static readonly Vector3[] ExpansionDirections = {
+    private static readonly Vector3[] ExpansionDirections =
+    {
         new(1, 0, 0),
         new(0.5f, 0, 0.866f),
         new(-0.5f, 0, 0.866f),
         new(-1, 0, 0),
         new(-0.5f, 0, -0.866f),
-        new(0.5f, 0, -0.866f)
+        new(0.5f, 0, -0.866f),
     };
 
-    public static List<FireNode> GenerateFireSpread(Vector3 origin)
+    // Breadth first, so TimeOffset never decreases along the returned array
+    public static FireNode[] GenerateFireSpread(Vector3 origin)
     {
         List<FireNode> resultNodes = new List<FireNode>(GameplayVariables.vars.MaxNodes);
 
-        Queue<(Vector3 pos, Vector3 normal, int depth)> queue = new Queue<(Vector3, Vector3, int)>();
+        Queue<(Vector3 pos, Vector3 normal, int depth)> queue =
+            new Queue<(Vector3, Vector3, int)>();
         HashSet<Vector3Int> visitedGrid = new HashSet<Vector3Int>();
 
         // Pass origin directly, TryFindGround will safely calculate the upward offset now
@@ -46,30 +46,41 @@ public static class MolotovController
             queue.Enqueue((startPos, startNormal, 0));
             visitedGrid.Add(Quantize(startPos, GameplayVariables.vars.SpreadRadius));
         }
-        else return resultNodes;
+        else
+            return resultNodes.ToArray();
 
         while (queue.Count > 0 && resultNodes.Count < GameplayVariables.vars.MaxNodes)
         {
             var current = queue.Dequeue();
 
-            resultNodes.Add(new FireNode
-            {
-                Position = current.pos,
-                Rotation = Quaternion.FromToRotation(Vector3.up, current.normal),
-                Radius = GameplayVariables.vars.FireRadius,
-                TimeOffset = current.depth * GameplayVariables.vars.TimeBetweenNodes
-            });
+            resultNodes.Add(
+                new FireNode
+                {
+                    Position = current.pos,
+                    Normal = current.normal,
+                    TimeOffset = current.depth * GameplayVariables.vars.TimeBetweenNodes,
+                }
+            );
 
             foreach (Vector3 dir in ExpansionDirections)
             {
-                if (resultNodes.Count + queue.Count >= GameplayVariables.vars.MaxNodes) break;
+                if (resultNodes.Count + queue.Count >= GameplayVariables.vars.MaxNodes)
+                    break;
 
                 // dynamic ceiling check, prevent raycast from starting inside or above a ceiling.
                 float desiredUpOffset = GameplayVariables.vars.MaxStepHeight + 0.1f;
                 float safeUpOffset = desiredUpOffset;
 
                 // cast up from slightly above current position to see if we have headroom
-                if (Physics.Raycast(current.pos + Vector3.up * 0.05f, Vector3.up, out RaycastHit ceilHit, desiredUpOffset, 1 << 18))
+                if (
+                    Physics.Raycast(
+                        current.pos + Vector3.up * 0.05f,
+                        Vector3.up,
+                        out RaycastHit ceilHit,
+                        desiredUpOffset,
+                        1 << 18
+                    )
+                )
                 {
                     // clamp the upward step to keep it strictly beneath the low ceiling/prop
                     safeUpOffset = Mathf.Max(0.01f, ceilHit.distance - 0.05f);
@@ -79,23 +90,42 @@ public static class MolotovController
                 Vector3 horizontalOffset = dir * GameplayVariables.vars.SpreadRadius;
 
                 // horizontal line of sight check
-                if (Physics.Raycast(rayStart, dir, out RaycastHit wallHit, GameplayVariables.vars.SpreadRadius, 1 << 18)) 
+                if (
+                    Physics.Raycast(
+                        rayStart,
+                        dir,
+                        out RaycastHit wallHit,
+                        GameplayVariables.vars.SpreadRadius,
+                        1 << 18
+                    )
+                )
                     continue;
 
                 Vector3 downRayStart = current.pos + horizontalOffset + Vector3.up * safeUpOffset;
                 float maxDownDist = safeUpOffset + GameplayVariables.vars.MaxDropHeight;
 
-                if (Physics.Raycast(downRayStart, Vector3.down, out RaycastHit groundHit, maxDownDist, 1 << 18))
+                if (
+                    Physics.Raycast(
+                        downRayStart,
+                        Vector3.down,
+                        out RaycastHit groundHit,
+                        maxDownDist,
+                        1 << 18
+                    )
+                )
                 {
                     Vector3 newPos = groundHit.point;
-                    
+
                     // distance cap
-                    if (Vector3.Distance(startPos, newPos) > maxSpreadDistance) 
+                    if (Vector3.Distance(startPos, newPos) > maxSpreadDistance)
                         continue;
 
                     float heightDiff = newPos.y - current.pos.y;
 
-                    if (heightDiff > GameplayVariables.vars.MaxStepHeight || heightDiff < -GameplayVariables.vars.MaxDropHeight) 
+                    if (
+                        heightDiff > GameplayVariables.vars.MaxStepHeight
+                        || heightDiff < -GameplayVariables.vars.MaxDropHeight
+                    )
                         continue;
 
                     Vector3Int gridPos = Quantize(newPos, GameplayVariables.vars.SpreadRadius);
@@ -107,7 +137,7 @@ public static class MolotovController
                 }
             }
         }
-        return resultNodes;
+        return resultNodes.ToArray();
     }
 
     private static bool TryFindGround(Vector3 origin, out Vector3 hitPoint, out Vector3 normal)
@@ -115,7 +145,15 @@ public static class MolotovController
         float safeUpOffset = 0.5f;
 
         // prevent the initial drop-raycast from starting inside geometry if thrown under cars/low overhangs
-        if (Physics.Raycast(origin + Vector3.up * 0.05f, Vector3.up, out RaycastHit ceilHit, 0.5f, 1 << 18))
+        if (
+            Physics.Raycast(
+                origin + Vector3.up * 0.05f,
+                Vector3.up,
+                out RaycastHit ceilHit,
+                0.5f,
+                1 << 18
+            )
+        )
         {
             safeUpOffset = Mathf.Max(0f, ceilHit.distance - 0.05f);
         }
@@ -124,13 +162,13 @@ public static class MolotovController
 
         if (Physics.Raycast(safeStart, Vector3.down, out RaycastHit hit, 5f, 1 << 18))
         {
-            hitPoint = hit.point; 
-            normal = hit.normal; 
+            hitPoint = hit.point;
+            normal = hit.normal;
             return true;
         }
-        
-        hitPoint = Vector3.zero; 
-        normal = Vector3.up; 
+
+        hitPoint = Vector3.zero;
+        normal = Vector3.up;
         return false;
     }
 

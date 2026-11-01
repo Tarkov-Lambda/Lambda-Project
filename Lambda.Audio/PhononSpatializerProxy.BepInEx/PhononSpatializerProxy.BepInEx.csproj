@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
@@ -39,7 +38,6 @@
   </ItemGroup>
 
   <Target Name="CopyFilesAfterBuild" AfterTargets="Build">
-
     <ItemGroup>
       <!-- <Binaries Include="../../.Binaries/audioplugin_phonon.dll" />
       <Binaries Include="../../.Binaries/phonon.dll" /> -->
@@ -47,7 +45,11 @@
       <FilesToCopyToPlugins Include="$(OutputPath)\$(MSBuildProjectName).dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries" SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="@(Binaries)"
+      DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp\Binaries"
+      SkipUnchangedFiles="true"
+    />
 
     <!-- <Copy SourceFiles="@(FilesToCopyToPlugins)"
     DestinationFolder="$(SPTPath)\BepInEx\plugins\ifp" /> -->

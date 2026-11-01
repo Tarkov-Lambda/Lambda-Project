@@ -24,7 +24,14 @@ namespace SteamAudio
     {
         IntPtr mHRTF = IntPtr.Zero;
 
-        public HRTF(Context context, AudioSettings audioSettings, string sofaFileName, byte[] sofaFileData, float gaindB, HRTFNormType normType)
+        public HRTF(
+            Context context,
+            AudioSettings audioSettings,
+            string sofaFileName,
+            byte[] sofaFileData,
+            float gaindB,
+            HRTFNormType normType
+        )
         {
             IntPtr sofaData = IntPtr.Zero;
 
@@ -52,15 +59,31 @@ namespace SteamAudio
             hrtfSettings.volume = dBToGain(gaindB);
             hrtfSettings.normType = normType;
 
-            var status = API.iplHRTFCreate(context.Get(), ref audioSettings, ref hrtfSettings, out mHRTF);
+            var status = API.iplHRTFCreate(
+                context.Get(),
+                ref audioSettings,
+                ref hrtfSettings,
+                out mHRTF
+            );
             if (status != Error.Success)
             {
-                Debug.LogError(string.Format("Unable to load HRTF: {0}. [{1}]", (sofaFileName != null) ? sofaFileName : "default", status));
+                Debug.LogError(
+                    string.Format(
+                        "Unable to load HRTF: {0}. [{1}]",
+                        (sofaFileName != null) ? sofaFileName : "default",
+                        status
+                    )
+                );
                 mHRTF = IntPtr.Zero;
             }
             else
             {
-                Debug.Log(string.Format("Loaded HRTF: {0}.", (sofaFileName != null) ? sofaFileName : "default"));
+                Debug.Log(
+                    string.Format(
+                        "Loaded HRTF: {0}.",
+                        (sofaFileName != null) ? sofaFileName : "default"
+                    )
+                );
             }
 
             if (sofaData != IntPtr.Zero)
@@ -96,7 +119,7 @@ namespace SteamAudio
             if (gaindB <= kMinDBLevel)
                 return 0.0f;
 
-            return  (float) Math.Pow(10.0, (double) gaindB * (1.0 / 20.0));
+            return (float)Math.Pow(10.0, (double)gaindB * (1.0 / 20.0));
         }
     }
 }

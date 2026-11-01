@@ -19,21 +19,15 @@ public class MoneyResyncPacketWarden : LambdaPacketWarden<MoneyResyncPacket>
 {
     protected override PacketAuthority Authority => PacketAuthority.ServerOnly;
 
-    public void Send(Player player,int newMoney)
+    public void Send(Player player, int newMoney)
     {
-        var packet = new MoneyResyncPacket
-        {
-            Player = H.MainPlayer,
-            newMoney = newMoney
-        };
+        var packet = new MoneyResyncPacket { Player = player, newMoney = newMoney };
 
         DispatchPacket(ref packet);
     }
 
-
     protected override void Apply(MoneyResyncPacket packet, int peerId)
     {
-        packet.Player.Context.SetMoney(packet.newMoney);
+        packet.Player?.Context.SetMoney(packet.newMoney);
     }
 }
-
